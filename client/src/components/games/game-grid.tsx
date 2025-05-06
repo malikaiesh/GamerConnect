@@ -13,6 +13,7 @@ interface GameGridProps {
   className?: string;
   showRank?: boolean;
   rankOffset?: number;
+  onGameClick?: (game: Game) => void;
 }
 
 export function GameGrid({
@@ -25,7 +26,8 @@ export function GameGrid({
   cardSize = 'md',
   className = '',
   showRank = false,
-  rankOffset = 0
+  rankOffset = 0,
+  onGameClick
 }: GameGridProps) {
   const [gridCols, setGridCols] = useState(getColumnClass(columns));
   
@@ -94,6 +96,7 @@ export function GameGrid({
             game={game} 
             size={cardSize}
             rank={showRank ? index + 1 + rankOffset : undefined}
+            onClick={onGameClick ? () => onGameClick(game) : undefined}
           />
         ))}
       </div>

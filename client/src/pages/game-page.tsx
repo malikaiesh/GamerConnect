@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useQuery, useMutation } from '@tanstack/react-query';
 import { useRoute } from 'wouter';
 import { Header } from '@/components/layout/header';
@@ -6,6 +6,7 @@ import { Footer } from '@/components/layout/footer';
 import { Rating } from '@/components/ui/rating';
 import { RelatedGames } from '@/components/games/related-games';
 import { PushNotification } from '@/components/push-notification';
+import { PostGameModal } from '@/components/games/post-game-modal';
 import { Game, PushNotification as PushNotificationType } from '@shared/schema';
 import { apiRequest, queryClient } from '@/lib/queryClient';
 import { useToast } from '@/hooks/use-toast';
@@ -15,6 +16,8 @@ export default function GamePage() {
   const gameId = params?.id ? parseInt(params.id) : 0;
   const [userRating, setUserRating] = useState(0);
   const [activeNotification, setActiveNotification] = useState<PushNotificationType | null>(null);
+  const [showPostGameModal, setShowPostGameModal] = useState(false);
+  const gamePlayTimer = useRef<NodeJS.Timeout | null>(null);
   const { toast } = useToast();
   
   // Fetch game data
@@ -101,6 +104,22 @@ export default function GamePage() {
       trackNotificationImpression(activeNotification.id);
     }
   }, [activeNotification]);
+  
+  // Effect to set up game play timer for the post-game modal
+  useEffect(() => {
+    if (game && game.url) {
+      // Show the post-game modal after 2 minutes of gameplay (simulating game completion)
+      gamePlayTimer.current = setTimeout(() => {
+        setShowPostGameModal(true);
+      }, 120000); // 2 minutes (adjust as needed for demonstration)
+      
+      return () => {
+        if (gamePlayTimer.current) {
+          clearTimeout(gamePlayTimer.current);
+        }
+      };
+    }
+  }, [game]);
   
   // Calculate average rating
   const calculateAverageRating = () => {

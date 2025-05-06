@@ -1,4 +1,4 @@
-import { Link } from 'wouter';
+import { Link, useLocation } from 'wouter';
 import { Rating } from '@/components/ui/rating';
 import { Game } from '@shared/schema';
 
@@ -9,6 +9,7 @@ interface GameCardProps {
   showCategory?: boolean;
   showPlays?: boolean;
   rank?: number;
+  onClick?: () => void;
 }
 
 export function GameCard({ 
@@ -17,8 +18,11 @@ export function GameCard({
   showRating = true,
   showCategory = true,
   showPlays = true,
-  rank
+  rank,
+  onClick
 }: GameCardProps) {
+  const [location, setLocation] = useLocation();
+  
   const calculateAverageRating = () => {
     if (game.ratingCount === 0) return 0;
     return game.rating / game.ratingCount;
@@ -48,15 +52,38 @@ export function GameCard({
   const gamePath = `/game/${game.id}`;
   const averageRating = calculateAverageRating();
   
+  const handleClick = () => {
+    if (onClick) {
+      onClick();
+    } else {
+      setLocation(gamePath);
+    }
+  };
+  
+  const handleImageClick = (e: React.MouseEvent) => {
+    if (onClick) {
+      e.preventDefault();
+      onClick();
+    }
+  };
+  
+  const handleButtonClick = (e: React.MouseEvent) => {
+    if (onClick) {
+      e.preventDefault();
+      onClick();
+    }
+  };
+  
   return (
-    <div className={sizeClasses[size].card}>
+    <div className={`${sizeClasses[size].card} hover:shadow-xl transition-shadow duration-300 ${onClick ? 'cursor-pointer' : ''}`} onClick={onClick ? handleClick : undefined}>
       <div className="relative">
         <Link href={gamePath}>
           <img 
             src={game.thumbnail} 
             alt={`${game.title} - Game Thumbnail`} 
-            className={sizeClasses[size].image}
+            className={`${sizeClasses[size].image} hover:opacity-90 transition-opacity`}
             loading="lazy"
+            onClick={handleImageClick}
           />
         </Link>
         
@@ -74,8 +101,8 @@ export function GameCard({
       </div>
       
       <div className={sizeClasses[size].content}>
-        <Link href={gamePath}>
-          <h3 className={sizeClasses[size].title}>{game.title}</h3>
+        <Link href={gamePath} onClick={handleImageClick}>
+          <h3 className={`${sizeClasses[size].title} hover:text-primary transition-colors`}>{game.title}</h3>
         </Link>
         
         {showRating && (
@@ -109,6 +136,7 @@ export function GameCard({
         
         <Link 
           href={gamePath}
+          onClick={handleButtonClick}
           className={`block w-full bg-primary hover:bg-primary/90 text-primary-foreground text-center ${
             size === 'sm' ? 'py-1.5 text-sm' : 'py-2'
           } rounded-lg transition-colors`}
