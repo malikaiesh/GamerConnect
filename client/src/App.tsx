@@ -45,17 +45,59 @@ function Router() {
 
 // Admin Helper Navigation
 const AdminHelperNav = () => {
+  const { user } = useAuth();
+  
+  // Only show admin nav if user is logged in and is an admin
+  if (!user || !user.isAdmin) {
+    return null;
+  }
+  
   return (
-    <div className="bg-gray-900 text-white p-2 flex gap-3 text-sm">
-      <div>DevHelper:</div>
-      <a href="/auth" className="underline hover:text-blue-300">Auth Page</a>
-      <a href="/install" className="underline hover:text-blue-300 font-bold">Installation Page</a>
-      <div>|</div>
-      <a href="/admin/dashboard" className="underline hover:text-blue-300">Admin Dashboard</a>
-      <a href="/admin/games" className="underline hover:text-blue-300">Admin Games</a>
-      <a href="/admin/blog" className="underline hover:text-blue-300">Admin Blog</a>
-      <a href="/admin/homepage-content" className="underline hover:text-blue-300">Admin Content</a>
-      <a href="/admin/settings" className="underline hover:text-blue-300">Admin Settings</a>
+    <div className="bg-gradient-to-r from-indigo-900 to-purple-900 text-white py-3 px-4 shadow-md flex flex-wrap items-center justify-between">
+      <div className="flex items-center gap-2 mb-2 sm:mb-0">
+        <div className="font-bold text-lg bg-white text-indigo-900 px-2 py-1 rounded">Admin</div>
+        <div className="hidden sm:block text-white/70">Logged in as {user.username}</div>
+      </div>
+      <div className="flex flex-wrap gap-4 items-center">
+        <a href="/admin/dashboard" className="flex items-center gap-1 hover:text-blue-300 transition-colors">
+          <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+          </svg>
+          Dashboard
+        </a>
+        <a href="/admin/games" className="flex items-center gap-1 hover:text-blue-300 transition-colors">
+          <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+          Games
+        </a>
+        <a href="/admin/blog" className="flex items-center gap-1 hover:text-blue-300 transition-colors">
+          <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z" />
+          </svg>
+          Blog
+        </a>
+        <a href="/admin/homepage-content" className="flex items-center gap-1 hover:text-blue-300 transition-colors">
+          <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h7" />
+          </svg>
+          Content
+        </a>
+        <a href="/admin/settings" className="flex items-center gap-1 hover:text-blue-300 transition-colors">
+          <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+          </svg>
+          Settings
+        </a>
+        <a href="/" className="flex items-center gap-1 bg-white/10 hover:bg-white/20 px-3 py-1 rounded transition-colors">
+          <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+          </svg>
+          View Site
+        </a>
+      </div>
     </div>
   );
 }
