@@ -1,7 +1,9 @@
 import { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
+import { Separator } from '@/components/ui/separator';
 import { RelatedGames } from '@/components/games/related-games';
+import { SocialShareButtons } from '@/components/shared/social-share-buttons';
 import { Game } from '@shared/schema';
 import { useLocation } from 'wouter';
 
@@ -68,6 +70,20 @@ export function PostGameModal({ game, isOpen, onClose }: PostGameModalProps) {
                 placeholder="Share your thoughts about the game (optional)"
                 rows={3}
               />
+              
+              <div className="flex flex-col items-center space-y-3">
+                <p className="text-sm text-muted-foreground">Share your gaming experience with friends</p>
+                <SocialShareButtons
+                  title={`Check out my review of ${game.title}!`}
+                  description={`I just played and rated ${game.title} - ${game.description}`}
+                  url={window.location.origin + `/game/${game.id}`}
+                  image={game.thumbnail}
+                  platforms={['facebook', 'twitter', 'linkedin', 'email']}
+                  size="sm"
+                  compact={true}
+                />
+              </div>
+              
               <Button onClick={onClose}>Submit Feedback</Button>
             </div>
           </div>
@@ -83,7 +99,23 @@ export function PostGameModal({ game, isOpen, onClose }: PostGameModalProps) {
               />
             </div>
             
-            <div className="flex flex-col sm:flex-row gap-3 mt-4">
+            <div className="mt-4 mb-4">
+              <h3 className="text-sm font-medium mb-2">Share your achievement</h3>
+              <div className="flex items-center justify-center">
+                <SocialShareButtons
+                  title={`I just played ${game.title}!`}
+                  description={`Check out ${game.title} - ${game.description}`}
+                  url={window.location.origin + `/game/${game.id}`}
+                  image={game.thumbnail}
+                  platforms={['facebook', 'twitter', 'linkedin', 'email', 'copy']}
+                  size="default"
+                />
+              </div>
+            </div>
+            
+            <Separator className="my-4" />
+            
+            <div className="flex flex-col sm:flex-row gap-3">
               <Button onClick={handleShowFeedback} variant="outline" className="flex-1">
                 Rate This Game
               </Button>

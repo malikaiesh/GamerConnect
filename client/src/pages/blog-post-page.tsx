@@ -5,6 +5,8 @@ import { format } from 'date-fns';
 import { Header } from '@/components/layout/header';
 import { Footer } from '@/components/layout/footer';
 import { BlogList } from '@/components/blog/blog-list';
+import { SocialShare } from '@/components/shared/social-share';
+import { SocialShareButtons } from '@/components/shared/social-share-buttons';
 import { BlogPost, PushNotification as PushNotificationType } from '@shared/schema';
 import { PushNotification } from '@/components/push-notification';
 import { apiRequest } from '@/lib/queryClient';
@@ -196,6 +198,22 @@ export default function BlogPostPage() {
                   </div>
                 </div>
               </div>
+              
+              {/* Inline Share Section */}
+              <div className="mt-8 pt-6 border-t border-border">
+                <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+                  <h3 className="text-lg font-semibold">Enjoyed this article? Share it:</h3>
+                  <SocialShareButtons
+                    title={post.title}
+                    description={post.excerpt}
+                    url={window.location.href}
+                    image={post.featuredImage}
+                    platforms={['facebook', 'twitter', 'linkedin', 'email']}
+                    size="sm"
+                    compact={true}
+                  />
+                </div>
+              </div>
             </article>
             
             {/* Sidebar */}
@@ -236,22 +254,27 @@ export default function BlogPostPage() {
                 {/* Share Buttons */}
                 <div className="mt-8 pt-6 border-t border-border">
                   <h3 className="text-xl font-bold mb-4">Share This Post</h3>
-                  <div className="flex space-x-2">
-                    <button className="p-2 rounded-full bg-[#1877F2] text-white hover:opacity-90 transition-opacity">
-                      <i className="ri-facebook-fill text-lg"></i>
-                    </button>
-                    <button className="p-2 rounded-full bg-[#1DA1F2] text-white hover:opacity-90 transition-opacity">
-                      <i className="ri-twitter-fill text-lg"></i>
-                    </button>
-                    <button className="p-2 rounded-full bg-[#0A66C2] text-white hover:opacity-90 transition-opacity">
-                      <i className="ri-linkedin-fill text-lg"></i>
-                    </button>
-                    <button className="p-2 rounded-full bg-[#E60023] text-white hover:opacity-90 transition-opacity">
-                      <i className="ri-pinterest-fill text-lg"></i>
-                    </button>
-                    <button className="p-2 rounded-full bg-[#25D366] text-white hover:opacity-90 transition-opacity">
-                      <i className="ri-whatsapp-fill text-lg"></i>
-                    </button>
+                  <div className="space-y-4">
+                    <SocialShareButtons
+                      title={post.title}
+                      description={post.excerpt}
+                      url={window.location.href}
+                      image={post.featuredImage}
+                      platforms={['facebook', 'twitter', 'linkedin', 'email', 'copy']}
+                    />
+                    
+                    <div className="flex justify-center mt-3">
+                      <SocialShare
+                        title={post.title}
+                        description={post.excerpt}
+                        url={window.location.href}
+                        image={post.featuredImage}
+                        variant="outline"
+                        size="sm"
+                      >
+                        More sharing options
+                      </SocialShare>
+                    </div>
                   </div>
                 </div>
               </div>
