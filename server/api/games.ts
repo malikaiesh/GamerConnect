@@ -4,8 +4,15 @@ import { z } from "zod";
 import { insertGameSchema } from "@shared/schema";
 import fetch from "node-fetch";
 
+// Interface for GameMonetize API response
+interface GameMonetizeResponse {
+  success: boolean;
+  data: any[];
+  message?: string;
+}
+
 // Function to fetch games from GameMonetize API
-async function fetchGameMonetizeGames(apiKey: string, options: any = {}) {
+async function fetchGameMonetizeGames(apiKey: string, options: any = {}): Promise<GameMonetizeResponse> {
   try {
     // Set up the API endpoint
     const endpoint = 'https://api.gamemonetize.com/api';
@@ -33,7 +40,12 @@ async function fetchGameMonetizeGames(apiKey: string, options: any = {}) {
       throw new Error(`API error: ${response.status} ${response.statusText}`);
     }
     
-    return await response.json();
+    const responseData = await response.json();
+    
+    return {
+      success: true,
+      data: Array.isArray(responseData) ? responseData : [],
+    };
   } catch (error) {
     console.error('Error fetching GameMonetize games:', error);
     return {
@@ -54,8 +66,8 @@ function transformGameMonetizeData(apiGame: any) {
     apiId: apiGame.gameId,
     category: apiGame.gamecategory,
     tags: [apiGame.gamecategory], // Use category as a tag initially
-    source: 'api',
-    status: 'active',
+    source: 'api' as const, // Use 'as const' to ensure it matches the expected type
+    status: 'active' as const, // Use 'as const' to ensure it matches the expected type
   };
 }
 
@@ -102,16 +114,38 @@ export function registerGameRoutes(app: Express) {
   // Get game stats
   app.get('/api/games/stats', async (req: Request, res: Response) => {
     try {
-      // Return empty stats for now to avoid errors
-      res.json({
-        totalGames: 0,
-        totalPlays: 0,
-        playsThisWeek: 0,
-        newGamesPercent: 0
-      });
+      const stats = await storage.getGameStats();
+      res.json(stats);
     } catch (error) {
       console.error('Error fetching game stats:', error);
       res.status(500).json({ message: 'Failed to fetch game stats' });
+    }
+  });
+  
+  // Get top games (most played)
+  app.get('/api/games/top', async (req: Request, res: Response) => {
+    try {
+      const limit = req.query.limit ? parseInt(req.query.limit as string) : 5;
+      // Reuse the popular games endpoint but with a smaller limit
+      const topGames = await storage.getPopularGames(undefined, limit);
+      res.json(topGames);
+    } catch (error) {
+      console.error('Error fetching top games:', error);
+      res.status(500).json({ message: 'Failed to fetch top games' });
+    }
+  });
+  
+  // Get top game categories
+  app.get('/api/games/categories/top', async (req: Request, res: Response) => {
+    try {
+      const limit = req.query.limit ? parseInt(req.query.limit as string) : 5;
+      // For now, just return the first few categories
+      const allCategories = await storage.getGameCategories();
+      const topCategories = allCategories.slice(0, limit);
+      res.json(topCategories);
+    } catch (error) {
+      console.error('Error fetching top game categories:', error);
+      res.status(500).json({ message: 'Failed to fetch top game categories' });
     }
   });
   
@@ -176,17 +210,6 @@ export function registerGameRoutes(app: Express) {
       }
       console.error('Error rating game:', error);
       res.status(500).json({ message: 'Failed to submit rating' });
-    }
-  });
-  
-  // Get game stats
-  app.get('/api/games/stats', async (req: Request, res: Response) => {
-    try {
-      const stats = await storage.getGameStats();
-      res.json(stats);
-    } catch (error) {
-      console.error('Error fetching game stats:', error);
-      res.status(500).json({ message: 'Failed to fetch game stats' });
     }
   });
   
