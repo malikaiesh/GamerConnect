@@ -271,8 +271,8 @@ async function seed() {
           type: notification.type,
           link: notification.link,
           active: notification.active,
-          impressions: 0,
-          clicks: 0,
+          clickCount: 0,
+          impressionCount: 0,
         });
       }
       console.log(`Added ${notifications.length} sample push notifications`);
