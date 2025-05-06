@@ -1,4 +1,4 @@
-import type { Express, Request, Response, NextFunction } from "express";
+import express, { type Express, Request, Response, NextFunction } from "express";
 import { createServer, type Server } from "http";
 import { setupAuth } from "./auth";
 import { registerGameRoutes } from "./api/games";
@@ -33,6 +33,7 @@ async function installationCheckMiddleware(req: Request, res: Response, next: Ne
       req.path === '/api/install/status' || 
       req.path === '/install' ||  // Skip middleware for the install page itself
       req.path.startsWith('/assets/') ||
+      req.path.startsWith('/uploads/') ||  // Allow access to uploaded files
       req.path.startsWith('/@') ||  // Vite HMR and dependencies
       req.path.startsWith('/@fs/') ||
       req.path.startsWith('/@vite/') ||
@@ -89,6 +90,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   registerNotificationsRoutes(app);
   registerHomePageContentRoutes(app);
   registerUploadRoutes(app);
+  
+  // Serve uploaded files from the uploads directory
+  app.use('/uploads', express.static(path.join(process.cwd(), 'uploads')));
 
   // Serve ads.txt file if configured
   app.get('/ads.txt', async (req, res) => {
