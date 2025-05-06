@@ -7,6 +7,8 @@ import { Rating } from '@/components/ui/rating';
 import { RelatedGames } from '@/components/games/related-games';
 import { PushNotification } from '@/components/push-notification';
 import { PostGameModal } from '@/components/games/post-game-modal';
+import { SocialShare } from '@/components/shared/social-share';
+import { SocialShareButtons } from '@/components/shared/social-share-buttons';
 import { Game, PushNotification as PushNotificationType } from '@shared/schema';
 import { apiRequest, queryClient } from '@/lib/queryClient';
 import { useToast } from '@/hooks/use-toast';
@@ -236,6 +238,17 @@ export default function GamePage() {
                   </div>
                 </div>
                 
+                <div className="mb-6">
+                  <h3 className="text-lg font-semibold mb-2">Share Game</h3>
+                  <SocialShareButtons
+                    title={game.title}
+                    description={`Play ${game.title} - ${game.description}`}
+                    url={window.location.href}
+                    image={game.thumbnail}
+                    platforms={['facebook', 'twitter', 'linkedin', 'email', 'copy']}
+                  />
+                </div>
+                
                 <div>
                   <h3 className="text-lg font-semibold mb-2">Download Game App</h3>
                   <div className="space-y-3">
@@ -312,9 +325,13 @@ export default function GamePage() {
                   <button className="btn-outline">
                     <i className="ri-fullscreen-line mr-1"></i> Fullscreen
                   </button>
-                  <button className="btn-outline">
-                    <i className="ri-share-line mr-1"></i> Share
-                  </button>
+                  
+                  <SocialShare
+                    title={game.title}
+                    description={`Play ${game.title} - ${game.description}`}
+                    url={window.location.href}
+                    image={game.thumbnail}
+                  />
                 </div>
                 <button 
                   className="btn-primary"
