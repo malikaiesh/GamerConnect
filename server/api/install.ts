@@ -147,13 +147,17 @@ async function validateDbConnection(dbConfig: any): Promise<boolean> {
 
 // Function to handle installation
 async function handleInstallation(data: z.infer<typeof installSchema>): Promise<void> {
+  console.log('=== Starting installation process ===');
   // Validate that the app isn't already installed
+  console.log('Checking if app is already installed...');
   const appInstalled = await isInstalled();
   if (appInstalled) {
+    console.log('Error: Application is already installed');
     throw new Error('Application is already installed');
   }
   
   // Create database configuration
+  console.log('Creating database configuration...');
   const dbConfig = {
     host: data.db_host,
     port: parseInt(data.db_port),
@@ -161,30 +165,47 @@ async function handleInstallation(data: z.infer<typeof installSchema>): Promise<
     user: data.db_user,
     password: data.db_password
   };
+  console.log('DB Config (sanitized):', { ...dbConfig, password: '********' });
   
-  // Test database connection
-  await validateDbConnection(dbConfig);
-  
-  // Create database config file
-  await createDatabaseConfig(data);
-  
-  // Initialize the database (create tables and initial data)
-  await initializeDatabase(
-    dbConfig,
-    {
+  try {
+    // Test database connection
+    console.log('Testing database connection...');
+    await validateDbConnection(dbConfig);
+    console.log('Database connection successful');
+    
+    // Create database config file
+    console.log('Creating database config file...');
+    await createDatabaseConfig(data);
+    console.log('Database config file created');
+    
+    // Initialize the database (create tables and initial data)
+    console.log('Initializing database with admin and site data...');
+    const adminData = {
       username: data.admin_username,
       password: data.admin_password,
       email: data.admin_email
-    },
-    {
+    };
+    
+    const siteData = {
       name: data.site_name,
       description: data.site_description,
       url: data.site_url
-    }
-  );
-  
-  // Mark as installed
-  await markAsInstalled();
+    };
+    
+    console.log('Admin data (sanitized):', { ...adminData, password: '********' });
+    console.log('Site data:', siteData);
+    
+    await initializeDatabase(dbConfig, adminData, siteData);
+    console.log('Database initialized successfully');
+    
+    // Mark as installed
+    console.log('Marking application as installed...');
+    await markAsInstalled();
+    console.log('Installation completed successfully');
+  } catch (error) {
+    console.error('Installation process failed:', error);
+    throw error;
+  }
 }
 
 export function registerInstallRoutes(app: Express) {
@@ -200,32 +221,55 @@ export function registerInstallRoutes(app: Express) {
 
   // Handle installation
   app.post('/api/install', async (req: Request, res: Response) => {
+    console.log('Installation API endpoint called');
+    console.log('Request body:', req.body);
+    
     try {
       // Check if already installed
       const appInstalled = await isInstalled();
       if (appInstalled) {
+        console.log('Application already installed');
         return res.status(400).json({ error: 'Application is already installed' });
       }
       
       // Validate CAPTCHA (in a real implementation, this would verify against a CAPTCHA service)
+      console.log('CAPTCHA value received:', req.body.captcha);
       // For now, we'll just check if the field is filled
       if (!req.body.captcha) {
-        return res.status(400).json({ error: 'CAPTCHA verification failed' });
+        console.log('CAPTCHA verification failed - empty value');
+        return res.status(400).json({ error: 'CAPTCHA verification failed', reason: 'Empty CAPTCHA value' });
       }
       
-      // Validate form data
-      const validatedData = installSchema.parse(req.body);
-      
-      // Process installation
-      await handleInstallation(validatedData);
-      
-      res.status(200).json({ success: true, message: 'Installation completed successfully' });
+      try {
+        // Validate form data
+        console.log('Validating form data with Zod schema');
+        const validatedData = installSchema.parse(req.body);
+        console.log('Form data validation successful');
+        
+        // Process installation
+        console.log('Starting installation process');
+        await handleInstallation(validatedData);
+        console.log('Installation completed successfully');
+        
+        res.status(200).json({ success: true, message: 'Installation completed successfully' });
+      } catch (validationError) {
+        console.error('Validation error:', validationError);
+        if (validationError instanceof z.ZodError) {
+          return res.status(400).json({ 
+            error: 'Invalid installation data', 
+            details: validationError.errors,
+            formattedErrors: validationError.errors.map(err => `${err.path.join('.')}: ${err.message}`).join(', ')
+          });
+        }
+        throw validationError; // Re-throw if it's not a ZodError
+      }
     } catch (error) {
       console.error('Installation error:', error);
-      if (error instanceof z.ZodError) {
-        return res.status(400).json({ error: 'Invalid installation data', details: error.errors });
-      }
-      res.status(500).json({ error: 'Installation failed', message: error.message });
+      res.status(500).json({ 
+        error: 'Installation failed', 
+        message: error.message,
+        stack: process.env.NODE_ENV === 'production' ? undefined : error.stack
+      });
     }
   });
 }

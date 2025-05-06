@@ -140,9 +140,12 @@ export default function InstallPage() {
   // Handle form submission
   const onSubmit = async (data: InstallFormValues) => {
     try {
+      console.log('Form submit event triggered');
+      
       // Set captcha value from state and log form data for debugging
       data.captcha = captchaValue;
-      console.log('Submitting installation data:', data);
+      console.log('Form CAPTCHA value:', captchaValue);
+      console.log('Form data before submission:', data);
       
       // Manually validate form data to ensure everything is correct
       const result = installSchema.safeParse(data);
@@ -156,13 +159,52 @@ export default function InstallPage() {
         return;
       }
       
-      // Submit the data to the API
-      await installMutation.mutateAsync(data);
+      console.log('Form validation successful, submitting to API...');
+      
+      // Submit the data to the API directly, bypassing the mutation to test
+      try {
+        const res = await fetch('/api/install', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({...data, captcha: captchaValue}),
+        });
+        
+        console.log('API response status:', res.status);
+        
+        if (!res.ok) {
+          const errorData = await res.json();
+          console.error('API error response:', errorData);
+          throw new Error(errorData.message || errorData.error || 'Installation failed');
+        }
+        
+        const successData = await res.json();
+        console.log('API success response:', successData);
+        
+        toast({
+          title: "Installation successful",
+          description: "Your gaming portal has been successfully installed!",
+          variant: "default",
+        });
+        
+        // Redirect to homepage after installation
+        setTimeout(() => {
+          setLocation('/');
+        }, 2000);
+      } catch (apiError: any) {
+        console.error('API call error:', apiError);
+        toast({
+          title: "Installation failed",
+          description: apiError?.message || "An unexpected error occurred during API call.",
+          variant: "destructive",
+        });
+      }
     } catch (error: any) {
-      console.error('Installation error:', error);
+      console.error('Form submission error:', error);
       toast({
-        title: "Installation failed",
-        description: error?.message || "An unknown error occurred during installation.",
+        title: "Form submission failed",
+        description: error?.message || "An unexpected error occurred during form submission.",
         variant: "destructive",
       });
     }
@@ -584,10 +626,19 @@ export default function InstallPage() {
                   </Button>
                 ) : (
                   <Button 
-                    type="submit"
-                    disabled={!agreedToTerms || installMutation.isPending}
+                    type="button"
+                    onClick={() => {
+                      console.log('Complete Installation button clicked');
+                      // Get all form data
+                      const formData = form.getValues();
+                      // Set CAPTCHA value
+                      formData.captcha = captchaValue;
+                      // Call submit handler directly
+                      onSubmit(formData);
+                    }}
+                    disabled={!agreedToTerms}
                   >
-                    {installMutation.isPending ? 'Installing...' : 'Complete Installation'}
+                    {'Complete Installation'}
                   </Button>
                 )}
               </CardFooter>
