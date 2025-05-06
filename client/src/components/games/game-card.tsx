@@ -65,6 +65,12 @@ export function GameCard({
             FEATURED
           </span>
         )}
+        
+        {rank && (
+          <span className="absolute top-2 left-2 bg-primary text-primary-foreground font-bold w-6 h-6 flex items-center justify-center rounded-full shadow-md">
+            {rank}
+          </span>
+        )}
       </div>
       
       <div className={sizeClasses[size].content}>

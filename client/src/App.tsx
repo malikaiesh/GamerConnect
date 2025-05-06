@@ -9,6 +9,8 @@ import GamePage from "@/pages/game-page";
 import BlogPage from "@/pages/blog-page";
 import BlogPostPage from "@/pages/blog-post-page";
 import AuthPage from "@/pages/auth-page";
+import CategoriesPage from "@/pages/categories-page";
+import TopGamesPage from "@/pages/top-games-page";
 import AdminDashboard from "@/pages/admin/dashboard";
 import AdminGames from "@/pages/admin/games";
 import AdminBlog from "@/pages/admin/blog";
@@ -23,6 +25,8 @@ function Router() {
       <Route path="/game/:id" component={GamePage} />
       <Route path="/blog" component={BlogPage} />
       <Route path="/blog/:slug" component={BlogPostPage} />
+      <Route path="/categories" component={CategoriesPage} />
+      <Route path="/top-games" component={TopGamesPage} />
       <Route path="/auth" component={AuthPage} />
       <ProtectedRoute path="/admin/dashboard" component={AdminDashboard} adminOnly={true} />
       <ProtectedRoute path="/admin/games" component={AdminGames} adminOnly={true} />

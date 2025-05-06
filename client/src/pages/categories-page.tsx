@@ -10,20 +10,21 @@ export default function CategoriesPage() {
   const [activeCategory, setActiveCategory] = useState<string | null>(null);
   
   // Fetch all categories
-  const { data: categories = [], isLoading: loadingCategories } = useQuery({
+  const { data: categories = [], isLoading: loadingCategories } = useQuery<string[]>({
     queryKey: ['/api/games/categories'],
-    queryFn: fetcher,
+    queryFn: () => fetcher('/api/games/categories'),
   });
   
   // Fetch top categories for featured section
-  const { data: topCategories = [], isLoading: loadingTopCategories } = useQuery({
+  const { data: topCategories = [], isLoading: loadingTopCategories } = useQuery<string[]>({
     queryKey: ['/api/games/categories/top'],
-    queryFn: fetcher,
+    queryFn: () => fetcher('/api/games/categories/top'),
   });
   
   // Fetch games based on selected category
   const { data: games = [], isLoading: loadingGames } = useQuery<Game[]>({
     queryKey: ['/api/games/popular', { category: activeCategory }],
+    queryFn: () => activeCategory ? fetcher(`/api/games/popular?category=${encodeURIComponent(activeCategory)}`) : Promise.resolve([]),
     enabled: !!activeCategory,
   });
   

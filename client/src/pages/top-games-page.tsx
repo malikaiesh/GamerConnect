@@ -5,13 +5,15 @@ import { Footer } from '@/components/layout/footer';
 import { GameGrid } from '@/components/games/game-grid';
 import { Rating } from '@/components/ui/rating';
 import { Game } from '@shared/schema';
+import { fetcher } from '@/lib/queryClient';
 
 export default function TopGamesPage() {
   const [timeframe, setTimeframe] = useState('all_time'); // all_time, this_month, this_week
   
   // Fetch top games
   const { data: topGames = [], isLoading: loadingTopGames } = useQuery<Game[]>({
-    queryKey: ['/api/games/top'],
+    queryKey: ['/api/games/top', { timeframe }],
+    queryFn: () => fetcher(`/api/games/top${timeframe !== 'all_time' ? `?timeframe=${timeframe}` : ''}`),
   });
   
   // For the hero section, use the top game if available
