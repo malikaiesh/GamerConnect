@@ -6,6 +6,23 @@ async function seed() {
   try {
     console.log("🌱 Seeding database...");
 
+    // Add admin user
+    console.log("Adding admin user...");
+    const existingAdmin = await db.query.users.findFirst({
+      where: eq(schema.users.username, "admin")
+    });
+    
+    if (!existingAdmin) {
+      await db.insert(schema.users).values({
+        username: "admin",
+        password: "admin123", // In a real environment, this would be hashed
+        isAdmin: true
+      });
+      console.log("Admin user created with username: 'admin' and password: 'admin123'");
+    } else {
+      console.log("Admin user already exists");
+    }
+
     // Add sample games - Featured Games (10 total)
     const featuredGamesData = [
       {
