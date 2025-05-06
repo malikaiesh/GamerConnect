@@ -688,6 +688,50 @@ class DatabaseStorage implements IStorage {
   }
 
   // Analytics methods
+  async getHomePageContents(): Promise<HomePageContent[]> {
+    return db.select().from(homePageContent).orderBy(homePageContent.position);
+  }
+
+  async getActiveHomePageContents(): Promise<HomePageContent[]> {
+    return db.select().from(homePageContent)
+      .where(eq(homePageContent.status, 'active'))
+      .orderBy(homePageContent.position);
+  }
+
+  async getHomePageContentById(id: number): Promise<HomePageContent | null> {
+    const result = await db.select().from(homePageContent).where(eq(homePageContent.id, id)).limit(1);
+    return result.length ? result[0] : null;
+  }
+
+  async createHomePageContent(content: Omit<InsertHomePageContent, "createdAt" | "updatedAt">): Promise<HomePageContent> {
+    // Get the highest position and add 1
+    const [positionResult] = await db.select({ 
+      maxPosition: sql<number>`COALESCE(MAX(${homePageContent.position}), -1) + 1` 
+    }).from(homePageContent);
+    
+    const position = positionResult?.maxPosition || 0;
+    
+    const result = await db.insert(homePageContent).values({
+      ...content,
+      position
+    }).returning();
+    
+    return result[0];
+  }
+
+  async updateHomePageContent(id: number, contentData: Partial<InsertHomePageContent>): Promise<HomePageContent | null> {
+    const result = await db.update(homePageContent)
+      .set({ ...contentData, updatedAt: new Date() })
+      .where(eq(homePageContent.id, id))
+      .returning();
+    return result.length ? result[0] : null;
+  }
+
+  async deleteHomePageContent(id: number): Promise<boolean> {
+    const result = await db.delete(homePageContent).where(eq(homePageContent.id, id)).returning({ id: homePageContent.id });
+    return result.length > 0;
+  }
+
   async getAnalytics(timeframe: string): Promise<any> {
     // This would normally be implemented with proper analytics tracking
     // For now, we'll return mock data based on the timeframe

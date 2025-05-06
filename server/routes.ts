@@ -6,6 +6,7 @@ import { registerBlogRoutes } from "./api/blog";
 import { registerSettingsRoutes } from "./api/settings";
 import { registerAnalyticsRoutes } from "./api/analytics";
 import { registerNotificationsRoutes } from "./api/notifications";
+import { registerHomePageContentRoutes } from "./api/homepage-content";
 import { storage } from "./storage";
 
 export async function registerRoutes(app: Express): Promise<Server> {
@@ -18,6 +19,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   registerSettingsRoutes(app);
   registerAnalyticsRoutes(app);
   registerNotificationsRoutes(app);
+  registerHomePageContentRoutes(app);
 
   // Serve ads.txt file if configured
   app.get('/ads.txt', async (req, res) => {
