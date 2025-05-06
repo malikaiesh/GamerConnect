@@ -86,7 +86,7 @@ export function registerGameRoutes(app: Express) {
   // Get featured games
   app.get('/api/games/featured', async (req: Request, res: Response) => {
     try {
-      const limit = req.query.limit ? parseInt(req.query.limit as string) : 8;
+      const limit = req.query.limit ? parseInt(req.query.limit as string) : 10; // Default to 10 featured games
       const featuredGames = await storage.getFeaturedGames(limit);
       res.json(featuredGames);
     } catch (error) {
@@ -99,7 +99,7 @@ export function registerGameRoutes(app: Express) {
   app.get('/api/games/popular', async (req: Request, res: Response) => {
     try {
       const category = req.query.category as string;
-      const limit = req.query.limit ? parseInt(req.query.limit as string) : 10;
+      const limit = req.query.limit ? parseInt(req.query.limit as string) : 20; // Default to 20 popular games
       
       // Only pass category if it's not 'all'
       const categoryParam = category === 'all' ? undefined : category;
