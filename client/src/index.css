@@ -1,0 +1,198 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 0 0% 98%;
+    --foreground: 240 10% 3.9%;
+    
+    --card: 0 0% 100%;
+    --card-foreground: 240 10% 3.9%;
+    
+    --popover: 0 0% 100%;
+    --popover-foreground: 240 10% 3.9%;
+    
+    --primary: 262 54% 55%;
+    --primary-foreground: 0 0% 98%;
+    
+    --secondary: 16 100% 57%;
+    --secondary-foreground: 0 0% 98%;
+    
+    --accent: 122 50% 49%;
+    --accent-foreground: 0 0% 98%;
+    
+    --muted: 240 4.8% 95.9%;
+    --muted-foreground: 240 3.8% 46.1%;
+    
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 0 0% 98%;
+    
+    --border: 240 5.9% 90%;
+    --input: 240 5.9% 90%;
+    --ring: 262 54% 55%;
+    
+    --radius: 0.5rem;
+
+    /* Theme-specific variables */
+    --theme-primary: 262 54% 55%;
+    --theme-secondary: 16 100% 57%;
+    --theme-accent: 122 50% 49%;
+  }
+
+  .dark {
+    --background: 240 10% 7%;
+    --foreground: 0 0% 98%;
+    
+    --card: 240 10% 12%;
+    --card-foreground: 0 0% 98%;
+    
+    --popover: 240 10% 12%;
+    --popover-foreground: 0 0% 98%;
+    
+    --primary: 262 54% 50%;
+    --primary-foreground: 0 0% 98%;
+    
+    --secondary: 16 100% 50%;
+    --secondary-foreground: 0 0% 98%;
+    
+    --accent: 122 50% 45%;
+    --accent-foreground: 0 0% 98%;
+    
+    --muted: 240 3.7% 15.9%;
+    --muted-foreground: 240 5% 64.9%;
+    
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 0 0% 98%;
+    
+    --border: 240 3.7% 15.9%;
+    --input: 240 3.7% 15.9%;
+    --ring: 262 54% 50%;
+  }
+
+  /* Sports Theme */
+  .sports-theme {
+    --theme-primary: 210 100% 40%;
+    --theme-secondary: 36 100% 50%;
+    --theme-accent: 122 50% 49%;
+  }
+
+  /* Girls Theme */
+  .girls-theme {
+    --theme-primary: 340 83% 52%;
+    --theme-secondary: 291 65% 42%;
+    --theme-accent: 187 100% 42%;
+  }
+
+  /* Retro Theme */
+  .retro-theme {
+    --theme-primary: 88 60% 55%;
+    --theme-secondary: 328 100% 44%;
+    --theme-accent: 45 100% 47%;
+  }
+
+  /* Futuristic Theme */
+  .futuristic-theme {
+    --theme-primary: 210 83% 53%;
+    --theme-secondary: 187 100% 42%;
+    --theme-accent: 270 76% 58%;
+  }
+
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+    font-feature-settings: "rlig" 1, "calt" 1;
+  }
+
+  /* Custom Scrollbar */
+  ::-webkit-scrollbar {
+    width: 10px;
+  }
+  
+  ::-webkit-scrollbar-track {
+    background: hsl(var(--muted));
+  }
+  
+  ::-webkit-scrollbar-thumb {
+    background: hsl(var(--primary));
+    border-radius: 10px;
+  }
+  
+  ::-webkit-scrollbar-thumb:hover {
+    background: hsl(var(--secondary));
+  }
+
+  /* Game Card Hover Animation */
+  .game-card {
+    transition: all 0.3s ease;
+  }
+  
+  .game-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+  }
+
+  /* Loading Animation */
+  @keyframes pulse {
+    0% { opacity: 0.6; }
+    50% { opacity: 1; }
+    100% { opacity: 0.6; }
+  }
+  
+  .loading-pulse {
+    animation: pulse 1.5s infinite ease-in-out;
+  }
+}
+
+@layer components {
+  .heading-xl {
+    @apply text-4xl md:text-5xl font-bold font-display;
+  }
+  
+  .heading-lg {
+    @apply text-3xl md:text-4xl font-bold font-display;
+  }
+  
+  .heading-md {
+    @apply text-2xl md:text-3xl font-bold font-display;
+  }
+  
+  .heading-sm {
+    @apply text-xl md:text-2xl font-bold font-display;
+  }
+  
+  .heading-xs {
+    @apply text-lg md:text-xl font-bold font-display;
+  }
+  
+  .btn-primary {
+    @apply bg-primary hover:bg-primary/90 text-primary-foreground px-4 py-2 rounded-lg font-semibold transition-colors;
+  }
+  
+  .btn-secondary {
+    @apply bg-secondary hover:bg-secondary/90 text-secondary-foreground px-4 py-2 rounded-lg font-semibold transition-colors;
+  }
+  
+  .btn-accent {
+    @apply bg-accent hover:bg-accent/90 text-accent-foreground px-4 py-2 rounded-lg font-semibold transition-colors;
+  }
+  
+  .btn-outline {
+    @apply bg-background hover:bg-muted border border-input text-foreground px-4 py-2 rounded-lg font-semibold transition-colors;
+  }
+  
+  .btn-ghost {
+    @apply bg-transparent hover:bg-muted text-foreground px-4 py-2 rounded-lg font-semibold transition-colors;
+  }
+  
+  .category-pill {
+    @apply bg-muted text-muted-foreground px-3 py-1 rounded-full text-sm font-medium;
+  }
+  
+  .category-pill-active {
+    @apply bg-primary text-primary-foreground px-3 py-1 rounded-full text-sm font-medium;
+  }
+}
