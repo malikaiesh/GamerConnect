@@ -65,7 +65,14 @@ export default function AuthPage() {
 
   // Handle login form submission
   const onLoginSubmit = (values: LoginValues) => {
-    loginMutation.mutate(values);
+    loginMutation.mutate(values, {
+      onSuccess: () => {
+        // Redirect to admin dashboard if admin user
+        if (values.username === 'admin') {
+          setTimeout(() => navigate('/admin/dashboard'), 1000);
+        }
+      }
+    });
   };
 
   // Handle registration form submission

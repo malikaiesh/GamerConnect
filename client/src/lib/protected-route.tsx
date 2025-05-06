@@ -13,6 +13,11 @@ export function ProtectedRoute({
 }) {
   const { user, isLoading } = useAuth();
 
+  console.log("ProtectedRoute - User:", user);
+  console.log("ProtectedRoute - isAdmin:", user?.isAdmin);
+  console.log("ProtectedRoute - Path:", path);
+  console.log("ProtectedRoute - adminOnly:", adminOnly);
+
   if (isLoading) {
     return (
       <Route path={path}>
@@ -24,6 +29,7 @@ export function ProtectedRoute({
   }
 
   if (!user) {
+    console.log("ProtectedRoute - No user, redirecting to /auth");
     return (
       <Route path={path}>
         <Redirect to="/auth" />
@@ -32,6 +38,7 @@ export function ProtectedRoute({
   }
 
   if (adminOnly && !user.isAdmin) {
+    console.log("ProtectedRoute - Not admin, redirecting to /");
     return (
       <Route path={path}>
         <Redirect to="/" />
@@ -39,5 +46,6 @@ export function ProtectedRoute({
     );
   }
 
+  console.log("ProtectedRoute - Access granted");
   return <Route path={path} component={Component} />;
 }

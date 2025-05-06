@@ -17,6 +17,7 @@ import AdminBlog from "@/pages/admin/blog";
 import AdminSettings from "@/pages/admin/settings";
 import { Providers } from "./lib/providers";
 import { ProtectedRoute } from "./lib/protected-route";
+import { useAuth } from "@/hooks/use-auth";
 
 function Router() {
   return (
@@ -38,10 +39,26 @@ function Router() {
   );
 }
 
+// Admin Helper Navigation
+const AdminHelperNav = () => {
+  return (
+    <div className="bg-gray-900 text-white p-2 flex gap-3 text-sm">
+      <div>DevHelper:</div>
+      <a href="/auth" className="underline hover:text-blue-300">Auth Page</a>
+      <div>|</div>
+      <a href="/admin/dashboard" className="underline hover:text-blue-300">Admin Dashboard</a>
+      <a href="/admin/games" className="underline hover:text-blue-300">Admin Games</a>
+      <a href="/admin/blog" className="underline hover:text-blue-300">Admin Blog</a>
+      <a href="/admin/settings" className="underline hover:text-blue-300">Admin Settings</a>
+    </div>
+  );
+}
+
 function App() {
   return (
     <Providers>
       <ThemeProvider defaultTheme="modern" defaultMode="light">
+        <AdminHelperNav />
         <Router />
         <Toaster />
       </ThemeProvider>
