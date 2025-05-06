@@ -56,12 +56,12 @@ export default function AuthPage() {
     },
   });
 
-  // Redirect if user is already logged in
-  useEffect(() => {
-    if (user) {
-      navigate("/");
-    }
-  }, [user, navigate]);
+  // We're removing this auto-redirect for now so you can log in with different accounts
+  // useEffect(() => {
+  //   if (user) {
+  //     navigate("/");
+  //   }
+  // }, [user, navigate]);
 
   // Handle login form submission
   const onLoginSubmit = (values: LoginValues) => {
