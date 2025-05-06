@@ -11,6 +11,7 @@ import BlogPostPage from "@/pages/blog-post-page";
 import AuthPage from "@/pages/auth-page";
 import CategoriesPage from "@/pages/categories-page";
 import TopGamesPage from "@/pages/top-games-page";
+import InstallPage from "@/pages/install-page";
 import AdminDashboard from "@/pages/admin/dashboard";
 import AdminGames from "@/pages/admin/games";
 import AdminBlog from "@/pages/admin/blog";
@@ -30,6 +31,7 @@ function Router() {
       <Route path="/categories" component={CategoriesPage} />
       <Route path="/top-games" component={TopGamesPage} />
       <Route path="/auth" component={AuthPage} />
+      <Route path="/install" component={InstallPage} />
       <ProtectedRoute path="/admin/dashboard" component={AdminDashboard} adminOnly={true} />
       <ProtectedRoute path="/admin/games" component={AdminGames} adminOnly={true} />
       <ProtectedRoute path="/admin/blog" component={AdminBlog} adminOnly={true} />
@@ -47,6 +49,7 @@ const AdminHelperNav = () => {
     <div className="bg-gray-900 text-white p-2 flex gap-3 text-sm">
       <div>DevHelper:</div>
       <a href="/auth" className="underline hover:text-blue-300">Auth Page</a>
+      <a href="/install" className="underline hover:text-blue-300 font-bold">Installation Page</a>
       <div>|</div>
       <a href="/admin/dashboard" className="underline hover:text-blue-300">Admin Dashboard</a>
       <a href="/admin/games" className="underline hover:text-blue-300">Admin Games</a>
