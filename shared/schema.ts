@@ -6,6 +6,7 @@ import { z } from 'zod';
 // Enums
 export const gameSourceEnum = pgEnum('game_source', ['api', 'custom']);
 export const gameStatusEnum = pgEnum('game_status', ['active', 'inactive', 'featured']);
+export const gameFileTypeEnum = pgEnum('game_file_type', ['html5', 'apk', 'ios', 'unity']);
 export const blogStatusEnum = pgEnum('blog_status', ['draft', 'published']);
 export const notificationTypeEnum = pgEnum('notification_type', ['alert', 'banner', 'modal', 'slide-in', 'toast']);
 export const contentStatusEnum = pgEnum('content_status', ['active', 'inactive']);
@@ -34,9 +35,25 @@ export const games = pgTable('games', {
   plays: integer('plays').default(0).notNull(),
   rating: integer('rating_sum').default(0).notNull(),
   ratingCount: integer('rating_count').default(0).notNull(),
+  
+  // New fields for file uploads
+  fileType: gameFileTypeEnum('file_type'), // 'html5', 'apk', 'ios', 'unity'
+  filePath: text('file_path'), // Path to uploaded game file (APK, ZIP, etc.)
+  fileSize: integer('file_size'), // Size of the uploaded file in bytes
+  orientation: text('orientation').default('landscape'), // landscape or portrait
+  instructions: text('instructions'), // Game instructions
+  
+  // Additional images
+  screenshot1: text('screenshot1'),
+  screenshot2: text('screenshot2'),
+  screenshot3: text('screenshot3'),
+  screenshot4: text('screenshot4'),
+  
+  // Store URLs
   appStoreUrl: text('app_store_url'),
   playStoreUrl: text('play_store_url'),
   amazonAppStoreUrl: text('amazon_app_store_url'),
+  
   createdAt: timestamp('created_at').defaultNow().notNull(),
   updatedAt: timestamp('updated_at').defaultNow().notNull()
 });
@@ -169,6 +186,18 @@ export const insertGameSchema = createInsertSchema(games, {
   thumbnail: (schema) => schema.url("Thumbnail must be a valid URL"),
   url: (schema) => schema.url("URL must be a valid URL").optional().nullable(),
   apiId: (schema) => schema.optional().nullable(),
+  // New file upload fields
+  fileType: (schema) => schema.optional().nullable(),
+  filePath: (schema) => schema.optional().nullable(),
+  fileSize: (schema) => schema.optional().nullable(),
+  orientation: (schema) => schema.optional().nullable(),
+  instructions: (schema) => schema.optional().nullable(),
+  // Screenshot fields
+  screenshot1: (schema) => schema.url("Screenshot must be a valid URL").optional().nullable(),
+  screenshot2: (schema) => schema.url("Screenshot must be a valid URL").optional().nullable(),
+  screenshot3: (schema) => schema.url("Screenshot must be a valid URL").optional().nullable(),
+  screenshot4: (schema) => schema.url("Screenshot must be a valid URL").optional().nullable(),
+  // Store URLs
   appStoreUrl: (schema) => schema.url("App Store URL must be a valid URL").optional().nullable(),
   playStoreUrl: (schema) => schema.url("Play Store URL must be a valid URL").optional().nullable(),
   amazonAppStoreUrl: (schema) => schema.url("Amazon App Store URL must be a valid URL").optional().nullable()
