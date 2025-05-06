@@ -75,10 +75,8 @@ export function registerGameRoutes(app: Express) {
   app.get('/api/games/featured', async (req: Request, res: Response) => {
     try {
       const limit = req.query.limit ? parseInt(req.query.limit as string) : 8;
-      
-      // If there's no featured games in the database yet, return an empty array
-      // instead of trying to access storage which causes "Invalid game ID" error
-      res.json([]);
+      const featuredGames = await storage.getFeaturedGames(limit);
+      res.json(featuredGames);
     } catch (error) {
       console.error('Error processing featured games request:', error);
       res.status(500).json({ message: 'Failed to fetch featured games' });
@@ -91,9 +89,10 @@ export function registerGameRoutes(app: Express) {
       const category = req.query.category as string;
       const limit = req.query.limit ? parseInt(req.query.limit as string) : 10;
       
-      // If there's no popular games in the database yet, return an empty array
-      // instead of trying to access storage which causes "Invalid game ID" error
-      res.json([]);
+      // Only pass category if it's not 'all'
+      const categoryParam = category === 'all' ? undefined : category;
+      const popularGames = await storage.getPopularGames(categoryParam, limit);
+      res.json(popularGames);
     } catch (error) {
       console.error('Error processing popular games request:', error);
       res.status(500).json({ message: 'Failed to fetch popular games' });
@@ -124,8 +123,15 @@ export function registerGameRoutes(app: Express) {
         return res.status(400).json({ message: 'Invalid game ID' });
       }
       
-      // Return empty array to avoid errors
-      res.json([]);
+      const category = req.query.category as string | undefined;
+      let tags: string[] | undefined;
+      
+      if (req.query.tags) {
+        tags = (req.query.tags as string).split(',');
+      }
+      
+      const relatedGames = await storage.getRelatedGames(gameId, category, tags);
+      res.json(relatedGames);
     } catch (error) {
       console.error('Error processing related games request:', error);
       res.status(500).json({ message: 'Failed to fetch related games' });
