@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -161,7 +161,7 @@ export default function InstallPage() {
   };
   
   // Simple CAPTCHA generator - in a real app, this would use a service like reCAPTCHA
-  const generateCaptcha = () => {
+  const generateCaptcha = useCallback(() => {
     const chars = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ';
     let result = '';
     for (let i = 0; i < 6; i++) {
@@ -169,13 +169,19 @@ export default function InstallPage() {
     }
     setCaptchaValue(result);
     return result;
-  };
+  }, []);
+  
+  // Generate CAPTCHA on component mount
+  useEffect(() => {
+    generateCaptcha();
+  }, [generateCaptcha]);
   
   // Redirect if already installed
-  if (installStatus?.installed) {
-    setLocation('/');
-    return null;
-  }
+  useEffect(() => {
+    if (installStatus?.installed) {
+      setLocation('/');
+    }
+  }, [installStatus?.installed, setLocation]);
   
   if (isCheckingStatus) {
     return (
@@ -480,7 +486,7 @@ export default function InstallPage() {
                         <Label htmlFor="captcha">Security Verification</Label>
                         <div className="flex space-x-2">
                           <div className="bg-primary/10 flex items-center justify-center px-4 py-2 rounded font-mono text-lg tracking-widest">
-                            {generateCaptcha()}
+                            {captchaValue}
                           </div>
                           <Button 
                             type="button" 
