@@ -20,9 +20,12 @@ export default function BlogPage() {
   });
   
   // Fetch blog posts based on active category and search query
-  const { data: posts = [], isLoading } = useQuery<BlogPost[]>({
+  const { data, isLoading } = useQuery<{ posts: BlogPost[], totalPosts: number, totalPages: number }>({
     queryKey: ['/api/blog/posts', { category: activeCategory, search: searchQuery }],
   });
+  
+  // Extract posts array from the response
+  const posts = data?.posts || [];
   
   // Fetch active push notifications
   const { data: notifications = [] } = useQuery<PushNotificationType[]>({
