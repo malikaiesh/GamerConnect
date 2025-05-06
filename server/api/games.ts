@@ -72,6 +72,38 @@ function transformGameMonetizeData(apiGame: any) {
 }
 
 export function registerGameRoutes(app: Express) {
+  // Get all games with filtering and pagination
+  app.get('/api/games', async (req: Request, res: Response) => {
+    try {
+      const page = req.query.page ? parseInt(req.query.page as string) : 1;
+      const limit = req.query.limit ? parseInt(req.query.limit as string) : 10;
+      const search = req.query.search as string | undefined;
+      const category = req.query.category as string | undefined;
+      const status = req.query.status as string | undefined;
+      const source = req.query.source as string | undefined;
+      
+      // Handle our special "all_*" filter values
+      const categoryParam = category === 'all_categories' ? undefined : category;
+      const statusParam = status === 'all_statuses' ? undefined : status;
+      const sourceParam = source === 'all' ? undefined : source;
+      
+      const options = {
+        page,
+        limit,
+        search,
+        category: categoryParam,
+        status: statusParam,
+        source: sourceParam
+      };
+      
+      const result = await storage.getGames(options);
+      res.json(result);
+    } catch (error) {
+      console.error('Error fetching games:', error);
+      res.status(500).json({ message: 'Failed to fetch games' });
+    }
+  });
+
   // Get game categories
   app.get('/api/games/categories', async (req: Request, res: Response) => {
     try {

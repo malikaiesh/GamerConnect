@@ -60,8 +60,16 @@ export default function GamesAdminPage() {
     queryFn: async () => {
       let url = `/api/games?page=${page}&limit=${limit}`;
       if (search) url += `&search=${encodeURIComponent(search)}`;
-      if (category) url += `&category=${encodeURIComponent(category)}`;
-      if (status) url += `&status=${encodeURIComponent(status)}`;
+      
+      // Only send category if it's not the "all categories" option
+      if (category && category !== "all_categories") {
+        url += `&category=${encodeURIComponent(category)}`;
+      }
+      
+      // Only send status if it's not the "all statuses" option
+      if (status && status !== "all_statuses") {
+        url += `&status=${encodeURIComponent(status)}`;
+      }
       
       const res = await fetch(url);
       if (!res.ok) throw new Error("Failed to fetch games");
