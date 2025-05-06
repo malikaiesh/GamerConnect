@@ -4,6 +4,7 @@ import path from 'path';
 import { scrypt, randomBytes } from 'crypto';
 import { promisify } from 'util';
 import { z } from 'zod';
+import { eq } from 'drizzle-orm';
 import { db, pool } from '../../db'; // Importing from our existing db config
 import { siteSettings, users } from '@shared/schema';
 
@@ -96,38 +97,55 @@ async function hashPassword(password: string): Promise<string> {
 async function initializeDatabase(dbConfig: any, adminData: any, siteData: any): Promise<void> {
   try {
     // We'll use the existing db connection
-    // Create the admin user
-    const hashedPassword = await hashPassword(adminData.password);
+    // Check if admin user already exists
+    const existingUsers = await db.select().from(users).where(eq(users.username, adminData.username));
     
-    // Insert admin user
-    await db.insert(users).values({
-      username: adminData.username,
-      password: hashedPassword,
-      email: adminData.email,
-      isAdmin: true,
-      createdAt: new Date()
-    });
+    // Only create admin user if it doesn't already exist
+    if (existingUsers.length === 0) {
+      console.log('Creating new admin user');
+      const hashedPassword = await hashPassword(adminData.password);
+      
+      // Insert admin user
+      await db.insert(users).values({
+        username: adminData.username,
+        password: hashedPassword,
+        email: adminData.email,
+        isAdmin: true,
+        createdAt: new Date()
+      });
+    } else {
+      console.log('Admin user already exists, skipping creation');
+    }
     
-    // Insert site settings
-    await db.insert(siteSettings).values({
-      name: siteData.name,
-      description: siteData.description,
-      siteUrl: siteData.url,
-      logoUrl: '/logo.png',
-      favicon: '/favicon.ico',
-      metaTitle: siteData.name,
-      metaDescription: siteData.description,
-      ogTitle: siteData.name,
-      ogDescription: siteData.description,
-      ogImage: '/og-image.jpg',
-      twitterHandle: '',
-      googleAnalyticsId: '',
-      footerText: `© ${new Date().getFullYear()} ${siteData.name}. All rights reserved.`,
-      theme: 'modern',
-      colorScheme: 'light',
-      createdAt: new Date(),
-      updatedAt: new Date()
-    });
+    // Check if site settings already exist
+    const existingSettings = await db.select().from(siteSettings);
+    
+    // Only create site settings if they don't already exist
+    if (existingSettings.length === 0) {
+      console.log('Creating new site settings');
+      // Insert site settings
+      await db.insert(siteSettings).values({
+        name: siteData.name,
+        description: siteData.description,
+        siteUrl: siteData.url,
+        logoUrl: '/logo.png',
+        favicon: '/favicon.ico',
+        metaTitle: siteData.name,
+        metaDescription: siteData.description,
+        ogTitle: siteData.name,
+        ogDescription: siteData.description,
+        ogImage: '/og-image.jpg',
+        twitterHandle: '',
+        googleAnalyticsId: '',
+        footerText: `© ${new Date().getFullYear()} ${siteData.name}. All rights reserved.`,
+        theme: 'modern',
+        colorScheme: 'light',
+        createdAt: new Date(),
+        updatedAt: new Date()
+      });
+    } else {
+      console.log('Site settings already exist, skipping creation');
+    }
   } catch (error) {
     throw new Error(`Failed to initialize database: ${error}`);
   }
