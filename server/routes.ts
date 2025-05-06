@@ -8,6 +8,7 @@ import { registerAnalyticsRoutes } from "./api/analytics";
 import { registerNotificationsRoutes } from "./api/notifications";
 import { registerHomePageContentRoutes } from "./api/homepage-content";
 import { registerInstallRoutes } from "./api/install";
+import { registerUploadRoutes } from "./api/upload";
 import { storage } from "./storage";
 import fs from "fs/promises";
 import path from "path";
@@ -87,6 +88,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   registerAnalyticsRoutes(app);
   registerNotificationsRoutes(app);
   registerHomePageContentRoutes(app);
+  registerUploadRoutes(app);
 
   // Serve ads.txt file if configured
   app.get('/ads.txt', async (req, res) => {
