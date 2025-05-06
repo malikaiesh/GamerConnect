@@ -253,11 +253,11 @@ class DatabaseStorage implements IStorage {
     return result;
   }
 
-  async getFeaturedGames(limit = 8): Promise<Game[]> {
+  async getFeaturedGames(limit = 10): Promise<Game[]> {
     return db.select().from(games).where(eq(games.status, 'featured')).orderBy(desc(games.createdAt)).limit(limit);
   }
 
-  async getPopularGames(category?: string, limit = 10): Promise<Game[]> {
+  async getPopularGames(category?: string, limit = 20): Promise<Game[]> {
     let query = db.select().from(games).where(eq(games.status, 'active'));
     
     if (category && category !== 'all') {
