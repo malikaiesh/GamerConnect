@@ -59,13 +59,12 @@ const AdminHelperNav = () => {
 
 function App() {
   return (
-    <Providers>
-      <ThemeProvider defaultTheme="modern" defaultMode="light">
+    <ThemeProvider defaultTheme="modern" defaultMode="light">
+      <Providers>
         <AdminHelperNav />
         <Router />
-        <Toaster />
-      </ThemeProvider>
-    </Providers>
+      </Providers>
+    </ThemeProvider>
   );
 }
 
