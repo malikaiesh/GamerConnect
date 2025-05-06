@@ -20,11 +20,13 @@ export default function HomePage() {
   // Fetch featured games
   const { data: featuredGames = [], isLoading: loadingFeatured } = useQuery<Game[]>({
     queryKey: ['/api/games/featured'],
+    staleTime: 5 * 60 * 1000, // 5 minutes
   });
   
   // Fetch popular games based on active category
   const { data: popularGames = [], isLoading: loadingPopular } = useQuery<Game[]>({
     queryKey: ['/api/games/popular', { category: activeCategory }],
+    staleTime: 5 * 60 * 1000, // 5 minutes
   });
   
   // Fetch blog posts
