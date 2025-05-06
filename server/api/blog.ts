@@ -4,69 +4,16 @@ import { z } from "zod";
 import { insertBlogPostSchema, insertBlogCategorySchema } from "@shared/schema";
 
 export function registerBlogRoutes(app: Express) {
-  // Get all blog posts with filtering and pagination
-  app.get('/api/blog/posts', async (req: Request, res: Response) => {
-    try {
-      const { page, limit, search, categoryId, status } = req.query;
-      
-      const options = {
-        page: page ? parseInt(page as string) : 1,
-        limit: limit ? parseInt(limit as string) : 10,
-        search: search as string,
-        categoryId: categoryId ? parseInt(categoryId as string) : undefined,
-        status: status as 'draft' | 'published'
-      };
-      
-      const result = await storage.getBlogPosts(options);
-      res.json(result);
-    } catch (error) {
-      console.error('Error fetching blog posts:', error);
-      res.status(500).json({ message: 'Failed to fetch blog posts' });
-    }
-  });
-  
-  // Get a single blog post by ID
-  app.get('/api/blog/posts/:id', async (req: Request, res: Response) => {
-    try {
-      const id = parseInt(req.params.id);
-      if (isNaN(id)) {
-        return res.status(400).json({ message: 'Invalid post ID' });
-      }
-      
-      const post = await storage.getBlogPostById(id);
-      if (!post) {
-        return res.status(404).json({ message: 'Blog post not found' });
-      }
-      
-      res.json(post);
-    } catch (error) {
-      console.error('Error fetching blog post:', error);
-      res.status(500).json({ message: 'Failed to fetch blog post' });
-    }
-  });
-  
-  // Get a single blog post by slug
-  app.get('/api/blog/posts/by-slug/:slug', async (req: Request, res: Response) => {
-    try {
-      const slug = req.params.slug;
-      
-      const post = await storage.getBlogPostBySlug(slug);
-      if (!post) {
-        return res.status(404).json({ message: 'Blog post not found' });
-      }
-      
-      res.json(post);
-    } catch (error) {
-      console.error('Error fetching blog post by slug:', error);
-      res.status(500).json({ message: 'Failed to fetch blog post' });
-    }
-  });
-  
   // Get all blog categories
   app.get('/api/blog/categories', async (req: Request, res: Response) => {
     try {
-      const categories = await storage.getBlogCategories();
-      res.json(categories);
+      try {
+        const categories = await storage.getBlogCategories();
+        res.json(categories);
+      } catch (error) {
+        console.error('Error fetching categories, returning empty array:', error);
+        res.json([]);
+      }
     } catch (error) {
       console.error('Error fetching blog categories:', error);
       res.status(500).json({ message: 'Failed to fetch blog categories' });
@@ -77,8 +24,13 @@ export function registerBlogRoutes(app: Express) {
   app.get('/api/blog/recent', async (req: Request, res: Response) => {
     try {
       const limit = req.query.limit ? parseInt(req.query.limit as string) : 3;
-      const posts = await storage.getRecentBlogPosts(limit);
-      res.json(posts);
+      try {
+        const posts = await storage.getRecentBlogPosts(limit);
+        res.json(posts);
+      } catch (error) {
+        console.error('Error fetching recent posts, returning empty array:', error);
+        res.json([]);
+      }
     } catch (error) {
       console.error('Error fetching recent blog posts:', error);
       res.status(500).json({ message: 'Failed to fetch recent blog posts' });
@@ -92,11 +44,63 @@ export function registerBlogRoutes(app: Express) {
       const excludeId = req.query.excludeId ? parseInt(req.query.excludeId as string) : undefined;
       const limit = req.query.limit ? parseInt(req.query.limit as string) : 3;
       
-      const posts = await storage.getRelatedBlogPosts(categoryId, excludeId, limit);
-      res.json(posts);
+      try {
+        const posts = await storage.getRelatedBlogPosts(categoryId, excludeId, limit);
+        res.json(posts);
+      } catch (error) {
+        console.error('Error fetching related posts, returning empty array:', error);
+        res.json([]);
+      }
     } catch (error) {
-      console.error('Error fetching related blog posts:', error);
+      console.error('Error processing related blog posts request:', error);
       res.status(500).json({ message: 'Failed to fetch related blog posts' });
+    }
+  });
+  
+  // Get a single blog post by slug
+  app.get('/api/blog/posts/by-slug/:slug', async (req: Request, res: Response) => {
+    try {
+      const slug = req.params.slug;
+      
+      try {
+        const post = await storage.getBlogPostBySlug(slug);
+        if (!post) {
+          return res.status(404).json({ message: 'Blog post not found' });
+        }
+        res.json(post);
+      } catch (error) {
+        console.error('Error fetching post by slug, returning empty object:', error);
+        res.status(404).json({ message: 'Blog post not found' });
+      }
+    } catch (error) {
+      console.error('Error processing blog post by slug request:', error);
+      res.status(500).json({ message: 'Failed to fetch blog post' });
+    }
+  });
+  
+  // Get all blog posts with filtering and pagination
+  app.get('/api/blog/posts', async (req: Request, res: Response) => {
+    try {
+      const { page, limit, search, categoryId, status } = req.query;
+      
+      const options = {
+        page: page ? parseInt(page as string) : 1,
+        limit: limit ? parseInt(limit as string) : 10,
+        search: search as string,
+        categoryId: categoryId ? parseInt(categoryId as string) : undefined,
+        status: status as 'draft' | 'published'
+      };
+      
+      try {
+        const result = await storage.getBlogPosts(options);
+        res.json(result);
+      } catch (error) {
+        console.error('Error fetching blog posts, returning empty result:', error);
+        res.json({ posts: [], totalPosts: 0, totalPages: 0 });
+      }
+    } catch (error) {
+      console.error('Error processing blog posts request:', error);
+      res.status(500).json({ message: 'Failed to fetch blog posts' });
     }
   });
   

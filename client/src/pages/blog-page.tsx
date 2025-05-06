@@ -79,11 +79,11 @@ export default function BlogPage() {
       <Header />
       
       {/* Blog Hero Section */}
-      <section className="bg-gradient-to-r from-primary-700 to-primary-500 dark:from-primary-900 dark:to-primary-700 text-white py-10">
+      <section className="bg-primary text-primary-foreground py-10">
         <div className="container mx-auto px-4">
           <div className="max-w-2xl mx-auto text-center">
             <h1 className="heading-xl mb-4">Gaming Blog</h1>
-            <p className="text-lg mb-6">
+            <p className="text-lg mb-6 opacity-90">
               The latest news, reviews, and insights from the gaming world.
             </p>
             
@@ -93,11 +93,11 @@ export default function BlogPage() {
                 <input 
                   type="text" 
                   placeholder="Search blog posts..." 
-                  className="w-full py-3 px-4 pl-12 rounded-lg text-foreground bg-white/90 backdrop-blur-sm border-0 focus:ring-2 focus:ring-white"
+                  className="w-full py-3 px-4 pl-12 rounded-lg text-foreground bg-background/90 backdrop-blur-sm border-0 focus:ring-2 focus:ring-primary"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                 />
-                <i className="ri-search-line absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-500"></i>
+                <i className="ri-search-line absolute left-4 top-1/2 transform -translate-y-1/2 text-muted-foreground"></i>
               </div>
             </form>
           </div>
