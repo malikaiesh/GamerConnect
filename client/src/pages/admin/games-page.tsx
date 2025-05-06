@@ -47,8 +47,8 @@ export default function GamesAdminPage() {
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(10);
   const [search, setSearch] = useState("");
-  const [category, setCategory] = useState("");
-  const [status, setStatus] = useState("");
+  const [category, setCategory] = useState("all_categories");
+  const [status, setStatus] = useState("all_statuses");
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
@@ -165,7 +165,7 @@ export default function GamesAdminPage() {
               <SelectValue placeholder="All Categories" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="">All Categories</SelectItem>
+              <SelectItem value="all_categories">All Categories</SelectItem>
               {categories.map((cat: string) => (
                 <SelectItem key={cat} value={cat}>{cat}</SelectItem>
               ))}
@@ -177,7 +177,7 @@ export default function GamesAdminPage() {
               <SelectValue placeholder="All Status" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="">All Status</SelectItem>
+              <SelectItem value="all_statuses">All Status</SelectItem>
               <SelectItem value="active">Active</SelectItem>
               <SelectItem value="inactive">Inactive</SelectItem>
               <SelectItem value="featured">Featured</SelectItem>
