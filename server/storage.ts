@@ -235,22 +235,81 @@ class DatabaseStorage implements IStorage {
   }
 
   async getRelatedGames(gameId: number, category?: string, tags?: string[]): Promise<Game[]> {
-    let query = db.select().from(games).where(and(
-      eq(games.status, 'active'),
-      games.id !== gameId
-    )).limit(4);
-    
+    // First, try to get games in the same category
+    let categorySimilarGames: Game[] = [];
     if (category) {
-      query = query.where(eq(games.category, category));
+      const categoryGames = await db.select().from(games)
+        .where(and(
+          eq(games.status, 'active'),
+          eq(games.category, category)
+        ))
+        .orderBy(desc(games.rating))
+        .limit(10);
+      
+      // Filter out the current game
+      categorySimilarGames = categoryGames.filter(game => game.id !== gameId).slice(0, 6);
     }
     
-    // Get games with similar tags if provided
-    const result = await query;
-
-    // If we have tags and not enough results, we could do more complex tag matching
-    // For now, we'll just return what we have
+    // If we have tags, try to find games with at least one matching tag
+    let tagSimilarGames: Game[] = [];
+    if (tags && tags.length > 0) {
+      // Get all active games
+      const allGames = await db.select().from(games)
+        .where(eq(games.status, 'active'));
+      
+      // Filter out the current game and games with no matching tags
+      const filteredGames = allGames.filter(game => game.id !== gameId);
+      
+      // Filter games with matching tags and score them by number of matching tags
+      const gamesWithTagScore = filteredGames.map(game => {
+        if (!game.tags || !Array.isArray(game.tags)) return { game, score: 0 };
+        
+        const matchingTagsCount = game.tags.filter(tag => 
+          tags.includes(tag)
+        ).length;
+        
+        return { game, score: matchingTagsCount };
+      }).filter(item => item.score > 0);
+      
+      // Sort by score (number of matching tags) and limit
+      tagSimilarGames = gamesWithTagScore
+        .sort((a, b) => b.score - a.score)
+        .slice(0, 6)
+        .map(item => item.game);
+    }
     
-    return result;
+    // Combine and deduplicate results
+    const allRelatedGames = [...categorySimilarGames, ...tagSimilarGames];
+    const uniqueGamesMap = new Map<number, Game>();
+    
+    allRelatedGames.forEach(game => {
+      if (!uniqueGamesMap.has(game.id)) {
+        uniqueGamesMap.set(game.id, game);
+      }
+    });
+    
+    // If we don't have enough games, add popular games in different categories
+    if (uniqueGamesMap.size < 4) {
+      const popularGames = await db.select().from(games)
+        .where(eq(games.status, 'active'))
+        .orderBy(desc(games.plays))
+        .limit(20);
+      
+      // Filter out the current game and games we already have
+      // Also filter out games from the same category if we want variety
+      const filteredPopularGames = popularGames.filter(game => 
+        game.id !== gameId && 
+        !uniqueGamesMap.has(game.id) && 
+        (!category || category !== game.category)
+      ).slice(0, 8 - uniqueGamesMap.size);
+      
+      filteredPopularGames.forEach(game => {
+        uniqueGamesMap.set(game.id, game);
+      });
+    }
+    
+    // Convert map back to array and limit to 8 total related games
+    return Array.from(uniqueGamesMap.values()).slice(0, 8);
   }
 
   async getFeaturedGames(limit = 10): Promise<Game[]> {
