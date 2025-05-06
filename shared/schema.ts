@@ -8,6 +8,7 @@ export const gameSourceEnum = pgEnum('game_source', ['api', 'custom']);
 export const gameStatusEnum = pgEnum('game_status', ['active', 'inactive', 'featured']);
 export const blogStatusEnum = pgEnum('blog_status', ['draft', 'published']);
 export const notificationTypeEnum = pgEnum('notification_type', ['alert', 'banner', 'modal', 'slide-in', 'toast']);
+export const contentStatusEnum = pgEnum('content_status', ['active', 'inactive']);
 
 // Users table
 export const users = pgTable('users', {
@@ -122,6 +123,17 @@ export const analytics = pgTable('analytics', {
   topPages: json('top_pages').default({}).notNull()
 });
 
+// HomePage Content table
+export const homePageContent = pgTable('homepage_content', {
+  id: serial('id').primaryKey(),
+  title: text('title').notNull(),
+  content: text('content').notNull(),
+  position: integer('position').default(0).notNull(),
+  status: contentStatusEnum('status').default('active').notNull(),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+  updatedAt: timestamp('updated_at').defaultNow().notNull()
+});
+
 // Define relations
 export const gamesRelations = relations(games, ({ many }) => ({
   ratings: many(ratings)
@@ -189,6 +201,11 @@ export const insertPushNotificationSchema = createInsertSchema(pushNotifications
   image: (schema) => schema.url("Image must be a valid URL").optional().nullable()
 });
 
+export const insertHomePageContentSchema = createInsertSchema(homePageContent, {
+  title: (schema) => schema.min(3, "Title must be at least 3 characters"),
+  content: (schema) => schema.min(50, "Content must be at least 50 characters")
+});
+
 // Types for TypeScript
 export type User = typeof users.$inferSelect;
 export type InsertUser = z.infer<typeof insertUserSchema>;
@@ -212,3 +229,6 @@ export type PushNotification = typeof pushNotifications.$inferSelect;
 export type InsertPushNotification = z.infer<typeof insertPushNotificationSchema>;
 
 export type Analytic = typeof analytics.$inferSelect;
+
+export type HomePageContent = typeof homePageContent.$inferSelect;
+export type InsertHomePageContent = z.infer<typeof insertHomePageContentSchema>;

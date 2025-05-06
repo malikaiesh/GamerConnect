@@ -17,6 +17,8 @@ import {
   InsertSiteSetting,
   PushNotification,
   InsertPushNotification,
+  HomePageContent,
+  InsertHomePageContent,
   Analytic,
   users,
   games,
@@ -25,6 +27,7 @@ import {
   ratings,
   siteSettings,
   pushNotifications,
+  homePageContent,
   analytics
 } from "@shared/schema";
 
@@ -85,6 +88,14 @@ export interface IStorage {
   
   // Analytics methods
   getAnalytics(timeframe: string): Promise<any>;
+  
+  // Homepage Content methods
+  getHomePageContents(): Promise<HomePageContent[]>;
+  getActiveHomePageContents(): Promise<HomePageContent[]>;
+  getHomePageContentById(id: number): Promise<HomePageContent | null>;
+  createHomePageContent(content: Omit<InsertHomePageContent, "createdAt" | "updatedAt">): Promise<HomePageContent>;
+  updateHomePageContent(id: number, content: Partial<InsertHomePageContent>): Promise<HomePageContent | null>;
+  deleteHomePageContent(id: number): Promise<boolean>;
   
   // Session store
   sessionStore: session.Store;
