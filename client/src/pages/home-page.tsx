@@ -86,26 +86,26 @@ export default function HomePage() {
       <Header />
       
       {/* Hero Section */}
-      <section className="bg-gradient-to-r from-primary-700 to-primary-500 dark:from-primary-900 dark:to-primary-700 text-white py-12">
+      <section className="bg-primary text-primary-foreground py-12">
         <div className="container mx-auto px-4">
           <div className="flex flex-col md:flex-row items-center justify-between">
             <div className="md:w-1/2 mb-8 md:mb-0">
               <h1 className="heading-xl mb-4">Play the Best Free Online Games</h1>
-              <p className="text-lg md:text-xl mb-6 text-gray-100">
+              <p className="text-lg md:text-xl mb-6 opacity-90">
                 Discover thousands of free games across all genres. No downloads required - play instantly in your browser!
               </p>
               <div className="flex space-x-4">
                 <Link href="#games" className="btn-secondary">
                   Play Now
                 </Link>
-                <Link href="#categories" className="bg-white/20 hover:bg-white/30 text-white font-bold py-3 px-6 rounded-lg transition-colors backdrop-blur-sm">
+                <Link href="#categories" className="bg-white/20 hover:bg-white/30 text-primary-foreground font-bold py-3 px-6 rounded-lg transition-colors backdrop-blur-sm">
                   Browse Categories
                 </Link>
               </div>
             </div>
             <div className="md:w-1/2 relative">
               <img src="https://images.unsplash.com/photo-1588495752527-77d65c21f7cd?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&h=400&q=80" alt="Gaming controller with colorful game elements" className="rounded-xl shadow-2xl" />
-              <div className="absolute -top-4 -right-4 bg-accent text-white text-lg font-bold py-2 px-4 rounded-lg shadow-lg transform rotate-3">
+              <div className="absolute -top-4 -right-4 bg-accent text-accent-foreground text-lg font-bold py-2 px-4 rounded-lg shadow-lg transform rotate-3">
                 New Games Daily!
               </div>
             </div>
@@ -219,30 +219,30 @@ export default function HomePage() {
       </section>
       
       {/* App Download Section */}
-      <section className="py-12 bg-gradient-to-r from-primary-600 to-primary-800 dark:from-primary-800 dark:to-primary-900 text-white">
+      <section className="py-12 bg-primary text-primary-foreground">
         <div className="container mx-auto px-4">
           <div className="flex flex-col md:flex-row items-center justify-between">
             <div className="md:w-1/2 mb-8 md:mb-0">
               <h2 className="heading-lg mb-4">Take GameZone With You Anywhere</h2>
-              <p className="text-lg md:text-xl mb-6 text-gray-100">
+              <p className="text-lg md:text-xl mb-6 opacity-90">
                 Download our mobile app and play your favorite games on the go. Available on iOS, Android, and Amazon devices.
               </p>
               <div className="flex flex-wrap gap-4">
-                <a href="#" className="flex items-center bg-black hover:bg-gray-900 text-white px-5 py-3 rounded-lg transition-colors">
+                <a href="#" className="flex items-center bg-background text-foreground hover:bg-muted px-5 py-3 rounded-lg transition-colors">
                   <i className="ri-app-store-fill text-3xl mr-3"></i>
                   <div>
                     <div className="text-xs">Download on the</div>
                     <div className="text-lg font-semibold">App Store</div>
                   </div>
                 </a>
-                <a href="#" className="flex items-center bg-black hover:bg-gray-900 text-white px-5 py-3 rounded-lg transition-colors">
+                <a href="#" className="flex items-center bg-background text-foreground hover:bg-muted px-5 py-3 rounded-lg transition-colors">
                   <i className="ri-google-play-fill text-3xl mr-3"></i>
                   <div>
                     <div className="text-xs">Get it on</div>
                     <div className="text-lg font-semibold">Google Play</div>
                   </div>
                 </a>
-                <a href="#" className="flex items-center bg-black hover:bg-gray-900 text-white px-5 py-3 rounded-lg transition-colors">
+                <a href="#" className="flex items-center bg-background text-foreground hover:bg-muted px-5 py-3 rounded-lg transition-colors">
                   <i className="ri-amazon-fill text-3xl mr-3"></i>
                   <div>
                     <div className="text-xs">Available at</div>
