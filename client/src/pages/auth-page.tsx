@@ -92,14 +92,14 @@ export default function AuthPage() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col md:flex-row bg-background">
+    <div className="min-h-screen flex flex-col md:flex-row" style={{backgroundColor: "#f0f0f0"}}>
       {/* Hero Section */}
-      <div className="w-full md:w-1/2 bg-gradient-to-r from-primary-700 to-primary-500 p-10 flex items-center justify-center">
+      <div className="w-full md:w-1/2 bg-blue-600 p-10 flex items-center justify-center">
         <div className="max-w-md text-white">
           <div className="flex items-center space-x-2 mb-8">
             <i className="ri-gamepad-line text-white text-4xl"></i>
             <h1 className="text-3xl font-bold font-poppins">
-              Game<span className="text-secondary">Zone</span>
+              Game<span className="text-yellow-300">Zone</span>
             </h1>
           </div>
           <h2 className="text-3xl md:text-4xl font-bold mb-4">The Ultimate Gaming Experience!</h2>
@@ -131,8 +131,8 @@ export default function AuthPage() {
       </div>
 
       {/* Form Section */}
-      <div className="w-full md:w-1/2 p-6 md:p-10 flex items-center justify-center">
-        <Card className="w-full max-w-md bg-white dark:bg-gray-800 text-black dark:text-white">
+      <div className="w-full md:w-1/2 p-6 md:p-10 flex items-center justify-center bg-white">
+        <Card className="w-full max-w-md shadow-lg border border-gray-200">
           <CardHeader>
             <CardTitle className="text-2xl text-center text-black dark:text-white">Welcome to GameZone</CardTitle>
             <CardDescription className="text-center text-gray-600 dark:text-gray-300">
@@ -159,9 +159,14 @@ export default function AuthPage() {
                       name="username"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel className="text-black dark:text-white">Username</FormLabel>
+                          <FormLabel className="text-black font-medium">Username</FormLabel>
                           <FormControl>
-                            <Input className="bg-white dark:bg-gray-700 text-black dark:text-white" placeholder="Enter your username" {...field} />
+                            <Input 
+                              className="bg-white border-gray-300 text-black" 
+                              style={{color: 'black'}}
+                              placeholder="Enter your username" 
+                              {...field} 
+                            />
                           </FormControl>
                           <FormMessage className="text-red-500" />
                         </FormItem>
@@ -173,9 +178,15 @@ export default function AuthPage() {
                       name="password"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel className="text-black dark:text-white">Password</FormLabel>
+                          <FormLabel className="text-black font-medium">Password</FormLabel>
                           <FormControl>
-                            <Input className="bg-white dark:bg-gray-700 text-black dark:text-white" type="password" placeholder="Enter your password" {...field} />
+                            <Input 
+                              className="bg-white border-gray-300 text-black" 
+                              style={{color: 'black'}}
+                              type="password" 
+                              placeholder="Enter your password" 
+                              {...field} 
+                            />
                           </FormControl>
                           <FormMessage className="text-red-500" />
                         </FormItem>
@@ -184,7 +195,7 @@ export default function AuthPage() {
 
                     <Button
                       type="submit"
-                      className="w-full"
+                      className="w-full bg-blue-600 hover:bg-blue-700"
                       disabled={loginMutation.isPending}
                     >
                       {loginMutation.isPending && (
@@ -205,9 +216,14 @@ export default function AuthPage() {
                       name="username"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel className="text-black dark:text-white">Username</FormLabel>
+                          <FormLabel className="text-black font-medium">Username</FormLabel>
                           <FormControl>
-                            <Input className="bg-white dark:bg-gray-700 text-black dark:text-white" placeholder="Choose a username" {...field} />
+                            <Input 
+                              className="bg-white border-gray-300 text-black" 
+                              style={{color: 'black'}}
+                              placeholder="Choose a username" 
+                              {...field} 
+                            />
                           </FormControl>
                           <FormMessage className="text-red-500" />
                         </FormItem>
@@ -219,9 +235,15 @@ export default function AuthPage() {
                       name="password"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel className="text-black dark:text-white">Password</FormLabel>
+                          <FormLabel className="text-black font-medium">Password</FormLabel>
                           <FormControl>
-                            <Input className="bg-white dark:bg-gray-700 text-black dark:text-white" type="password" placeholder="Create a password" {...field} />
+                            <Input 
+                              className="bg-white border-gray-300 text-black" 
+                              style={{color: 'black'}}
+                              type="password" 
+                              placeholder="Create a password" 
+                              {...field} 
+                            />
                           </FormControl>
                           <FormMessage className="text-red-500" />
                         </FormItem>
@@ -233,9 +255,15 @@ export default function AuthPage() {
                       name="confirmPassword"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel className="text-black dark:text-white">Confirm Password</FormLabel>
+                          <FormLabel className="text-black font-medium">Confirm Password</FormLabel>
                           <FormControl>
-                            <Input className="bg-white dark:bg-gray-700 text-black dark:text-white" type="password" placeholder="Confirm your password" {...field} />
+                            <Input 
+                              className="bg-white border-gray-300 text-black" 
+                              style={{color: 'black'}}
+                              type="password" 
+                              placeholder="Confirm your password" 
+                              {...field} 
+                            />
                           </FormControl>
                           <FormMessage className="text-red-500" />
                         </FormItem>
@@ -244,7 +272,7 @@ export default function AuthPage() {
 
                     <Button
                       type="submit"
-                      className="w-full"
+                      className="w-full bg-blue-600 hover:bg-blue-700"
                       disabled={registerMutation.isPending}
                     >
                       {registerMutation.isPending && (
