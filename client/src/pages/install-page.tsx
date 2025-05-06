@@ -605,6 +605,18 @@ export default function InstallPage() {
                           I agree to the terms and conditions
                         </label>
                       </div>
+                      
+                      {/* Validation errors summary */}
+                      {Object.keys(form.formState.errors).length > 0 && (
+                        <div className="mt-4 p-4 border border-destructive/50 rounded-md bg-destructive/10">
+                          <h4 className="font-medium text-destructive mb-2">Please fix the following errors:</h4>
+                          <ul className="list-disc pl-5 space-y-1 text-sm text-destructive">
+                            {Object.entries(form.formState.errors).map(([field, error]) => (
+                              <li key={field}>{error?.message}</li>
+                            ))}
+                          </ul>
+                        </div>
+                      )}
                     </div>
                   </TabsContent>
                 </Tabs>
@@ -627,8 +639,47 @@ export default function InstallPage() {
                 ) : (
                   <Button 
                     type="button"
-                    onClick={() => {
+                    onClick={async () => {
                       console.log('Complete Installation button clicked');
+                      
+                      // Manually validate all required fields
+                      const hasDbUser = !!form.getValues().db_user;
+                      const hasDbPassword = !!form.getValues().db_password;
+                      const hasAdminPassword = !!form.getValues().admin_password && form.getValues().admin_password.length >= 6;
+                      const hasAdminEmail = !!form.getValues().admin_email && /\S+@\S+\.\S+/.test(form.getValues().admin_email);
+                      
+                      let hasErrors = false;
+                      
+                      // Highlight errors for missing fields
+                      if (!hasDbUser) {
+                        form.setError('db_user', { message: 'Database username is required' });
+                        hasErrors = true;
+                      }
+                      
+                      if (!hasDbPassword) {
+                        form.setError('db_password', { message: 'Database password is required' });
+                        hasErrors = true;
+                      }
+                      
+                      if (!hasAdminPassword) {
+                        form.setError('admin_password', { message: 'Admin password is required and must be at least 6 characters' });
+                        hasErrors = true;
+                      }
+                      
+                      if (!hasAdminEmail) {
+                        form.setError('admin_email', { message: 'Admin email is required and must be valid' });
+                        hasErrors = true;
+                      }
+                      
+                      if (hasErrors) {
+                        toast({
+                          title: "Please fix the errors",
+                          description: "Some required fields are missing or invalid",
+                          variant: "destructive",
+                        });
+                        return;
+                      }
+                      
                       // Get all form data
                       const formData = form.getValues();
                       // Set CAPTCHA value
