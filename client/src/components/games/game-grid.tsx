@@ -11,6 +11,8 @@ interface GameGridProps {
   hasMoreGames?: boolean;
   cardSize?: 'sm' | 'md' | 'lg';
   className?: string;
+  showRank?: boolean;
+  rankOffset?: number;
 }
 
 export function GameGrid({
@@ -21,7 +23,9 @@ export function GameGrid({
   onLoadMore,
   hasMoreGames = false,
   cardSize = 'md',
-  className = ''
+  className = '',
+  showRank = false,
+  rankOffset = 0
 }: GameGridProps) {
   const [gridCols, setGridCols] = useState(getColumnClass(columns));
   
@@ -84,11 +88,12 @@ export function GameGrid({
   return (
     <div className={className}>
       <div className={gridCols}>
-        {games.map((game) => (
+        {games.map((game, index) => (
           <GameCard 
             key={game.id} 
             game={game} 
             size={cardSize}
+            rank={showRank ? index + 1 + rankOffset : undefined}
           />
         ))}
       </div>

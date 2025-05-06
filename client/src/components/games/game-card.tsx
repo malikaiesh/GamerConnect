@@ -8,6 +8,7 @@ interface GameCardProps {
   showRating?: boolean;
   showCategory?: boolean;
   showPlays?: boolean;
+  rank?: number;
 }
 
 export function GameCard({ 
@@ -15,7 +16,8 @@ export function GameCard({
   size = 'md',
   showRating = true,
   showCategory = true,
-  showPlays = true
+  showPlays = true,
+  rank
 }: GameCardProps) {
   const calculateAverageRating = () => {
     if (game.ratingCount === 0) return 0;
