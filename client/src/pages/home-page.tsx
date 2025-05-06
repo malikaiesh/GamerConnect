@@ -8,6 +8,7 @@ import { GameGrid } from '@/components/games/game-grid';
 import { BlogList } from '@/components/blog/blog-list';
 import { Rating } from '@/components/ui/rating';
 import { PushNotification } from '@/components/push-notification';
+import { HomepageContent } from '@/components/home/homepage-content';
 import { Game, BlogPost, PushNotification as PushNotificationType } from '@shared/schema';
 import { apiRequest } from '@/lib/queryClient';
 
@@ -217,6 +218,16 @@ export default function HomePage() {
             loading={loadingBlog}
             columns={3}
           />
+        </div>
+      </section>
+      
+      {/* Homepage Content Section */}
+      <section className="py-10">
+        <div className="container mx-auto px-4">
+          <div className="mb-6">
+            <h2 className="heading-md text-center">About GameZone</h2>
+          </div>
+          <HomepageContent />
         </div>
       </section>
       

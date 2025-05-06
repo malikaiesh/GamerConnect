@@ -15,6 +15,7 @@ import AdminDashboard from "@/pages/admin/dashboard";
 import AdminGames from "@/pages/admin/games";
 import AdminBlog from "@/pages/admin/blog";
 import AdminSettings from "@/pages/admin/settings";
+import AdminHomepageContent from "@/pages/admin/homepage-content";
 import { Providers } from "./lib/providers";
 import { ProtectedRoute } from "./lib/protected-route";
 import { useAuth } from "@/hooks/use-auth";
