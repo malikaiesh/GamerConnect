@@ -316,7 +316,10 @@ export default function GamePage() {
                     <i className="ri-share-line mr-1"></i> Share
                   </button>
                 </div>
-                <button className="btn-primary">
+                <button 
+                  className="btn-primary"
+                  onClick={() => setShowPostGameModal(true)}
+                >
                   <i className="ri-restart-line mr-1"></i> Restart Game
                 </button>
               </div>
@@ -347,6 +350,15 @@ export default function GamePage() {
               window.location.href = activeNotification.link;
             }
           }}
+        />
+      )}
+      
+      {/* Post-Game Modal */}
+      {game && showPostGameModal && (
+        <PostGameModal 
+          game={game} 
+          isOpen={showPostGameModal}
+          onClose={() => setShowPostGameModal(false)}
         />
       )}
     </div>
