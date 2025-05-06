@@ -95,15 +95,28 @@ export function HomepageContentForm({
           render={({ field }) => (
             <FormItem>
               <FormLabel>Content</FormLabel>
-              <FormControl>
-                <Textarea 
-                  placeholder="Enter content text" 
-                  className="h-64 resize-none" 
-                  {...field} 
-                />
-              </FormControl>
+              <div className="space-y-4">
+                <div className="bg-muted p-3 rounded-md text-sm border">
+                  <div className="font-semibold mb-2">Formatting Guide:</div>
+                  <ul className="list-disc ml-5 space-y-1">
+                    <li><span className="font-semibold"># Heading 1</span> - For main headings</li>
+                    <li><span className="font-semibold">## Heading 2</span> - For sub-headings</li>
+                    <li><span className="font-semibold">**bold text**</span> - For bold text</li>
+                    <li><span className="font-semibold">Q: Your question?</span> - For FAQ questions</li>
+                    <li><span className="font-semibold">A: Your answer</span> - For FAQ answers</li>
+                  </ul>
+                </div>
+                <FormControl>
+                  <Textarea 
+                    placeholder="Enter content text with formatting" 
+                    className="min-h-80 font-mono text-sm" 
+                    {...field} 
+                  />
+                </FormControl>
+              </div>
               <FormDescription>
-                This content can be up to 3000 words. Use double line breaks to separate paragraphs.
+                This content can be up to 3000 words. Use double line breaks to separate paragraphs. 
+                Use the formatting guide above to create headings, subheadings, FAQs, and bold text.
               </FormDescription>
               <FormMessage />
             </FormItem>

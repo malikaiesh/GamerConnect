@@ -21,43 +21,91 @@ export function HomepageContent() {
     }));
   };
 
+  // Function to format text (bold)
+  const formatText = (text: string) => {
+    // Bold text: **text** -> <strong>text</strong>
+    return text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+  };
+
+  // Process paragraphs into formatted content
+  const processParagraphs = (paragraphs: string[]) => {
+    return paragraphs.map((paragraph, idx) => {
+      // Check for headings
+      if (paragraph.startsWith('# ')) {
+        return (
+          <h2 key={idx} className="text-2xl font-bold mt-6 mb-4">
+            {formatText(paragraph.substring(2))}
+          </h2>
+        );
+      }
+      
+      // Check for subheadings
+      if (paragraph.startsWith('## ')) {
+        return (
+          <h3 key={idx} className="text-xl font-semibold mt-5 mb-3">
+            {formatText(paragraph.substring(3))}
+          </h3>
+        );
+      }
+      
+      // Check for FAQ questions
+      if (paragraph.startsWith('Q: ')) {
+        return (
+          <div key={idx} className="font-medium text-lg mt-4 mb-2">
+            {formatText(paragraph)}
+          </div>
+        );
+      }
+      
+      // Check for FAQ answers
+      if (paragraph.startsWith('A: ')) {
+        return (
+          <div key={idx} className="pl-4 border-l-2 border-primary/30 mb-6 text-muted-foreground">
+            <div dangerouslySetInnerHTML={{ __html: formatText(paragraph) }} />
+          </div>
+        );
+      }
+      
+      // Regular paragraph
+      return (
+        <div key={idx} className="text-base leading-relaxed text-muted-foreground mb-4">
+          <div dangerouslySetInnerHTML={{ __html: formatText(paragraph) }} />
+        </div>
+      );
+    });
+  };
+
   // Function to render content with proper formatting
   const renderContent = (content: string, isExpanded: boolean) => {
+    // Split content into paragraphs
+    const paragraphs = content.split("\n\n");
+    
     // If not expanded, just show first 2-3 paragraphs (approximately 500 characters)
     if (!isExpanded) {
-      const paragraphs = content.split("\n\n");
       // Get first 2-3 paragraphs or approximately 500 characters
-      let displayContent = "";
-      let paragraphCount = 0;
+      let displayParagraphs: string[] = [];
+      let contentLength = 0;
       
       for (const paragraph of paragraphs) {
-        if (displayContent.length > 500 || paragraphCount >= 3) break;
-        displayContent += paragraph + "\n\n";
-        paragraphCount++;
+        if (contentLength > 500 || displayParagraphs.length >= 3) break;
+        displayParagraphs.push(paragraph);
+        contentLength += paragraph.length;
       }
       
       return (
-        <div className="space-y-4">
-          {displayContent.split("\n\n").map((paragraph, idx) => (
-            <p key={idx} className="text-base leading-relaxed text-muted-foreground">
-              {paragraph}
-            </p>
-          ))}
-          {content.length > displayContent.length && (
+        <div className="space-y-2">
+          {processParagraphs(displayParagraphs)}
+          {paragraphs.length > displayParagraphs.length && (
             <p className="text-base text-muted-foreground">...</p>
           )}
         </div>
       );
     }
     
-    // If expanded, show all content with proper paragraph breaks
+    // If expanded, show all content with proper formatting
     return (
-      <div className="space-y-4">
-        {content.split("\n\n").map((paragraph, idx) => (
-          <p key={idx} className="text-base leading-relaxed text-muted-foreground">
-            {paragraph}
-          </p>
-        ))}
+      <div className="space-y-2">
+        {processParagraphs(paragraphs)}
       </div>
     );
   };

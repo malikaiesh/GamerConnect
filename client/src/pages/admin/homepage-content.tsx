@@ -111,7 +111,7 @@ export default function AdminHomepageContent() {
                 Add New Content
               </Button>
             </DialogTrigger>
-            <DialogContent className="max-w-3xl">
+            <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
               <DialogHeader>
                 <DialogTitle>Create New Homepage Content</DialogTitle>
                 <DialogDescription>
@@ -192,7 +192,7 @@ export default function AdminHomepageContent() {
 
         {/* Edit Dialog */}
         <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
-          <DialogContent className="max-w-3xl">
+          <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle>Edit Homepage Content</DialogTitle>
               <DialogDescription>
