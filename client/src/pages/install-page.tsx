@@ -103,11 +103,15 @@ export default function InstallPage() {
   // Installation mutation
   const installMutation = useMutation({
     mutationFn: async (data: InstallFormValues) => {
-      const res = await apiRequest("POST", "/api/install", data);
+      // Ensure captcha value is set from state - this is crucial
+      const formData = { ...data, captcha: captchaValue };
+      console.log('Submitting to API:', formData);
+      
+      const res = await apiRequest("POST", "/api/install", formData);
       
       if (!res.ok) {
         const errorData = await res.json();
-        throw new Error(errorData.message || 'Installation failed');
+        throw new Error(errorData.message || errorData.error || 'Installation failed');
       }
       
       return res.json();
@@ -136,10 +140,31 @@ export default function InstallPage() {
   // Handle form submission
   const onSubmit = async (data: InstallFormValues) => {
     try {
+      // Set captcha value from state and log form data for debugging
       data.captcha = captchaValue;
+      console.log('Submitting installation data:', data);
+      
+      // Manually validate form data to ensure everything is correct
+      const result = installSchema.safeParse(data);
+      if (!result.success) {
+        console.error('Form validation failed:', result.error);
+        toast({
+          title: "Validation Error",
+          description: "Please check all fields and try again.",
+          variant: "destructive",
+        });
+        return;
+      }
+      
+      // Submit the data to the API
       await installMutation.mutateAsync(data);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Installation error:', error);
+      toast({
+        title: "Installation failed",
+        description: error?.message || "An unknown error occurred during installation.",
+        variant: "destructive",
+      });
     }
   };
   
@@ -482,36 +507,47 @@ export default function InstallPage() {
                     
                     {/* CAPTCHA field */}
                     <div className="space-y-4">
-                      <div className="flex flex-col space-y-2">
-                        <Label htmlFor="captcha">Security Verification</Label>
-                        <div className="flex space-x-2">
-                          <div className="bg-primary/10 flex items-center justify-center px-4 py-2 rounded font-mono text-lg tracking-widest">
-                            {captchaValue}
-                          </div>
-                          <Button 
-                            type="button" 
-                            variant="outline" 
-                            size="icon"
-                            onClick={() => generateCaptcha()}
-                          >
-                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                              <path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/>
-                              <path d="M21 3v5h-5"/>
-                              <path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/>
-                              <path d="M8 16H3v5"/>
-                            </svg>
-                          </Button>
-                        </div>
-                        <Input 
-                          id="captcha"
-                          placeholder="Enter the code shown above" 
-                          className="mt-1"
-                          {...form.register('captcha')}
-                        />
-                        {form.formState.errors.captcha && (
-                          <p className="text-sm text-destructive">{form.formState.errors.captcha.message}</p>
+                      <FormField
+                        control={form.control}
+                        name="captcha"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Security Verification</FormLabel>
+                            <div className="flex space-x-2 mb-2">
+                              <div className="bg-primary/10 flex items-center justify-center px-4 py-2 rounded font-mono text-lg tracking-widest">
+                                {captchaValue}
+                              </div>
+                              <Button 
+                                type="button" 
+                                variant="outline" 
+                                size="icon"
+                                onClick={() => {
+                                  const newCaptcha = generateCaptcha();
+                                  // Update the form field with the new CAPTCHA value
+                                  form.setValue('captcha', '');
+                                }}
+                              >
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                  <path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/>
+                                  <path d="M21 3v5h-5"/>
+                                  <path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/>
+                                  <path d="M8 16H3v5"/>
+                                </svg>
+                              </Button>
+                            </div>
+                            <FormControl>
+                              <Input 
+                                placeholder="Enter the code shown above"
+                                {...field}
+                              />
+                            </FormControl>
+                            <FormDescription>
+                              Enter the security code shown above to verify you're human
+                            </FormDescription>
+                            <FormMessage />
+                          </FormItem>
                         )}
-                      </div>
+                      />
                       
                       {/* Terms agreement */}
                       <div className="flex items-center space-x-2">
