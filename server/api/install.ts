@@ -125,22 +125,21 @@ async function initializeDatabase(dbConfig: any, adminData: any, siteData: any):
       console.log('Creating new site settings');
       // Insert site settings
       await db.insert(siteSettings).values({
-        name: siteData.name,
-        description: siteData.description,
-        siteUrl: siteData.url,
-        logoUrl: '/logo.png',
-        favicon: '/favicon.ico',
-        metaTitle: siteData.name,
+        siteTitle: siteData.name,
         metaDescription: siteData.description,
-        ogTitle: siteData.name,
-        ogDescription: siteData.description,
-        ogImage: '/og-image.jpg',
-        twitterHandle: '',
-        googleAnalyticsId: '',
-        footerText: `© ${new Date().getFullYear()} ${siteData.name}. All rights reserved.`,
-        theme: 'modern',
-        colorScheme: 'light',
-        createdAt: new Date(),
+        keywords: `gaming, online games, ${siteData.name}, free games, browser games`,
+        currentTheme: 'modern',
+        adsTxt: '',
+        headerAds: '',
+        footerAds: '',
+        sidebarAds: '',
+        contentAds: '',
+        floatingHeaderAds: '',
+        floatingFooterAds: '',
+        pushNotificationsEnabled: true,
+        customHeaderCode: '',
+        customBodyCode: '',
+        customFooterCode: '',
         updatedAt: new Date()
       });
     } else {
