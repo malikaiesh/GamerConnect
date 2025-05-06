@@ -33,6 +33,7 @@ function Router() {
       <ProtectedRoute path="/admin/dashboard" component={AdminDashboard} adminOnly={true} />
       <ProtectedRoute path="/admin/games" component={AdminGames} adminOnly={true} />
       <ProtectedRoute path="/admin/blog" component={AdminBlog} adminOnly={true} />
+      <ProtectedRoute path="/admin/homepage-content" component={AdminHomepageContent} adminOnly={true} />
       <ProtectedRoute path="/admin/settings" component={AdminSettings} adminOnly={true} />
       {/* Fallback to 404 */}
       <Route component={NotFound} />
@@ -50,6 +51,7 @@ const AdminHelperNav = () => {
       <a href="/admin/dashboard" className="underline hover:text-blue-300">Admin Dashboard</a>
       <a href="/admin/games" className="underline hover:text-blue-300">Admin Games</a>
       <a href="/admin/blog" className="underline hover:text-blue-300">Admin Blog</a>
+      <a href="/admin/homepage-content" className="underline hover:text-blue-300">Admin Content</a>
       <a href="/admin/settings" className="underline hover:text-blue-300">Admin Settings</a>
     </div>
   );
