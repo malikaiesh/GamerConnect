@@ -125,10 +125,10 @@ export default function AuthPage() {
 
       {/* Form Section */}
       <div className="w-full md:w-1/2 p-6 md:p-10 flex items-center justify-center">
-        <Card className="w-full max-w-md">
+        <Card className="w-full max-w-md bg-white dark:bg-gray-800 text-black dark:text-white">
           <CardHeader>
-            <CardTitle className="text-2xl text-center">Welcome to GameZone</CardTitle>
-            <CardDescription className="text-center">
+            <CardTitle className="text-2xl text-center text-black dark:text-white">Welcome to GameZone</CardTitle>
+            <CardDescription className="text-center text-gray-600 dark:text-gray-300">
               Sign in to your account or create a new one
             </CardDescription>
           </CardHeader>
@@ -152,11 +152,11 @@ export default function AuthPage() {
                       name="username"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Username</FormLabel>
+                          <FormLabel className="text-black dark:text-white">Username</FormLabel>
                           <FormControl>
-                            <Input placeholder="Enter your username" {...field} />
+                            <Input className="bg-white dark:bg-gray-700 text-black dark:text-white" placeholder="Enter your username" {...field} />
                           </FormControl>
-                          <FormMessage />
+                          <FormMessage className="text-red-500" />
                         </FormItem>
                       )}
                     />
@@ -166,11 +166,11 @@ export default function AuthPage() {
                       name="password"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Password</FormLabel>
+                          <FormLabel className="text-black dark:text-white">Password</FormLabel>
                           <FormControl>
-                            <Input type="password" placeholder="Enter your password" {...field} />
+                            <Input className="bg-white dark:bg-gray-700 text-black dark:text-white" type="password" placeholder="Enter your password" {...field} />
                           </FormControl>
-                          <FormMessage />
+                          <FormMessage className="text-red-500" />
                         </FormItem>
                       )}
                     />
@@ -198,11 +198,11 @@ export default function AuthPage() {
                       name="username"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Username</FormLabel>
+                          <FormLabel className="text-black dark:text-white">Username</FormLabel>
                           <FormControl>
-                            <Input placeholder="Choose a username" {...field} />
+                            <Input className="bg-white dark:bg-gray-700 text-black dark:text-white" placeholder="Choose a username" {...field} />
                           </FormControl>
-                          <FormMessage />
+                          <FormMessage className="text-red-500" />
                         </FormItem>
                       )}
                     />
@@ -212,11 +212,11 @@ export default function AuthPage() {
                       name="password"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Password</FormLabel>
+                          <FormLabel className="text-black dark:text-white">Password</FormLabel>
                           <FormControl>
-                            <Input type="password" placeholder="Create a password" {...field} />
+                            <Input className="bg-white dark:bg-gray-700 text-black dark:text-white" type="password" placeholder="Create a password" {...field} />
                           </FormControl>
-                          <FormMessage />
+                          <FormMessage className="text-red-500" />
                         </FormItem>
                       )}
                     />
@@ -226,11 +226,11 @@ export default function AuthPage() {
                       name="confirmPassword"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Confirm Password</FormLabel>
+                          <FormLabel className="text-black dark:text-white">Confirm Password</FormLabel>
                           <FormControl>
-                            <Input type="password" placeholder="Confirm your password" {...field} />
+                            <Input className="bg-white dark:bg-gray-700 text-black dark:text-white" type="password" placeholder="Confirm your password" {...field} />
                           </FormControl>
-                          <FormMessage />
+                          <FormMessage className="text-red-500" />
                         </FormItem>
                       )}
                     />
