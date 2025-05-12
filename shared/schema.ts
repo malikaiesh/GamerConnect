@@ -180,6 +180,13 @@ export const pushSubscribers = pgTable('push_subscribers', {
   city: text('city'),
   lastSent: timestamp('last_sent'),
   status: text('status').default('active').notNull(),
+  // Web push specific preferences
+  webPushEnabled: boolean('web_push_enabled').default(true).notNull(),
+  notificationPermission: text('notification_permission').default('default'),
+  preferredTypes: text('preferred_types').array().default(['toast', 'web-push']),
+  frequencyLimit: integer('frequency_limit').default(5), // Max notifications per day
+  optInDate: timestamp('opt_in_date').defaultNow(),
+  lastInteracted: timestamp('last_interacted'),
   createdAt: timestamp('created_at').defaultNow().notNull(),
   updatedAt: timestamp('updated_at').defaultNow().notNull()
 });
@@ -194,6 +201,12 @@ export const pushCampaigns = pgTable('push_campaigns', {
   link: text('link'),
   actionYes: text('action_yes'),
   actionNo: text('action_no'),
+  notificationType: text('notification_type').default('toast').notNull(), // Added notification type
+  isWebPush: boolean('is_web_push').default(false).notNull(), // Flag for web push notifications
+  requireInteraction: boolean('require_interaction').default(false), // Web Push specific
+  badge: text('badge'), // Web Push specific (icon URL)
+  icon: text('icon'), // Web Push specific
+  vibrate: text('vibrate'), // Web Push specific (vibration pattern)
   isSurvey: boolean('is_survey').default(false),
   targetAll: boolean('target_all').default(true),
   targetFilters: json('target_filters').default({}),

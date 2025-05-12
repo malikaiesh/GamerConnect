@@ -37,6 +37,13 @@ const formSchema = z.object({
   link: z.string().url("Must be a valid URL").optional().nullable(),
   actionYes: z.string().optional().nullable(),
   actionNo: z.string().optional().nullable(),
+  notificationType: z.string().default("toast"),
+  isWebPush: z.boolean().default(false),
+  // Web Push specific fields
+  requireInteraction: z.boolean().default(false),
+  badge: z.string().url("Must be a valid URL").optional().nullable(),
+  icon: z.string().url("Must be a valid URL").optional().nullable(),
+  vibrate: z.string().optional().nullable(),
   isSurvey: z.boolean().default(false),
   targetAll: z.boolean().default(true),
   targetFilters: z.record(z.unknown()).default({}),
