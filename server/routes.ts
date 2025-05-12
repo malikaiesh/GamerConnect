@@ -9,6 +9,7 @@ import { registerNotificationsRoutes } from "./api/notifications";
 import { registerHomePageContentRoutes } from "./api/homepage-content";
 import { registerInstallRoutes } from "./api/install";
 import { registerUploadRoutes } from "./api/upload";
+import { registerPagesRoutes } from "./api/pages";
 import { storage } from "./storage";
 import fs from "fs/promises";
 import path from "path";
@@ -90,6 +91,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   registerNotificationsRoutes(app);
   registerHomePageContentRoutes(app);
   registerUploadRoutes(app);
+  registerPagesRoutes(app);
   
   // Serve uploaded files from the uploads directory
   app.use('/uploads', express.static(path.join(process.cwd(), 'uploads')));
