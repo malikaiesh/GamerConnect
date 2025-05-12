@@ -12,7 +12,11 @@ import { registerUploadRoutes } from "./api/upload";
 import { registerPagesRoutes } from "./api/pages";
 import { registerApiKeyRoutes } from "./api/apiKeys";
 import { registerHomeAdsRoutes } from "./api/homeAds";
+import { registerSitemapRoutes } from "./api/sitemapRoutes";
 import { storage } from "./storage";
+import { db } from "../db";
+import { games, blogPosts, staticPages } from "@shared/schema";
+import { eq } from "drizzle-orm";
 import fs from "fs/promises";
 import path from "path";
 
@@ -96,6 +100,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   registerPagesRoutes(app);
   registerApiKeyRoutes(app);
   registerHomeAdsRoutes(app);
+  registerSitemapRoutes(app);
   
   // Serve uploaded files from the uploads directory
   app.use('/uploads', express.static(path.join(process.cwd(), 'uploads')));
@@ -118,6 +123,152 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Health check endpoint
   app.get('/api/health', (req, res) => {
     res.json({ status: 'ok', timestamp: new Date().toISOString() });
+  });
+  
+  // Sitemap endpoints
+  app.get('/sitemap.xml', async (req, res) => {
+    try {
+      const sitemap = await storage.getSitemapByType('main');
+      if (!sitemap) {
+        return res.status(404).send('Sitemap not found');
+      }
+      
+      // Generate the sitemap on demand if requested
+      if (req.query.refresh === 'true') {
+        await storage.generateSitemap('main');
+      }
+      
+      // Generate XML for all sitemaps (index)
+      const allSitemaps = await storage.getSitemaps();
+      const baseUrl = 'https://' + (process.env.REPLIT_DOMAIN || req.get('host'));
+      
+      const xmlHeader = '<?xml version="1.0" encoding="UTF-8"?>';
+      const sitemapIndexStart = '<sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">';
+      const sitemapIndexEnd = '</sitemapindex>';
+      
+      const sitemapElements = allSitemaps
+        .filter(s => s.isEnabled && s.type !== 'main')
+        .map(s => {
+          return `<sitemap>
+            <loc>${baseUrl}${s.url}</loc>
+            <lastmod>${new Date(s.lastGenerated).toISOString()}</lastmod>
+          </sitemap>`;
+        });
+      
+      const sitemapXml = `${xmlHeader}\n${sitemapIndexStart}\n${sitemapElements.join('\n')}\n${sitemapIndexEnd}`;
+      
+      res.set('Content-Type', 'application/xml');
+      res.send(sitemapXml);
+    } catch (error) {
+      console.error('Error serving sitemap.xml:', error);
+      res.status(500).send('Error generating sitemap');
+    }
+  });
+  
+  app.get('/sitemap-:type.xml', async (req, res) => {
+    try {
+      const type = req.params.type;
+      if (!['games', 'blog', 'pages'].includes(type)) {
+        return res.status(404).send('Sitemap not found');
+      }
+      
+      const sitemap = await storage.getSitemapByType(type);
+      if (!sitemap) {
+        return res.status(404).send('Sitemap not found');
+      }
+      
+      // Generate the sitemap on demand if requested
+      if (req.query.refresh === 'true') {
+        await storage.generateSitemap(type);
+      }
+      
+      const baseUrl = 'https://' + (process.env.REPLIT_DOMAIN || req.get('host'));
+      let items: any[] = [];
+      
+      // Get the URLs based on the sitemap type
+      switch (type) {
+        case 'games': {
+          const games = await db.select({
+            id: games.id,
+            slug: games.slug,
+            updatedAt: games.updatedAt
+          }).from(games).where(eq(games.status, 'active'));
+          
+          items = games.map(game => ({
+            loc: `${baseUrl}/game/${game.slug}`,
+            lastmod: game.updatedAt ? new Date(game.updatedAt).toISOString() : new Date().toISOString(),
+            changefreq: 'weekly',
+            priority: 0.8
+          }));
+          break;
+        }
+        
+        case 'blog': {
+          const posts = await db.select({
+            id: blogPosts.id,
+            slug: blogPosts.slug,
+            updatedAt: blogPosts.updatedAt
+          }).from(blogPosts).where(eq(blogPosts.status, 'published'));
+          
+          items = posts.map(post => ({
+            loc: `${baseUrl}/blog/${post.slug}`,
+            lastmod: post.updatedAt ? new Date(post.updatedAt).toISOString() : new Date().toISOString(),
+            changefreq: 'monthly',
+            priority: 0.7
+          }));
+          break;
+        }
+        
+        case 'pages': {
+          const pages = await db.select({
+            id: staticPages.id,
+            slug: staticPages.slug,
+            updatedAt: staticPages.updatedAt
+          }).from(staticPages).where(eq(staticPages.status, 'active'));
+          
+          items = pages.map(page => ({
+            loc: `${baseUrl}/${page.slug}`,
+            lastmod: page.updatedAt ? new Date(page.updatedAt).toISOString() : new Date().toISOString(),
+            changefreq: 'monthly',
+            priority: 0.6
+          }));
+          break;
+        }
+      }
+      
+      // Generate XML
+      const xmlHeader = '<?xml version="1.0" encoding="UTF-8"?>';
+      const urlsetStart = '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">';
+      const urlsetEnd = '</urlset>';
+      
+      const urlElements = items.map(url => {
+        let urlElement = '<url>';
+        urlElement += `<loc>${url.loc}</loc>`;
+        
+        if (url.lastmod) {
+          urlElement += `<lastmod>${url.lastmod}</lastmod>`;
+        }
+        
+        if (url.changefreq) {
+          urlElement += `<changefreq>${url.changefreq}</changefreq>`;
+        }
+        
+        if (url.priority !== undefined) {
+          urlElement += `<priority>${url.priority.toFixed(1)}</priority>`;
+        }
+        
+        urlElement += '</url>';
+        return urlElement;
+      });
+      
+      const sitemapXml = `${xmlHeader}\n${urlsetStart}\n${urlElements.join('\n')}\n${urlsetEnd}`;
+      
+      res.set('Content-Type', 'application/xml');
+      res.send(sitemapXml);
+    } catch (error) {
+      console.error(`Error serving sitemap-${req.params.type}.xml:`, error);
+      res.status(500).send('Error generating sitemap');
+    }
   });
 
   const httpServer = createServer(app);
