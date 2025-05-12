@@ -27,6 +27,7 @@ import AdminHomepageContent from "@/pages/admin/homepage-content";
 import AdminPagesPage from "@/pages/admin/pages-page";
 import AdminPageEditPage from "@/pages/admin/page-edit-page";
 import AdminApiKeysPage from "@/pages/admin/api-keys-page";
+import AdminHomeAdsPage from "@/pages/admin/home-ads-page";
 import { Providers } from "./lib/providers";
 import { ProtectedRoute } from "./lib/protected-route";
 import { useAuth } from "@/hooks/use-auth";
@@ -59,6 +60,7 @@ function Router() {
       <ProtectedRoute path="/admin/blog" component={AdminBlog} adminOnly={true} />
       <ProtectedRoute path="/admin/homepage-content" component={AdminHomepageContent} adminOnly={true} />
       <ProtectedRoute path="/admin/api-keys" component={AdminApiKeysPage} adminOnly={true} />
+      <ProtectedRoute path="/admin/home-ads" component={AdminHomeAdsPage} adminOnly={true} />
       <ProtectedRoute path="/admin/settings" component={AdminSettings} adminOnly={true} />
       <ProtectedRoute path="/admin/pages" component={AdminPagesPage} adminOnly={true} />
       <ProtectedRoute path="/admin/pages/:id" component={AdminPageEditPage} adminOnly={true} />
