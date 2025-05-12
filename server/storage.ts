@@ -659,32 +659,76 @@ class DatabaseStorage implements IStorage {
   }
 
   async createBlogPost(post: Omit<InsertBlogPost, "createdAt" | "updatedAt">): Promise<BlogPost> {
-    // If publishing now, set publishedAt
-    const postData = { ...post };
-    if (post.status === 'published' && !post.publishedAt) {
-      postData.publishedAt = new Date();
+    try {
+      // Import the internal linking utility
+      const { processInternalLinks } = await import('./utils/internal-linking');
+      
+      // If publishing now, set publishedAt
+      const postData = { ...post };
+      if (post.status === 'published' && !post.publishedAt) {
+        postData.publishedAt = new Date();
+      }
+      
+      // Apply internal linking if post is being published
+      if (post.status === 'published' && post.content) {
+        // Process content to add internal links
+        postData.content = await processInternalLinks(post.content, null, post.title);
+      }
+      
+      const result = await db.insert(blogPosts).values(postData).returning();
+      return result[0];
+    } catch (error) {
+      console.error('Error in createBlogPost with internal linking:', error);
+      // Fall back to standard creation without internal linking
+      const result = await db.insert(blogPosts).values(post).returning();
+      return result[0];
     }
-    
-    const result = await db.insert(blogPosts).values(postData).returning();
-    return result[0];
   }
 
   async updateBlogPost(id: number, postData: Partial<InsertBlogPost>): Promise<BlogPost | null> {
-    // If changing from draft to published, set publishedAt if not already set
-    const updateData = { ...postData, updatedAt: new Date() };
-    if (postData.status === 'published') {
+    try {
+      // Import the internal linking utility
+      const { processInternalLinks } = await import('./utils/internal-linking');
+      
+      // If changing from draft to published, set publishedAt if not already set
+      const updateData = { ...postData, updatedAt: new Date() };
+      
+      // Get the existing post
       const [existingPost] = await db.select().from(blogPosts).where(eq(blogPosts.id, id)).limit(1);
-      if (existingPost && existingPost.status === 'draft' && !existingPost.publishedAt) {
+      if (!existingPost) return null;
+      
+      // Handle publishedAt date
+      if (postData.status === 'published' && existingPost.status === 'draft' && !existingPost.publishedAt) {
         updateData.publishedAt = new Date();
       }
+      
+      // Apply internal linking if post is being published or content is updated on a published post
+      if (postData.content && (postData.status === 'published' || existingPost.status === 'published')) {
+        // Process content to add internal links
+        updateData.content = await processInternalLinks(
+          postData.content, 
+          id, 
+          postData.title || existingPost.title
+        );
+      }
+      
+      const result = await db.update(blogPosts)
+        .set(updateData)
+        .where(eq(blogPosts.id, id))
+        .returning();
+      
+      return result.length ? result[0] : null;
+    } catch (error) {
+      console.error('Error in updateBlogPost with internal linking:', error);
+      // Fall back to standard update without internal linking
+      const updateData = { ...postData, updatedAt: new Date() };
+      const result = await db.update(blogPosts)
+        .set(updateData)
+        .where(eq(blogPosts.id, id))
+        .returning();
+      
+      return result.length ? result[0] : null;
     }
-    
-    const result = await db.update(blogPosts)
-      .set(updateData)
-      .where(eq(blogPosts.id, id))
-      .returning();
-    
-    return result.length ? result[0] : null;
   }
 
   async deleteBlogPost(id: number): Promise<boolean> {
