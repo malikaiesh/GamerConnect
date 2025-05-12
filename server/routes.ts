@@ -121,6 +121,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   registerHomeAdsRoutes(app);
   registerSitemapRoutes(app);
   
+  // Register push-notifications API routes
+  app.use('/api/push-notifications', pushNotificationsRoutes);
+  
   // Serve uploaded files from the uploads directory
   app.use('/uploads', express.static(path.join(process.cwd(), 'uploads')));
 
