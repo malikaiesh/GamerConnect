@@ -1,14 +1,25 @@
 import { Link, useLocation } from "wouter";
 import { useAuth } from "@/hooks/use-auth";
 import { cn } from "@/lib/utils";
-import { Gamepad2, Book, Settings, LayoutDashboard, FileText, LogOut, Home, FileSymlink, Key, ImageIcon, Map, Code, BarChart, Files, Bell } from "lucide-react";
+import { Gamepad2, Book, Settings, LayoutDashboard, FileText, LogOut, Home, FileSymlink, Key, ImageIcon, Map, Code, BarChart, Files, Bell, Users, Send, Activity, BarChart3 } from "lucide-react";
+import { useState } from "react";
 
 export default function AdminNavigation() {
+  const [expandedSubMenus, setExpandedSubMenus] = useState<Record<string, boolean>>({
+    pushNotifications: false
+  });
   const [location] = useLocation();
   const { logoutMutation, user } = useAuth();
 
   const handleLogout = () => {
     logoutMutation.mutate();
+  };
+  
+  const toggleSubMenu = (menuName: string) => {
+    setExpandedSubMenus(prev => ({
+      ...prev,
+      [menuName]: !prev[menuName]
+    }));
   };
 
   const isActive = (path: string) => {
@@ -177,19 +188,84 @@ export default function AdminNavigation() {
               Blog Ads
             </Link>
           </li>
-          <li>
-            <Link
-              href="/admin/push-notifications"
+          <li className="space-y-1">
+            <button
+              onClick={() => toggleSubMenu('pushNotifications')}
               className={cn(
-                "flex items-center gap-3 px-3 py-2 rounded-lg transition-colors",
+                "flex items-center justify-between w-full gap-3 px-3 py-2 rounded-lg transition-colors",
                 isActive("/admin/push-notifications")
                   ? "bg-primary text-white"
                   : "text-gray-300 hover:bg-gray-800"
               )}
             >
-              <Bell size={18} />
-              Push Notifications
-            </Link>
+              <div className="flex items-center gap-3">
+                <Bell size={18} />
+                <span>Push Notifications</span>
+              </div>
+              <span className={cn("transform transition-transform", expandedSubMenus.pushNotifications ? "rotate-180" : "")}>
+                ▼
+              </span>
+            </button>
+            {expandedSubMenus.pushNotifications && (
+              <ul className="ml-6 space-y-1 border-l border-gray-800 pl-2">
+                <li>
+                  <Link
+                    href="/admin/push-notifications"
+                    className={cn(
+                      "flex items-center gap-3 px-3 py-2 rounded-lg transition-colors",
+                      location === "/admin/push-notifications"
+                        ? "bg-primary text-white"
+                        : "text-gray-300 hover:bg-gray-800"
+                    )}
+                  >
+                    <Bell size={16} />
+                    Notifications
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    href="/admin/push-notifications/campaigns"
+                    className={cn(
+                      "flex items-center gap-3 px-3 py-2 rounded-lg transition-colors",
+                      location === "/admin/push-notifications/campaigns"
+                        ? "bg-primary text-white"
+                        : "text-gray-300 hover:bg-gray-800"
+                    )}
+                  >
+                    <Send size={16} />
+                    Campaigns
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    href="/admin/push-notifications/subscribers"
+                    className={cn(
+                      "flex items-center gap-3 px-3 py-2 rounded-lg transition-colors",
+                      location === "/admin/push-notifications/subscribers"
+                        ? "bg-primary text-white"
+                        : "text-gray-300 hover:bg-gray-800"
+                    )}
+                  >
+                    <Users size={16} />
+                    Subscribers
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    href="/admin/push-notifications/analytics"
+                    className={cn(
+                      "flex items-center gap-3 px-3 py-2 rounded-lg transition-colors",
+                      location === "/admin/push-notifications/analytics"
+                        ? "bg-primary text-white"
+                        : "text-gray-300 hover:bg-gray-800"
+                    )}
+                  >
+                    <Activity size={16} />
+                    Analytics
+                  </Link>
+                </li>
+              </ul>
+            )}
           </li>
           <li>
             <Link

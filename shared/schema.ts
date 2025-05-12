@@ -439,9 +439,54 @@ export const insertSitemapSchema = createInsertSchema(sitemaps, {
   isEnabled: (schema) => schema.optional().default(true)
 });
 
+// Push Subscriber validation schema
+export const insertPushSubscriberSchema = createInsertSchema(pushSubscribers, {
+  endpoint: (schema) => schema.min(5, "Endpoint is required"),
+  p256dh: (schema) => schema.min(5, "p256dh key is required"),
+  auth: (schema) => schema.min(5, "Auth secret is required"),
+  userAgent: (schema) => schema.optional().nullable(),
+  browser: (schema) => schema.optional().nullable(),
+  os: (schema) => schema.optional().nullable(),
+  deviceType: (schema) => schema.optional().nullable(),
+  country: (schema) => schema.optional().nullable(),
+  region: (schema) => schema.optional().nullable(),
+  city: (schema) => schema.optional().nullable(),
+  status: (schema) => schema.optional().default('active')
+});
+
+// Push Campaign validation schema
+export const insertPushCampaignSchema = createInsertSchema(pushCampaigns, {
+  name: (schema) => schema.min(3, "Campaign name must be at least 3 characters"),
+  title: (schema) => schema.min(3, "Title must be at least 3 characters"),
+  message: (schema) => schema.min(5, "Message must be at least 5 characters"),
+  image: (schema) => schema.optional().nullable(),
+  link: (schema) => schema.optional().nullable(),
+  actionYes: (schema) => schema.optional().nullable(),
+  actionNo: (schema) => schema.optional().nullable(),
+  isSurvey: (schema) => schema.optional().default(false),
+  targetAll: (schema) => schema.optional().default(true),
+  targetFilters: (schema) => schema.optional().default({}),
+  status: (schema) => schema.optional().default('draft')
+});
+
+// Push Response validation schema
+export const insertPushResponseSchema = createInsertSchema(pushResponses, {
+  campaignId: (schema) => schema.positive().int("Campaign ID must be a positive integer"),
+  subscriberId: (schema) => schema.positive().int("Subscriber ID must be a positive integer"),
+  response: (schema) => schema.optional().nullable(),
+  clicked: (schema) => schema.optional().default(false)
+});
+
 export type ApiKey = typeof apiKeys.$inferSelect;
 export type InsertApiKey = z.infer<typeof insertApiKeySchema>;
 export type HomeAd = typeof homeAds.$inferSelect;
 export type InsertHomeAd = z.infer<typeof insertHomeAdSchema>;
 export type Sitemap = typeof sitemaps.$inferSelect;
 export type InsertSitemap = z.infer<typeof insertSitemapSchema>;
+
+export type PushSubscriber = typeof pushSubscribers.$inferSelect;
+export type InsertPushSubscriber = z.infer<typeof insertPushSubscriberSchema>;
+export type PushCampaign = typeof pushCampaigns.$inferSelect;
+export type InsertPushCampaign = z.infer<typeof insertPushCampaignSchema>;
+export type PushResponse = typeof pushResponses.$inferSelect;
+export type InsertPushResponse = z.infer<typeof insertPushResponseSchema>;
