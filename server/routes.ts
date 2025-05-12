@@ -11,6 +11,7 @@ import { registerInstallRoutes } from "./api/install";
 import { registerUploadRoutes } from "./api/upload";
 import { registerPagesRoutes } from "./api/pages";
 import { registerApiKeyRoutes } from "./api/apiKeys";
+import { registerHomeAdsRoutes } from "./api/homeAds";
 import { storage } from "./storage";
 import fs from "fs/promises";
 import path from "path";
@@ -94,6 +95,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   registerUploadRoutes(app);
   registerPagesRoutes(app);
   registerApiKeyRoutes(app);
+  registerHomeAdsRoutes(app);
   
   // Serve uploaded files from the uploads directory
   app.use('/uploads', express.static(path.join(process.cwd(), 'uploads')));
