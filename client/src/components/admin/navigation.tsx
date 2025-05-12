@@ -3,7 +3,7 @@ import { useAuth } from "@/hooks/use-auth";
 import { cn } from "@/lib/utils";
 import { Gamepad2, Book, Settings, LayoutDashboard, FileText, LogOut, Home, FileSymlink, Key, ImageIcon } from "lucide-react";
 
-export function AdminNavigation() {
+export default function AdminNavigation() {
   const [location] = useLocation();
   const { logoutMutation, user } = useAuth();
 
