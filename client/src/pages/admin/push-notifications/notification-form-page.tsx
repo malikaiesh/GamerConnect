@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { useLocation, useParams, useRoute } from "wouter";
 import { PushNotification, notificationTypeEnum } from "@shared/schema";
+import { motion, AnimatePresence } from "framer-motion";
 import { AdminLayout } from "@/components/admin/layout";
 import { Button } from "@/components/ui/button";
 import {
@@ -27,7 +28,46 @@ import { Switch } from "@/components/ui/switch";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Loader2, Bell } from "lucide-react";
+import { Loader2, Bell, PlayCircle } from "lucide-react";
+
+// Animation variants for different notification types
+const animationVariants = {
+  toast: {
+    hidden: { opacity: 0, x: 50 },
+    visible: { opacity: 1, x: 0, transition: { duration: 0.3 } },
+    exit: { opacity: 0, x: 50, transition: { duration: 0.2 } }
+  },
+  banner: {
+    hidden: { opacity: 0, y: -50 },
+    visible: { opacity: 1, y: 0, transition: { duration: 0.3 } },
+    exit: { opacity: 0, y: -50, transition: { duration: 0.2 } }
+  },
+  modal: {
+    hidden: { opacity: 0, scale: 0.9 },
+    visible: { opacity: 1, scale: 1, transition: { type: "spring", stiffness: 300, damping: 25 } },
+    exit: { opacity: 0, scale: 0.9, transition: { duration: 0.2 } }
+  },
+  "slide-in": {
+    hidden: { opacity: 0, x: -50 },
+    visible: { opacity: 1, x: 0, transition: { duration: 0.3 } },
+    exit: { opacity: 0, x: -50, transition: { duration: 0.2 } }
+  },
+  "web-push": {
+    hidden: { opacity: 0, y: 50 },
+    visible: { opacity: 1, y: 0, transition: { duration: 0.3 } },
+    exit: { opacity: 0, y: 50, transition: { duration: 0.2 } }
+  },
+  alert: {
+    hidden: { opacity: 0, scale: 1.1 },
+    visible: { opacity: 1, scale: 1, transition: { type: "spring", stiffness: 400, damping: 20 } },
+    exit: { opacity: 0, scale: 1.1, transition: { duration: 0.2 } }
+  },
+  survey: {
+    hidden: { opacity: 0, scale: 0.95, y: 10 },
+    visible: { opacity: 1, scale: 1, y: 0, transition: { duration: 0.4 } },
+    exit: { opacity: 0, scale: 0.95, y: 10, transition: { duration: 0.2 } }
+  }
+};
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { Card } from "@/components/ui/card";
@@ -59,6 +99,20 @@ export default function NotificationFormPage() {
   const id = params?.id;
   const [isNewRoute] = useRoute("/admin/push-notifications/new");
   const [showPreview, setShowPreview] = useState(false);
+  const [isAnimating, setIsAnimating] = useState(false);
+  const [previewPlayed, setPreviewPlayed] = useState(false);
+  
+  // Animation controls for the preview
+  const playAnimation = () => {
+    if (!isAnimating) {
+      setIsAnimating(true);
+      // Reset animation after it completes
+      setTimeout(() => {
+        setIsAnimating(false);
+        setPreviewPlayed(true);
+      }, 3000); // Animation duration
+    }
+  };
 
   const isNew = isNewRoute || !id;
 
