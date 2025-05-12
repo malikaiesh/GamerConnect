@@ -17,8 +17,10 @@ import {
   InsertSiteSetting,
   PushNotification,
   InsertPushNotification,
-  HomePageContent,
+  HomePageContent, 
   InsertHomePageContent,
+  StaticPage,
+  InsertStaticPage,
   Analytic,
   users,
   games,
@@ -28,6 +30,7 @@ import {
   siteSettings,
   pushNotifications,
   homePageContent,
+  staticPages,
   analytics
 } from "@shared/schema";
 
@@ -810,6 +813,130 @@ class DatabaseStorage implements IStorage {
       topPages,
       dailyStats
     };
+  }
+
+  // Static Pages methods
+  async getStaticPages(options: PageQueryOptions = {}): Promise<{ pages: StaticPage[], totalPages: number, totalCount: number }> {
+    try {
+      const { page = 1, limit = 10, search, pageType, status } = options;
+      const offset = (page - 1) * limit;
+      
+      let query = db.select().from(staticPages);
+      let countQuery = db.select({ count: count() }).from(staticPages);
+      
+      // Apply filters
+      const filters = [];
+      
+      if (search) {
+        filters.push(or(
+          like(staticPages.title, `%${search}%`),
+          like(staticPages.content, `%${search}%`)
+        ));
+      }
+      
+      if (pageType && pageType !== 'all') {
+        filters.push(eq(staticPages.pageType, pageType));
+      }
+      
+      if (status) {
+        filters.push(eq(staticPages.status, status));
+      }
+      
+      if (filters.length > 0) {
+        const whereClause = filters.length === 1 ? filters[0] : and(...filters);
+        query = query.where(whereClause);
+        countQuery = countQuery.where(whereClause);
+      }
+      
+      // Apply pagination and ordering
+      query = query.limit(limit).offset(offset).orderBy(desc(staticPages.updatedAt));
+      
+      const [pages, countResult] = await Promise.all([
+        query,
+        countQuery
+      ]);
+      
+      const totalCount = Number(countResult[0]?.count || 0);
+      const totalPages = Math.ceil(totalCount / limit);
+      
+      return { pages, totalPages, totalCount };
+    } catch (error) {
+      console.error("Error getting static pages:", error);
+      throw new Error("Failed to get static pages");
+    }
+  }
+
+  async getStaticPageById(id: number): Promise<StaticPage | null> {
+    try {
+      const result = await db.select().from(staticPages).where(eq(staticPages.id, id)).limit(1);
+      return result[0] || null;
+    } catch (error) {
+      console.error(`Error getting static page with ID ${id}:`, error);
+      throw new Error("Failed to get static page");
+    }
+  }
+
+  async getStaticPageBySlug(slug: string): Promise<StaticPage | null> {
+    try {
+      const result = await db.select().from(staticPages).where(eq(staticPages.slug, slug)).limit(1);
+      return result[0] || null;
+    } catch (error) {
+      console.error(`Error getting static page with slug ${slug}:`, error);
+      throw new Error("Failed to get static page");
+    }
+  }
+
+  async getStaticPageByType(pageType: string): Promise<StaticPage | null> {
+    try {
+      const result = await db.select().from(staticPages).where(eq(staticPages.pageType, pageType)).limit(1);
+      return result[0] || null;
+    } catch (error) {
+      console.error(`Error getting static page with type ${pageType}:`, error);
+      throw new Error("Failed to get static page");
+    }
+  }
+
+  async createStaticPage(page: Omit<InsertStaticPage, "createdAt" | "updatedAt">): Promise<StaticPage> {
+    try {
+      const now = new Date();
+      const [newPage] = await db.insert(staticPages).values({
+        ...page,
+        createdAt: now,
+        updatedAt: now
+      }).returning();
+      
+      return newPage;
+    } catch (error) {
+      console.error("Error creating static page:", error);
+      throw new Error("Failed to create static page");
+    }
+  }
+
+  async updateStaticPage(id: number, pageData: Partial<InsertStaticPage>): Promise<StaticPage | null> {
+    try {
+      const [updatedPage] = await db.update(staticPages)
+        .set({
+          ...pageData,
+          updatedAt: new Date()
+        })
+        .where(eq(staticPages.id, id))
+        .returning();
+      
+      return updatedPage || null;
+    } catch (error) {
+      console.error(`Error updating static page with ID ${id}:`, error);
+      throw new Error("Failed to update static page");
+    }
+  }
+
+  async deleteStaticPage(id: number): Promise<boolean> {
+    try {
+      const result = await db.delete(staticPages).where(eq(staticPages.id, id)).returning({ id: staticPages.id });
+      return result.length > 0;
+    } catch (error) {
+      console.error(`Error deleting static page with ID ${id}:`, error);
+      throw new Error("Failed to delete static page");
+    }
   }
 }
 
