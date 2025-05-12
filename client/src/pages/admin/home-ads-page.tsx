@@ -421,8 +421,20 @@ export default function AdminHomeAdsPage() {
                           <TableCell>{position?.label || ad.position}</TableCell>
                           <TableCell>
                             <div className="flex items-center">
+                              <div className={`w-2 h-2 mr-2 rounded-full ${ad.isGoogleAd ? 'bg-blue-500' : 'bg-purple-500'}`}></div>
+                              {ad.isGoogleAd ? 'Google Ad' : 'Custom Ad'}
+                            </div>
+                          </TableCell>
+                          <TableCell>
+                            <div className="flex items-center">
                               <div className={`w-2 h-2 mr-2 rounded-full ${ad.status === 'active' ? 'bg-green-500' : 'bg-gray-400'}`}></div>
                               {ad.status === 'active' ? 'Active' : 'Inactive'}
+                            </div>
+                          </TableCell>
+                          <TableCell>
+                            <div className="flex items-center">
+                              <div className={`w-2 h-2 mr-2 rounded-full ${ad.adEnabled ? 'bg-green-500' : 'bg-red-500'}`}></div>
+                              {ad.adEnabled ? 'Enabled' : 'Disabled'}
                             </div>
                           </TableCell>
                           <TableCell>
@@ -553,6 +565,46 @@ export default function AdminHomeAdsPage() {
                           </SelectContent>
                         </Select>
                         <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={editForm.control}
+                    name="isGoogleAd"
+                    render={({ field }) => (
+                      <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4">
+                        <FormControl>
+                          <Checkbox
+                            checked={field.value}
+                            onCheckedChange={field.onChange}
+                          />
+                        </FormControl>
+                        <div className="space-y-1 leading-none">
+                          <FormLabel>Google Ad</FormLabel>
+                          <FormDescription>
+                            Check this if you're using Google AdSense or Ad Manager
+                          </FormDescription>
+                        </div>
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={editForm.control}
+                    name="adEnabled"
+                    render={({ field }) => (
+                      <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4">
+                        <FormControl>
+                          <Checkbox
+                            checked={field.value}
+                            onCheckedChange={field.onChange}
+                          />
+                        </FormControl>
+                        <div className="space-y-1 leading-none">
+                          <FormLabel>Enable Ad</FormLabel>
+                          <FormDescription>
+                            Toggle to enable or disable this ad without deleting it
+                          </FormDescription>
+                        </div>
                       </FormItem>
                     )}
                   />
