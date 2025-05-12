@@ -36,6 +36,24 @@ export function BlogAd({ type, className = '' }: BlogAdProps) {
   const isGoogleAdsEnabled = settings?.enableGoogleAds;
   const googleAdClient = settings?.googleAdClient;
 
+  // Determine alignment based on ad type
+  const getAlignmentClass = () => {
+    if (type === 'sidebar') {
+      return 'text-left';
+    }
+    
+    if (type === 'header' || type === 'footer') {
+      return 'text-center';
+    }
+    
+    // For paragraph ads, we'll align them left to match the text flow
+    if (type.startsWith('paragraph') || type === 'afterContent') {
+      return 'text-left';
+    }
+    
+    return 'text-center';
+  };
+
   // Initialize Google Ads if needed
   useEffect(() => {
     if (isGoogleAdsEnabled && googleAdClient && adContainerRef.current) {
@@ -65,9 +83,11 @@ export function BlogAd({ type, className = '' }: BlogAdProps) {
     return null;
   }
 
+  const alignmentClass = getAlignmentClass();
+
   return (
     <div 
-      className={`w-full my-4 text-center overflow-hidden max-w-full mx-auto ad-container ${className}`}
+      className={`w-full my-4 overflow-hidden max-w-full mx-auto ad-container ${alignmentClass} ${className}`}
       ref={adContainerRef}
       data-ad-type={type}
     >

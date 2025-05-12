@@ -224,14 +224,17 @@ export default function BlogPostPage() {
                       adMarkers.forEach(marker => {
                         const position = marker.getAttribute('data-ad-position');
                         if (position) {
-                          // Create a wrapper div for the ad
+                          // Create a wrapper div for the ad that matches content flow
                           const adWrapper = document.createElement('div');
-                          adWrapper.className = 'ad-wrapper my-6';
+                          adWrapper.className = 'ad-wrapper my-6 w-full block';
+                          adWrapper.style.maxWidth = '100%';
+                          adWrapper.style.margin = '1.5rem 0';
                           
                           // Create a placeholder that React can fill later
                           const adPlaceholder = document.createElement('div');
                           adPlaceholder.className = 'ad-placeholder';
                           adPlaceholder.setAttribute('data-ad-type', position);
+                          adPlaceholder.style.textAlign = 'left';
                           
                           // Add the placeholder to the wrapper
                           adWrapper.appendChild(adPlaceholder);
@@ -250,11 +253,21 @@ export default function BlogPostPage() {
                           adElement.className = 'blog-ad-container';
                           placeholder.appendChild(adElement);
                           
-                          // Render the BlogAd component into the container
+                          // Render the ad content directly for better performance
                           if (settings?.[`${adType}Ad` as keyof SiteSetting]) {
-                            const ad = document.createElement('div');
-                            ad.innerHTML = settings[`${adType}Ad` as keyof SiteSetting] as string;
-                            adElement.appendChild(ad);
+                            const adContent = settings[`${adType}Ad` as keyof SiteSetting] as string;
+                            if (adContent && adContent.trim()) {
+                              // Create a styled container for the ad
+                              const adContainer = document.createElement('div');
+                              adContainer.className = 'blog-ad-container';
+                              adContainer.style.width = '100%';
+                              adContainer.style.textAlign = 'left';
+                              adContainer.style.margin = '0';
+                              
+                              // Add the ad content
+                              adContainer.innerHTML = adContent;
+                              adElement.appendChild(adContainer);
+                            }
                           }
                         }
                       });

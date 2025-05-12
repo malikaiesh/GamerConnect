@@ -211,4 +211,63 @@
   .category-pill-active {
     @apply bg-primary text-primary-foreground px-3 py-1 rounded-full text-sm font-medium;
   }
+  
+  /* Blog Ad Styling */
+  .ad-wrapper {
+    display: block;
+    width: 100%;
+    margin: 1.5rem 0;
+    text-align: left;
+  }
+
+  .blog-post-content .ad-placeholder {
+    text-align: left;
+    width: 100%;
+  }
+
+  .blog-ad-container {
+    display: block;
+    width: 100%;
+    overflow: hidden;
+  }
+
+  /* Different ad type styles */
+  [data-ad-type="paragraph2"],
+  [data-ad-type="paragraph4"],
+  [data-ad-type="paragraph6"],
+  [data-ad-type="paragraph8"],
+  [data-ad-type="afterContent"] {
+    text-align: left;
+    margin-bottom: 1.5rem;
+  }
+
+  [data-ad-type="sidebar"] {
+    text-align: left;
+  }
+
+  [data-ad-type="header"],
+  [data-ad-type="footer"] {
+    text-align: center;
+    margin: 2rem auto;
+  }
+
+  /* Ensure ad content doesn't break layout */
+  .blog-ad-container img,
+  .custom-ad img {
+    max-width: 100%;
+    height: auto;
+  }
+
+  /* Make sure ads are responsive */
+  @media (max-width: 768px) {
+    .ad-wrapper,
+    .blog-ad-container,
+    [data-ad-type] {
+      margin-left: 0 !important;
+      margin-right: 0 !important;
+      padding-left: 0 !important;
+      padding-right: 0 !important;
+      max-width: 100%;
+    }
+  }
 }
