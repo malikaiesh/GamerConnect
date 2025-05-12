@@ -26,7 +26,8 @@ export function PostGameModal({ game, isOpen, onClose }: PostGameModalProps) {
   
   const handleGameSelect = (selectedGame: Game) => {
     onClose();
-    setLocation(`/game/${selectedGame.id}`);
+    // Use slug-based URL if available, otherwise fall back to ID-based URL
+    setLocation(selectedGame.slug ? `/g/${selectedGame.slug}` : `/game/${selectedGame.id}`);
   };
   
   const handleShowFeedback = () => {
