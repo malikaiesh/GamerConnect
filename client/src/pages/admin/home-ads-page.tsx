@@ -15,6 +15,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { 
   Form, 
   FormControl, 
+  FormDescription,
   FormField, 
   FormItem, 
   FormLabel, 
@@ -395,7 +396,9 @@ export default function AdminHomeAdsPage() {
                   <TableHeader>
                     <TableRow>
                       <TableHead>Position</TableHead>
+                      <TableHead>Type</TableHead>
                       <TableHead>Status</TableHead>
+                      <TableHead>Enabled</TableHead>
                       <TableHead>Last Updated</TableHead>
                       <TableHead>Impressions</TableHead>
                       <TableHead>Clicks</TableHead>
@@ -581,4 +584,6 @@ interface HomeAd {
   impressionCount: number;
   createdAt: string;
   updatedAt?: string;
+  isGoogleAd?: boolean;
+  adEnabled?: boolean;
 }
