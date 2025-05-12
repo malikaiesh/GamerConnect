@@ -2,6 +2,8 @@ import { Express, Request, Response } from "express";
 import { storage } from "../storage";
 import { z } from "zod";
 import { insertBlogPostSchema, insertBlogCategorySchema } from "@shared/schema";
+import { updateAllBlogPostsWithInternalLinks } from "../utils/update-all-blog-internal-links";
+import { isAdmin } from "../middleware";
 
 export function registerBlogRoutes(app: Express) {
   // Get all blog categories
@@ -219,6 +221,21 @@ export function registerBlogRoutes(app: Express) {
       }
       console.error('Error bulk deleting blog posts:', error);
       res.status(500).json({ message: 'Failed to delete posts' });
+    }
+  });
+  
+  // Update all blog posts with internal links
+  app.post('/api/blog/update-internal-links', isAdmin, async (req: Request, res: Response) => {
+    try {
+      const results = await updateAllBlogPostsWithInternalLinks();
+      
+      res.status(200).json({ 
+        message: `Updated ${results.updated} blog posts with internal links`,
+        results
+      });
+    } catch (error) {
+      console.error('Error updating blog posts with internal links:', error);
+      res.status(500).json({ message: 'Failed to update blog posts with internal links' });
     }
   });
 }

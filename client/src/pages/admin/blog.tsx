@@ -3,10 +3,11 @@ import { useQuery } from "@tanstack/react-query";
 import AdminNavigation from "@/components/admin/navigation";
 import { PostsList } from "@/components/admin/blog/posts-list";
 import { BlogForm } from "@/components/admin/blog/blog-form";
+import { BlogInternalLinks } from "@/components/admin/blog/blog-internal-links";
 import { BlogPost } from "@shared/schema";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Plus } from "lucide-react";
+import { Plus, LinkIcon } from "lucide-react";
 
 export default function AdminBlog() {
   const [activeTab, setActiveTab] = useState<string>("list");
@@ -58,6 +59,10 @@ export default function AdminBlog() {
             <TabsTrigger value="form">
               {isCreateMode ? "Add New Post" : "Edit Post"}
             </TabsTrigger>
+            <TabsTrigger value="internal-links">
+              <LinkIcon className="mr-2 h-4 w-4" />
+              Internal Links
+            </TabsTrigger>
           </TabsList>
           
           <TabsContent value="list" className="space-y-4">
@@ -72,6 +77,10 @@ export default function AdminBlog() {
               post={selectedPost || undefined}
               onSuccess={handleFormSuccess}
             />
+          </TabsContent>
+          
+          <TabsContent value="internal-links" className="space-y-4">
+            <BlogInternalLinks />
           </TabsContent>
         </Tabs>
       </div>
