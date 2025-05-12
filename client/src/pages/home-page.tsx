@@ -160,7 +160,7 @@ export default function HomePage() {
                 Discover a new game with our random game picker. You might find your next favorite!
               </p>
               <Link 
-                href="/random-game" 
+                href="/random" 
                 className="bg-secondary hover:bg-secondary/90 text-secondary-foreground font-bold py-3 px-6 rounded-lg transition-colors shadow-lg flex items-center"
               >
                 <i className="ri-dice-line mr-2 text-xl"></i> Random Game
@@ -227,9 +227,6 @@ export default function HomePage() {
           />
         </div>
       </section>
-      
-      {/* Random Game Section */}
-      <RandomGameSection />
       
       {/* Homepage Content Section */}
       <section className="py-10">
