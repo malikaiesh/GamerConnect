@@ -1,7 +1,7 @@
 import { Link, useLocation } from "wouter";
 import { useAuth } from "@/hooks/use-auth";
 import { cn } from "@/lib/utils";
-import { Gamepad2, Book, Settings, LayoutDashboard, FileText, LogOut } from "lucide-react";
+import { Gamepad2, Book, Settings, LayoutDashboard, FileText, LogOut, Home, FileSymlink } from "lucide-react";
 
 export function AdminNavigation() {
   const [location] = useLocation();
@@ -81,6 +81,20 @@ export function AdminNavigation() {
           </li>
           <li>
             <Link
+              href="/admin/pages"
+              className={cn(
+                "flex items-center gap-3 px-3 py-2 rounded-lg transition-colors",
+                isActive("/admin/pages")
+                  ? "bg-primary text-white"
+                  : "text-gray-300 hover:bg-gray-800"
+              )}
+            >
+              <FileSymlink size={18} />
+              Pages
+            </Link>
+          </li>
+          <li>
+            <Link
               href="/admin/homepage-content"
               className={cn(
                 "flex items-center gap-3 px-3 py-2 rounded-lg transition-colors",
@@ -91,6 +105,18 @@ export function AdminNavigation() {
             >
               <FileText size={18} />
               Homepage Content
+            </Link>
+          </li>
+          <li>
+            <Link
+              href="/"
+              className={cn(
+                "flex items-center gap-3 px-3 py-2 rounded-lg transition-colors",
+                "text-gray-300 hover:bg-gray-800 bg-gray-800/50"
+              )}
+            >
+              <Home size={18} />
+              View Site
             </Link>
           </li>
           <li>
