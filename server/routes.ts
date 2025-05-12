@@ -86,6 +86,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Register installation routes - must be before other routes
   registerInstallRoutes(app);
   
+  // Serve ads.txt file
+  app.get('/ads.txt', async (req, res) => {
+    try {
+      const settings = await storage.getSiteSettings();
+      if (settings?.adsTxt) {
+        res.set('Content-Type', 'text/plain');
+        return res.send(settings.adsTxt);
+      }
+      // If no ads.txt content is found, return an empty file
+      res.set('Content-Type', 'text/plain');
+      return res.send('');
+    } catch (error) {
+      console.error('Error serving ads.txt:', error);
+      res.set('Content-Type', 'text/plain');
+      return res.send('');
+    }
+  });
+  
   // Setup authentication routes
   setupAuth(app);
   
