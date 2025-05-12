@@ -199,7 +199,7 @@ export default function PagesAdminPage() {
             <div className="text-center p-12 text-destructive">
               <p>Error loading pages. Please try again.</p>
             </div>
-          ) : data?.pages.length === 0 ? (
+          ) : !data || !data.pages || data.pages.length === 0 ? (
             <div className="text-center p-12 border rounded-lg border-dashed">
               <File className="h-12 w-12 mx-auto text-muted-foreground" />
               <h3 className="mt-4 text-lg font-semibold">No pages found</h3>
