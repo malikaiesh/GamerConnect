@@ -3,14 +3,14 @@ import { Footer } from '@/components/layout/footer';
 
 export default function TermsPage() {
   return (
-    <div className="min-h-screen flex flex-col">
+    <div className="min-h-screen flex flex-col bg-background text-foreground">
       <Header />
       <main className="flex-grow py-12">
         <div className="container mx-auto px-4">
           <div className="max-w-4xl mx-auto">
-            <h1 className="text-4xl font-bold mb-8">Terms of Service</h1>
+            <h1 className="text-4xl font-bold mb-8 text-foreground">Terms of Service</h1>
             
-            <div className="prose prose-lg max-w-none">
+            <div className="prose prose-lg dark:prose-invert max-w-none">
               <p className="text-gray-500 mb-8">Last updated: May 10, 2025</p>
               
               <p>
