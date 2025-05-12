@@ -63,7 +63,7 @@ export function registerSettingsRoutes(app: Express) {
     }
   });
   
-  // Update ads settings
+  // Update blog ads settings
   app.patch('/api/settings/ads', async (req: Request, res: Response) => {
     try {
       const schema = z.object({
@@ -72,10 +72,7 @@ export function registerSettingsRoutes(app: Express) {
         sidebarAds: z.string().optional(),
         contentAds: z.string().optional(),
         floatingHeaderAds: z.string().optional(),
-        floatingFooterAds: z.string().optional(),
-        customHeaderCode: z.string().optional(),
-        customBodyCode: z.string().optional(),
-        customFooterCode: z.string().optional()
+        floatingFooterAds: z.string().optional()
       });
       
       const settingsData = schema.parse(req.body);
@@ -88,6 +85,28 @@ export function registerSettingsRoutes(app: Express) {
       }
       console.error('Error updating ad settings:', error);
       res.status(500).json({ message: 'Failed to update ad settings' });
+    }
+  });
+  
+  // Update custom code settings
+  app.patch('/api/settings/custom-code', async (req: Request, res: Response) => {
+    try {
+      const schema = z.object({
+        customHeaderCode: z.string().optional(),
+        customBodyCode: z.string().optional(),
+        customFooterCode: z.string().optional()
+      });
+      
+      const settingsData = schema.parse(req.body);
+      const updatedSettings = await storage.updateSiteSettings(settingsData);
+      
+      res.json(updatedSettings);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ message: 'Invalid custom code settings data', errors: error.errors });
+      }
+      console.error('Error updating custom code settings:', error);
+      res.status(500).json({ message: 'Failed to update custom code settings' });
     }
   });
   
