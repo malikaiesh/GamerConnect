@@ -110,6 +110,26 @@ export function registerSettingsRoutes(app: Express) {
     }
   });
   
+  // Update ads.txt content
+  app.patch('/api/settings/ads-txt', async (req: Request, res: Response) => {
+    try {
+      const schema = z.object({
+        adsTxt: z.string()
+      });
+      
+      const settingsData = schema.parse(req.body);
+      const updatedSettings = await storage.updateSiteSettings(settingsData);
+      
+      res.json(updatedSettings);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ message: 'Invalid ads.txt content', errors: error.errors });
+      }
+      console.error('Error updating ads.txt content:', error);
+      res.status(500).json({ message: 'Failed to update ads.txt content' });
+    }
+  });
+  
   // Update all settings at once
   app.put('/api/settings', async (req: Request, res: Response) => {
     try {

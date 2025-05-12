@@ -28,7 +28,7 @@ export default function AdsTxtPage() {
   // Update ads.txt content
   const updateAdsTxtMutation = useMutation({
     mutationFn: async (adsTxt: string) => {
-      const res = await apiRequest('PATCH', '/api/settings', { adsTxt });
+      const res = await apiRequest('PATCH', '/api/settings/ads-txt', { adsTxt });
       return await res.json();
     },
     onSuccess: () => {
