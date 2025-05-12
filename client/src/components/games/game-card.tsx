@@ -49,7 +49,8 @@ export function GameCard({
     }
   };
   
-  const gamePath = `/game/${game.id}`;
+  // Use slug URL if available, otherwise fall back to ID-based URL
+  const gamePath = game.slug ? `/g/${game.slug}` : `/game/${game.id}`;
   const averageRating = calculateAverageRating();
   
   const handleClick = () => {

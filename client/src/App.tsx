@@ -35,6 +35,7 @@ function Router() {
     <Switch>
       <Route path="/" component={HomePage} />
       <Route path="/game/:id" component={GamePage} />
+      <Route path="/g/:slug" component={GamePage} />
       <Route path="/blog" component={BlogPage} />
       <Route path="/blog/:slug" component={BlogPostPage} />
       <Route path="/categories" component={CategoriesPage} />

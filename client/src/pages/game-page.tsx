@@ -14,18 +14,27 @@ import { apiRequest, queryClient } from '@/lib/queryClient';
 import { useToast } from '@/hooks/use-toast';
 
 export default function GamePage() {
-  const [, params] = useRoute('/game/:id');
-  const gameId = params?.id ? parseInt(params.id) : 0;
+  const [gameIdPath, idParams] = useRoute('/game/:id');
+  const [gameSlugPath, slugParams] = useRoute('/g/:slug');
+  
+  // Handle both ID and slug-based routes
+  const isIdRoute = !!gameIdPath;
+  const isSlugRoute = !!gameSlugPath;
+  
+  // Extract ID or slug based on the route
+  const gameId = isIdRoute && idParams?.id ? parseInt(idParams.id) : 0;
+  const gameSlug = isSlugRoute && slugParams?.slug ? slugParams.slug : '';
+  
   const [userRating, setUserRating] = useState(0);
   const [activeNotification, setActiveNotification] = useState<PushNotificationType | null>(null);
   const [showPostGameModal, setShowPostGameModal] = useState(false);
   const gamePlayTimer = useRef<NodeJS.Timeout | null>(null);
   const { toast } = useToast();
   
-  // Fetch game data
+  // Fetch game data based on ID or slug
   const { data: game, isLoading, error } = useQuery<Game>({
-    queryKey: [`/api/games/${gameId}`],
-    enabled: !!gameId,
+    queryKey: isIdRoute ? [`/api/games/${gameId}`] : [`/api/games/slug/${gameSlug}`],
+    enabled: !!(isIdRoute ? gameId : gameSlug),
   });
   
   // Fetch active push notifications
@@ -36,14 +45,22 @@ export default function GamePage() {
   // Mutation for submitting a rating
   const ratingMutation = useMutation({
     mutationFn: async (rating: number) => {
-      await apiRequest('POST', `/api/games/${gameId}/rate`, { rating });
+      if (!game) return;
+      await apiRequest('POST', `/api/games/${game.id}/rate`, { rating });
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: [`/api/games/${gameId}`] });
-      toast({
-        title: 'Rating Submitted',
-        description: 'Thank you for rating this game!',
-      });
+      if (game) {
+        // Invalidate both types of queries (id and slug) to ensure data consistency
+        queryClient.invalidateQueries({ queryKey: [`/api/games/${game.id}`] });
+        if (game.slug) {
+          queryClient.invalidateQueries({ queryKey: [`/api/games/slug/${game.slug}`] });
+        }
+        
+        toast({
+          title: 'Rating Submitted',
+          description: 'Thank you for rating this game!',
+        });
+      }
     },
     onError: (error: Error) => {
       toast({
@@ -57,7 +74,8 @@ export default function GamePage() {
   // Mutation for incrementing play count
   const playMutation = useMutation({
     mutationFn: async () => {
-      await apiRequest('POST', `/api/games/${gameId}/play`, {});
+      if (!game) return;
+      await apiRequest('POST', `/api/games/${game.id}/play`, {});
     },
   });
   
