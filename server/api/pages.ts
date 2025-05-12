@@ -1,137 +1,228 @@
-import { Request, Response, Express } from "express";
+import { Request, Response } from "express";
+import { Express } from "express";
 import { storage } from "../storage";
 import { insertStaticPageSchema } from "@shared/schema";
 import { z } from "zod";
 
 export function registerPagesRoutes(app: Express) {
-  // Get all static pages with pagination and filtering
+  // Get all pages with optional filtering and pagination
   app.get('/api/pages', async (req: Request, res: Response) => {
     try {
-      const options = {
-        page: req.query.page ? parseInt(req.query.page as string) : 1,
-        limit: req.query.limit ? parseInt(req.query.limit as string) : 10,
-        search: req.query.search as string,
-        pageType: req.query.pageType as string,
-        status: req.query.status as 'active' | 'inactive'
-      };
-
-      const result = await storage.getStaticPages(options);
+      const page = req.query.page ? parseInt(req.query.page as string) : 1;
+      const limit = req.query.limit ? parseInt(req.query.limit as string) : 10;
+      const search = req.query.search as string | undefined;
+      const pageType = req.query.pageType as string | undefined;
+      const status = req.query.status as string | undefined;
+      
+      const result = await storage.getStaticPages({
+        page,
+        limit,
+        search,
+        pageType,
+        status: status as 'active' | 'inactive' | undefined
+      });
+      
       res.json(result);
     } catch (error) {
-      console.error('Error fetching static pages:', error);
-      res.status(500).json({ error: 'Failed to fetch static pages' });
+      console.error('Error fetching pages:', error);
+      res.status(500).json({ error: 'Failed to fetch pages' });
     }
   });
-
-  // Get a specific static page by ID
+  
+  // Get page by ID
   app.get('/api/pages/:id', async (req: Request, res: Response) => {
     try {
       const id = parseInt(req.params.id);
+      
+      if (isNaN(id)) {
+        return res.status(400).json({ error: 'Invalid page ID' });
+      }
+      
       const page = await storage.getStaticPageById(id);
       
       if (!page) {
-        return res.status(404).json({ error: 'Static page not found' });
+        return res.status(404).json({ error: 'Page not found' });
       }
       
       res.json(page);
     } catch (error) {
-      console.error(`Error fetching static page with ID ${req.params.id}:`, error);
-      res.status(500).json({ error: 'Failed to fetch static page' });
+      console.error('Error fetching page:', error);
+      res.status(500).json({ error: 'Failed to fetch page' });
     }
   });
-
-  // Get a specific static page by slug
+  
+  // Get page by slug
   app.get('/api/pages/by-slug/:slug', async (req: Request, res: Response) => {
     try {
-      const slug = req.params.slug;
+      const { slug } = req.params;
+      
       const page = await storage.getStaticPageBySlug(slug);
       
       if (!page) {
-        return res.status(404).json({ error: 'Static page not found' });
+        return res.status(404).json({ error: 'Page not found' });
       }
       
       res.json(page);
     } catch (error) {
-      console.error(`Error fetching static page with slug ${req.params.slug}:`, error);
-      res.status(500).json({ error: 'Failed to fetch static page' });
+      console.error('Error fetching page by slug:', error);
+      res.status(500).json({ error: 'Failed to fetch page' });
     }
   });
-
-  // Get a specific static page by type
+  
+  // Get page by type
   app.get('/api/pages/by-type/:type', async (req: Request, res: Response) => {
     try {
-      const pageType = req.params.type;
-      const page = await storage.getStaticPageByType(pageType);
+      const { type } = req.params;
+      
+      const page = await storage.getStaticPageByType(type);
       
       if (!page) {
-        return res.status(404).json({ error: 'Static page not found' });
+        return res.status(404).json({ error: 'Page not found' });
       }
       
       res.json(page);
     } catch (error) {
-      console.error(`Error fetching static page with type ${req.params.type}:`, error);
-      res.status(500).json({ error: 'Failed to fetch static page' });
+      console.error('Error fetching page by type:', error);
+      res.status(500).json({ error: 'Failed to fetch page' });
     }
   });
-
-  // Create a new static page
+  
+  // Create a new page
   app.post('/api/pages', async (req: Request, res: Response) => {
     try {
-      // Validate request body
-      const validatedData = insertStaticPageSchema.parse(req.body);
+      // Check if user is admin
+      if (!req.user?.isAdmin) {
+        return res.status(403).json({ error: 'Unauthorized: Admin privileges required' });
+      }
       
-      // Create the static page
+      // Validate input
+      const validatedData = insertStaticPageSchema.parse({
+        ...req.body,
+        createdAt: new Date(),
+        updatedAt: new Date()
+      });
+      
+      // Check if a page with this slug already exists
+      const existingPage = await storage.getStaticPageBySlug(validatedData.slug);
+      if (existingPage) {
+        return res.status(400).json({ error: 'A page with this slug already exists' });
+      }
+      
+      // Check if a page with this type already exists (except for custom)
+      if (validatedData.pageType !== 'custom') {
+        const existingPageType = await storage.getStaticPageByType(validatedData.pageType);
+        if (existingPageType) {
+          return res.status(400).json({ 
+            error: `A page with type "${validatedData.pageType}" already exists. You can only have one page of each type (except custom).`
+          });
+        }
+      }
+      
       const newPage = await storage.createStaticPage(validatedData);
       
       res.status(201).json(newPage);
     } catch (error) {
       if (error instanceof z.ZodError) {
-        return res.status(400).json({ errors: error.errors });
+        return res.status(400).json({ error: 'Validation error', details: error.errors });
       }
-      console.error('Error creating static page:', error);
-      res.status(500).json({ error: 'Failed to create static page' });
+      
+      console.error('Error creating page:', error);
+      res.status(500).json({ error: 'Failed to create page' });
     }
   });
-
-  // Update a static page
+  
+  // Update a page
   app.put('/api/pages/:id', async (req: Request, res: Response) => {
     try {
+      // Check if user is admin
+      if (!req.user?.isAdmin) {
+        return res.status(403).json({ error: 'Unauthorized: Admin privileges required' });
+      }
+      
       const id = parseInt(req.params.id);
       
-      // Validate request body
-      const validatedData = insertStaticPageSchema.partial().parse(req.body);
+      if (isNaN(id)) {
+        return res.status(400).json({ error: 'Invalid page ID' });
+      }
       
-      // Update the static page
+      // Check if page exists
+      const existingPage = await storage.getStaticPageById(id);
+      
+      if (!existingPage) {
+        return res.status(404).json({ error: 'Page not found' });
+      }
+      
+      // Validate input
+      const validatedData = insertStaticPageSchema.parse({
+        ...req.body,
+        updatedAt: new Date()
+      });
+      
+      // Check if a page with this slug already exists (excluding current page)
+      const pageWithSlug = await storage.getStaticPageBySlug(validatedData.slug);
+      if (pageWithSlug && pageWithSlug.id !== id) {
+        return res.status(400).json({ error: 'A page with this slug already exists' });
+      }
+      
+      // Check if changing to a page type that already exists
+      if (validatedData.pageType !== 'custom' && validatedData.pageType !== existingPage.pageType) {
+        const existingPageType = await storage.getStaticPageByType(validatedData.pageType);
+        if (existingPageType && existingPageType.id !== id) {
+          return res.status(400).json({ 
+            error: `A page with type "${validatedData.pageType}" already exists. You can only have one page of each type (except custom).`
+          });
+        }
+      }
+      
+      // Update the page
       const updatedPage = await storage.updateStaticPage(id, validatedData);
       
       if (!updatedPage) {
-        return res.status(404).json({ error: 'Static page not found' });
+        return res.status(500).json({ error: 'Failed to update page' });
       }
       
       res.json(updatedPage);
     } catch (error) {
       if (error instanceof z.ZodError) {
-        return res.status(400).json({ errors: error.errors });
+        return res.status(400).json({ error: 'Validation error', details: error.errors });
       }
-      console.error(`Error updating static page with ID ${req.params.id}:`, error);
-      res.status(500).json({ error: 'Failed to update static page' });
+      
+      console.error('Error updating page:', error);
+      res.status(500).json({ error: 'Failed to update page' });
     }
   });
-
-  // Delete a static page
+  
+  // Delete a page
   app.delete('/api/pages/:id', async (req: Request, res: Response) => {
     try {
-      const id = parseInt(req.params.id);
-      const success = await storage.deleteStaticPage(id);
-      
-      if (!success) {
-        return res.status(404).json({ error: 'Static page not found' });
+      // Check if user is admin
+      if (!req.user?.isAdmin) {
+        return res.status(403).json({ error: 'Unauthorized: Admin privileges required' });
       }
       
-      res.status(200).json({ message: 'Static page deleted successfully' });
+      const id = parseInt(req.params.id);
+      
+      if (isNaN(id)) {
+        return res.status(400).json({ error: 'Invalid page ID' });
+      }
+      
+      // Check if page exists
+      const existingPage = await storage.getStaticPageById(id);
+      
+      if (!existingPage) {
+        return res.status(404).json({ error: 'Page not found' });
+      }
+      
+      const deleted = await storage.deleteStaticPage(id);
+      
+      if (!deleted) {
+        return res.status(500).json({ error: 'Failed to delete page' });
+      }
+      
+      res.json({ success: true, message: 'Page deleted successfully' });
     } catch (error) {
-      console.error(`Error deleting static page with ID ${req.params.id}:`, error);
-      res.status(500).json({ error: 'Failed to delete static page' });
+      console.error('Error deleting page:', error);
+      res.status(500).json({ error: 'Failed to delete page' });
     }
   });
 }

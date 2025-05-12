@@ -23,6 +23,8 @@ import AdminGames from "@/pages/admin/games";
 import AdminBlog from "@/pages/admin/blog";
 import AdminSettings from "@/pages/admin/settings";
 import AdminHomepageContent from "@/pages/admin/homepage-content";
+import AdminPagesPage from "@/pages/admin/pages-page";
+import AdminPageEditPage from "@/pages/admin/page-edit-page";
 import { Providers } from "./lib/providers";
 import { ProtectedRoute } from "./lib/protected-route";
 import { useAuth } from "@/hooks/use-auth";
@@ -53,6 +55,8 @@ function Router() {
       <ProtectedRoute path="/admin/blog" component={AdminBlog} adminOnly={true} />
       <ProtectedRoute path="/admin/homepage-content" component={AdminHomepageContent} adminOnly={true} />
       <ProtectedRoute path="/admin/settings" component={AdminSettings} adminOnly={true} />
+      <ProtectedRoute path="/admin/pages" component={AdminPagesPage} adminOnly={true} />
+      <ProtectedRoute path="/admin/pages/:id" component={AdminPageEditPage} adminOnly={true} />
       
       {/* Fallback to 404 */}
       <Route component={NotFound} />
@@ -100,6 +104,12 @@ const AdminHelperNav = () => {
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h7" />
           </svg>
           Content
+        </a>
+        <a href="/admin/pages" className="flex items-center gap-1 hover:text-blue-300 transition-colors">
+          <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+          </svg>
+          Pages
         </a>
         <a href="/admin/settings" className="flex items-center gap-1 hover:text-blue-300 transition-colors">
           <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
