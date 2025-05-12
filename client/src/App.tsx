@@ -55,6 +55,7 @@ function Router() {
       <ProtectedRoute path="/admin/games" component={AdminGames} adminOnly={true} />
       <ProtectedRoute path="/admin/blog" component={AdminBlog} adminOnly={true} />
       <ProtectedRoute path="/admin/homepage-content" component={AdminHomepageContent} adminOnly={true} />
+      <ProtectedRoute path="/admin/api-keys" component={AdminApiKeysPage} adminOnly={true} />
       <ProtectedRoute path="/admin/settings" component={AdminSettings} adminOnly={true} />
       <ProtectedRoute path="/admin/pages" component={AdminPagesPage} adminOnly={true} />
       <ProtectedRoute path="/admin/pages/:id" component={AdminPageEditPage} adminOnly={true} />
@@ -111,6 +112,12 @@ const AdminHelperNav = () => {
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h7" />
           </svg>
           Content
+        </a>
+        <a href="/admin/api-keys" className="flex items-center gap-1 hover:text-blue-300 transition-colors">
+          <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z" />
+          </svg>
+          API Keys
         </a>
         <a 
           href="/" 

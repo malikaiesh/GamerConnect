@@ -1,6 +1,7 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Editor } from '@tinymce/tinymce-react';
 import { Label } from '@/components/ui/label';
+import { useQuery } from '@tanstack/react-query';
 
 interface RichTextEditorProps {
   id: string;
@@ -20,6 +21,30 @@ export function RichTextEditor({
   error
 }: RichTextEditorProps) {
   const editorRef = useRef<any>(null);
+  const [apiKey, setApiKey] = useState<string | null>(null);
+  
+  // Fetch TinyMCE API key from the database
+  const { data: tinyMceApiKey } = useQuery({
+    queryKey: ['/api/api-keys/type/tinymce'],
+    queryFn: async () => {
+      try {
+        const res = await fetch('/api/api-keys/type/tinymce');
+        if (!res.ok) return null;
+        const data = await res.json();
+        return data;
+      } catch (error) {
+        console.error('Error fetching TinyMCE API key:', error);
+        return null;
+      }
+    }
+  });
+  
+  useEffect(() => {
+    // Set API key when data is loaded
+    if (tinyMceApiKey && tinyMceApiKey.key) {
+      setApiKey(tinyMceApiKey.key);
+    }
+  }, [tinyMceApiKey]);
   
   useEffect(() => {
     // Cleanup TinyMCE on component unmount
@@ -35,7 +60,7 @@ export function RichTextEditor({
       {label && <Label htmlFor={id}>{label}</Label>}
       <Editor
         id={id}
-        apiKey="7m14cqmqt0orpe024qq0jh600cbltgk2kxavr07f92sihixj" // Using the provided TinyMCE API key
+        apiKey={apiKey || import.meta.env.VITE_TINYMCE_API_KEY || '7m14cqmqt0orpe024qq0jh600cbltgk2kxavr07f92sihixj'} // Try: DB, environment variable, then fallback
         onInit={(evt, editor) => editorRef.current = editor}
         value={value}
         onEditorChange={(newValue) => onChange(newValue)}
