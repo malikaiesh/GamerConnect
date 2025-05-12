@@ -29,6 +29,8 @@ import AdminPageEditPage from "@/pages/admin/page-edit-page";
 import AdminApiKeysPage from "@/pages/admin/api-keys-page";
 import AdminHomeAdsPage from "@/pages/admin/home-ads-page";
 import AdminSitemapsPage from "@/pages/admin/sitemaps-page";
+import AdminBlogAdsPage from "@/pages/admin/blog-ads-page";
+import AdminCustomCodePage from "@/pages/admin/custom-code-page";
 import { Providers } from "./lib/providers";
 import { ProtectedRoute } from "./lib/protected-route";
 import { useAuth } from "@/hooks/use-auth";
@@ -62,6 +64,8 @@ function Router() {
       <ProtectedRoute path="/admin/homepage-content" component={AdminHomepageContent} adminOnly={true} />
       <ProtectedRoute path="/admin/api-keys" component={AdminApiKeysPage} adminOnly={true} />
       <ProtectedRoute path="/admin/home-ads" component={AdminHomeAdsPage} adminOnly={true} />
+      <ProtectedRoute path="/admin/blog-ads" component={AdminBlogAdsPage} adminOnly={true} />
+      <ProtectedRoute path="/admin/custom-code" component={AdminCustomCodePage} adminOnly={true} />
       <ProtectedRoute path="/admin/sitemaps" component={AdminSitemapsPage} adminOnly={true} />
       <ProtectedRoute path="/admin/settings" component={AdminSettings} adminOnly={true} />
       <ProtectedRoute path="/admin/pages" component={AdminPagesPage} adminOnly={true} />
@@ -125,6 +129,18 @@ const AdminHelperNav = () => {
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z" />
           </svg>
           API Keys
+        </a>
+        <a href="/admin/blog-ads" className="flex items-center gap-1 hover:text-blue-300 transition-colors">
+          <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+          </svg>
+          Blog Ads
+        </a>
+        <a href="/admin/custom-code" className="flex items-center gap-1 hover:text-blue-300 transition-colors">
+          <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" />
+          </svg>
+          Custom Code
         </a>
         <a href="/admin/sitemaps" className="flex items-center gap-1 hover:text-blue-300 transition-colors">
           <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
