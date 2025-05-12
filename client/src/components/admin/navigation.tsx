@@ -108,8 +108,10 @@ export function AdminNavigation() {
             </Link>
           </li>
           <li>
-            <Link
+            <a 
               href="/"
+              target="_blank"
+              rel="noopener noreferrer"
               className={cn(
                 "flex items-center gap-3 px-3 py-2 rounded-lg transition-colors",
                 "text-gray-300 hover:bg-gray-800 bg-gray-800/50"
@@ -117,7 +119,7 @@ export function AdminNavigation() {
             >
               <Home size={18} />
               View Site
-            </Link>
+            </a>
           </li>
           <li>
             <Link
