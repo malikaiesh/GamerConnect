@@ -43,6 +43,9 @@ export function RichTextEditor({
     // Set API key when data is loaded
     if (tinyMceApiKey && tinyMceApiKey.key) {
       setApiKey(tinyMceApiKey.key);
+      console.log('TinyMCE API key loaded from database');
+    } else {
+      console.log('Using fallback TinyMCE API key');
     }
   }, [tinyMceApiKey]);
   
