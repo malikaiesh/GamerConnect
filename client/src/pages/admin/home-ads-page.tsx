@@ -55,25 +55,27 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { Loader2, Plus, Trash, Edit, Eye, EyeOff } from "lucide-react";
+import { Loader2, Plus, Trash, Edit, Eye, EyeOff, ToggleLeft, ToggleRight } from "lucide-react";
 
 // Form schema
 const homeAdFormSchema = z.object({
   position: z.string().min(1, "Please select a position"),
   adCode: z.string().min(1, "Ad code is required"),
   status: z.string().min(1, "Please select a status"),
+  isGoogleAd: z.boolean().default(false),
+  adEnabled: z.boolean().default(true),
 });
 
 type HomeAdFormValues = z.infer<typeof homeAdFormSchema>;
 
 // Home Ad positions
 const AD_POSITIONS = [
-  { value: "above_featured_games", label: "Above Featured Games (728x90)" },
-  { value: "below_featured_games", label: "Below Featured Games (728x90)" },
-  { value: "above_popular_games", label: "Above Popular Games (728x90)" },
-  { value: "below_popular_games", label: "Below Popular Games (728x90)" },
-  { value: "above_about_section", label: "Above About Section (728x90)" },
-  { value: "below_about_section", label: "Below About Section (728x90)" },
+  { value: "above_featured", label: "Above Featured Games (728x90)" },
+  { value: "below_featured", label: "Below Featured Games (728x90)" },
+  { value: "above_popular", label: "Above Popular Games (728x90)" },
+  { value: "below_popular", label: "Below Popular Games (728x90)" },
+  { value: "above_about", label: "Above About Section (728x90)" },
+  { value: "below_about", label: "Below About Section (728x90)" },
 ];
 
 export default function AdminHomeAdsPage() {
@@ -174,6 +176,8 @@ export default function AdminHomeAdsPage() {
       position: "",
       adCode: "",
       status: "active",
+      isGoogleAd: false,
+      adEnabled: true,
     },
   });
 
@@ -184,6 +188,8 @@ export default function AdminHomeAdsPage() {
       position: "",
       adCode: "",
       status: "active",
+      isGoogleAd: false,
+      adEnabled: true,
     },
   });
 
