@@ -19,6 +19,7 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
+import { RichTextEditor } from "@/components/admin/rich-text-editor";
 import {
   Select,
   SelectContent,
@@ -384,11 +385,14 @@ export function GameForm({ game, onSuccess }: GameFormProps) {
                 <FormItem>
                   <FormLabel>Description</FormLabel>
                   <FormControl>
-                    <Textarea
-                      placeholder="Game description"
-                      className="min-h-32"
-                      {...field}
-                    />
+                    <div className="border rounded-md">
+                      <RichTextEditor
+                        id="game-description-editor"
+                        value={field.value}
+                        onChange={field.onChange}
+                        height={350}
+                      />
+                    </div>
                   </FormControl>
                   <FormMessage />
                 </FormItem>

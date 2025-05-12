@@ -243,14 +243,17 @@ export default function PageEditPage() {
                           <FormItem>
                             <FormLabel>Content</FormLabel>
                             <FormControl>
-                              <Textarea
-                                placeholder="Enter page content here..."
-                                className="min-h-[300px] font-mono"
-                                {...field}
-                              />
+                              <div className="border rounded-md">
+                                <RichTextEditor
+                                  id="page-content-editor"
+                                  value={field.value}
+                                  onChange={field.onChange}
+                                  height={400}
+                                />
+                              </div>
                             </FormControl>
                             <FormDescription>
-                              Support HTML and formatting. Use &lt;h1&gt;, &lt;p&gt;, &lt;ul&gt;, etc. for formatting.
+                              Use the rich text editor tools for formatting with headings, lists, images, and other elements.
                             </FormDescription>
                             <FormMessage />
                           </FormItem>
