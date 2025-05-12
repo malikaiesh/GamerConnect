@@ -131,7 +131,7 @@ export default function HomePage() {
       />
       
       {/* Ad Above Featured Games */}
-      <HomeAd position="above_featured_games" />
+      <HomeAd position="above_featured" />
       
       {/* Featured Games Section */}
       <section id="featured" className="py-10">
@@ -155,7 +155,7 @@ export default function HomePage() {
       </section>
       
       {/* Ad Below Featured Games */}
-      <HomeAd position="below_featured_games" />
+      <HomeAd position="below_featured" />
       
       {/* Random Game Banner */}
       <section className="py-8 bg-primary-50 dark:bg-primary-900/20">
@@ -191,7 +191,7 @@ export default function HomePage() {
       </section>
       
       {/* Ad Above Popular Games */}
-      <HomeAd position="above_popular_games" />
+      <HomeAd position="above_popular" />
       
       {/* Popular Games Section */}
       <section id="games" className="py-10">
@@ -221,7 +221,7 @@ export default function HomePage() {
       </section>
       
       {/* Ad Below Popular Games */}
-      <HomeAd position="below_popular_games" />
+      <HomeAd position="below_popular" />
       
       {/* Blog Section */}
       <section className="py-10 bg-muted/30">
