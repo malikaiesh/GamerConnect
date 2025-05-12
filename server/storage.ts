@@ -229,6 +229,11 @@ class DatabaseStorage implements IStorage {
     const result = await db.select().from(games).where(eq(games.id, id)).limit(1);
     return result.length ? result[0] : null;
   }
+  
+  async getGameBySlug(slug: string): Promise<Game | null> {
+    const result = await db.select().from(games).where(eq(games.slug, slug)).limit(1);
+    return result.length ? result[0] : null;
+  }
 
   async getGameCategories(): Promise<string[]> {
     const result = await db.select({ category: games.category }).from(games).groupBy(games.category);
