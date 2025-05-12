@@ -11,6 +11,7 @@ export const blogStatusEnum = pgEnum('blog_status', ['draft', 'published']);
 export const notificationTypeEnum = pgEnum('notification_type', ['alert', 'banner', 'modal', 'slide-in', 'toast']);
 export const contentStatusEnum = pgEnum('content_status', ['active', 'inactive']);
 export const pageTypeEnum = pgEnum('page_type', ['about', 'contact', 'privacy', 'terms', 'cookie-policy', 'faq', 'custom']);
+export const apiKeyTypeEnum = pgEnum('api_key_type', ['tinymce', 'game-monetize', 'analytics', 'custom']);
 
 // Users table
 export const users = pgTable('users', {
@@ -139,6 +140,18 @@ export const analytics = pgTable('analytics', {
   averageSessionDuration: integer('average_session_duration').default(0).notNull(),
   topGames: json('top_games').default({}).notNull(),
   topPages: json('top_pages').default({}).notNull()
+});
+
+// API Keys table
+export const apiKeys = pgTable('api_keys', {
+  id: serial('id').primaryKey(),
+  name: text('name').notNull(),
+  type: apiKeyTypeEnum('type').notNull(),
+  key: text('key').notNull(),
+  description: text('description'),
+  isActive: boolean('is_active').default(true).notNull(),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+  updatedAt: timestamp('updated_at').defaultNow().notNull()
 });
 
 // HomePage Content table
@@ -287,3 +300,13 @@ export type InsertHomePageContent = z.infer<typeof insertHomePageContentSchema>;
 
 export type StaticPage = typeof staticPages.$inferSelect;
 export type InsertStaticPage = z.infer<typeof insertStaticPageSchema>;
+
+// Add schema validation for API Keys
+export const insertApiKeySchema = createInsertSchema(apiKeys, {
+  name: (schema) => schema.min(3, "Name must be at least 3 characters"),
+  key: (schema) => schema.min(5, "API key must be at least 5 characters"),
+  description: (schema) => schema.optional().nullable()
+});
+
+export type ApiKey = typeof apiKeys.$inferSelect;
+export type InsertApiKey = z.infer<typeof insertApiKeySchema>;
