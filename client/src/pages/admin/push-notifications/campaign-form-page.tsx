@@ -101,9 +101,9 @@ export default function CampaignFormPage() {
         link: campaign.link || "",
         actionYes: campaign.actionYes || "",
         actionNo: campaign.actionNo || "",
-        isSurvey: campaign.isSurvey,
-        targetAll: campaign.targetAll,
-        targetFilters: campaign.targetFilters,
+        isSurvey: campaign.isSurvey || false,
+        targetAll: campaign.targetAll || false,
+        targetFilters: campaign.targetFilters || {},
         scheduleDate: campaign.scheduleDate ? new Date(campaign.scheduleDate) : null,
         status: campaign.status,
       });

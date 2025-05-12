@@ -6,9 +6,10 @@ import { Redirect } from "wouter";
 interface AdminLayoutProps {
   children: ReactNode;
   title?: string;
+  description?: string;
 }
 
-export function AdminLayout({ children, title }: AdminLayoutProps) {
+export function AdminLayout({ children, title, description }: AdminLayoutProps) {
   const { user } = useAuth();
 
   if (!user?.isAdmin) {
@@ -25,6 +26,11 @@ export function AdminLayout({ children, title }: AdminLayoutProps) {
               <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">
                 {title}
               </h1>
+              {description && (
+                <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">
+                  {description}
+                </p>
+              )}
             </div>
           </div>
         )}
