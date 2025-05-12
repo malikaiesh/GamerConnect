@@ -23,7 +23,6 @@ const seoSettingsSchema = z.object({
   siteFavicon: z.string().url().optional().nullable(),
   useTextLogo: z.boolean().default(true),
   textLogoColor: z.string().default("#4f46e5"),
-  adsTxt: z.string().optional(),
 });
 
 type SeoSettingsFormValues = z.infer<typeof seoSettingsSchema>;
@@ -102,10 +101,9 @@ export function SeoSettings() {
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
             <Tabs defaultValue="meta" className="w-full">
-              <TabsList className="grid grid-cols-3 mb-4">
+              <TabsList className="grid grid-cols-2 mb-4">
                 <TabsTrigger value="meta">Meta Data</TabsTrigger>
                 <TabsTrigger value="branding">Logo & Branding</TabsTrigger>
-                <TabsTrigger value="ads">Ads.txt</TabsTrigger>
               </TabsList>
               
               {/* Meta Data Tab */}
@@ -294,31 +292,6 @@ export function SeoSettings() {
                       </FormControl>
                       <FormDescription>
                         Enter the URL of your site favicon (recommended size: 32x32px, formats: .ico, .png)
-                      </FormDescription>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </TabsContent>
-              
-              {/* Ads.txt Tab */}
-              <TabsContent value="ads" className="space-y-4">
-                <FormField
-                  control={form.control}
-                  name="adsTxt"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Ads.txt Content</FormLabel>
-                      <FormControl>
-                        <Textarea
-                          placeholder="google.com, pub-0000000000000000, DIRECT, f08c47fec0942fa0"
-                          rows={10}
-                          {...field}
-                          value={field.value || ""}
-                        />
-                      </FormControl>
-                      <FormDescription>
-                        Content for your ads.txt file. This is used by ad networks to combat ad fraud. Paste the content provided by your ad partners.
                       </FormDescription>
                       <FormMessage />
                     </FormItem>
