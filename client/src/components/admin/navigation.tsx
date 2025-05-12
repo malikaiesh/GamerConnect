@@ -1,7 +1,7 @@
 import { Link, useLocation } from "wouter";
 import { useAuth } from "@/hooks/use-auth";
 import { cn } from "@/lib/utils";
-import { Gamepad2, Book, Settings, LayoutDashboard, FileText, LogOut, Home, FileSymlink } from "lucide-react";
+import { Gamepad2, Book, Settings, LayoutDashboard, FileText, LogOut, Home, FileSymlink, Key } from "lucide-react";
 
 export function AdminNavigation() {
   const [location] = useLocation();
@@ -120,6 +120,20 @@ export function AdminNavigation() {
               <Home size={18} />
               View Site
             </a>
+          </li>
+          <li>
+            <Link
+              href="/admin/api-keys"
+              className={cn(
+                "flex items-center gap-3 px-3 py-2 rounded-lg transition-colors",
+                isActive("/admin/api-keys")
+                  ? "bg-primary text-white"
+                  : "text-gray-300 hover:bg-gray-800"
+              )}
+            >
+              <Key size={18} />
+              API Keys
+            </Link>
           </li>
           <li>
             <Link

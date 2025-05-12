@@ -25,6 +25,7 @@ import AdminSettings from "@/pages/admin/settings";
 import AdminHomepageContent from "@/pages/admin/homepage-content";
 import AdminPagesPage from "@/pages/admin/pages-page";
 import AdminPageEditPage from "@/pages/admin/page-edit-page";
+import AdminApiKeysPage from "@/pages/admin/api-keys-page";
 import { Providers } from "./lib/providers";
 import { ProtectedRoute } from "./lib/protected-route";
 import { useAuth } from "@/hooks/use-auth";
