@@ -1,4 +1,4 @@
-import { AdminNavigation } from "@/components/admin/navigation";
+import AdminNavigation from "@/components/admin/navigation";
 import { Analytics } from "@/components/admin/dashboard/analytics";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useQuery } from "@tanstack/react-query";

@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { AdminNavigation } from "@/components/admin/navigation";
+import AdminNavigation from "@/components/admin/navigation";
 import { PostsList } from "@/components/admin/blog/posts-list";
 import { BlogForm } from "@/components/admin/blog/blog-form";
 import { BlogPost } from "@shared/schema";

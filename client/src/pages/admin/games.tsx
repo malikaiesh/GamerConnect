@@ -1,4 +1,4 @@
-import { AdminNavigation } from "@/components/admin/navigation";
+import AdminNavigation from "@/components/admin/navigation";
 import GamesAdminPage from "./games-page";
 
 export default function AdminGames() {

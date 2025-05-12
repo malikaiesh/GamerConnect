@@ -1,4 +1,4 @@
-import { AdminNavigation } from "@/components/admin/navigation";
+import AdminNavigation from "@/components/admin/navigation";
 import { GeneralSettings } from "@/components/admin/settings/general-settings";
 import { SeoSettings } from "@/components/admin/settings/seo-settings";
 import { AdsSettings } from "@/components/admin/settings/ads-settings";

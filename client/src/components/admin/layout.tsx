@@ -1,5 +1,5 @@
 import { ReactNode } from "react";
-import { AdminNavigation } from "./navigation";
+import AdminNavigation from "./navigation";
 import { useAuth } from "@/hooks/use-auth";
 import { Redirect } from "wouter";
 
