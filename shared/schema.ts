@@ -192,6 +192,8 @@ export const homeAds = pgTable('home_ads', {
   targetUrl: text('target_url'),
   startDate: timestamp('start_date'),
   endDate: timestamp('end_date'),
+  isGoogleAd: boolean('is_google_ad').default(false).notNull(),
+  adEnabled: boolean('ad_enabled').default(true).notNull(),
   clickCount: integer('click_count').default(0).notNull(),
   impressionCount: integer('impression_count').default(0).notNull(),
   createdAt: timestamp('created_at').defaultNow().notNull(),
@@ -335,7 +337,9 @@ export const insertHomeAdSchema = createInsertSchema(homeAds, {
   imageUrl: (schema) => schema.url("Image URL must be a valid URL").optional().nullable(),
   targetUrl: (schema) => schema.url("Target URL must be a valid URL").optional().nullable(),
   startDate: (schema) => schema.optional().nullable(),
-  endDate: (schema) => schema.optional().nullable()
+  endDate: (schema) => schema.optional().nullable(),
+  isGoogleAd: (schema) => schema.optional().default(false),
+  adEnabled: (schema) => schema.optional().default(true)
 });
 
 export type ApiKey = typeof apiKeys.$inferSelect;
