@@ -355,17 +355,131 @@ class DatabaseStorage implements IStorage {
   }
 
   async getFeaturedGames(limit = 10): Promise<Game[]> {
-    return db.select().from(games).where(eq(games.status, 'featured')).orderBy(desc(games.createdAt)).limit(limit);
+    try {
+      return db.select().from(games).where(eq(games.status, 'featured')).orderBy(desc(games.createdAt)).limit(limit);
+    } catch (error) {
+      console.error('Error in getFeaturedGames:', error);
+      // Fallback if the slug column doesn't exist yet
+      const result = await db.execute(`
+        SELECT id, title, description, thumbnail, url, api_id, category, tags, source, 
+               status, plays, rating_sum, rating_count, file_type, file_path, file_size, 
+               orientation, instructions, screenshot1, screenshot2, screenshot3, screenshot4,
+               app_store_url, play_store_url, amazon_app_store_url, created_at, updated_at
+        FROM games 
+        WHERE status = 'featured' 
+        ORDER BY created_at DESC 
+        LIMIT $1
+      `, [limit]);
+      
+      return result.map(row => {
+        const tempSlug = this.createSlugFromTitle(row.title);
+        
+        return {
+          id: row.id,
+          title: row.title,
+          slug: tempSlug,
+          description: row.description,
+          thumbnail: row.thumbnail,
+          url: row.url,
+          apiId: row.api_id,
+          category: row.category,
+          tags: row.tags,
+          source: row.source,
+          status: row.status,
+          plays: row.plays,
+          rating: row.rating_sum,
+          ratingCount: row.rating_count,
+          fileType: row.file_type,
+          filePath: row.file_path,
+          fileSize: row.file_size,
+          orientation: row.orientation,
+          instructions: row.instructions,
+          screenshot1: row.screenshot1,
+          screenshot2: row.screenshot2,
+          screenshot3: row.screenshot3,
+          screenshot4: row.screenshot4,
+          appStoreUrl: row.app_store_url,
+          playStoreUrl: row.play_store_url,
+          amazonAppStoreUrl: row.amazon_app_store_url,
+          createdAt: row.created_at,
+          updatedAt: row.updated_at
+        };
+      });
+    }
   }
 
   async getPopularGames(category?: string, limit = 20): Promise<Game[]> {
-    let query = db.select().from(games).where(eq(games.status, 'active'));
-    
-    if (category && category !== 'all') {
-      query = query.where(eq(games.category, category));
+    try {
+      let query = db.select().from(games).where(eq(games.status, 'active'));
+      
+      if (category && category !== 'all') {
+        query = query.where(eq(games.category, category));
+      }
+      
+      return query.orderBy(desc(games.plays)).limit(limit);
+    } catch (error) {
+      console.error('Error in getPopularGames:', error);
+      // Fallback if the slug column doesn't exist yet
+      let sql = `
+        SELECT id, title, description, thumbnail, url, api_id, category, tags, source, 
+               status, plays, rating_sum, rating_count, file_type, file_path, file_size, 
+               orientation, instructions, screenshot1, screenshot2, screenshot3, screenshot4,
+               app_store_url, play_store_url, amazon_app_store_url, created_at, updated_at
+        FROM games 
+        WHERE status = 'active'
+      `;
+      
+      const params = [];
+      
+      if (category && category !== 'all') {
+        sql += ` AND category = $1`;
+        params.push(category);
+      }
+      
+      sql += ` ORDER BY plays DESC LIMIT $${params.length + 1}`;
+      params.push(limit);
+      
+      const result = await db.execute(sql, params);
+      
+      return result.map(row => ({
+        id: row.id,
+        title: row.title,
+        slug: createSlugFromTitle(row.title), // Generate a temporary slug from title
+        description: row.description,
+        thumbnail: row.thumbnail,
+        url: row.url,
+        apiId: row.api_id,
+        category: row.category,
+        tags: row.tags,
+        source: row.source,
+        status: row.status,
+        plays: row.plays,
+        rating: row.rating_sum,
+        ratingCount: row.rating_count,
+        fileType: row.file_type,
+        filePath: row.file_path,
+        fileSize: row.file_size,
+        orientation: row.orientation,
+        instructions: row.instructions,
+        screenshot1: row.screenshot1,
+        screenshot2: row.screenshot2,
+        screenshot3: row.screenshot3,
+        screenshot4: row.screenshot4,
+        appStoreUrl: row.app_store_url,
+        playStoreUrl: row.play_store_url,
+        amazonAppStoreUrl: row.amazon_app_store_url,
+        createdAt: row.created_at,
+        updatedAt: row.updated_at
+      }));
     }
-    
-    return query.orderBy(desc(games.plays)).limit(limit);
+  }
+  
+  // Helper function to create a temporary slug from a title
+  private createSlugFromTitle(title: string): string {
+    return title
+      .toLowerCase()
+      .replace(/[^\w ]+/g, '')
+      .replace(/ +/g, '-');
   }
 
   async getGameStats(): Promise<{ totalGames: number, totalPlays: number, playsThisWeek: number, newGamesPercent: number }> {
