@@ -10,7 +10,7 @@ export function isAuthenticated(req: Request, res: Response, next: NextFunction)
 
 // Admin role middleware - must be used after isAuthenticated
 export function isAdmin(req: Request, res: Response, next: NextFunction) {
-  if (req.user?.role === "admin") {
+  if (req.user?.isAdmin) {
     return next();
   }
   res.status(403).json({ message: "Not authorized" });
