@@ -143,6 +143,28 @@ export default function PushNotificationSubscribersPage() {
   const handleExport = () => {
     downloadSubscribersMutation.mutate();
   };
+  
+  const handleBulkWebPushUpdate = (enabled: boolean, subscribers: PushSubscriber[]) => {
+    if (subscribers.length === 0) {
+      toast({
+        title: "No subscribers selected",
+        description: "Please select at least one subscriber to update.",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    const confirmMessage = enabled 
+      ? `Allow web push notifications for ${subscribers.length} subscribers?` 
+      : `Disable web push notifications for ${subscribers.length} subscribers?`;
+      
+    if (confirm(confirmMessage)) {
+      bulkUpdateWebPushMutation.mutate({ 
+        ids: subscribers.map(s => s.id), 
+        enabled 
+      });
+    }
+  };
 
   const columns: ColumnDef<PushSubscriber>[] = [
     {
@@ -366,12 +388,34 @@ export default function PushNotificationSubscribersPage() {
               <Skeleton className="h-64 w-full" />
             </div>
           ) : subscribers && subscribers.length > 0 ? (
-            <DataTable
-              data={subscribers}
-              columns={columns}
-              searchField="endpoint"
-              pagination
-            />
+            <>
+              <div className="flex gap-3 mb-4">
+                <Button 
+                  variant="outline" 
+                  className="border-green-500 text-green-600 hover:bg-green-50"
+                  onClick={() => handleBulkWebPushUpdate(true, subscribers)}
+                  disabled={bulkUpdateWebPushMutation.isPending}
+                >
+                  <Bell className="h-4 w-4 mr-2" />
+                  Allow Web Push for All
+                </Button>
+                <Button 
+                  variant="outline" 
+                  className="border-red-500 text-red-600 hover:bg-red-50"
+                  onClick={() => handleBulkWebPushUpdate(false, subscribers)}
+                  disabled={bulkUpdateWebPushMutation.isPending}
+                >
+                  <BellOff className="h-4 w-4 mr-2" />
+                  Disable Web Push for All
+                </Button>
+              </div>
+              <DataTable
+                data={subscribers}
+                columns={columns}
+                searchField="endpoint"
+                pagination
+              />
+            </>
           ) : (
             <div className="text-center py-10 border rounded-lg">
               <Users className="mx-auto h-12 w-12 text-muted-foreground" />
@@ -390,12 +434,25 @@ export default function PushNotificationSubscribersPage() {
               <Skeleton className="h-64 w-full" />
             </div>
           ) : subscribers && subscribers.filter(s => s.webPushEnabled).length > 0 ? (
-            <DataTable
-              data={subscribers.filter(s => s.webPushEnabled)}
-              columns={columns}
-              searchField="endpoint"
-              pagination
-            />
+            <>
+              <div className="flex gap-3 mb-4">
+                <Button 
+                  variant="outline" 
+                  className="border-red-500 text-red-600 hover:bg-red-50"
+                  onClick={() => handleBulkWebPushUpdate(false, subscribers.filter(s => s.webPushEnabled))}
+                  disabled={bulkUpdateWebPushMutation.isPending}
+                >
+                  <BellOff className="h-4 w-4 mr-2" />
+                  Disable Web Push for All Listed
+                </Button>
+              </div>
+              <DataTable
+                data={subscribers.filter(s => s.webPushEnabled)}
+                columns={columns}
+                searchField="endpoint"
+                pagination
+              />
+            </>
           ) : (
             <div className="text-center py-10 border rounded-lg">
               <Bell className="mx-auto h-12 w-12 text-muted-foreground" />
@@ -414,12 +471,25 @@ export default function PushNotificationSubscribersPage() {
               <Skeleton className="h-64 w-full" />
             </div>
           ) : subscribers && subscribers.filter(s => !s.webPushEnabled).length > 0 ? (
-            <DataTable
-              data={subscribers.filter(s => !s.webPushEnabled)}
-              columns={columns}
-              searchField="endpoint"
-              pagination
-            />
+            <>
+              <div className="flex gap-3 mb-4">
+                <Button 
+                  variant="outline" 
+                  className="border-green-500 text-green-600 hover:bg-green-50"
+                  onClick={() => handleBulkWebPushUpdate(true, subscribers.filter(s => !s.webPushEnabled))}
+                  disabled={bulkUpdateWebPushMutation.isPending}
+                >
+                  <Bell className="h-4 w-4 mr-2" />
+                  Allow Web Push for All Listed
+                </Button>
+              </div>
+              <DataTable
+                data={subscribers.filter(s => !s.webPushEnabled)}
+                columns={columns}
+                searchField="endpoint"
+                pagination
+              />
+            </>
           ) : (
             <div className="text-center py-10 border rounded-lg">
               <BellOff className="mx-auto h-12 w-12 text-muted-foreground" />
