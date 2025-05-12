@@ -171,6 +171,9 @@ export function Header() {
               <Link href="/top-games" className="font-medium text-foreground hover:text-primary transition-colors">
                 Top Games
               </Link>
+              <Link href="/random" className="font-medium text-foreground hover:text-primary transition-colors">
+                Random Game
+              </Link>
               <Link href="/blog" className="font-medium text-foreground hover:text-primary transition-colors">
                 Blog
               </Link>

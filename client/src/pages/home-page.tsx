@@ -9,6 +9,8 @@ import { BlogList } from '@/components/blog/blog-list';
 import { Rating } from '@/components/ui/rating';
 import { PushNotification } from '@/components/push-notification';
 import { HomepageContent } from '@/components/home/homepage-content';
+import { RandomGameButton } from '@/components/home/random-game-button';
+import { RandomGameSection } from '@/components/games/random-game-section';
 import { Game, BlogPost, PushNotification as PushNotificationType } from '@shared/schema';
 import { apiRequest } from '@/lib/queryClient';
 
@@ -97,13 +99,18 @@ export default function HomePage() {
               <p className="text-lg md:text-xl mb-6 opacity-90">
                 Discover thousands of free games across all genres. No downloads required - play instantly in your browser!
               </p>
-              <div className="flex space-x-4">
+              <div className="flex flex-wrap gap-4">
                 <Link href="#games" className="btn-secondary">
                   Play Now
                 </Link>
                 <Link href="#categories" className="bg-white/20 hover:bg-white/30 text-primary-foreground font-bold py-3 px-6 rounded-lg transition-colors backdrop-blur-sm">
                   Browse Categories
                 </Link>
+                <RandomGameButton 
+                  variant="outline" 
+                  size="lg"
+                  className="border-white text-white hover:bg-white/20"
+                />
               </div>
             </div>
             <div className="md:w-1/2 relative">
@@ -220,6 +227,9 @@ export default function HomePage() {
           />
         </div>
       </section>
+      
+      {/* Random Game Section */}
+      <RandomGameSection />
       
       {/* Homepage Content Section */}
       <section className="py-10">
