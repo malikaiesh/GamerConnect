@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useRoute } from 'wouter';
 import { useQuery } from '@tanstack/react-query';
 import { format } from 'date-fns';
@@ -7,8 +7,9 @@ import { Footer } from '@/components/layout/footer';
 import { BlogList } from '@/components/blog/blog-list';
 import { SocialShare } from '@/components/shared/social-share';
 import { SocialShareButtons } from '@/components/shared/social-share-buttons';
-import { BlogPost, PushNotification as PushNotificationType } from '@shared/schema';
+import { BlogPost, PushNotification as PushNotificationType, SiteSetting } from '@shared/schema';
 import { PushNotification } from '@/components/push-notification';
+import { BlogAd } from '@/components/ads/blog-ad';
 import { apiRequest } from '@/lib/queryClient';
 import { Loader2 } from 'lucide-react';
 
@@ -29,6 +30,11 @@ export default function BlogPostPage() {
     queryFn: () => 
       post ? fetch(`/api/blog/posts/related?categoryId=${post.categoryId}&excludeId=${post.id}`).then(res => res.json()) : [],
     enabled: !!post?.id,
+  });
+
+  // Fetch site settings for ads
+  const { data: settings } = useQuery<SiteSetting>({
+    queryKey: ['/api/settings'],
   });
   
   // Fetch active push notifications
@@ -82,6 +88,48 @@ export default function BlogPostPage() {
       trackNotificationImpression(activeNotification.id);
     }
   }, [activeNotification]);
+  
+  // Process the content HTML to insert ads at specific paragraph positions
+  const processedContent = useMemo(() => {
+    if (!post?.content) {
+      return '';
+    }
+    
+    // Create a temporary div to parse the HTML content
+    const tempDiv = document.createElement('div');
+    tempDiv.innerHTML = post.content;
+    
+    // Find all paragraphs
+    const paragraphs = tempDiv.querySelectorAll('p');
+    
+    if (paragraphs.length <= 2) {
+      // If there are 2 or fewer paragraphs, don't insert paragraph ads
+      return post.content;
+    }
+    
+    // Insert ad markers after specific paragraphs
+    const adPositions = [
+      { index: 2, type: 'paragraph2' },
+      { index: 4, type: 'paragraph4' },
+      { index: 6, type: 'paragraph6' },
+      { index: 8, type: 'paragraph8' }
+    ];
+    
+    // Insert markers from the bottom up to avoid index shifting
+    adPositions
+      .filter(pos => pos.index < paragraphs.length) // Only process valid positions
+      .sort((a, b) => b.index - a.index) // Sort in descending order
+      .forEach(({ index, type }) => {
+        const paragraph = paragraphs[index];
+        if (paragraph) {
+          const marker = document.createElement('div');
+          marker.setAttribute('data-ad-position', type);
+          paragraph.after(marker);
+        }
+      });
+    
+    return tempDiv.innerHTML;
+  }, [post?.content]);
   
   if (isLoading) {
     return (
@@ -158,10 +206,65 @@ export default function BlogPostPage() {
         <div className="container mx-auto px-4 py-10">
           <div className="flex flex-col lg:flex-row gap-10">
             <article className="lg:w-2/3">
+              {/* Header Ad */}
+              <BlogAd type="header" className="mb-6" />
+              
               <div className="prose prose-lg dark:prose-invert max-w-none">
-                {/* Render post content - this would normally use a rich text renderer */}
-                <div dangerouslySetInnerHTML={{ __html: post.content }} />
+                {/* Render post content with ad markers */}
+                <div 
+                  className="blog-content-with-ads"
+                  dangerouslySetInnerHTML={{ __html: processedContent }}
+                  ref={(element) => {
+                    // After rendering, we need to find and replace the ad markers
+                    if (element) {
+                      // Find all ad position markers
+                      const adMarkers = element.querySelectorAll('[data-ad-position]');
+                      
+                      // Replace each marker with the actual ad component
+                      adMarkers.forEach(marker => {
+                        const position = marker.getAttribute('data-ad-position');
+                        if (position) {
+                          // Create a wrapper div for the ad
+                          const adWrapper = document.createElement('div');
+                          adWrapper.className = 'ad-wrapper my-6';
+                          
+                          // Create a placeholder that React can fill later
+                          const adPlaceholder = document.createElement('div');
+                          adPlaceholder.className = 'ad-placeholder';
+                          adPlaceholder.setAttribute('data-ad-type', position);
+                          
+                          // Add the placeholder to the wrapper
+                          adWrapper.appendChild(adPlaceholder);
+                          
+                          // Replace the marker with our wrapper
+                          marker.parentNode?.replaceChild(adWrapper, marker);
+                        }
+                      });
+                      
+                      // Now find all placeholders and render ads into them
+                      element.querySelectorAll('.ad-placeholder').forEach(placeholder => {
+                        const adType = placeholder.getAttribute('data-ad-type') as 'paragraph2' | 'paragraph4' | 'paragraph6' | 'paragraph8';
+                        if (adType) {
+                          // Create an ad element
+                          const adElement = document.createElement('div');
+                          adElement.className = 'blog-ad-container';
+                          placeholder.appendChild(adElement);
+                          
+                          // Render the BlogAd component into the container
+                          if (settings?.[`${adType}Ad` as keyof SiteSetting]) {
+                            const ad = document.createElement('div');
+                            ad.innerHTML = settings[`${adType}Ad` as keyof SiteSetting] as string;
+                            adElement.appendChild(ad);
+                          }
+                        }
+                      });
+                    }
+                  }}
+                />
               </div>
+              
+              {/* After Content Ad */}
+              <BlogAd type="afterContent" className="my-6" />
               
               {/* Tags */}
               {post.tags && post.tags.length > 0 && (
@@ -220,6 +323,9 @@ export default function BlogPostPage() {
             <aside className="lg:w-1/3">
               {/* Related Posts */}
               <div className="sticky top-24">
+                {/* Sidebar Ad */}
+                <BlogAd type="sidebar" className="mb-8" />
+                
                 <h3 className="text-xl font-bold mb-4">Related Articles</h3>
                 <div className="space-y-6">
                   {relatedPosts.length > 0 ? (
@@ -249,6 +355,11 @@ export default function BlogPostPage() {
                   ) : (
                     <p className="text-muted-foreground">No related articles found.</p>
                   )}
+                </div>
+                
+                {/* Second Sidebar Ad */}
+                <div className="my-8">
+                  <BlogAd type="sidebar" />
                 </div>
                 
                 {/* Share Buttons */}
@@ -294,6 +405,11 @@ export default function BlogPostPage() {
             />
           </div>
         </section>
+        
+        {/* Footer Ad */}
+        <div className="container mx-auto px-4 py-8">
+          <BlogAd type="footer" />
+        </div>
       </main>
       
       <Footer />
