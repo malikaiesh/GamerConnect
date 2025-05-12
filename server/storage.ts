@@ -54,6 +54,7 @@ export interface IStorage {
   // Game methods
   getGames(options?: GameQueryOptions): Promise<{ games: Game[], totalGames: number, totalPages: number }>;
   getGameById(id: number): Promise<Game | null>;
+  getGameBySlug(slug: string): Promise<Game | null>;
   getGameCategories(): Promise<string[]>;
   createGame(game: Omit<InsertGame, "createdAt" | "updatedAt">): Promise<Game>;
   updateGame(id: number, game: Partial<InsertGame>): Promise<Game | null>;

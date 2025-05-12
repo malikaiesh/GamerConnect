@@ -181,6 +181,40 @@ export function registerGameRoutes(app: Express) {
     }
   });
   
+  // Get a game by ID
+  app.get('/api/games/:id([0-9]+)', async (req: Request, res: Response) => {
+    try {
+      const id = parseInt(req.params.id);
+      const game = await storage.getGameById(id);
+      
+      if (!game) {
+        return res.status(404).json({ message: 'Game not found' });
+      }
+      
+      res.json(game);
+    } catch (error) {
+      console.error('Error fetching game by ID:', error);
+      res.status(500).json({ message: 'Failed to fetch game' });
+    }
+  });
+  
+  // Get a game by slug
+  app.get('/api/games/slug/:slug', async (req: Request, res: Response) => {
+    try {
+      const { slug } = req.params;
+      const game = await storage.getGameBySlug(slug);
+      
+      if (!game) {
+        return res.status(404).json({ message: 'Game not found' });
+      }
+      
+      res.json(game);
+    } catch (error) {
+      console.error('Error fetching game by slug:', error);
+      res.status(500).json({ message: 'Failed to fetch game' });
+    }
+  });
+  
   // Get related games
   app.get('/api/games/related', async (req: Request, res: Response) => {
     try {
