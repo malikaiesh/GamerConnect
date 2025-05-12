@@ -35,7 +35,7 @@ export function RichTextEditor({
       {label && <Label htmlFor={id}>{label}</Label>}
       <Editor
         id={id}
-        apiKey="no-api-key" // We're using the free version which works without a key in development
+        apiKey="7m14cqmqt0orpe024qq0jh600cbltgk2kxavr07f92sihixj" // Using the provided TinyMCE API key
         onInit={(evt, editor) => editorRef.current = editor}
         value={value}
         onEditorChange={(newValue) => onChange(newValue)}
