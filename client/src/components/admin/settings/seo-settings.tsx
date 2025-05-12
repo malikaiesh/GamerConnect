@@ -16,7 +16,10 @@ const seoSettingsSchema = z.object({
   siteTitle: z.string().min(3, { message: "Site title must be at least 3 characters" }),
   metaDescription: z.string().min(10, { message: "Meta description must be at least 10 characters" }),
   keywords: z.string(),
-  adsTxt: z.string().optional(),
+  siteLogo: z.string().url().optional().nullable(),
+  siteFavicon: z.string().url().optional().nullable(),
+  useTextLogo: z.boolean().optional(),
+  textLogoColor: z.string().optional(),
 });
 
 type SeoSettingsFormValues = z.infer<typeof seoSettingsSchema>;

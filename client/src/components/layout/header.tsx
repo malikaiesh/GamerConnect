@@ -3,6 +3,8 @@ import { Link, useLocation } from 'wouter';
 import { useAuth } from '@/hooks/use-auth';
 import { useTheme } from '@/hooks/use-theme';
 import { ThemeSwitcher } from '@/components/layout/theme-switcher';
+import { useQuery } from '@tanstack/react-query';
+import { SiteSetting } from '@shared/schema';
 
 export function Header() {
   const [isSearchOpen, setIsSearchOpen] = useState(false);
@@ -11,6 +13,18 @@ export function Header() {
   const { user, logoutMutation } = useAuth();
   const { darkMode, toggleMode } = useTheme();
   const [location, setLocation] = useLocation();
+  
+  // Fetch site settings for logo configuration
+  const { data: settings } = useQuery<SiteSetting>({
+    queryKey: ['/api/settings'],
+    queryFn: async () => {
+      const res = await fetch('/api/settings');
+      if (!res.ok) {
+        throw new Error('Failed to fetch site settings');
+      }
+      return res.json();
+    }
+  });
 
   // Close mobile menu when location changes
   useEffect(() => {
@@ -41,10 +55,23 @@ export function Header() {
           {/* Logo */}
           <div className="flex items-center space-x-2">
             <Link href="/" className="flex items-center">
-              <i className="ri-gamepad-line text-primary text-3xl"></i>
-              <span className="text-2xl font-bold font-poppins ml-2 text-foreground">
-                Game<span className="text-primary">Zone</span>
-              </span>
+              {settings?.siteLogo && !settings?.useTextLogo ? (
+                <img 
+                  src={settings.siteLogo} 
+                  alt={settings.siteTitle || 'Game Zone'} 
+                  className="h-10 w-auto" 
+                />
+              ) : (
+                <>
+                  <i className="ri-gamepad-line text-primary text-3xl"></i>
+                  <span 
+                    className="text-2xl font-bold font-poppins ml-2 text-foreground"
+                    style={settings?.textLogoColor ? { color: settings.textLogoColor } : {}}
+                  >
+                    {settings?.siteTitle ? settings.siteTitle : 'Game'}<span className="text-primary">Zone</span>
+                  </span>
+                </>
+              )}
             </Link>
           </div>
           

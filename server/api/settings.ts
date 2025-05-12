@@ -47,7 +47,10 @@ export function registerSettingsRoutes(app: Express) {
         siteTitle: z.string().min(3),
         metaDescription: z.string().min(10),
         keywords: z.string(),
-        adsTxt: z.string().optional()
+        siteLogo: z.string().url().optional().nullable(),
+        siteFavicon: z.string().url().optional().nullable(),
+        useTextLogo: z.boolean().optional(),
+        textLogoColor: z.string().optional()
       });
       
       const settingsData = schema.parse(req.body);

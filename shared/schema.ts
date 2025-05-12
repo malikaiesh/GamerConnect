@@ -103,6 +103,10 @@ export const siteSettings = pgTable('site_settings', {
   siteTitle: text('site_title').notNull(),
   metaDescription: text('meta_description').notNull(),
   keywords: text('keywords').notNull(),
+  siteLogo: text('site_logo'),
+  siteFavicon: text('site_favicon'),
+  useTextLogo: boolean('use_text_logo').default(true),
+  textLogoColor: text('text_logo_color').default('#4f46e5'),
   currentTheme: text('current_theme').default('modern').notNull(),
   adsTxt: text('ads_txt'),
   
@@ -287,7 +291,11 @@ export const insertRatingSchema = createInsertSchema(ratings, {
 
 export const insertSiteSettingsSchema = createInsertSchema(siteSettings, {
   siteTitle: (schema) => schema.min(3, "Site title must be at least 3 characters"),
-  metaDescription: (schema) => schema.min(10, "Meta description must be at least 10 characters")
+  metaDescription: (schema) => schema.min(10, "Meta description must be at least 10 characters"),
+  siteLogo: (schema) => schema.url("Logo URL must be a valid URL").optional().nullable(),
+  siteFavicon: (schema) => schema.url("Favicon URL must be a valid URL").optional().nullable(),
+  useTextLogo: (schema) => schema.optional().default(true),
+  textLogoColor: (schema) => schema.optional().default('#4f46e5')
 });
 
 export const insertPushNotificationSchema = createInsertSchema(pushNotifications, {
