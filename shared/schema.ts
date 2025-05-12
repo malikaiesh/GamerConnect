@@ -105,12 +105,27 @@ export const siteSettings = pgTable('site_settings', {
   keywords: text('keywords').notNull(),
   currentTheme: text('current_theme').default('modern').notNull(),
   adsTxt: text('ads_txt'),
+  
+  // Standard blog ad positions
   headerAds: text('header_ads'),
   footerAds: text('footer_ads'),
   sidebarAds: text('sidebar_ads'),
   contentAds: text('content_ads'),
   floatingHeaderAds: text('floating_header_ads'),
   floatingFooterAds: text('floating_footer_ads'),
+  
+  // Paragraph-specific ad positions for blog articles
+  paragraph2Ad: text('paragraph2_ad'),
+  paragraph4Ad: text('paragraph4_ad'),
+  paragraph6Ad: text('paragraph6_ad'),
+  paragraph8Ad: text('paragraph8_ad'),
+  afterContentAd: text('after_content_ad'),
+  
+  // Google AdSense integration
+  enableGoogleAds: boolean('enable_google_ads').default(false),
+  googleAdClient: text('google_ad_client'),
+  
+  // Other site settings
   pushNotificationsEnabled: boolean('push_notifications_enabled').default(true).notNull(),
   customHeaderCode: text('custom_header_code'),
   customBodyCode: text('custom_body_code'),
