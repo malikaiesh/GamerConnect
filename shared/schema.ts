@@ -12,6 +12,7 @@ export const notificationTypeEnum = pgEnum('notification_type', ['alert', 'banne
 export const contentStatusEnum = pgEnum('content_status', ['active', 'inactive']);
 export const pageTypeEnum = pgEnum('page_type', ['about', 'contact', 'privacy', 'terms', 'cookie-policy', 'faq', 'custom']);
 export const apiKeyTypeEnum = pgEnum('api_key_type', ['tinymce', 'game-monetize', 'analytics', 'custom']);
+export const adPositionEnum = pgEnum('ad_position', ['above_featured', 'below_featured', 'above_popular', 'below_popular', 'above_about', 'below_about']);
 
 // Users table
 export const users = pgTable('users', {
@@ -180,6 +181,22 @@ export const staticPages = pgTable('static_pages', {
   updatedAt: timestamp('updated_at').defaultNow().notNull()
 });
 
+// Home Ads table
+export const homeAds = pgTable('home_ads', {
+  id: serial('id').primaryKey(),
+  name: text('name').notNull(),
+  position: adPositionEnum('position').notNull(),
+  imageUrl: text('image_url').notNull(),
+  targetUrl: text('target_url').notNull(),
+  status: contentStatusEnum('status').default('active').notNull(),
+  startDate: timestamp('start_date'),
+  endDate: timestamp('end_date'),
+  clickCount: integer('click_count').default(0).notNull(),
+  impressionCount: integer('impression_count').default(0).notNull(),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+  updatedAt: timestamp('updated_at').defaultNow().notNull()
+});
+
 // Define relations
 export const gamesRelations = relations(games, ({ many }) => ({
   ratings: many(ratings)
@@ -310,5 +327,16 @@ export const insertApiKeySchema = createInsertSchema(apiKeys, {
   description: (schema) => schema.optional().nullable()
 });
 
+// Add schema validation for Home Ads
+export const insertHomeAdSchema = createInsertSchema(homeAds, {
+  name: (schema) => schema.min(3, "Name must be at least 3 characters"),
+  imageUrl: (schema) => schema.url("Image URL must be a valid URL"),
+  targetUrl: (schema) => schema.url("Target URL must be a valid URL"),
+  startDate: (schema) => schema.optional().nullable(),
+  endDate: (schema) => schema.optional().nullable()
+});
+
 export type ApiKey = typeof apiKeys.$inferSelect;
 export type InsertApiKey = z.infer<typeof insertApiKeySchema>;
+export type HomeAd = typeof homeAds.$inferSelect;
+export type InsertHomeAd = z.infer<typeof insertHomeAdSchema>;
