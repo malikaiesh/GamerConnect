@@ -85,6 +85,7 @@ export default function AdminHomeAdsPage() {
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [selectedAd, setSelectedAd] = useState<HomeAd | null>(null);
+  const [allAdsEnabled, setAllAdsEnabled] = useState(true);
 
   // Fetch all home ads
   const {
@@ -170,6 +171,39 @@ export default function AdminHomeAdsPage() {
       });
     },
   });
+  
+  // Toggle All Ads Mutation
+  const toggleAllAdsMutation = useMutation({
+    mutationFn: async (enabled: boolean) => {
+      // Only proceed if we have home ads
+      if (!homeAds.length) return;
+      
+      // Update each ad with the new enabled state
+      const updatePromises = homeAds.map(ad => 
+        apiRequest("PATCH", `/api/home-ads/${ad.id}`, { adEnabled: enabled })
+      );
+      
+      await Promise.all(updatePromises);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/home-ads"] });
+      toast({
+        title: "Success",
+        description: allAdsEnabled 
+          ? "All ads have been enabled" 
+          : "All ads have been disabled",
+      });
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to update ads",
+        variant: "destructive",
+      });
+      // Reset the state back to what it was
+      setAllAdsEnabled(!allAdsEnabled);
+    },
+  });
 
   // Add form
   const addForm = useForm<HomeAdFormValues>({
@@ -236,7 +270,7 @@ export default function AdminHomeAdsPage() {
                   Add New Ad
                 </Button>
               </DialogTrigger>
-              <DialogContent>
+              <DialogContent className="max-h-[90vh] overflow-y-auto">
                 <DialogHeader>
                   <DialogTitle>Add New Advertisement</DialogTitle>
                   <DialogDescription>
