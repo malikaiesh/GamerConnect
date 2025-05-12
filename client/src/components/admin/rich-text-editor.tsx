@@ -46,13 +46,36 @@ export function RichTextEditor({
             'advlist autolink lists link image charmap print preview anchor',
             'searchreplace visualblocks code fullscreen',
             'insertdatetime media table paste code help wordcount',
-            'image media'
+            'image media emoticons hr visualchars nonbreaking'
           ],
-          toolbar: 
-            'undo redo | formatselect | ' +
-            'bold italic underline strikethrough | forecolor backcolor | alignleft aligncenter ' +
-            'alignright alignjustify | bullist numlist outdent indent | ' +
-            'link image media | removeformat code | help',
+          toolbar: [
+            { name: 'history', items: ['undo', 'redo'] },
+            { name: 'styles', items: ['styleselect'] },
+            { name: 'formatting', items: ['bold', 'italic', 'underline', 'strikethrough'] },
+            { name: 'alignment', items: ['alignleft', 'aligncenter', 'alignright', 'alignjustify'] },
+            { name: 'indentation', items: ['outdent', 'indent'] },
+            { name: 'lists', items: ['numlist', 'bullist'] },
+            { name: 'insertions', items: ['link', 'image', 'media', 'emoticons', 'hr'] },
+            { name: 'tools', items: ['searchreplace', 'code', 'fullscreen'] },
+            { name: 'more', items: ['more'] },
+          ],
+          formats: {
+            h1: { block: 'h1' },
+            h2: { block: 'h2' },
+            h3: { block: 'h3' },
+            h4: { block: 'h4' },
+            h5: { block: 'h5' },
+            h6: { block: 'h6' },
+          },
+          style_formats: [
+            { title: 'Paragraph', format: 'p' },
+            { title: 'Heading 1', format: 'h1' },
+            { title: 'Heading 2', format: 'h2' },
+            { title: 'Heading 3', format: 'h3' },
+            { title: 'Heading 4', format: 'h4' },
+            { title: 'Heading 5', format: 'h5' },
+            { title: 'Heading 6', format: 'h6' },
+          ],
           content_style: 'body { font-family:Helvetica,Arial,sans-serif; font-size:14px }',
           image_title: true,
           automatic_uploads: true,

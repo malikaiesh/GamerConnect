@@ -18,6 +18,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { pageTypeEnum, contentStatusEnum } from "@/lib/constants";
+import { RichTextEditor } from "@/components/admin/rich-text-editor";
 import { InsertStaticPage, StaticPage } from "@shared/schema";
 
 const formSchema = z.object({
