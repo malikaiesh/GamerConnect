@@ -1,5 +1,5 @@
 import { db, pool } from "@db";
-import { eq, desc, and, or, like, sql, isNull, count } from "drizzle-orm";
+import { eq, desc, and, or, like, sql, isNull, isNotNull, lte, gte, count, asc } from "drizzle-orm";
 import connectPg from "connect-pg-simple";
 import session from "express-session";
 import {
@@ -23,6 +23,8 @@ import {
   InsertStaticPage,
   ApiKey,
   InsertApiKey,
+  HomeAd,
+  InsertHomeAd,
   Analytic,
   users,
   games,
@@ -34,6 +36,7 @@ import {
   homePageContent,
   staticPages,
   apiKeys,
+  homeAds,
   analytics
 } from "@shared/schema";
 
@@ -120,6 +123,17 @@ export interface IStorage {
   createApiKey(apiKey: Omit<InsertApiKey, "createdAt" | "updatedAt">): Promise<ApiKey>;
   updateApiKey(id: number, apiKey: Partial<InsertApiKey>): Promise<ApiKey | null>;
   deleteApiKey(id: number): Promise<boolean>;
+  
+  // Home Ads methods
+  getHomeAds(): Promise<HomeAd[]>;
+  getHomeAdById(id: number): Promise<HomeAd | null>;
+  getHomeAdByPosition(position: string): Promise<HomeAd | null>;
+  getActiveHomeAds(): Promise<HomeAd[]>;
+  createHomeAd(homeAd: Omit<InsertHomeAd, "createdAt" | "updatedAt">): Promise<HomeAd>;
+  updateHomeAd(id: number, homeAd: Partial<InsertHomeAd>): Promise<HomeAd | null>;
+  deleteHomeAd(id: number): Promise<boolean>;
+  incrementAdClickCount(id: number): Promise<void>;
+  incrementAdImpressionCount(id: number): Promise<void>;
   
   // Session store
   sessionStore: session.Store;
@@ -1146,6 +1160,146 @@ class DatabaseStorage implements IStorage {
     } catch (error) {
       console.error(`Error deleting API key with ID ${id}:`, error);
       throw new Error("Failed to delete API key");
+    }
+  }
+
+  // Home Ads methods
+  async getHomeAds(): Promise<HomeAd[]> {
+    try {
+      return await db.select().from(homeAds).orderBy(asc(homeAds.position));
+    } catch (error) {
+      console.error("Error getting home ads:", error);
+      throw new Error("Failed to get home ads");
+    }
+  }
+
+  async getHomeAdById(id: number): Promise<HomeAd | null> {
+    try {
+      const result = await db.select().from(homeAds).where(eq(homeAds.id, id)).limit(1);
+      return result[0] || null;
+    } catch (error) {
+      console.error(`Error getting home ad with ID ${id}:`, error);
+      throw new Error("Failed to get home ad");
+    }
+  }
+
+  async getHomeAdByPosition(position: string): Promise<HomeAd | null> {
+    try {
+      const result = await db.select().from(homeAds).where(eq(homeAds.position, position)).limit(1);
+      return result[0] || null;
+    } catch (error) {
+      console.error(`Error getting home ad with position ${position}:`, error);
+      throw new Error("Failed to get home ad");
+    }
+  }
+
+  async getActiveHomeAds(): Promise<HomeAd[]> {
+    try {
+      const currentDate = new Date();
+      const result = await db.select()
+        .from(homeAds)
+        .where(and(
+          eq(homeAds.status, 'active'),
+          or(
+            and(
+              isNotNull(homeAds.startDate),
+              isNotNull(homeAds.endDate),
+              lte(homeAds.startDate, currentDate),
+              gte(homeAds.endDate, currentDate)
+            ),
+            and(
+              isNotNull(homeAds.startDate),
+              isNull(homeAds.endDate),
+              lte(homeAds.startDate, currentDate)
+            ),
+            and(
+              isNull(homeAds.startDate),
+              isNotNull(homeAds.endDate),
+              gte(homeAds.endDate, currentDate)
+            ),
+            and(
+              isNull(homeAds.startDate),
+              isNull(homeAds.endDate)
+            )
+          )
+        ))
+        .orderBy(asc(homeAds.position));
+      
+      return result;
+    } catch (error) {
+      console.error("Error getting active home ads:", error);
+      throw new Error("Failed to get active home ads");
+    }
+  }
+
+  async createHomeAd(homeAdData: Omit<InsertHomeAd, "createdAt" | "updatedAt">): Promise<HomeAd> {
+    try {
+      const now = new Date();
+      const [newHomeAd] = await db.insert(homeAds).values({
+        ...homeAdData,
+        createdAt: now,
+        updatedAt: now
+      }).returning();
+      
+      return newHomeAd;
+    } catch (error) {
+      console.error("Error creating home ad:", error);
+      throw new Error("Failed to create home ad");
+    }
+  }
+
+  async updateHomeAd(id: number, homeAdData: Partial<InsertHomeAd>): Promise<HomeAd | null> {
+    try {
+      const [updatedHomeAd] = await db.update(homeAds)
+        .set({
+          ...homeAdData,
+          updatedAt: new Date()
+        })
+        .where(eq(homeAds.id, id))
+        .returning();
+      
+      return updatedHomeAd || null;
+    } catch (error) {
+      console.error(`Error updating home ad with ID ${id}:`, error);
+      throw new Error("Failed to update home ad");
+    }
+  }
+
+  async deleteHomeAd(id: number): Promise<boolean> {
+    try {
+      const result = await db.delete(homeAds).where(eq(homeAds.id, id)).returning({ id: homeAds.id });
+      return result.length > 0;
+    } catch (error) {
+      console.error(`Error deleting home ad with ID ${id}:`, error);
+      throw new Error("Failed to delete home ad");
+    }
+  }
+
+  async incrementAdClickCount(id: number): Promise<void> {
+    try {
+      await db.update(homeAds)
+        .set({
+          clickCount: sql`${homeAds.clickCount} + 1`,
+          updatedAt: new Date()
+        })
+        .where(eq(homeAds.id, id));
+    } catch (error) {
+      console.error(`Error incrementing click count for home ad with ID ${id}:`, error);
+      throw new Error("Failed to increment click count");
+    }
+  }
+
+  async incrementAdImpressionCount(id: number): Promise<void> {
+    try {
+      await db.update(homeAds)
+        .set({
+          impressionCount: sql`${homeAds.impressionCount} + 1`,
+          updatedAt: new Date()
+        })
+        .where(eq(homeAds.id, id));
+    } catch (error) {
+      console.error(`Error incrementing impression count for home ad with ID ${id}:`, error);
+      throw new Error("Failed to increment impression count");
     }
   }
 }
