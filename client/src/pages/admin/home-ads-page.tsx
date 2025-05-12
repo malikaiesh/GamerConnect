@@ -1,13 +1,32 @@
 import { useState } from "react";
+import { useQuery, useMutation } from "@tanstack/react-query";
+import { z } from "zod";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useForm } from "react-hook-form";
 import { useToast } from "@/hooks/use-toast";
+import { queryClient, apiRequest } from "@/lib/queryClient";
+import { AdminHeader } from "@/components/admin/header";
+import { AdminNavigation } from "@/components/admin/navigation";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { 
+  Form, 
+  FormControl, 
+  FormField, 
+  FormItem, 
+  FormLabel, 
+  FormMessage 
+} from "@/components/ui/form";
 import {
   Card,
   CardContent,
   CardDescription,
+  CardFooter,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
 import {
   Table,
   TableBody,
@@ -26,871 +45,487 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Badge } from "@/components/ui/badge";
-import {
-  Form,
-  FormControl,
-  FormDescription,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/components/ui/form";
-import { Calendar } from "@/components/ui/calendar";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
-import { format } from "date-fns";
-import { cn } from "@/lib/utils";
-import { CalendarIcon, Loader2, PlusCircle, Trash } from "lucide-react";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod";
-import { useQuery, useMutation } from "@tanstack/react-query";
-import { queryClient, apiRequest } from "@/lib/queryClient";
-import { HomeAd } from "@shared/schema";
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
+import { Loader2, Plus, Trash, Edit, Eye, EyeOff } from "lucide-react";
 
-// Form schema for Home Ad
+// Form schema
 const homeAdFormSchema = z.object({
-  name: z.string().min(1, { message: "Name is required" }),
-  position: z.string().min(1, { message: "Position is required" }),
-  imageUrl: z.string().optional(),
-  targetUrl: z.string().url({ message: "Must be a valid URL" }),
-  status: z.string().min(1, { message: "Status is required" }),
-  startDate: z.date().optional().nullable(),
-  endDate: z.date().optional().nullable(),
+  position: z.string().min(1, "Please select a position"),
+  adCode: z.string().min(1, "Ad code is required"),
+  status: z.string().min(1, "Please select a status"),
 });
 
 type HomeAdFormValues = z.infer<typeof homeAdFormSchema>;
 
-export default function HomeAdsPage() {
-  const { toast } = useToast();
-  const [isAddOpen, setIsAddOpen] = useState(false);
-  const [isEditOpen, setIsEditOpen] = useState(false);
-  const [isDeleteOpen, setIsDeleteOpen] = useState(false);
-  const [selectedAd, setSelectedAd] = useState<HomeAd | null>(null);
-  const [image, setImage] = useState<File | null>(null);
+// Home Ad positions
+const AD_POSITIONS = [
+  { value: "above_featured_games", label: "Above Featured Games (728x90)" },
+  { value: "below_featured_games", label: "Below Featured Games (728x90)" },
+  { value: "above_popular_games", label: "Above Popular Games (728x90)" },
+  { value: "below_popular_games", label: "Below Popular Games (728x90)" },
+  { value: "above_about_section", label: "Above About Section (728x90)" },
+  { value: "below_about_section", label: "Below About Section (728x90)" },
+];
 
-  // Query to fetch all home ads
-  const { data: homeAds, isLoading } = useQuery({
+export default function AdminHomeAdsPage() {
+  const { toast } = useToast();
+  const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  const [selectedAd, setSelectedAd] = useState<HomeAd | null>(null);
+
+  // Fetch all home ads
+  const {
+    data: homeAds = [],
+    isLoading,
+    error,
+  } = useQuery({
     queryKey: ["/api/home-ads"],
     queryFn: async () => {
       const response = await fetch("/api/home-ads");
       if (!response.ok) {
         throw new Error("Failed to fetch home ads");
       }
-      return response.json() as Promise<HomeAd[]>;
+      return response.json();
+    }
+  });
+
+  // Add Home Ad Mutation
+  const addMutation = useMutation({
+    mutationFn: async (values: HomeAdFormValues) => {
+      const res = await apiRequest("POST", "/api/home-ads", values);
+      return await res.json();
+    },
+    onSuccess: () => {
+      toast({
+        title: "Ad Created",
+        description: "The advertisement has been successfully created.",
+      });
+      setIsAddDialogOpen(false);
+      queryClient.invalidateQueries({ queryKey: ["/api/home-ads"] });
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Error",
+        description: error.message,
+        variant: "destructive",
+      });
     },
   });
 
-  // Form for adding new home ad
+  // Edit Home Ad Mutation
+  const editMutation = useMutation({
+    mutationFn: async (values: HomeAdFormValues) => {
+      if (!selectedAd) return null;
+      const res = await apiRequest("PATCH", `/api/home-ads/${selectedAd.id}`, values);
+      return await res.json();
+    },
+    onSuccess: () => {
+      toast({
+        title: "Ad Updated",
+        description: "The advertisement has been successfully updated.",
+      });
+      setIsEditDialogOpen(false);
+      setSelectedAd(null);
+      queryClient.invalidateQueries({ queryKey: ["/api/home-ads"] });
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Error",
+        description: error.message,
+        variant: "destructive",
+      });
+    },
+  });
+
+  // Delete Home Ad Mutation
+  const deleteMutation = useMutation({
+    mutationFn: async (id: number) => {
+      await apiRequest("DELETE", `/api/home-ads/${id}`);
+    },
+    onSuccess: () => {
+      toast({
+        title: "Ad Deleted",
+        description: "The advertisement has been successfully deleted.",
+      });
+      queryClient.invalidateQueries({ queryKey: ["/api/home-ads"] });
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Error",
+        description: error.message,
+        variant: "destructive",
+      });
+    },
+  });
+
+  // Add form
   const addForm = useForm<HomeAdFormValues>({
     resolver: zodResolver(homeAdFormSchema),
     defaultValues: {
-      name: "",
       position: "",
-      targetUrl: "",
+      adCode: "",
       status: "active",
-      startDate: null,
-      endDate: null,
     },
   });
 
-  // Form for editing existing home ad
+  // Edit form
   const editForm = useForm<HomeAdFormValues>({
     resolver: zodResolver(homeAdFormSchema),
     defaultValues: {
-      name: "",
       position: "",
-      targetUrl: "",
+      adCode: "",
       status: "active",
-      startDate: null,
-      endDate: null,
     },
   });
 
-  // Mutation for creating a new home ad
-  const createMutation = useMutation({
-    mutationFn: async (values: HomeAdFormValues) => {
-      const formData = new FormData();
-      
-      // Add all form fields to formData
-      formData.append("name", values.name);
-      formData.append("position", values.position);
-      formData.append("targetUrl", values.targetUrl);
-      formData.append("status", values.status);
-      
-      if (values.startDate) {
-        formData.append("startDate", values.startDate.toISOString());
-      }
-      
-      if (values.endDate) {
-        formData.append("endDate", values.endDate.toISOString());
-      }
-      
-      // Add image if selected
-      if (image) {
-        formData.append("image", image);
-      } else {
-        throw new Error("Image is required");
-      }
-      
-      const response = await fetch("/api/home-ads", {
-        method: "POST",
-        body: formData,
-      });
-      
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || "Failed to create home ad");
-      }
-      
-      return response.json();
-    },
-    onSuccess: () => {
-      toast({
-        title: "Success",
-        description: "Home ad created successfully",
-      });
-      queryClient.invalidateQueries({ queryKey: ["/api/home-ads"] });
-      setIsAddOpen(false);
-      addForm.reset();
-      setImage(null);
-    },
-    onError: (error: Error) => {
-      toast({
-        title: "Error",
-        description: error.message,
-        variant: "destructive",
-      });
-    },
-  });
-
-  // Mutation for updating an existing home ad
-  const updateMutation = useMutation({
-    mutationFn: async (values: HomeAdFormValues) => {
-      if (!selectedAd) throw new Error("No ad selected");
-      
-      const formData = new FormData();
-      
-      // Add all form fields to formData
-      formData.append("name", values.name);
-      formData.append("position", values.position);
-      formData.append("targetUrl", values.targetUrl);
-      formData.append("status", values.status);
-      
-      if (values.startDate) {
-        formData.append("startDate", values.startDate.toISOString());
-      }
-      
-      if (values.endDate) {
-        formData.append("endDate", values.endDate.toISOString());
-      }
-      
-      // Add image if selected
-      if (image) {
-        formData.append("image", image);
-      }
-      
-      const response = await fetch(`/api/home-ads/${selectedAd.id}`, {
-        method: "PUT",
-        body: formData,
-      });
-      
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || "Failed to update home ad");
-      }
-      
-      return response.json();
-    },
-    onSuccess: () => {
-      toast({
-        title: "Success",
-        description: "Home ad updated successfully",
-      });
-      queryClient.invalidateQueries({ queryKey: ["/api/home-ads"] });
-      setIsEditOpen(false);
-      setSelectedAd(null);
-      setImage(null);
-    },
-    onError: (error: Error) => {
-      toast({
-        title: "Error",
-        description: error.message,
-        variant: "destructive",
-      });
-    },
-  });
-
-  // Mutation for deleting a home ad
-  const deleteMutation = useMutation({
-    mutationFn: async () => {
-      if (!selectedAd) throw new Error("No ad selected");
-      
-      const response = await apiRequest("DELETE", `/api/home-ads/${selectedAd.id}`);
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || "Failed to delete home ad");
-      }
-      
-      return response.json();
-    },
-    onSuccess: () => {
-      toast({
-        title: "Success",
-        description: "Home ad deleted successfully",
-      });
-      queryClient.invalidateQueries({ queryKey: ["/api/home-ads"] });
-      setIsDeleteOpen(false);
-      setSelectedAd(null);
-    },
-    onError: (error: Error) => {
-      toast({
-        title: "Error",
-        description: error.message,
-        variant: "destructive",
-      });
-    },
-  });
-
+  // Form submission handlers
   const onAddSubmit = async (values: HomeAdFormValues) => {
-    createMutation.mutate(values);
+    addMutation.mutate(values);
   };
 
   const onEditSubmit = async (values: HomeAdFormValues) => {
-    updateMutation.mutate(values);
+    editMutation.mutate(values);
   };
 
+  // Handlers
   const handleEditClick = (ad: HomeAd) => {
     setSelectedAd(ad);
-    
-    // Convert string dates to Date objects for the form
-    const startDate = ad.startDate ? new Date(ad.startDate) : null;
-    const endDate = ad.endDate ? new Date(ad.endDate) : null;
-    
     editForm.reset({
-      name: ad.name,
       position: ad.position,
-      targetUrl: ad.targetUrl,
+      adCode: ad.adCode,
       status: ad.status,
-      startDate,
-      endDate,
     });
-    
-    setIsEditOpen(true);
+    setIsEditDialogOpen(true);
   };
 
   const handleDeleteClick = (ad: HomeAd) => {
-    setSelectedAd(ad);
-    setIsDeleteOpen(true);
-  };
-
-  const getPositionLabel = (position: string) => {
-    switch (position) {
-      case 'above_featured':
-        return 'Above Featured Games';
-      case 'below_featured':
-        return 'Below Featured Games';
-      case 'above_popular':
-        return 'Above Popular Games';
-      case 'below_popular':
-        return 'Below Popular Games';
-      case 'above_about':
-        return 'Above About Section';
-      case 'below_about':
-        return 'Below About Section';
-      default:
-        return position;
-    }
+    deleteMutation.mutate(ad.id);
   };
 
   return (
-    <div className="space-y-6 p-6">
-      <div className="flex justify-between items-center">
-        <h1 className="text-3xl font-bold">Home Ads</h1>
-        <Button onClick={() => setIsAddOpen(true)}>
-          <PlusCircle className="mr-2 h-4 w-4" />
-          Add New Ad
-        </Button>
-      </div>
-
-      <Card>
-        <CardHeader>
-          <CardTitle>Home Ads Management</CardTitle>
-          <CardDescription>
-            Manage ad banners that appear on the home page
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          {isLoading ? (
-            <div className="flex justify-center items-center py-6">
-              <Loader2 className="h-8 w-8 animate-spin text-primary" />
-            </div>
-          ) : homeAds && homeAds.length > 0 ? (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Name</TableHead>
-                  <TableHead>Position</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead>Impressions</TableHead>
-                  <TableHead>Clicks</TableHead>
-                  <TableHead>CTR</TableHead>
-                  <TableHead>Actions</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {homeAds.map((ad) => (
-                  <TableRow key={ad.id}>
-                    <TableCell className="font-medium">{ad.name}</TableCell>
-                    <TableCell>{getPositionLabel(ad.position)}</TableCell>
-                    <TableCell>
-                      <Badge
-                        variant={ad.status === "active" ? "default" : "secondary"}
-                      >
-                        {ad.status}
-                      </Badge>
-                    </TableCell>
-                    <TableCell>{ad.impressionCount}</TableCell>
-                    <TableCell>{ad.clickCount}</TableCell>
-                    <TableCell>
-                      {ad.impressionCount > 0
-                        ? `${((ad.clickCount / ad.impressionCount) * 100).toFixed(2)}%`
-                        : "0%"}
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex space-x-2">
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => handleEditClick(ad)}
-                        >
-                          Edit
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          className="text-destructive"
-                          onClick={() => handleDeleteClick(ad)}
-                        >
-                          Delete
-                        </Button>
-                      </div>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          ) : (
-            <div className="text-center py-6">
-              <p className="text-muted-foreground">No home ads found</p>
-              <Button
-                variant="outline"
-                className="mt-4"
-                onClick={() => setIsAddOpen(true)}
-              >
-                Create your first home ad
-              </Button>
-            </div>
-          )}
-        </CardContent>
-      </Card>
-
-      {/* Add Home Ad Dialog */}
-      <Dialog open={isAddOpen} onOpenChange={setIsAddOpen}>
-        <DialogContent className="sm:max-w-[500px]">
-          <DialogHeader>
-            <DialogTitle>Add New Home Ad</DialogTitle>
-            <DialogDescription>
-              Create a new advertisement to display on the home page
-            </DialogDescription>
-          </DialogHeader>
-
-          <Form {...addForm}>
-            <form onSubmit={addForm.handleSubmit(onAddSubmit)} className="space-y-4">
-              <FormField
-                control={addForm.control}
-                name="name"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Name</FormLabel>
-                    <FormControl>
-                      <Input placeholder="Enter ad name" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={addForm.control}
-                name="position"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Position</FormLabel>
-                    <Select
-                      onValueChange={field.onChange}
-                      defaultValue={field.value}
-                    >
-                      <FormControl>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select position" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        <SelectItem value="above_featured">Above Featured Games</SelectItem>
-                        <SelectItem value="below_featured">Below Featured Games</SelectItem>
-                        <SelectItem value="above_popular">Above Popular Games</SelectItem>
-                        <SelectItem value="below_popular">Below Popular Games</SelectItem>
-                        <SelectItem value="above_about">Above About Section</SelectItem>
-                        <SelectItem value="below_about">Below About Section</SelectItem>
-                      </SelectContent>
-                    </Select>
-                    <FormDescription>
-                      This determines where the ad will be displayed on the homepage
-                    </FormDescription>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormItem>
-                <FormLabel>Image (Banner 728x90)</FormLabel>
-                <FormControl>
-                  <Input
-                    type="file"
-                    accept="image/*"
-                    onChange={(e) => setImage(e.target.files?.[0] || null)}
-                  />
-                </FormControl>
-                <FormDescription>
-                  Upload a banner image (Recommended size: 728x90px)
-                </FormDescription>
-              </FormItem>
-
-              <FormField
-                control={addForm.control}
-                name="targetUrl"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Target URL</FormLabel>
-                    <FormControl>
-                      <Input
-                        placeholder="https://example.com"
-                        {...field}
-                      />
-                    </FormControl>
-                    <FormDescription>
-                      The URL where users will be directed when they click the ad
-                    </FormDescription>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={addForm.control}
-                name="status"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Status</FormLabel>
-                    <Select
-                      onValueChange={field.onChange}
-                      defaultValue={field.value}
-                    >
-                      <FormControl>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select status" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        <SelectItem value="active">Active</SelectItem>
-                        <SelectItem value="inactive">Inactive</SelectItem>
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <div className="grid grid-cols-2 gap-4">
-                <FormField
-                  control={addForm.control}
-                  name="startDate"
-                  render={({ field }) => (
-                    <FormItem className="flex flex-col">
-                      <FormLabel>Start Date (Optional)</FormLabel>
-                      <Popover>
-                        <PopoverTrigger asChild>
-                          <FormControl>
-                            <Button
-                              variant={"outline"}
-                              className={cn(
-                                "w-full pl-3 text-left font-normal",
-                                !field.value && "text-muted-foreground"
-                              )}
-                            >
-                              {field.value ? (
-                                format(field.value, "PPP")
-                              ) : (
-                                <span>Pick a date</span>
-                              )}
-                              <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                            </Button>
-                          </FormControl>
-                        </PopoverTrigger>
-                        <PopoverContent className="w-auto p-0" align="start">
-                          <Calendar
-                            mode="single"
-                            selected={field.value || undefined}
-                            onSelect={field.onChange}
-                            initialFocus
-                          />
-                        </PopoverContent>
-                      </Popover>
-                      <FormDescription>
-                        When the ad should start displaying
-                      </FormDescription>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={addForm.control}
-                  name="endDate"
-                  render={({ field }) => (
-                    <FormItem className="flex flex-col">
-                      <FormLabel>End Date (Optional)</FormLabel>
-                      <Popover>
-                        <PopoverTrigger asChild>
-                          <FormControl>
-                            <Button
-                              variant={"outline"}
-                              className={cn(
-                                "w-full pl-3 text-left font-normal",
-                                !field.value && "text-muted-foreground"
-                              )}
-                            >
-                              {field.value ? (
-                                format(field.value, "PPP")
-                              ) : (
-                                <span>Pick a date</span>
-                              )}
-                              <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                            </Button>
-                          </FormControl>
-                        </PopoverTrigger>
-                        <PopoverContent className="w-auto p-0" align="start">
-                          <Calendar
-                            mode="single"
-                            selected={field.value || undefined}
-                            onSelect={field.onChange}
-                            initialFocus
-                          />
-                        </PopoverContent>
-                      </Popover>
-                      <FormDescription>
-                        When the ad should stop displaying
-                      </FormDescription>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </div>
-
-              <DialogFooter>
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={() => setIsAddOpen(false)}
-                >
-                  Cancel
+    <div className="flex min-h-screen bg-gray-100 dark:bg-gray-900">
+      <AdminNavigation />
+      <div className="flex-1">
+        <AdminHeader />
+        <main className="p-6">
+          <div className="flex justify-between items-center mb-6">
+            <h1 className="text-2xl font-bold">Home Ads</h1>
+            <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
+              <DialogTrigger asChild>
+                <Button>
+                  <Plus className="mr-2 h-4 w-4" />
+                  Add New Ad
                 </Button>
-                <Button type="submit" disabled={createMutation.isPending}>
-                  {createMutation.isPending && (
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  )}
-                  Create Ad
-                </Button>
-              </DialogFooter>
-            </form>
-          </Form>
-        </DialogContent>
-      </Dialog>
-
-      {/* Edit Home Ad Dialog */}
-      <Dialog open={isEditOpen} onOpenChange={setIsEditOpen}>
-        <DialogContent className="sm:max-w-[500px]">
-          <DialogHeader>
-            <DialogTitle>Edit Home Ad</DialogTitle>
-            <DialogDescription>
-              Update the advertisement details
-            </DialogDescription>
-          </DialogHeader>
-
-          <Form {...editForm}>
-            <form onSubmit={editForm.handleSubmit(onEditSubmit)} className="space-y-4">
-              <FormField
-                control={editForm.control}
-                name="name"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Name</FormLabel>
-                    <FormControl>
-                      <Input placeholder="Enter ad name" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={editForm.control}
-                name="position"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Position</FormLabel>
-                    <Select
-                      onValueChange={field.onChange}
-                      defaultValue={field.value}
-                    >
-                      <FormControl>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select position" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        <SelectItem value="above_featured">Above Featured Games</SelectItem>
-                        <SelectItem value="below_featured">Below Featured Games</SelectItem>
-                        <SelectItem value="above_popular">Above Popular Games</SelectItem>
-                        <SelectItem value="below_popular">Below Popular Games</SelectItem>
-                        <SelectItem value="above_about">Above About Section</SelectItem>
-                        <SelectItem value="below_about">Below About Section</SelectItem>
-                      </SelectContent>
-                    </Select>
-                    <FormDescription>
-                      This determines where the ad will be displayed on the homepage
-                    </FormDescription>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormItem>
-                <FormLabel>Image (Banner 728x90)</FormLabel>
-                <FormControl>
-                  <Input
-                    type="file"
-                    accept="image/*"
-                    onChange={(e) => setImage(e.target.files?.[0] || null)}
-                  />
-                </FormControl>
-                <FormDescription>
-                  {selectedAd?.imageUrl ? (
-                    <div className="flex flex-col gap-2">
-                      <span>Current image:</span>
-                      <img 
-                        src={selectedAd.imageUrl} 
-                        alt="Current banner" 
-                        className="max-h-24 object-contain border rounded"
-                      />
-                      <span className="text-xs">Upload new image only if you want to replace the current one</span>
-                    </div>
-                  ) : (
-                    "Upload a banner image (Recommended size: 728x90px)"
-                  )}
-                </FormDescription>
-              </FormItem>
-
-              <FormField
-                control={editForm.control}
-                name="targetUrl"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Target URL</FormLabel>
-                    <FormControl>
-                      <Input
-                        placeholder="https://example.com"
-                        {...field}
-                      />
-                    </FormControl>
-                    <FormDescription>
-                      The URL where users will be directed when they click the ad
-                    </FormDescription>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={editForm.control}
-                name="status"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Status</FormLabel>
-                    <Select
-                      onValueChange={field.onChange}
-                      defaultValue={field.value}
-                    >
-                      <FormControl>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select status" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        <SelectItem value="active">Active</SelectItem>
-                        <SelectItem value="inactive">Inactive</SelectItem>
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <div className="grid grid-cols-2 gap-4">
-                <FormField
-                  control={editForm.control}
-                  name="startDate"
-                  render={({ field }) => (
-                    <FormItem className="flex flex-col">
-                      <FormLabel>Start Date (Optional)</FormLabel>
-                      <Popover>
-                        <PopoverTrigger asChild>
+              </DialogTrigger>
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>Add New Advertisement</DialogTitle>
+                  <DialogDescription>
+                    Create a new advertisement to display on the home page.
+                  </DialogDescription>
+                </DialogHeader>
+                <Form {...addForm}>
+                  <form onSubmit={addForm.handleSubmit(onAddSubmit)} className="space-y-4">
+                    <FormField
+                      control={addForm.control}
+                      name="position"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Position</FormLabel>
+                          <Select
+                            onValueChange={field.onChange}
+                            defaultValue={field.value}
+                          >
+                            <FormControl>
+                              <SelectTrigger>
+                                <SelectValue placeholder="Select position" />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                              {AD_POSITIONS.map((position) => (
+                                <SelectItem key={position.value} value={position.value}>
+                                  {position.label}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={addForm.control}
+                      name="adCode"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Ad Code</FormLabel>
                           <FormControl>
-                            <Button
-                              variant={"outline"}
-                              className={cn(
-                                "w-full pl-3 text-left font-normal",
-                                !field.value && "text-muted-foreground"
-                              )}
-                            >
-                              {field.value ? (
-                                format(field.value, "PPP")
-                              ) : (
-                                <span>Pick a date</span>
-                              )}
-                              <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                            </Button>
+                            <Textarea
+                              placeholder="Paste your ad code here"
+                              className="h-32"
+                              {...field}
+                            />
                           </FormControl>
-                        </PopoverTrigger>
-                        <PopoverContent className="w-auto p-0" align="start">
-                          <Calendar
-                            mode="single"
-                            selected={field.value || undefined}
-                            onSelect={field.onChange}
-                            initialFocus
-                          />
-                        </PopoverContent>
-                      </Popover>
-                      <FormDescription>
-                        When the ad should start displaying
-                      </FormDescription>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={editForm.control}
-                  name="endDate"
-                  render={({ field }) => (
-                    <FormItem className="flex flex-col">
-                      <FormLabel>End Date (Optional)</FormLabel>
-                      <Popover>
-                        <PopoverTrigger asChild>
-                          <FormControl>
-                            <Button
-                              variant={"outline"}
-                              className={cn(
-                                "w-full pl-3 text-left font-normal",
-                                !field.value && "text-muted-foreground"
-                              )}
-                            >
-                              {field.value ? (
-                                format(field.value, "PPP")
-                              ) : (
-                                <span>Pick a date</span>
-                              )}
-                              <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                            </Button>
-                          </FormControl>
-                        </PopoverTrigger>
-                        <PopoverContent className="w-auto p-0" align="start">
-                          <Calendar
-                            mode="single"
-                            selected={field.value || undefined}
-                            onSelect={field.onChange}
-                            initialFocus
-                          />
-                        </PopoverContent>
-                      </Popover>
-                      <FormDescription>
-                        When the ad should stop displaying
-                      </FormDescription>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </div>
-
-              <DialogFooter>
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={() => setIsEditOpen(false)}
-                >
-                  Cancel
-                </Button>
-                <Button type="submit" disabled={updateMutation.isPending}>
-                  {updateMutation.isPending && (
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  )}
-                  Update Ad
-                </Button>
-              </DialogFooter>
-            </form>
-          </Form>
-        </DialogContent>
-      </Dialog>
-
-      {/* Delete Confirmation Dialog */}
-      <Dialog open={isDeleteOpen} onOpenChange={setIsDeleteOpen}>
-        <DialogContent className="sm:max-w-[425px]">
-          <DialogHeader>
-            <DialogTitle>Confirm Deletion</DialogTitle>
-            <DialogDescription>
-              Are you sure you want to delete this home ad? This action cannot be undone.
-            </DialogDescription>
-          </DialogHeader>
-          <div className="flex justify-end space-x-2 pt-6">
-            <Button variant="outline" onClick={() => setIsDeleteOpen(false)}>
-              Cancel
-            </Button>
-            <Button
-              variant="destructive"
-              onClick={() => deleteMutation.mutate()}
-              disabled={deleteMutation.isPending}
-            >
-              {deleteMutation.isPending && (
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              )}
-              Delete
-            </Button>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={addForm.control}
+                      name="status"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Status</FormLabel>
+                          <Select
+                            onValueChange={field.onChange}
+                            defaultValue={field.value}
+                          >
+                            <FormControl>
+                              <SelectTrigger>
+                                <SelectValue placeholder="Select status" />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                              <SelectItem value="active">Active</SelectItem>
+                              <SelectItem value="inactive">Inactive</SelectItem>
+                            </SelectContent>
+                          </Select>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <DialogFooter>
+                      <Button type="submit" disabled={addMutation.isPending}>
+                        {addMutation.isPending && (
+                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        )}
+                        Save
+                      </Button>
+                    </DialogFooter>
+                  </form>
+                </Form>
+              </DialogContent>
+            </Dialog>
           </div>
-        </DialogContent>
-      </Dialog>
+
+          <Card>
+            <CardHeader>
+              <CardTitle>Manage Home Page Advertisements</CardTitle>
+              <CardDescription>
+                Configure ads that will be displayed at different positions on the home page.
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              {isLoading ? (
+                <div className="flex justify-center items-center h-64">
+                  <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                </div>
+              ) : error ? (
+                <div className="text-center py-10 text-red-500">
+                  Failed to load home ads. Please try again.
+                </div>
+              ) : homeAds.length === 0 ? (
+                <div className="text-center py-10 text-gray-500 dark:text-gray-400">
+                  No advertisements found. Click "Add New Ad" to create one.
+                </div>
+              ) : (
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Position</TableHead>
+                      <TableHead>Status</TableHead>
+                      <TableHead>Last Updated</TableHead>
+                      <TableHead>Impressions</TableHead>
+                      <TableHead>Clicks</TableHead>
+                      <TableHead>CTR</TableHead>
+                      <TableHead className="text-right">Actions</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {homeAds.map((ad: HomeAd) => {
+                      // Calculate click-through rate
+                      const ctr = ad.impressionCount > 0 
+                        ? ((ad.clickCount / ad.impressionCount) * 100).toFixed(2) 
+                        : "0.00";
+                      
+                      // Find position label
+                      const position = AD_POSITIONS.find(p => p.value === ad.position);
+                      
+                      return (
+                        <TableRow key={ad.id}>
+                          <TableCell>{position?.label || ad.position}</TableCell>
+                          <TableCell>
+                            <div className="flex items-center">
+                              <div className={`w-2 h-2 mr-2 rounded-full ${ad.status === 'active' ? 'bg-green-500' : 'bg-gray-400'}`}></div>
+                              {ad.status === 'active' ? 'Active' : 'Inactive'}
+                            </div>
+                          </TableCell>
+                          <TableCell>
+                            {new Date(ad.updatedAt || ad.createdAt).toLocaleDateString()}
+                          </TableCell>
+                          <TableCell>{ad.impressionCount.toLocaleString()}</TableCell>
+                          <TableCell>{ad.clickCount.toLocaleString()}</TableCell>
+                          <TableCell>{ctr}%</TableCell>
+                          <TableCell className="text-right">
+                            <div className="flex justify-end gap-2">
+                              <Button 
+                                size="icon" 
+                                variant="outline" 
+                                onClick={() => handleEditClick(ad)}
+                              >
+                                <Edit className="h-4 w-4" />
+                              </Button>
+                              <AlertDialog>
+                                <AlertDialogTrigger asChild>
+                                  <Button size="icon" variant="outline" className="text-red-500">
+                                    <Trash className="h-4 w-4" />
+                                  </Button>
+                                </AlertDialogTrigger>
+                                <AlertDialogContent>
+                                  <AlertDialogHeader>
+                                    <AlertDialogTitle>Delete Advertisement</AlertDialogTitle>
+                                    <AlertDialogDescription>
+                                      Are you sure you want to delete this advertisement? This action cannot be undone.
+                                    </AlertDialogDescription>
+                                  </AlertDialogHeader>
+                                  <AlertDialogFooter>
+                                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                    <AlertDialogAction
+                                      className="bg-red-500 hover:bg-red-600"
+                                      onClick={() => handleDeleteClick(ad)}
+                                    >
+                                      Delete
+                                    </AlertDialogAction>
+                                  </AlertDialogFooter>
+                                </AlertDialogContent>
+                              </AlertDialog>
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      );
+                    })}
+                  </TableBody>
+                </Table>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* Edit Dialog */}
+          <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>Edit Advertisement</DialogTitle>
+                <DialogDescription>
+                  Update the advertisement configuration.
+                </DialogDescription>
+              </DialogHeader>
+              <Form {...editForm}>
+                <form onSubmit={editForm.handleSubmit(onEditSubmit)} className="space-y-4">
+                  <FormField
+                    control={editForm.control}
+                    name="position"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Position</FormLabel>
+                        <Select
+                          onValueChange={field.onChange}
+                          defaultValue={field.value}
+                          value={field.value}
+                        >
+                          <FormControl>
+                            <SelectTrigger>
+                              <SelectValue placeholder="Select position" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            {AD_POSITIONS.map((position) => (
+                              <SelectItem key={position.value} value={position.value}>
+                                {position.label}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={editForm.control}
+                    name="adCode"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Ad Code</FormLabel>
+                        <FormControl>
+                          <Textarea
+                            placeholder="Paste your ad code here"
+                            className="h-32"
+                            {...field}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={editForm.control}
+                    name="status"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Status</FormLabel>
+                        <Select
+                          onValueChange={field.onChange}
+                          defaultValue={field.value}
+                          value={field.value}
+                        >
+                          <FormControl>
+                            <SelectTrigger>
+                              <SelectValue placeholder="Select status" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            <SelectItem value="active">Active</SelectItem>
+                            <SelectItem value="inactive">Inactive</SelectItem>
+                          </SelectContent>
+                        </Select>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <DialogFooter>
+                    <Button type="submit" disabled={editMutation.isPending}>
+                      {editMutation.isPending && (
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      )}
+                      Update
+                    </Button>
+                  </DialogFooter>
+                </form>
+              </Form>
+            </DialogContent>
+          </Dialog>
+        </main>
+      </div>
     </div>
   );
+}
+
+// HomeAd type definition
+interface HomeAd {
+  id: number;
+  position: string;
+  adCode: string;
+  status: string;
+  clickCount: number;
+  impressionCount: number;
+  createdAt: string;
+  updatedAt?: string;
 }

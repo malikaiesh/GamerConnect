@@ -186,9 +186,10 @@ export const homeAds = pgTable('home_ads', {
   id: serial('id').primaryKey(),
   name: text('name').notNull(),
   position: adPositionEnum('position').notNull(),
-  imageUrl: text('image_url').notNull(),
-  targetUrl: text('target_url').notNull(),
+  adCode: text('ad_code').notNull(),
   status: contentStatusEnum('status').default('active').notNull(),
+  imageUrl: text('image_url'),
+  targetUrl: text('target_url'),
   startDate: timestamp('start_date'),
   endDate: timestamp('end_date'),
   clickCount: integer('click_count').default(0).notNull(),
@@ -330,8 +331,9 @@ export const insertApiKeySchema = createInsertSchema(apiKeys, {
 // Add schema validation for Home Ads
 export const insertHomeAdSchema = createInsertSchema(homeAds, {
   name: (schema) => schema.min(3, "Name must be at least 3 characters"),
-  imageUrl: (schema) => schema.url("Image URL must be a valid URL"),
-  targetUrl: (schema) => schema.url("Target URL must be a valid URL"),
+  adCode: (schema) => schema.min(1, "Ad code is required"),
+  imageUrl: (schema) => schema.url("Image URL must be a valid URL").optional().nullable(),
+  targetUrl: (schema) => schema.url("Target URL must be a valid URL").optional().nullable(),
   startDate: (schema) => schema.optional().nullable(),
   endDate: (schema) => schema.optional().nullable()
 });

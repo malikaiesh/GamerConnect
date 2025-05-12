@@ -95,20 +95,12 @@ export function registerHomeAdsRoutes(app: Express) {
     }
   });
 
-  // Create a new home ad with image upload
-  app.post('/api/home-ads', upload.single('image'), async (req: Request, res: Response) => {
+  // Create a new home ad (supports both code-only and image uploads)
+  app.post('/api/home-ads', async (req: Request, res: Response) => {
     try {
-      // Validate form data
-      if (!req.file) {
-        return res.status(400).json({ error: 'Image is required' });
-      }
-
-      const imageUrl = `/uploads/ads/${req.file.filename}`;
-      
-      // Combine form data with file path
+      // For code-only ads, we don't require an image
       const homeAdData = {
         ...req.body,
-        imageUrl,
         clickCount: 0,
         impressionCount: 0
       };
@@ -122,15 +114,6 @@ export function registerHomeAdsRoutes(app: Express) {
     } catch (error) {
       console.error('Error creating home ad:', error);
       
-      // Clean up uploaded file if validation failed
-      if (req.file) {
-        try {
-          fs.unlinkSync(req.file.path);
-        } catch (unlinkError) {
-          console.error('Error deleting file after validation failure:', unlinkError);
-        }
-      }
-      
       if (error instanceof ZodError) {
         return res.status(400).json({ error: 'Validation error', details: error.errors });
       }
@@ -139,7 +122,7 @@ export function registerHomeAdsRoutes(app: Express) {
     }
   });
 
-  // Update a home ad
+  // Update a home ad (PUT method - full update with image support)
   app.put('/api/home-ads/:id', upload.single('image'), async (req: Request, res: Response) => {
     try {
       const id = parseInt(req.params.id);
@@ -191,6 +174,37 @@ export function registerHomeAdsRoutes(app: Express) {
           console.error('Error deleting file after update failure:', unlinkError);
         }
       }
+      
+      if (error instanceof ZodError) {
+        return res.status(400).json({ error: 'Validation error', details: error.errors });
+      }
+      
+      res.status(500).json({ error: 'Failed to update home ad' });
+    }
+  });
+
+  // Update a home ad (PATCH method - partial update, no image support)
+  app.patch('/api/home-ads/:id', async (req: Request, res: Response) => {
+    try {
+      const id = parseInt(req.params.id);
+      if (isNaN(id)) {
+        return res.status(400).json({ error: 'Invalid home ad ID' });
+      }
+
+      // Check if home ad exists
+      const existingHomeAd = await storage.getHomeAdById(id);
+      if (!existingHomeAd) {
+        return res.status(404).json({ error: 'Home ad not found' });
+      }
+
+      // Prepare update data
+      const homeAdData = { ...req.body };
+      
+      // Update the home ad
+      const updatedHomeAd = await storage.updateHomeAd(id, homeAdData);
+      res.json(updatedHomeAd);
+    } catch (error) {
+      console.error(`Error updating home ad with ID ${req.params.id}:`, error);
       
       if (error instanceof ZodError) {
         return res.status(400).json({ error: 'Validation error', details: error.errors });
