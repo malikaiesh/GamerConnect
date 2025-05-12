@@ -28,6 +28,7 @@ import AdminPagesPage from "@/pages/admin/pages-page";
 import AdminPageEditPage from "@/pages/admin/page-edit-page";
 import AdminApiKeysPage from "@/pages/admin/api-keys-page";
 import AdminHomeAdsPage from "@/pages/admin/home-ads-page";
+import AdminSitemapsPage from "@/pages/admin/sitemaps-page";
 import { Providers } from "./lib/providers";
 import { ProtectedRoute } from "./lib/protected-route";
 import { useAuth } from "@/hooks/use-auth";
@@ -61,6 +62,7 @@ function Router() {
       <ProtectedRoute path="/admin/homepage-content" component={AdminHomepageContent} adminOnly={true} />
       <ProtectedRoute path="/admin/api-keys" component={AdminApiKeysPage} adminOnly={true} />
       <ProtectedRoute path="/admin/home-ads" component={AdminHomeAdsPage} adminOnly={true} />
+      <ProtectedRoute path="/admin/sitemaps" component={AdminSitemapsPage} adminOnly={true} />
       <ProtectedRoute path="/admin/settings" component={AdminSettings} adminOnly={true} />
       <ProtectedRoute path="/admin/pages" component={AdminPagesPage} adminOnly={true} />
       <ProtectedRoute path="/admin/pages/:id" component={AdminPageEditPage} adminOnly={true} />
@@ -123,6 +125,12 @@ const AdminHelperNav = () => {
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z" />
           </svg>
           API Keys
+        </a>
+        <a href="/admin/sitemaps" className="flex items-center gap-1 hover:text-blue-300 transition-colors">
+          <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7" />
+          </svg>
+          Sitemaps
         </a>
         <a 
           href="/" 

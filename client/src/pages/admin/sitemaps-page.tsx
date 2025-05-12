@@ -6,7 +6,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "@/hooks/use-toast";
-import AdminLayout from "@/components/admin/layout";
+import { AdminLayout } from "@/components/admin/layout";
 import { Switch } from "@/components/ui/switch";
 import { format } from "date-fns";
 import { apiRequest, queryClient } from "@/lib/queryClient";
