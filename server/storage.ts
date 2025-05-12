@@ -25,6 +25,8 @@ import {
   InsertApiKey,
   HomeAd,
   InsertHomeAd,
+  Sitemap,
+  InsertSitemap,
   Analytic,
   users,
   games,
@@ -37,6 +39,7 @@ import {
   staticPages,
   apiKeys,
   homeAds,
+  sitemaps,
   analytics
 } from "@shared/schema";
 
@@ -1308,6 +1311,240 @@ class DatabaseStorage implements IStorage {
     } catch (error) {
       console.error(`Error incrementing impression count for home ad with ID ${id}:`, error);
       throw new Error("Failed to increment impression count");
+    }
+  }
+
+  // Sitemap methods
+  async getSitemaps(): Promise<Sitemap[]> {
+    try {
+      const result = await db.select().from(sitemaps).orderBy(asc(sitemaps.type));
+      return result;
+    } catch (error) {
+      console.error("Error getting sitemaps:", error);
+      throw new Error("Failed to get sitemaps");
+    }
+  }
+  
+  async getSitemapById(id: number): Promise<Sitemap | null> {
+    try {
+      const result = await db.select().from(sitemaps).where(eq(sitemaps.id, id));
+      return result.length > 0 ? result[0] : null;
+    } catch (error) {
+      console.error(`Error getting sitemap with ID ${id}:`, error);
+      throw new Error("Failed to get sitemap");
+    }
+  }
+  
+  async getSitemapByType(type: string): Promise<Sitemap | null> {
+    try {
+      const result = await db.select().from(sitemaps).where(eq(sitemaps.type, type as any));
+      return result.length > 0 ? result[0] : null;
+    } catch (error) {
+      console.error(`Error getting sitemap with type ${type}:`, error);
+      throw new Error("Failed to get sitemap by type");
+    }
+  }
+  
+  async updateSitemap(id: number, sitemapData: Partial<InsertSitemap>): Promise<Sitemap | null> {
+    try {
+      const [updatedSitemap] = await db.update(sitemaps)
+        .set({
+          ...sitemapData,
+          updatedAt: new Date()
+        })
+        .where(eq(sitemaps.id, id))
+        .returning();
+      
+      return updatedSitemap || null;
+    } catch (error) {
+      console.error(`Error updating sitemap with ID ${id}:`, error);
+      throw new Error("Failed to update sitemap");
+    }
+  }
+  
+  async generateSitemap(type: string): Promise<Sitemap | null> {
+    try {
+      // Get the sitemap by type
+      const sitemap = await this.getSitemapByType(type);
+      if (!sitemap) {
+        console.error(`No sitemap found with type ${type}`);
+        return null;
+      }
+      
+      const baseUrl = 'https://' + (process.env.REPLIT_DOMAIN || 'localhost:5000');
+      let items: any[] = [];
+      let itemCount = 0;
+      
+      // Generate sitemap content based on type
+      switch (type) {
+        case 'games':
+          // Get all active games
+          const gamesResult = await db.select({
+            id: games.id,
+            slug: games.slug,
+            updatedAt: games.updatedAt
+          }).from(games).where(eq(games.status, 'active'));
+          
+          items = gamesResult.map(game => ({
+            loc: `${baseUrl}/game/${game.slug}`,
+            lastmod: game.updatedAt ? new Date(game.updatedAt).toISOString() : new Date().toISOString(),
+            changefreq: 'weekly',
+            priority: 0.8
+          }));
+          
+          itemCount = gamesResult.length;
+          break;
+          
+        case 'blog':
+          // Get all published blog posts
+          const blogPostsResult = await db.select({
+            id: blogPosts.id,
+            slug: blogPosts.slug,
+            updatedAt: blogPosts.updatedAt
+          }).from(blogPosts).where(eq(blogPosts.status, 'published'));
+          
+          items = blogPostsResult.map(post => ({
+            loc: `${baseUrl}/blog/${post.slug}`,
+            lastmod: post.updatedAt ? new Date(post.updatedAt).toISOString() : new Date().toISOString(),
+            changefreq: 'monthly',
+            priority: 0.7
+          }));
+          
+          itemCount = blogPostsResult.length;
+          break;
+          
+        case 'pages':
+          // Get all active static pages
+          const pagesResult = await db.select({
+            id: staticPages.id,
+            slug: staticPages.slug,
+            updatedAt: staticPages.updatedAt
+          }).from(staticPages).where(eq(staticPages.status, 'active'));
+          
+          items = pagesResult.map(page => ({
+            loc: `${baseUrl}/${page.slug}`,
+            lastmod: page.updatedAt ? new Date(page.updatedAt).toISOString() : new Date().toISOString(),
+            changefreq: 'monthly',
+            priority: 0.6
+          }));
+          
+          itemCount = pagesResult.length;
+          break;
+          
+        case 'main':
+          // Add all primary sections
+          items = [
+            { loc: `${baseUrl}/`, lastmod: new Date().toISOString(), changefreq: 'daily', priority: 1.0 },
+            { loc: `${baseUrl}/categories`, lastmod: new Date().toISOString(), changefreq: 'weekly', priority: 0.8 },
+            { loc: `${baseUrl}/top-games`, lastmod: new Date().toISOString(), changefreq: 'daily', priority: 0.9 },
+            { loc: `${baseUrl}/about`, lastmod: new Date().toISOString(), changefreq: 'monthly', priority: 0.5 },
+            { loc: `${baseUrl}/contact`, lastmod: new Date().toISOString(), changefreq: 'monthly', priority: 0.5 },
+            { loc: `${baseUrl}/privacy`, lastmod: new Date().toISOString(), changefreq: 'monthly', priority: 0.3 },
+            { loc: `${baseUrl}/terms`, lastmod: new Date().toISOString(), changefreq: 'monthly', priority: 0.3 },
+            { loc: `${baseUrl}/faq`, lastmod: new Date().toISOString(), changefreq: 'monthly', priority: 0.5 },
+            { loc: `${baseUrl}/blog`, lastmod: new Date().toISOString(), changefreq: 'weekly', priority: 0.7 },
+          ];
+          
+          itemCount = items.length;
+          break;
+          
+        default:
+          return null;
+      }
+      
+      // Generate XML content - this would typically be stored as a file
+      const xmlContent = this.generateSitemapXml({ urls: items });
+      
+      // For demo purposes, just update the database record
+      const now = new Date();
+      return await this.updateSitemap(sitemap.id, {
+        lastGenerated: now,
+        itemCount,
+        updatedAt: now
+      });
+      
+    } catch (error) {
+      console.error(`Error generating sitemap for type ${type}:`, error);
+      throw new Error("Failed to generate sitemap");
+    }
+  }
+  
+  private generateSitemapXml(data: { urls: { loc: string; lastmod?: string; changefreq?: string; priority?: number }[] }): string {
+    const xmlHeader = '<?xml version="1.0" encoding="UTF-8"?>';
+    const urlsetStart = '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">';
+    const urlsetEnd = '</urlset>';
+    
+    const urlElements = data.urls.map(url => {
+      let urlElement = '<url>';
+      urlElement += `<loc>${url.loc}</loc>`;
+      
+      if (url.lastmod) {
+        urlElement += `<lastmod>${url.lastmod}</lastmod>`;
+      }
+      
+      if (url.changefreq) {
+        urlElement += `<changefreq>${url.changefreq}</changefreq>`;
+      }
+      
+      if (url.priority !== undefined) {
+        urlElement += `<priority>${url.priority.toFixed(1)}</priority>`;
+      }
+      
+      urlElement += '</url>';
+      return urlElement;
+    });
+    
+    return `${xmlHeader}\n${urlsetStart}\n${urlElements.join('\n')}\n${urlsetEnd}`;
+  }
+  
+  async generateAllSitemaps(): Promise<Sitemap[]> {
+    try {
+      const allSitemaps = await this.getSitemaps();
+      const results: Sitemap[] = [];
+      
+      for (const sitemap of allSitemaps) {
+        if (sitemap.isEnabled) {
+          const updated = await this.generateSitemap(sitemap.type);
+          if (updated) {
+            results.push(updated);
+          }
+        }
+      }
+      
+      // In a real implementation, we would generate a sitemap index file here
+      await this.generateSitemapIndex(results);
+      
+      return results;
+    } catch (error) {
+      console.error("Error generating all sitemaps:", error);
+      throw new Error("Failed to generate all sitemaps");
+    }
+  }
+  
+  private async generateSitemapIndex(sitemaps: Sitemap[]): Promise<void> {
+    try {
+      const baseUrl = 'https://' + (process.env.REPLIT_DOMAIN || 'localhost:5000');
+      
+      const xmlHeader = '<?xml version="1.0" encoding="UTF-8"?>';
+      const sitemapIndexStart = '<sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">';
+      const sitemapIndexEnd = '</sitemapindex>';
+      
+      const sitemapElements = sitemaps
+        .filter(sitemap => sitemap.type !== 'main') // Exclude the main sitemap
+        .map(sitemap => {
+          return `<sitemap>
+            <loc>${baseUrl}${sitemap.url}</loc>
+            <lastmod>${new Date(sitemap.lastGenerated).toISOString()}</lastmod>
+          </sitemap>`;
+        });
+      
+      const sitemapIndexContent = `${xmlHeader}\n${sitemapIndexStart}\n${sitemapElements.join('\n')}\n${sitemapIndexEnd}`;
+      
+      // In a real implementation, we would write this content to a file
+      console.log('Generated sitemap index');
+    } catch (error) {
+      console.error('Error generating sitemap index:', error);
+      throw new Error("Failed to generate sitemap index");
     }
   }
 }
