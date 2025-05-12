@@ -26,6 +26,7 @@ export const users = pgTable('users', {
 export const games = pgTable('games', {
   id: serial('id').primaryKey(),
   title: text('title').notNull(),
+  slug: text('slug').notNull().unique(), // SEO-friendly URL slug
   description: text('description').notNull(),
   thumbnail: text('thumbnail').notNull(),
   url: text('url'), // For custom games, API games use the API URL
@@ -210,6 +211,7 @@ export const insertUserSchema = createInsertSchema(users, {
 
 export const insertGameSchema = createInsertSchema(games, {
   title: (schema) => schema.min(3, "Title must be at least 3 characters"),
+  slug: (schema) => schema.min(3, "Slug must be at least 3 characters"),
   description: (schema) => schema.min(10, "Description must be at least 10 characters"),
   thumbnail: (schema) => schema.url("Thumbnail must be a valid URL"),
   url: (schema) => schema.url("URL must be a valid URL").optional().nullable(),
