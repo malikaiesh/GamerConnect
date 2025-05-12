@@ -135,6 +135,14 @@ export interface IStorage {
   incrementAdClickCount(id: number): Promise<void>;
   incrementAdImpressionCount(id: number): Promise<void>;
   
+  // Sitemap methods
+  getSitemaps(): Promise<Sitemap[]>;
+  getSitemapById(id: number): Promise<Sitemap | null>;
+  getSitemapByType(type: string): Promise<Sitemap | null>;
+  updateSitemap(id: number, sitemap: Partial<InsertSitemap>): Promise<Sitemap | null>;
+  generateSitemap(type: string): Promise<Sitemap | null>;
+  generateAllSitemaps(): Promise<Sitemap[]>;
+  
   // Session store
   sessionStore: session.Store;
 }

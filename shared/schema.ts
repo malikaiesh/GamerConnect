@@ -343,7 +343,30 @@ export const insertHomeAdSchema = createInsertSchema(homeAds, {
   adEnabled: (schema) => schema.optional().default(true)
 });
 
+// Sitemap table
+export const sitemaps = pgTable('sitemaps', {
+  id: serial('id').primaryKey(),
+  type: sitemapTypeEnum('type').notNull(),
+  lastGenerated: timestamp('last_generated').defaultNow().notNull(),
+  url: text('url').notNull(),
+  itemCount: integer('item_count').default(0).notNull(),
+  isEnabled: boolean('is_enabled').default(true).notNull(),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+  updatedAt: timestamp('updated_at').defaultNow().notNull()
+});
+
+// Sitemap validation schema
+export const insertSitemapSchema = createInsertSchema(sitemaps, {
+  type: (schema) => schema.refine(val => ['games', 'blog', 'pages', 'main'].includes(val), { 
+    message: "Type must be one of: games, blog, pages, main" 
+  }),
+  url: (schema) => schema.min(1, "URL is required"),
+  isEnabled: (schema) => schema.optional().default(true)
+});
+
 export type ApiKey = typeof apiKeys.$inferSelect;
 export type InsertApiKey = z.infer<typeof insertApiKeySchema>;
 export type HomeAd = typeof homeAds.$inferSelect;
 export type InsertHomeAd = z.infer<typeof insertHomeAdSchema>;
+export type Sitemap = typeof sitemaps.$inferSelect;
+export type InsertSitemap = z.infer<typeof insertSitemapSchema>;
