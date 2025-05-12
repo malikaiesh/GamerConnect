@@ -9,25 +9,39 @@ export default function RandomGameRedirect() {
   const [isRedirecting, setIsRedirecting] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // Fetch a random game
-  const { data: randomGame, isError } = useQuery<Game>({
+  // Fetch a random game with cacheTime: 0 to ensure we get a fresh random game each time
+  const { data: randomGame, isError, error: queryError } = useQuery<Game>({
     queryKey: ['/api/games/random'],
-    retry: 3,
+    retry: 2,
+    refetchOnWindowFocus: false,
+    staleTime: 0,
+    gcTime: 0, // Don't cache the result
   });
 
   useEffect(() => {
+    // Only redirect once and only when we have data
     if (randomGame && isRedirecting) {
-      // Redirect to the game using the slug if available, otherwise use the ID
-      const gameUrl = randomGame.slug ? `/g/${randomGame.slug}` : `/game/${randomGame.id}`;
-      setIsRedirecting(false);
-      setLocation(gameUrl);
+      try {
+        // Redirect to the game using the slug if available, otherwise use the ID
+        const gameUrl = randomGame.slug ? `/g/${randomGame.slug}` : `/game/${randomGame.id}`;
+        setIsRedirecting(false);
+        
+        // Small timeout to ensure the state updates before navigation
+        setTimeout(() => {
+          setLocation(gameUrl);
+        }, 10);
+      } catch (err) {
+        console.error('Error during redirect:', err);
+        setIsRedirecting(false);
+        setError('Error navigating to random game. Please try again.');
+      }
     }
 
     if (isError) {
       setIsRedirecting(false);
-      setError('Failed to find a random game. Please try again later.');
+      setError(queryError?.message || 'Failed to find a random game. Please try again later.');
     }
-  }, [randomGame, isError, setLocation, isRedirecting]);
+  }, [randomGame, isError, queryError, setLocation, isRedirecting]);
 
   return (
     <div className="flex min-h-screen flex-col items-center justify-center p-4 bg-background">
