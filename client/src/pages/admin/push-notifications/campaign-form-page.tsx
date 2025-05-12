@@ -17,6 +17,13 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -74,6 +81,12 @@ export default function CampaignFormPage() {
       link: "",
       actionYes: "",
       actionNo: "",
+      notificationType: "toast",
+      isWebPush: false,
+      requireInteraction: false,
+      badge: "",
+      icon: "",
+      vibrate: "",
       isSurvey: false,
       targetAll: true,
       targetFilters: {},
@@ -108,6 +121,12 @@ export default function CampaignFormPage() {
         link: campaign.link || "",
         actionYes: campaign.actionYes || "",
         actionNo: campaign.actionNo || "",
+        notificationType: campaign.notificationType || "toast",
+        isWebPush: campaign.isWebPush || false,
+        requireInteraction: campaign.requireInteraction || false,
+        badge: campaign.badge || "",
+        icon: campaign.icon || "",
+        vibrate: campaign.vibrate || "",
         isSurvey: campaign.isSurvey || false,
         targetAll: campaign.targetAll || false,
         targetFilters: campaign.targetFilters || {},
@@ -190,6 +209,7 @@ export default function CampaignFormPage() {
           <TabsList className="mb-6">
             <TabsTrigger value="details">Campaign Details</TabsTrigger>
             <TabsTrigger value="content">Notification Content</TabsTrigger>
+            <TabsTrigger value="webpush">Web Push Options</TabsTrigger>
             <TabsTrigger value="targeting">Targeting & Schedule</TabsTrigger>
             <TabsTrigger value="preview" onClick={() => setShowPreview(true)}>Preview</TabsTrigger>
           </TabsList>
@@ -393,6 +413,150 @@ export default function CampaignFormPage() {
                       )}
                     />
                   </div>
+                )}
+              </TabsContent>
+
+              <TabsContent value="webpush" className="space-y-6">
+                <FormField
+                  control={form.control}
+                  name="isWebPush"
+                  render={({ field }) => (
+                    <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
+                      <div className="space-y-0.5">
+                        <FormLabel className="text-base">Enable Web Push Notifications</FormLabel>
+                        <FormDescription>
+                          Send this notification as a web push notification to desktop and mobile browsers.
+                        </FormDescription>
+                      </div>
+                      <FormControl>
+                        <Switch
+                          checked={field.value}
+                          onCheckedChange={field.onChange}
+                        />
+                      </FormControl>
+                    </FormItem>
+                  )}
+                />
+
+                {form.watch("isWebPush") && (
+                  <>
+                    <div className="grid gap-6 sm:grid-cols-2">
+                      <FormField
+                        control={form.control}
+                        name="notificationType"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Notification Type</FormLabel>
+                            <Select onValueChange={field.onChange} defaultValue={field.value}>
+                              <FormControl>
+                                <SelectTrigger>
+                                  <SelectValue placeholder="Select type" />
+                                </SelectTrigger>
+                              </FormControl>
+                              <SelectContent>
+                                <SelectItem value="toast">Toast</SelectItem>
+                                <SelectItem value="banner">Banner</SelectItem>
+                                <SelectItem value="modal">Modal</SelectItem>
+                                <SelectItem value="slide-in">Slide-in</SelectItem>
+                                <SelectItem value="alert">Alert</SelectItem>
+                                <SelectItem value="web-push">Web Push Only</SelectItem>
+                              </SelectContent>
+                            </Select>
+                            <FormDescription>
+                              Select how the notification will appear on the website in addition to web push.
+                            </FormDescription>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      
+                      <FormField
+                        control={form.control}
+                        name="requireInteraction"
+                        render={({ field }) => (
+                          <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
+                            <div className="space-y-0.5">
+                              <FormLabel className="text-base">Require Interaction</FormLabel>
+                              <FormDescription>
+                                Keep notification visible until user interacts with it.
+                              </FormDescription>
+                            </div>
+                            <FormControl>
+                              <Switch
+                                checked={field.value}
+                                onCheckedChange={field.onChange}
+                              />
+                            </FormControl>
+                          </FormItem>
+                        )}
+                      />
+                    </div>
+                    
+                    <div className="grid gap-6 sm:grid-cols-2">
+                      <FormField
+                        control={form.control}
+                        name="icon"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Notification Icon URL</FormLabel>
+                            <FormControl>
+                              <Input
+                                placeholder="https://example.com/icon.png"
+                                {...field}
+                                value={field.value || ""}
+                              />
+                            </FormControl>
+                            <FormDescription>
+                              Small icon to display in the notification (recommended size: 192x192).
+                            </FormDescription>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+
+                      <FormField
+                        control={form.control}
+                        name="badge"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Badge Icon URL</FormLabel>
+                            <FormControl>
+                              <Input
+                                placeholder="https://example.com/badge.png"
+                                {...field}
+                                value={field.value || ""}
+                              />
+                            </FormControl>
+                            <FormDescription>
+                              Small monochrome icon for notification badge (recommended size: 72x72).
+                            </FormDescription>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    </div>
+                    
+                    <FormField
+                      control={form.control}
+                      name="vibrate"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Vibration Pattern</FormLabel>
+                          <FormControl>
+                            <Input
+                              placeholder="200,100,200"
+                              {...field}
+                              value={field.value || ""}
+                            />
+                          </FormControl>
+                          <FormDescription>
+                            Vibration pattern for mobile devices. Enter comma-separated values in milliseconds (e.g., 200,100,200).
+                          </FormDescription>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </>
                 )}
               </TabsContent>
 
