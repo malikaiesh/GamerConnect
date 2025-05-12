@@ -284,4 +284,34 @@ export function registerHomeAdsRoutes(app: Express) {
       res.status(500).json({ error: 'Failed to record click' });
     }
   });
+  
+  // Toggle all ads at once
+  app.post('/api/home-ads/toggle-all', async (req: Request, res: Response) => {
+    try {
+      const { adEnabled } = req.body;
+      
+      if (typeof adEnabled !== 'boolean') {
+        return res.status(400).json({ error: 'The adEnabled property must be a boolean' });
+      }
+      
+      // Get all home ads
+      const homeAds = await storage.getHomeAds();
+      
+      // Update each ad with the new enabled status
+      const updatePromises = homeAds.map(ad => 
+        storage.updateHomeAd(ad.id, { adEnabled })
+      );
+      
+      // Wait for all updates to complete
+      await Promise.all(updatePromises);
+      
+      res.status(200).json({ 
+        message: `All ads have been ${adEnabled ? 'enabled' : 'disabled'} successfully`,
+        count: homeAds.length
+      });
+    } catch (error) {
+      console.error('Error toggling all home ads:', error);
+      res.status(500).json({ error: 'Failed to toggle all home ads' });
+    }
+  });
 }
