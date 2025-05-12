@@ -46,8 +46,15 @@ router.get("/active", async (req, res) => {
 router.get("/:id", isAuthenticated, isAdmin, async (req, res) => {
   try {
     const { id } = req.params;
+    const notificationId = parseInt(id);
+    
+    // Check if the ID is a valid number
+    if (isNaN(notificationId)) {
+      return res.status(400).json({ error: "Invalid notification ID" });
+    }
+    
     const notification = await db.query.pushNotifications.findFirst({
-      where: eq(pushNotifications.id, parseInt(id))
+      where: eq(pushNotifications.id, notificationId)
     });
     
     if (!notification) {
@@ -262,7 +269,7 @@ router.get("/campaigns", isAuthenticated, isAdmin, async (req, res) => {
     const campaigns = await db.query.pushCampaigns.findMany({
       orderBy: [desc(pushCampaigns.createdAt)]
     });
-    res.json(campaigns);
+    res.json(campaigns || []);
   } catch (error) {
     console.error("Error fetching push campaigns:", error);
     res.status(500).json({ error: "Internal server error" });
@@ -273,8 +280,15 @@ router.get("/campaigns", isAuthenticated, isAdmin, async (req, res) => {
 router.get("/campaigns/:id", isAuthenticated, isAdmin, async (req, res) => {
   try {
     const { id } = req.params;
+    const campaignId = parseInt(id);
+    
+    // Check if the ID is a valid number
+    if (isNaN(campaignId)) {
+      return res.status(400).json({ error: "Invalid campaign ID" });
+    }
+    
     const campaign = await db.query.pushCampaigns.findFirst({
-      where: eq(pushCampaigns.id, parseInt(id))
+      where: eq(pushCampaigns.id, campaignId)
     });
     
     if (!campaign) {
