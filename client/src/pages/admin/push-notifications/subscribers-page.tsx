@@ -1,122 +1,166 @@
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation } from "@tanstack/react-query";
+import { Button } from "@/components/ui/button";
+import { BarChart3, Download, HardDrive, Trash2, Users } from "lucide-react";
+import { Link } from "wouter";
 import { PushSubscriber } from "@shared/schema";
-import AdminLayout from "@/components/admin/layout";
+import { AdminLayout } from "@/components/admin/layout";
 import { DataTable } from "@/components/ui/data-table";
 import { ColumnDef } from "@tanstack/react-table";
 import { Badge } from "@/components/ui/badge";
 import { format } from "date-fns";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Button } from "@/components/ui/button";
-import { Trash2, SendHorizontal } from "lucide-react";
 import { apiRequest, queryClient } from "@/lib/queryClient";
-import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+
+type SubscribersStats = {
+  total: number;
+  active: number;
+  desktop: number;
+  mobile: number;
+  tablet: number;
+  browser: { [key: string]: number };
+  country: { [key: string]: number };
+};
 
 export default function PushNotificationSubscribersPage() {
   const { toast } = useToast();
-  const [selectedSubscribers, setSelectedSubscribers] = useState<string[]>([]);
   
   const { data: subscribers, isLoading } = useQuery<PushSubscriber[]>({
     queryKey: ["/api/push-notifications/subscribers"],
   });
 
-  const handleDelete = async (id: number) => {
-    try {
-      await apiRequest("DELETE", `/api/push-notifications/subscribers/${id}`);
+  const { data: stats } = useQuery<SubscribersStats>({
+    queryKey: ["/api/push-notifications/subscribers/stats"],
+  });
+
+  const deleteSubscriberMutation = useMutation({
+    mutationFn: async (id: number) => {
+      return await apiRequest("DELETE", `/api/push-notifications/subscribers/${id}`);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/push-notifications/subscribers"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/push-notifications/subscribers/stats"] });
       toast({
         title: "Subscriber deleted",
         description: "The subscriber has been deleted successfully.",
       });
-      queryClient.invalidateQueries({ queryKey: ["/api/push-notifications/subscribers"] });
-    } catch (error) {
+    },
+    onError: () => {
       toast({
         title: "Error",
         description: "There was an error deleting the subscriber.",
         variant: "destructive",
       });
+    },
+  });
+
+  const downloadSubscribersMutation = useMutation({
+    mutationFn: async () => {
+      const response = await apiRequest("GET", "/api/push-notifications/subscribers/export");
+      const json = await response.json();
+      return json.url;
+    },
+    onSuccess: (url) => {
+      // Create a temporary link and trigger download
+      const link = document.createElement("a");
+      link.href = url;
+      link.setAttribute("download", "subscribers.csv");
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      
+      toast({
+        title: "Export complete",
+        description: "Subscribers data has been downloaded.",
+      });
+    },
+    onError: () => {
+      toast({
+        title: "Export failed",
+        description: "There was an error exporting subscribers data.",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const handleDelete = (id: number) => {
+    if (confirm("Are you sure you want to delete this subscriber?")) {
+      deleteSubscriberMutation.mutate(id);
     }
+  };
+
+  const handleExport = () => {
+    downloadSubscribersMutation.mutate();
   };
 
   const columns: ColumnDef<PushSubscriber>[] = [
     {
-      id: "select",
-      header: ({ table }) => (
-        <input
-          type="checkbox"
-          checked={table.getIsAllPageRowsSelected()}
-          onChange={(e) => table.toggleAllPageRowsSelected(e.target.checked)}
-          className="w-4 h-4"
-        />
-      ),
+      id: "endpoint",
+      accessorKey: "endpoint",
+      header: "Endpoint & Details",
       cell: ({ row }) => (
-        <input
-          type="checkbox"
-          checked={row.getIsSelected()}
-          onChange={(e) => row.toggleSelected(e.target.checked)}
-          className="w-4 h-4"
-        />
-      ),
-      enableSorting: false,
-      enableHiding: false,
-    },
-    {
-      id: "browser",
-      accessorKey: "browser",
-      header: "Browser",
-      cell: ({ row }) => (
-        <div className="flex flex-col">
-          <span className="font-medium">{row.original.browser || "Unknown"}</span>
-          <span className="text-xs text-gray-500">{row.original.os || "Unknown OS"}</span>
+        <div className="max-w-md">
+          <div className="font-medium truncate" title={row.original.endpoint}>
+            {row.original.endpoint.substring(0, 40)}...
+          </div>
+          <div className="text-sm text-gray-500 dark:text-gray-400">
+            {row.original.deviceType || "Unknown"} / {row.original.browser || "Unknown"}
+          </div>
         </div>
       ),
-    },
-    {
-      id: "deviceType",
-      accessorKey: "deviceType",
-      header: "Device",
-      cell: ({ row }) => row.original.deviceType || "Unknown",
-    },
-    {
-      id: "location",
-      header: "Location",
-      cell: ({ row }) => {
-        const location = [row.original.city, row.original.region, row.original.country]
-          .filter(Boolean)
-          .join(", ");
-        return location || "Unknown";
-      },
     },
     {
       id: "status",
       accessorKey: "status",
       header: "Status",
-      cell: ({ row }) => {
-        const status = row.original.status;
-        return (
-          <Badge
-            variant={status === "active" ? "default" : "destructive"}
-          >
-            {status.charAt(0).toUpperCase() + status.slice(1)}
-          </Badge>
-        );
-      },
+      cell: ({ row }) => (
+        <Badge
+          variant={
+            row.original.status === "active"
+              ? "default"
+              : row.original.status === "inactive"
+              ? "secondary"
+              : "outline"
+          }
+        >
+          {row.original.status.charAt(0).toUpperCase() + row.original.status.slice(1)}
+        </Badge>
+      ),
     },
     {
-      id: "lastSent",
-      accessorKey: "lastSent",
-      header: "Last Notification",
-      cell: ({ row }) => {
-        const lastSent = row.original.lastSent;
-        return lastSent 
-          ? format(new Date(lastSent), "MMM d, yyyy 'at' h:mm a") 
-          : "Never";
-      },
+      id: "location",
+      header: "Location",
+      cell: ({ row }) => (
+        <div className="flex flex-col">
+          <div className="text-sm">{row.original.country || "Unknown"}</div>
+          <div className="text-xs text-gray-500 dark:text-gray-400">
+            {row.original.city ? `${row.original.city}` : ""}
+          </div>
+        </div>
+      ),
     },
     {
-      id: "createdAt",
+      id: "lastSeen",
+      accessorKey: "lastSeen",
+      header: "Last Activity",
+      cell: ({ row }) => (
+        <div className="text-sm">
+          {row.original.lastSeen
+            ? format(new Date(row.original.lastSeen), "MMM d, yyyy")
+            : "Never"}
+        </div>
+      ),
+    },
+    {
+      id: "created",
       accessorKey: "createdAt",
-      header: "Subscribed On",
-      cell: ({ row }) => format(new Date(row.original.createdAt), "MMM d, yyyy"),
+      header: "Subscribed",
+      cell: ({ row }) => (
+        <div className="text-sm">
+          {format(new Date(row.original.createdAt), "MMM d, yyyy")}
+        </div>
+      ),
     },
     {
       id: "actions",
@@ -138,29 +182,104 @@ export default function PushNotificationSubscribersPage() {
   return (
     <AdminLayout
       title="Push Notification Subscribers"
-      description="Manage push notification subscribers for your campaigns"
+      description="Manage and analyze your push notification subscribers"
       actions={
-        <div className="flex gap-2">
-          <Button variant="outline" disabled={selectedSubscribers.length === 0}>
-            <SendHorizontal className="mr-2 h-4 w-4" />
-            Send Test
+        <>
+          <Button variant="outline" asChild>
+            <Link href="/admin/push-notifications/analytics">
+              <BarChart3 className="mr-2 h-4 w-4" />
+              Analytics
+            </Link>
           </Button>
-        </div>
+          <Button variant="default" onClick={handleExport} disabled={downloadSubscribersMutation.isPending}>
+            <Download className="mr-2 h-4 w-4" />
+            {downloadSubscribersMutation.isPending ? "Exporting..." : "Export Subscribers"}
+          </Button>
+        </>
       }
     >
+      {stats && (
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4 mb-8">
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-medium text-muted-foreground">
+                Total Subscribers
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{stats.total.toLocaleString()}</div>
+              <p className="text-xs text-muted-foreground mt-1">
+                {stats.active.toLocaleString()} active ({Math.round((stats.active / stats.total) * 100)}%)
+              </p>
+            </CardContent>
+          </Card>
+          
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-medium text-muted-foreground">
+                Desktop Devices
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{stats.desktop.toLocaleString()}</div>
+              <p className="text-xs text-muted-foreground mt-1">
+                {Math.round((stats.desktop / stats.total) * 100)}% of subscribers
+              </p>
+            </CardContent>
+          </Card>
+          
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-medium text-muted-foreground">
+                Mobile Devices
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{stats.mobile.toLocaleString()}</div>
+              <p className="text-xs text-muted-foreground mt-1">
+                {Math.round((stats.mobile / stats.total) * 100)}% of subscribers
+              </p>
+            </CardContent>
+          </Card>
+          
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-medium text-muted-foreground">
+                Top Browser
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold capitalize">
+                {Object.entries(stats.browser).sort((a, b) => b[1] - a[1])[0]?.[0] || "Unknown"}
+              </div>
+              <p className="text-xs text-muted-foreground mt-1">
+                {Object.keys(stats.browser).length} different browsers
+              </p>
+            </CardContent>
+          </Card>
+        </div>
+      )}
+      
       {isLoading ? (
         <div className="space-y-4">
           <Skeleton className="h-10 w-full" />
           <Skeleton className="h-64 w-full" />
         </div>
-      ) : (
+      ) : subscribers && subscribers.length > 0 ? (
         <DataTable
-          data={subscribers || []}
+          data={subscribers}
           columns={columns}
-          searchField="browser"
+          searchField="endpoint"
           pagination
-          onRowSelectionChange={setSelectedSubscribers}
         />
+      ) : (
+        <div className="text-center py-10 border rounded-lg">
+          <Users className="mx-auto h-12 w-12 text-muted-foreground" />
+          <h3 className="mt-4 text-lg font-semibold">No subscribers yet</h3>
+          <p className="mt-2 text-sm text-muted-foreground max-w-md mx-auto">
+            Users will appear here when they subscribe to push notifications on your site.
+          </p>
+        </div>
       )}
     </AdminLayout>
   );

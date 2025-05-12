@@ -32,6 +32,12 @@ import AdminSitemapsPage from "@/pages/admin/sitemaps-page";
 import AdminBlogAdsPage from "@/pages/admin/blog-ads-page";
 import AdminCustomCodePage from "@/pages/admin/custom-code-page";
 import AdsTxtPage from "@/pages/admin/ads-txt-page";
+import PushNotificationsPage from "@/pages/admin/push-notifications";
+import PushNotificationCampaignsPage from "@/pages/admin/push-notifications/campaigns-page";
+import PushNotificationSubscribersPage from "@/pages/admin/push-notifications/subscribers-page";
+import PushNotificationAnalyticsPage from "@/pages/admin/push-notifications/analytics-page";
+import NotificationFormPage from "@/pages/admin/push-notifications/notification-form-page";
+import CampaignFormPage from "@/pages/admin/push-notifications/campaign-form-page";
 import { Providers } from "./lib/providers";
 import { ProtectedRoute } from "./lib/protected-route";
 import { useAuth } from "@/hooks/use-auth";
@@ -72,6 +78,16 @@ function Router() {
       <ProtectedRoute path="/admin/settings" component={AdminSettings} adminOnly={true} />
       <ProtectedRoute path="/admin/pages" component={AdminPagesPage} adminOnly={true} />
       <ProtectedRoute path="/admin/pages/:id" component={AdminPageEditPage} adminOnly={true} />
+      
+      {/* Push Notification Routes */}
+      <ProtectedRoute path="/admin/push-notifications" component={PushNotificationsPage} adminOnly={true} />
+      <ProtectedRoute path="/admin/push-notifications/new" component={NotificationFormPage} adminOnly={true} />
+      <ProtectedRoute path="/admin/push-notifications/:id" component={NotificationFormPage} adminOnly={true} />
+      <ProtectedRoute path="/admin/push-notifications/campaigns" component={PushNotificationCampaignsPage} adminOnly={true} />
+      <ProtectedRoute path="/admin/push-notifications/campaigns/new" component={CampaignFormPage} adminOnly={true} />
+      <ProtectedRoute path="/admin/push-notifications/campaigns/:id" component={CampaignFormPage} adminOnly={true} />
+      <ProtectedRoute path="/admin/push-notifications/subscribers" component={PushNotificationSubscribersPage} adminOnly={true} />
+      <ProtectedRoute path="/admin/push-notifications/analytics" component={PushNotificationAnalyticsPage} adminOnly={true} />
       
       {/* Fallback to 404 */}
       <Route component={NotFound} />

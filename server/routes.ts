@@ -13,6 +13,7 @@ import { registerPagesRoutes } from "./api/pages";
 import { registerApiKeyRoutes } from "./api/apiKeys";
 import { registerHomeAdsRoutes } from "./api/homeAds";
 import { registerSitemapRoutes } from "./api/sitemapRoutes";
+import pushNotificationsRoutes from "./api/push-notifications";
 import { storage } from "./storage";
 import { db } from "../db";
 import { games, blogPosts, staticPages } from "@shared/schema";
