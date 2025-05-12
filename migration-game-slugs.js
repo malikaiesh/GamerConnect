@@ -1,22 +1,25 @@
 import { createSlug } from './server/utils/slugify.js';
-import { db } from './db/index.js';
+import { pool } from './db/index.js';
 
 async function addSlugColumnToGamesTable() {
+  const client = await pool.connect();
+  
   try {
     console.log('Starting migration: Adding slug column to games table...');
     
-    // Use direct SQL via the db.execute method
+    // Begin transaction
+    await client.query('BEGIN');
     
     // Check if the slug column already exists
-    const checkColumnResult = await db.execute(`
+    const checkColumnResult = await client.query(`
       SELECT column_name 
       FROM information_schema.columns 
       WHERE table_name = 'games' AND column_name = 'slug'
     `);
     
-    if (checkColumnResult.length === 0) {
+    if (checkColumnResult.rows.length === 0) {
       // Add the slug column
-      await db.execute(`
+      await client.query(`
         ALTER TABLE games 
         ADD COLUMN slug TEXT
       `);
@@ -24,7 +27,8 @@ async function addSlugColumnToGamesTable() {
       console.log('Column "slug" added to games table');
       
       // Get all games
-      const games = await db.execute('SELECT id, title FROM games');
+      const gamesResult = await client.query('SELECT id, title FROM games');
+      const games = gamesResult.rows;
       
       console.log(`Generating slugs for ${games.length} existing games...`);
       
@@ -38,12 +42,12 @@ async function addSlugColumnToGamesTable() {
         // Check if slug already exists
         let slugExists = true;
         while (slugExists) {
-          const slugCheckResult = await db.execute(
+          const slugCheckResult = await client.query(
             'SELECT id FROM games WHERE slug = $1 AND id != $2',
             [slug, game.id]
           );
           
-          if (slugCheckResult.length === 0) {
+          if (slugCheckResult.rows.length === 0) {
             slugExists = false;
           } else {
             // Append a number to make the slug unique
@@ -53,14 +57,14 @@ async function addSlugColumnToGamesTable() {
         }
         
         // Update the game with the unique slug
-        await db.execute(
+        await client.query(
           'UPDATE games SET slug = $1 WHERE id = $2',
           [slug, game.id]
         );
       }
       
       // Make the slug column NOT NULL and add a unique constraint
-      await db.execute(`
+      await client.query(`
         ALTER TABLE games 
         ALTER COLUMN slug SET NOT NULL,
         ADD CONSTRAINT games_slug_unique UNIQUE (slug)
@@ -71,11 +75,16 @@ async function addSlugColumnToGamesTable() {
       console.log('Column "slug" already exists in games table');
     }
     
+    // Commit transaction
+    await client.query('COMMIT');
     console.log('Migration completed successfully');
     
   } catch (error) {
+    await client.query('ROLLBACK');
     console.error('Migration failed:', error);
     throw error;
+  } finally {
+    client.release();
   }
 }
 
