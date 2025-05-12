@@ -11,6 +11,7 @@ import { PushNotification } from '@/components/push-notification';
 import { HomepageContent } from '@/components/home/homepage-content';
 import { RandomGameButton } from '@/components/home/random-game-button';
 import { RandomGameSection } from '@/components/games/random-game-section';
+import { HomeAd } from '@/components/ads/home-ad';
 import { Game, BlogPost, PushNotification as PushNotificationType } from '@shared/schema';
 import { apiRequest } from '@/lib/queryClient';
 
@@ -129,6 +130,9 @@ export default function HomePage() {
         activeCategory={activeCategory}
       />
       
+      {/* Ad Above Featured Games */}
+      <HomeAd position="above_featured_games" />
+      
       {/* Featured Games Section */}
       <section id="featured" className="py-10">
         <div className="container mx-auto px-4">
@@ -149,6 +153,9 @@ export default function HomePage() {
           />
         </div>
       </section>
+      
+      {/* Ad Below Featured Games */}
+      <HomeAd position="below_featured_games" />
       
       {/* Random Game Banner */}
       <section className="py-8 bg-primary-50 dark:bg-primary-900/20">
@@ -183,6 +190,9 @@ export default function HomePage() {
         </div>
       </section>
       
+      {/* Ad Above Popular Games */}
+      <HomeAd position="above_popular_games" />
+      
       {/* Popular Games Section */}
       <section id="games" className="py-10">
         <div className="container mx-auto px-4">
@@ -210,6 +220,9 @@ export default function HomePage() {
         </div>
       </section>
       
+      {/* Ad Below Popular Games */}
+      <HomeAd position="below_popular_games" />
+      
       {/* Blog Section */}
       <section className="py-10 bg-muted/30">
         <div className="container mx-auto px-4">
@@ -228,6 +241,9 @@ export default function HomePage() {
         </div>
       </section>
       
+      {/* Ad Above About */}
+      <HomeAd position="above_about" />
+      
       {/* Homepage Content Section */}
       <section className="py-10">
         <div className="container mx-auto px-4">
@@ -237,6 +253,9 @@ export default function HomePage() {
           <HomepageContent />
         </div>
       </section>
+      
+      {/* Ad Below About */}
+      <HomeAd position="below_about" />
       
       {/* App Download Section */}
       <section className="py-12 bg-primary text-primary-foreground">
