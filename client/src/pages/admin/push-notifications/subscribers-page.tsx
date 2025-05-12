@@ -1,6 +1,6 @@
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
-import { BarChart3, Download, HardDrive, Trash2, Users } from "lucide-react";
+import { BarChart3, Bell, Download, HardDrive, Trash2, Users, BellOff } from "lucide-react";
 import { Link } from "wouter";
 import { PushSubscriber } from "@shared/schema";
 import { AdminLayout } from "@/components/admin/layout";
@@ -12,6 +12,8 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Switch } from "@/components/ui/switch";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 type SubscribersStats = {
   total: number;
@@ -32,6 +34,30 @@ export default function PushNotificationSubscribersPage() {
 
   const { data: stats } = useQuery<SubscribersStats>({
     queryKey: ["/api/push-notifications/subscribers/stats"],
+  });
+  
+  const toggleWebPushMutation = useMutation({
+    mutationFn: async ({ id, enabled }: { id: number; enabled: boolean }) => {
+      return await apiRequest(
+        "PATCH", 
+        `/api/push-notifications/subscribers/${id}/web-push-preference`,
+        { webPushEnabled: enabled }
+      );
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/push-notifications/subscribers"] });
+      toast({
+        title: "Preference updated",
+        description: "Web push notification preference has been updated.",
+      });
+    },
+    onError: () => {
+      toast({
+        title: "Error",
+        description: "There was an error updating the web push preference.",
+        variant: "destructive",
+      });
+    },
   });
 
   const deleteSubscriberMutation = useMutation({
@@ -141,13 +167,13 @@ export default function PushNotificationSubscribersPage() {
       ),
     },
     {
-      id: "lastSeen",
-      accessorKey: "lastSeen",
+      id: "lastInteracted",
+      accessorKey: "lastInteracted",
       header: "Last Activity",
       cell: ({ row }) => (
         <div className="text-sm">
-          {row.original.lastSeen
-            ? format(new Date(row.original.lastSeen), "MMM d, yyyy")
+          {row.original.lastInteracted
+            ? format(new Date(row.original.lastInteracted), "MMM d, yyyy")
             : "Never"}
         </div>
       ),
@@ -159,6 +185,27 @@ export default function PushNotificationSubscribersPage() {
       cell: ({ row }) => (
         <div className="text-sm">
           {format(new Date(row.original.createdAt), "MMM d, yyyy")}
+        </div>
+      ),
+    },
+    {
+      id: "webPush",
+      header: "Web Push",
+      cell: ({ row }) => (
+        <div className="flex items-center">
+          <Switch 
+            checked={row.original.webPushEnabled}
+            onCheckedChange={(checked) => 
+              toggleWebPushMutation.mutate({ id: row.original.id, enabled: checked })
+            }
+          />
+          <span className="ml-2 text-xs">
+            {row.original.webPushEnabled ? (
+              <Badge variant="default">Allowed</Badge>
+            ) : (
+              <Badge variant="outline">Not Allowed</Badge>
+            )}
+          </span>
         </div>
       ),
     },

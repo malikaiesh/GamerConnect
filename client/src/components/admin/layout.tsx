@@ -7,9 +7,10 @@ interface AdminLayoutProps {
   children: ReactNode;
   title?: string;
   description?: string;
+  actions?: ReactNode;
 }
 
-export function AdminLayout({ children, title, description }: AdminLayoutProps) {
+export function AdminLayout({ children, title, description, actions }: AdminLayoutProps) {
   const { user } = useAuth();
 
   if (!user?.isAdmin) {
