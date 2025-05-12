@@ -330,6 +330,20 @@ export default function GamePage() {
                     title={game.title}
                     className="w-full h-full border-0"
                     allowFullScreen
+                    onError={(e) => {
+                      // Handle iframe loading error
+                      const iframe = e.target as HTMLIFrameElement;
+                      if (iframe) {
+                        iframe.style.display = 'none';
+                        const parent = iframe.parentElement;
+                        if (parent) {
+                          const errorDiv = document.createElement('div');
+                          errorDiv.className = 'w-full h-full flex items-center justify-center bg-muted';
+                          errorDiv.innerHTML = '<p class="text-muted-foreground">Game content unavailable</p>';
+                          parent.appendChild(errorDiv);
+                        }
+                      }
+                    }}
                   ></iframe>
                 ) : (
                   <div className="w-full h-full flex items-center justify-center bg-muted">
