@@ -1,7 +1,6 @@
 import AdminNavigation from "@/components/admin/navigation";
 import { GeneralSettings } from "@/components/admin/settings/general-settings";
 import { SeoSettings } from "@/components/admin/settings/seo-settings";
-import { AdsSettings } from "@/components/admin/settings/ads-settings";
 import { PushNotifications } from "@/components/admin/settings/push-notifications";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useEffect, useState } from "react";
@@ -14,7 +13,7 @@ export default function AdminSettings() {
   // Extract tab from URL hash if present
   useEffect(() => {
     const hash = window.location.hash.replace("#", "");
-    if (hash && ["general", "seo", "ads", "notifications"].includes(hash)) {
+    if (hash && ["general", "seo", "notifications"].includes(hash)) {
       setActiveTab(hash);
     }
   }, [location]);
@@ -36,10 +35,9 @@ export default function AdminSettings() {
         </div>
         
         <Tabs value={activeTab} onValueChange={handleTabChange} className="space-y-4">
-          <TabsList className="grid w-full grid-cols-1 md:grid-cols-4">
+          <TabsList className="grid w-full grid-cols-1 md:grid-cols-3">
             <TabsTrigger value="general">General</TabsTrigger>
             <TabsTrigger value="seo">SEO</TabsTrigger>
-            <TabsTrigger value="ads">Ads & Code</TabsTrigger>
             <TabsTrigger value="notifications">Notifications</TabsTrigger>
           </TabsList>
           
@@ -51,9 +49,7 @@ export default function AdminSettings() {
             <SeoSettings />
           </TabsContent>
           
-          <TabsContent value="ads" className="space-y-4">
-            <AdsSettings />
-          </TabsContent>
+
           
           <TabsContent value="notifications" className="space-y-4">
             <PushNotifications />
