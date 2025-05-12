@@ -23,8 +23,25 @@ export function BlogInternalLinks() {
   
   const updateInternalLinksMutation = useMutation({
     mutationFn: async () => {
-      const response = await apiRequest('POST', '/api/blog/update-internal-links');
-      return await response.json() as InternalLinksResponse;
+      try {
+        const response = await apiRequest('POST', '/api/blog/update-internal-links');
+        
+        // Check if response is OK
+        if (!response.ok) {
+          const errorData = await response.json().catch(() => null);
+          throw new Error(
+            errorData?.message || 
+            `Server error: ${response.status} ${response.statusText}`
+          );
+        }
+        
+        // Safely parse the JSON response
+        const data = await response.json();
+        return data as InternalLinksResponse;
+      } catch (err) {
+        console.error("Error in internal links mutation:", err);
+        throw err;
+      }
     },
     onSuccess: (data) => {
       setLastUpdate(new Date());
@@ -35,6 +52,7 @@ export function BlogInternalLinks() {
       });
     },
     onError: (error: any) => {
+      console.error("Error details:", error);
       toast({
         title: 'Failed to update internal links',
         description: error.message || 'An error occurred while updating internal links.',

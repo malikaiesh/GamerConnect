@@ -229,13 +229,18 @@ export function registerBlogRoutes(app: Express) {
     try {
       const results = await updateAllBlogPostsWithInternalLinks();
       
-      res.status(200).json({ 
+      // Make sure we're sending a proper JSON response
+      return res.status(200).json({ 
         message: `Updated ${results.updated} blog posts with internal links`,
         results
       });
     } catch (error) {
       console.error('Error updating blog posts with internal links:', error);
-      res.status(500).json({ message: 'Failed to update blog posts with internal links' });
+      // Make sure error response is also proper JSON
+      return res.status(500).json({ 
+        error: 'Failed to update blog posts with internal links',
+        message: error instanceof Error ? error.message : 'Unknown error'
+      });
     }
   });
 }
