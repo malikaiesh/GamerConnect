@@ -49,8 +49,6 @@ export default function AdminSettings() {
             <SeoSettings />
           </TabsContent>
           
-
-          
           <TabsContent value="notifications" className="space-y-4">
             <PushNotifications />
           </TabsContent>
