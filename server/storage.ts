@@ -97,6 +97,15 @@ export interface IStorage {
   updateHomePageContent(id: number, content: Partial<InsertHomePageContent>): Promise<HomePageContent | null>;
   deleteHomePageContent(id: number): Promise<boolean>;
   
+  // Static Pages methods
+  getStaticPages(options?: PageQueryOptions): Promise<{ pages: StaticPage[], totalPages: number, totalCount: number }>;
+  getStaticPageById(id: number): Promise<StaticPage | null>;
+  getStaticPageBySlug(slug: string): Promise<StaticPage | null>;
+  getStaticPageByType(pageType: string): Promise<StaticPage | null>;
+  createStaticPage(page: Omit<InsertStaticPage, "createdAt" | "updatedAt">): Promise<StaticPage>;
+  updateStaticPage(id: number, page: Partial<InsertStaticPage>): Promise<StaticPage | null>;
+  deleteStaticPage(id: number): Promise<boolean>;
+  
   // Session store
   sessionStore: session.Store;
 }
@@ -116,6 +125,14 @@ export interface BlogQueryOptions {
   search?: string;
   categoryId?: number;
   status?: 'draft' | 'published';
+}
+
+export interface PageQueryOptions {
+  page?: number;
+  limit?: number;
+  search?: string;
+  pageType?: string;
+  status?: 'active' | 'inactive';
 }
 
 class DatabaseStorage implements IStorage {

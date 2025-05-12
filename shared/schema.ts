@@ -10,6 +10,7 @@ export const gameFileTypeEnum = pgEnum('game_file_type', ['html5', 'apk', 'ios',
 export const blogStatusEnum = pgEnum('blog_status', ['draft', 'published']);
 export const notificationTypeEnum = pgEnum('notification_type', ['alert', 'banner', 'modal', 'slide-in', 'toast']);
 export const contentStatusEnum = pgEnum('content_status', ['active', 'inactive']);
+export const pageTypeEnum = pgEnum('page_type', ['about', 'contact', 'privacy', 'terms', 'cookie-policy', 'faq', 'custom']);
 
 // Users table
 export const users = pgTable('users', {
@@ -151,6 +152,20 @@ export const homePageContent = pgTable('homepage_content', {
   updatedAt: timestamp('updated_at').defaultNow().notNull()
 });
 
+// Static Pages table
+export const staticPages = pgTable('static_pages', {
+  id: serial('id').primaryKey(),
+  title: text('title').notNull(),
+  slug: text('slug').notNull().unique(),
+  content: text('content').notNull(),
+  pageType: pageTypeEnum('page_type').notNull(),
+  metaTitle: text('meta_title'),
+  metaDescription: text('meta_description'),
+  status: contentStatusEnum('status').default('active').notNull(),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+  updatedAt: timestamp('updated_at').defaultNow().notNull()
+});
+
 // Define relations
 export const gamesRelations = relations(games, ({ many }) => ({
   ratings: many(ratings)
@@ -235,6 +250,14 @@ export const insertHomePageContentSchema = createInsertSchema(homePageContent, {
   content: (schema) => schema.min(50, "Content must be at least 50 characters")
 });
 
+export const insertStaticPageSchema = createInsertSchema(staticPages, {
+  title: (schema) => schema.min(3, "Title must be at least 3 characters"),
+  content: (schema) => schema.min(50, "Content must be at least 50 characters"),
+  slug: (schema) => schema.min(2, "Slug must be at least 2 characters"),
+  metaTitle: (schema) => schema.optional().nullable(),
+  metaDescription: (schema) => schema.optional().nullable()
+});
+
 // Types for TypeScript
 export type User = typeof users.$inferSelect;
 export type InsertUser = z.infer<typeof insertUserSchema>;
@@ -261,3 +284,6 @@ export type Analytic = typeof analytics.$inferSelect;
 
 export type HomePageContent = typeof homePageContent.$inferSelect;
 export type InsertHomePageContent = z.infer<typeof insertHomePageContentSchema>;
+
+export type StaticPage = typeof staticPages.$inferSelect;
+export type InsertStaticPage = z.infer<typeof insertStaticPageSchema>;
