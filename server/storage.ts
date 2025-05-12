@@ -21,6 +21,8 @@ import {
   InsertHomePageContent,
   StaticPage,
   InsertStaticPage,
+  ApiKey,
+  InsertApiKey,
   Analytic,
   users,
   games,
@@ -31,6 +33,7 @@ import {
   pushNotifications,
   homePageContent,
   staticPages,
+  apiKeys,
   analytics
 } from "@shared/schema";
 
@@ -108,6 +111,14 @@ export interface IStorage {
   createStaticPage(page: Omit<InsertStaticPage, "createdAt" | "updatedAt">): Promise<StaticPage>;
   updateStaticPage(id: number, page: Partial<InsertStaticPage>): Promise<StaticPage | null>;
   deleteStaticPage(id: number): Promise<boolean>;
+  
+  // API Keys methods
+  getApiKeys(): Promise<ApiKey[]>;
+  getApiKeyById(id: number): Promise<ApiKey | null>;
+  getApiKeyByType(type: string): Promise<ApiKey | null>;
+  createApiKey(apiKey: Omit<InsertApiKey, "createdAt" | "updatedAt">): Promise<ApiKey>;
+  updateApiKey(id: number, apiKey: Partial<InsertApiKey>): Promise<ApiKey | null>;
+  deleteApiKey(id: number): Promise<boolean>;
   
   // Session store
   sessionStore: session.Store;
@@ -936,6 +947,85 @@ class DatabaseStorage implements IStorage {
     } catch (error) {
       console.error(`Error deleting static page with ID ${id}:`, error);
       throw new Error("Failed to delete static page");
+    }
+  }
+
+  // API Keys methods
+  async getApiKeys(): Promise<ApiKey[]> {
+    try {
+      return await db.select().from(apiKeys).orderBy(desc(apiKeys.createdAt));
+    } catch (error) {
+      console.error("Error getting API keys:", error);
+      throw new Error("Failed to get API keys");
+    }
+  }
+
+  async getApiKeyById(id: number): Promise<ApiKey | null> {
+    try {
+      const result = await db.select().from(apiKeys).where(eq(apiKeys.id, id)).limit(1);
+      return result[0] || null;
+    } catch (error) {
+      console.error(`Error getting API key with ID ${id}:`, error);
+      throw new Error("Failed to get API key");
+    }
+  }
+
+  async getApiKeyByType(type: string): Promise<ApiKey | null> {
+    try {
+      const result = await db.select().from(apiKeys)
+        .where(and(
+          eq(apiKeys.type, type),
+          eq(apiKeys.isActive, true)
+        ))
+        .orderBy(desc(apiKeys.createdAt))
+        .limit(1);
+      return result[0] || null;
+    } catch (error) {
+      console.error(`Error getting API key with type ${type}:`, error);
+      throw new Error("Failed to get API key");
+    }
+  }
+
+  async createApiKey(apiKeyData: Omit<InsertApiKey, "createdAt" | "updatedAt">): Promise<ApiKey> {
+    try {
+      const now = new Date();
+      const [newApiKey] = await db.insert(apiKeys).values({
+        ...apiKeyData,
+        createdAt: now,
+        updatedAt: now
+      }).returning();
+      
+      return newApiKey;
+    } catch (error) {
+      console.error("Error creating API key:", error);
+      throw new Error("Failed to create API key");
+    }
+  }
+
+  async updateApiKey(id: number, apiKeyData: Partial<InsertApiKey>): Promise<ApiKey | null> {
+    try {
+      const [updatedApiKey] = await db.update(apiKeys)
+        .set({
+          ...apiKeyData,
+          updatedAt: new Date()
+        })
+        .where(eq(apiKeys.id, id))
+        .returning();
+      
+      return updatedApiKey || null;
+    } catch (error) {
+      console.error(`Error updating API key with ID ${id}:`, error);
+      throw new Error("Failed to update API key");
+    }
+  }
+
+  async deleteApiKey(id: number): Promise<boolean> {
+    try {
+      const result = await db.delete(apiKeys).where(eq(apiKeys.id, id)).returning({ id: apiKeys.id });
+      return result.length > 0;
+    } catch (error) {
+      console.error(`Error deleting API key with ID ${id}:`, error);
+      throw new Error("Failed to delete API key");
     }
   }
 }
