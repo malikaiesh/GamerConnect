@@ -106,7 +106,7 @@ export function PostGameModal({ game, isOpen, onClose }: PostGameModalProps) {
                 <SocialShareButtons
                   title={`I just played ${game.title}!`}
                   description={`Check out ${game.title} - ${game.description}`}
-                  url={window.location.origin + `/game/${game.id}`}
+                  url={window.location.origin + (game.slug ? `/g/${game.slug}` : `/game/${game.id}`)}
                   image={game.thumbnail}
                   platforms={['facebook', 'twitter', 'linkedin', 'email', 'copy']}
                   size="default"
