@@ -263,7 +263,7 @@ export default function GamePage() {
                     description={`Play ${game.title} - ${game.description}`}
                     url={window.location.href}
                     image={game.thumbnail}
-                    platforms={['facebook', 'twitter', 'linkedin', 'email', 'copy']}
+                    platforms={['facebook', 'twitter', 'linkedin', 'whatsapp', 'email', 'copy']}
                   />
                 </div>
                 

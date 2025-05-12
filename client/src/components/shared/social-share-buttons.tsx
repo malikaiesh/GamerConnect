@@ -1,7 +1,7 @@
 import { FC, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-import { Facebook, Twitter, Linkedin, Link2, Mail, Check } from 'lucide-react';
+import { Facebook, Twitter, Linkedin, Link2, Mail, Check, MessageCircle } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
 interface SocialShareButtonsProps {
@@ -10,7 +10,7 @@ interface SocialShareButtonsProps {
   url: string;
   image?: string;
   size?: 'default' | 'sm' | 'lg' | 'icon';
-  platforms?: ('facebook' | 'twitter' | 'linkedin' | 'email' | 'copy')[];
+  platforms?: ('facebook' | 'twitter' | 'linkedin' | 'email' | 'whatsapp' | 'copy')[];
   className?: string;
   compact?: boolean;
 }
@@ -38,6 +38,7 @@ export const SocialShareButtons: FC<SocialShareButtonsProps> = ({
     twitter: `https://twitter.com/intent/tweet?text=${encodedTitle}&url=${encodedUrl}`,
     linkedin: `https://www.linkedin.com/shareArticle?mini=true&url=${encodedUrl}&title=${encodedTitle}&summary=${encodedDescription}`,
     email: `mailto:?subject=${encodedTitle}&body=${encodedDescription}%0A%0A${encodedUrl}`,
+    whatsapp: `https://api.whatsapp.com/send?text=${encodedTitle}%0A${encodedDescription}%0A${encodedUrl}`,
   };
 
   const handleShare = (platform: string) => {
@@ -149,6 +150,26 @@ export const SocialShareButtons: FC<SocialShareButtonsProps> = ({
             </TooltipTrigger>
             <TooltipContent side="top">
               <p>Share via Email</p>
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
+      )}
+      
+      {platforms.includes('whatsapp') && (
+        <TooltipProvider delayDuration={300}>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                variant="outline"
+                size={size}
+                className={buttonClasses}
+                onClick={() => handleShare('whatsapp')}
+              >
+                <MessageCircle className={compact ? "h-3 w-3 text-green-600" : "h-4 w-4 text-green-600"} />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent side="top">
+              <p>Share via WhatsApp</p>
             </TooltipContent>
           </Tooltip>
         </TooltipProvider>
