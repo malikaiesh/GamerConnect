@@ -79,7 +79,7 @@ export function PostGameModal({ game, isOpen, onClose }: PostGameModalProps) {
                   description={`I just played and rated ${game.title} - ${game.description}`}
                   url={window.location.origin + `/game/${game.id}`}
                   image={game.thumbnail}
-                  platforms={['facebook', 'twitter', 'linkedin', 'email']}
+                  platforms={['facebook', 'twitter', 'linkedin', 'whatsapp', 'email']}
                   size="sm"
                   compact={true}
                 />
@@ -108,7 +108,7 @@ export function PostGameModal({ game, isOpen, onClose }: PostGameModalProps) {
                   description={`Check out ${game.title} - ${game.description}`}
                   url={window.location.origin + (game.slug ? `/g/${game.slug}` : `/game/${game.id}`)}
                   image={game.thumbnail}
-                  platforms={['facebook', 'twitter', 'linkedin', 'email', 'copy']}
+                  platforms={['facebook', 'twitter', 'linkedin', 'whatsapp', 'email', 'copy']}
                   size="default"
                 />
               </div>
