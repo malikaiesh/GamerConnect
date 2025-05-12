@@ -102,17 +102,46 @@ export default function NotificationFormPage() {
   const [isAnimating, setIsAnimating] = useState(false);
   const [previewPlayed, setPreviewPlayed] = useState(false);
   
+  // Get the appropriate animation duration based on notification type
+  const getAnimationDuration = (type: string) => {
+    switch (type) {
+      case 'modal':
+      case 'survey':
+        return 3500; // Longer for more complex animations
+      case 'web-push':
+      case 'alert':
+        return 3000;
+      default:
+        return 2500; // Default is slightly quicker
+    }
+  };
+
   // Animation controls for the preview
   const playAnimation = () => {
     if (!isAnimating) {
+      // First set to not played and animating
+      setPreviewPlayed(false);
       setIsAnimating(true);
-      // Reset animation after it completes
+      
+      // Reset animation after it completes with appropriate duration
+      const duration = getAnimationDuration(notificationPreview.type);
       setTimeout(() => {
         setIsAnimating(false);
         setPreviewPlayed(true);
-      }, 3000); // Animation duration
+      }, duration);
     }
   };
+  
+  // Play animation automatically when preview tab is first shown
+  useEffect(() => {
+    if (showPreview && !previewPlayed && !isAnimating) {
+      const timer = setTimeout(() => {
+        playAnimation();
+      }, 500); // Short delay to let the tab render first
+      
+      return () => clearTimeout(timer);
+    }
+  }, [showPreview, previewPlayed, isAnimating]);
 
   const isNew = isNewRoute || !id;
 
@@ -216,7 +245,16 @@ export default function NotificationFormPage() {
         <Tabs defaultValue="form" className="w-full">
           <TabsList className="mb-6">
             <TabsTrigger value="form">Notification Form</TabsTrigger>
-            <TabsTrigger value="preview" onClick={() => setShowPreview(true)}>Preview</TabsTrigger>
+            <TabsTrigger 
+              value="preview" 
+              onClick={() => {
+                setShowPreview(true);
+                setPreviewPlayed(false);
+                setIsAnimating(false);
+              }}
+            >
+              Preview
+            </TabsTrigger>
           </TabsList>
           
           <TabsContent value="form">
@@ -381,47 +419,74 @@ export default function NotificationFormPage() {
               <div className="grid gap-8 md:grid-cols-2">
                 <div>
                   <h3 className="text-lg font-medium mb-4">Notification Preview</h3>
-                  <Card className="p-6 relative overflow-hidden">
-                    <div className={`rounded-lg border ${
-                      notificationPreview.type === "toast" 
-                        ? "bg-white dark:bg-gray-800" 
-                        : notificationPreview.type === "banner"
-                        ? "bg-blue-50 dark:bg-blue-900 border-blue-200 dark:border-blue-800"
-                        : notificationPreview.type === "modal"
-                        ? "bg-white dark:bg-gray-800 shadow-lg"
-                        : notificationPreview.type === "web-push"
-                        ? "bg-white dark:bg-gray-800 shadow-lg"
-                        : ""
-                    }`}>
-                      <div className="p-4">
-                        <div className="flex items-start">
-                          <Bell className="h-5 w-5 text-primary mr-2 mt-1" />
-                          <div className="flex-1">
-                            <h3 className="font-medium text-lg">
-                              {notificationPreview.title || "Notification Title"}
-                            </h3>
-                            <p className="text-gray-600 dark:text-gray-300 mt-1">
-                              {notificationPreview.message || "Notification message will appear here."}
-                            </p>
-                            
-                            {notificationPreview.image && (
-                              <img 
-                                src={notificationPreview.image} 
-                                alt="Notification image" 
-                                className="mt-3 rounded-md w-full max-h-48 object-cover"
-                              />
-                            )}
-                            
-                            <div className="flex justify-end mt-4 gap-2">
-                              <Button variant="outline" size="sm">Dismiss</Button>
-                              {notificationPreview.link && (
-                                <Button size="sm">View Details</Button>
+                  <Card className="p-6 relative overflow-hidden min-h-[300px]">
+                    {/* Play Animation Button */}
+                    <Button 
+                      variant="outline" 
+                      size="sm" 
+                      className="absolute bottom-4 right-4 z-10 flex items-center gap-1"
+                      onClick={playAnimation}
+                      disabled={isAnimating}
+                    >
+                      <PlayCircle className="h-4 w-4" />
+                      {isAnimating ? "Playing..." : previewPlayed ? "Replay Animation" : "Play Animation"}
+                    </Button>
+                    
+                    {/* Animated Notification */}
+                    <AnimatePresence mode="wait">
+                      <motion.div 
+                        key={isAnimating ? "animating" : "static"}
+                        initial={isAnimating ? "hidden" : "visible"}
+                        animate="visible"
+                        exit="exit"
+                        variants={animationVariants[notificationPreview.type as keyof typeof animationVariants] || animationVariants.toast}
+                        className={`rounded-lg border ${
+                          notificationPreview.type === "toast" 
+                            ? "bg-white dark:bg-gray-800" 
+                            : notificationPreview.type === "banner"
+                            ? "bg-blue-50 dark:bg-blue-900 border-blue-200 dark:border-blue-800"
+                            : notificationPreview.type === "modal"
+                            ? "bg-white dark:bg-gray-800 shadow-lg"
+                            : notificationPreview.type === "web-push"
+                            ? "bg-white dark:bg-gray-800 shadow-lg"
+                            : notificationPreview.type === "slide-in"
+                            ? "bg-white dark:bg-gray-800 border-l-4 border-l-primary"
+                            : notificationPreview.type === "alert"
+                            ? "bg-amber-50 dark:bg-amber-900 border-amber-200 dark:border-amber-800"
+                            : notificationPreview.type === "survey"
+                            ? "bg-white dark:bg-gray-800 shadow-lg border-t-4 border-t-primary"
+                            : "bg-white dark:bg-gray-800"
+                        }`}>
+                        <div className="p-4">
+                          <div className="flex items-start">
+                            <Bell className="h-5 w-5 text-primary mr-2 mt-1" />
+                            <div className="flex-1">
+                              <h3 className="font-medium text-lg">
+                                {notificationPreview.title || "Notification Title"}
+                              </h3>
+                              <p className="text-gray-600 dark:text-gray-300 mt-1">
+                                {notificationPreview.message || "Notification message will appear here."}
+                              </p>
+                              
+                              {notificationPreview.image && (
+                                <img 
+                                  src={notificationPreview.image} 
+                                  alt="Notification image" 
+                                  className="mt-3 rounded-md w-full max-h-48 object-cover"
+                                />
                               )}
+                              
+                              <div className="flex justify-end mt-4 gap-2">
+                                <Button variant="outline" size="sm">Dismiss</Button>
+                                {notificationPreview.link && (
+                                  <Button size="sm">View Details</Button>
+                                )}
+                              </div>
                             </div>
                           </div>
                         </div>
-                      </div>
-                    </div>
+                      </motion.div>
+                    </AnimatePresence>
 
                     <div className="absolute top-2 right-2">
                       <Badge variant="outline" className="capitalize">
