@@ -802,6 +802,10 @@ class DatabaseStorage implements IStorage {
         keywords: "online games, free games, browser games, puzzle games, action games",
         currentTheme: "modern",
         pushNotificationsEnabled: true,
+        siteLogo: null,
+        siteFavicon: null,
+        useTextLogo: true,
+        textLogoColor: "#4f46e5",
         ...settingsData,
         updatedAt: new Date()
       };
