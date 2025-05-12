@@ -240,6 +240,73 @@ router.post("/subscribers", async (req, res) => {
   }
 });
 
+// Bulk update web push preferences
+router.post("/subscribers/web-push-preferences", isAuthenticated, isAdmin, async (req, res) => {
+  try {
+    const { ids, webPushEnabled } = req.body;
+    
+    if (!Array.isArray(ids) || typeof webPushEnabled !== 'boolean') {
+      return res.status(400).json({ error: "Invalid request format. ids must be an array and webPushEnabled must be a boolean value" });
+    }
+    
+    const numericIds = ids.map(id => parseInt(id)).filter(id => !isNaN(id));
+    
+    if (numericIds.length === 0) {
+      return res.status(400).json({ error: "No valid subscriber IDs provided" });
+    }
+    
+    const updatedSubscribers = await db
+      .update(pushSubscribers)
+      .set({ 
+        webPushEnabled,
+        lastInteracted: new Date(),
+        updatedAt: new Date()
+      })
+      .where(sql`${pushSubscribers.id} IN (${numericIds.join(',')})`)
+      .returning();
+    
+    res.json({ 
+      message: `Web push preferences updated for ${updatedSubscribers.length} subscribers`,
+      updatedCount: updatedSubscribers.length
+    });
+  } catch (error) {
+    console.error("Error bulk updating web push preferences:", error);
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
+
+// Update subscriber web push preference
+router.patch("/subscribers/:id/web-push-preference", isAuthenticated, isAdmin, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { webPushEnabled } = req.body;
+    
+    if (typeof webPushEnabled !== 'boolean') {
+      return res.status(400).json({ error: "webPushEnabled must be a boolean value" });
+    }
+    
+    const [updatedSubscriber] = await db
+      .update(pushSubscribers)
+      .set({ 
+        webPushEnabled,
+        // Also update the lastInteracted field to track when the preference was changed
+        lastInteracted: new Date(),
+        updatedAt: new Date()
+      })
+      .where(eq(pushSubscribers.id, parseInt(id)))
+      .returning();
+    
+    if (!updatedSubscriber) {
+      return res.status(404).json({ error: "Subscriber not found" });
+    }
+    
+    res.json({ message: "Web push preference updated successfully", subscriber: updatedSubscriber });
+  } catch (error) {
+    console.error("Error updating web push preference:", error);
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
+
 // Delete a push subscriber
 router.delete("/subscribers/:id", isAuthenticated, isAdmin, async (req, res) => {
   try {

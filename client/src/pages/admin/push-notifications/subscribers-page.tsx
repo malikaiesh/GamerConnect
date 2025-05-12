@@ -80,6 +80,30 @@ export default function PushNotificationSubscribersPage() {
       });
     },
   });
+  
+  const bulkUpdateWebPushMutation = useMutation({
+    mutationFn: async ({ ids, enabled }: { ids: number[]; enabled: boolean }) => {
+      return await apiRequest(
+        "POST", 
+        "/api/push-notifications/subscribers/web-push-preferences", 
+        { ids, webPushEnabled: enabled }
+      );
+    },
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({ queryKey: ["/api/push-notifications/subscribers"] });
+      toast({
+        title: "Preferences updated",
+        description: `Web push notifications ${variables.enabled ? 'enabled' : 'disabled'} for ${variables.ids.length} subscribers.`,
+      });
+    },
+    onError: () => {
+      toast({
+        title: "Error",
+        description: "There was an error updating web push preferences.",
+        variant: "destructive",
+      });
+    },
+  });
 
   const downloadSubscribersMutation = useMutation({
     mutationFn: async () => {
@@ -307,27 +331,106 @@ export default function PushNotificationSubscribersPage() {
         </div>
       )}
       
-      {isLoading ? (
-        <div className="space-y-4">
-          <Skeleton className="h-10 w-full" />
-          <Skeleton className="h-64 w-full" />
-        </div>
-      ) : subscribers && subscribers.length > 0 ? (
-        <DataTable
-          data={subscribers}
-          columns={columns}
-          searchField="endpoint"
-          pagination
-        />
-      ) : (
-        <div className="text-center py-10 border rounded-lg">
-          <Users className="mx-auto h-12 w-12 text-muted-foreground" />
-          <h3 className="mt-4 text-lg font-semibold">No subscribers yet</h3>
-          <p className="mt-2 text-sm text-muted-foreground max-w-md mx-auto">
-            Users will appear here when they subscribe to push notifications on your site.
-          </p>
-        </div>
-      )}
+      <Card className="mb-6">
+        <CardHeader className="pb-2">
+          <CardTitle>Web Push Notification Settings</CardTitle>
+          <CardDescription>
+            Manage subscribers' web push notification preferences and permissions
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="flex items-center space-x-4 pb-4">
+            <div className="flex items-center space-x-2">
+              <Bell className="h-5 w-5 text-green-500" />
+              <span className="text-sm font-medium">Web Push Allowed</span>
+            </div>
+            <div className="flex items-center space-x-2">
+              <BellOff className="h-5 w-5 text-red-500" />
+              <span className="text-sm font-medium">Web Push Not Allowed</span>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      <Tabs defaultValue="all" className="mb-6">
+        <TabsList>
+          <TabsTrigger value="all">All Subscribers</TabsTrigger>
+          <TabsTrigger value="webpush-allowed">Web Push Allowed</TabsTrigger>
+          <TabsTrigger value="webpush-denied">Web Push Denied</TabsTrigger>
+        </TabsList>
+        
+        <TabsContent value="all" className="mt-4">
+          {isLoading ? (
+            <div className="space-y-4">
+              <Skeleton className="h-10 w-full" />
+              <Skeleton className="h-64 w-full" />
+            </div>
+          ) : subscribers && subscribers.length > 0 ? (
+            <DataTable
+              data={subscribers}
+              columns={columns}
+              searchField="endpoint"
+              pagination
+            />
+          ) : (
+            <div className="text-center py-10 border rounded-lg">
+              <Users className="mx-auto h-12 w-12 text-muted-foreground" />
+              <h3 className="mt-4 text-lg font-semibold">No subscribers yet</h3>
+              <p className="mt-2 text-sm text-muted-foreground max-w-md mx-auto">
+                Users will appear here when they subscribe to push notifications on your site.
+              </p>
+            </div>
+          )}
+        </TabsContent>
+        
+        <TabsContent value="webpush-allowed" className="mt-4">
+          {isLoading ? (
+            <div className="space-y-4">
+              <Skeleton className="h-10 w-full" />
+              <Skeleton className="h-64 w-full" />
+            </div>
+          ) : subscribers && subscribers.filter(s => s.webPushEnabled).length > 0 ? (
+            <DataTable
+              data={subscribers.filter(s => s.webPushEnabled)}
+              columns={columns}
+              searchField="endpoint"
+              pagination
+            />
+          ) : (
+            <div className="text-center py-10 border rounded-lg">
+              <Bell className="mx-auto h-12 w-12 text-muted-foreground" />
+              <h3 className="mt-4 text-lg font-semibold">No subscribers with web push allowed</h3>
+              <p className="mt-2 text-sm text-muted-foreground max-w-md mx-auto">
+                Subscribers who have allowed web push notifications will appear here.
+              </p>
+            </div>
+          )}
+        </TabsContent>
+        
+        <TabsContent value="webpush-denied" className="mt-4">
+          {isLoading ? (
+            <div className="space-y-4">
+              <Skeleton className="h-10 w-full" />
+              <Skeleton className="h-64 w-full" />
+            </div>
+          ) : subscribers && subscribers.filter(s => !s.webPushEnabled).length > 0 ? (
+            <DataTable
+              data={subscribers.filter(s => !s.webPushEnabled)}
+              columns={columns}
+              searchField="endpoint"
+              pagination
+            />
+          ) : (
+            <div className="text-center py-10 border rounded-lg">
+              <BellOff className="mx-auto h-12 w-12 text-muted-foreground" />
+              <h3 className="mt-4 text-lg font-semibold">No subscribers with web push denied</h3>
+              <p className="mt-2 text-sm text-muted-foreground max-w-md mx-auto">
+                Subscribers who have denied web push notifications will appear here.
+              </p>
+            </div>
+          )}
+        </TabsContent>
+      </Tabs>
     </AdminLayout>
   );
 }
