@@ -1,7 +1,7 @@
 import { Link, useLocation } from "wouter";
 import { useAuth } from "@/hooks/use-auth";
 import { cn } from "@/lib/utils";
-import { LayoutDashboard, Gamepad2, BookOpen, FileText, LayoutList, Home, Settings } from "lucide-react";
+import { LayoutDashboard, Gamepad2, BookOpen, FileText, LayoutList, Home, Settings, ImageIcon, Key } from "lucide-react";
 
 export function AdminHeader() {
   const [location] = useLocation();
@@ -57,6 +57,20 @@ export function AdminHeader() {
             isActive={isActive("/admin/homepage-content")}
             icon={<LayoutList size={18} />}
             label="Content" 
+          />
+          
+          <NavLink 
+            href="/admin/home-ads" 
+            isActive={isActive("/admin/home-ads")}
+            icon={<ImageIcon size={18} />}
+            label="Home Ads" 
+          />
+          
+          <NavLink 
+            href="/admin/api-keys" 
+            isActive={isActive("/admin/api-keys")}
+            icon={<Key size={18} />}
+            label="API Keys" 
           />
           
           <NavLink 
