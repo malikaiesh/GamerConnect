@@ -31,6 +31,7 @@ import AdminHomeAdsPage from "@/pages/admin/home-ads-page";
 import AdminSitemapsPage from "@/pages/admin/sitemaps-page";
 import AdminBlogAdsPage from "@/pages/admin/blog-ads-page";
 import AdminCustomCodePage from "@/pages/admin/custom-code-page";
+import AdsTxtPage from "@/pages/admin/ads-txt-page";
 import { Providers } from "./lib/providers";
 import { ProtectedRoute } from "./lib/protected-route";
 import { useAuth } from "@/hooks/use-auth";
@@ -67,6 +68,7 @@ function Router() {
       <ProtectedRoute path="/admin/blog-ads" component={AdminBlogAdsPage} adminOnly={true} />
       <ProtectedRoute path="/admin/custom-code" component={AdminCustomCodePage} adminOnly={true} />
       <ProtectedRoute path="/admin/sitemaps" component={AdminSitemapsPage} adminOnly={true} />
+      <ProtectedRoute path="/admin/ads-txt" component={AdsTxtPage} adminOnly={true} />
       <ProtectedRoute path="/admin/settings" component={AdminSettings} adminOnly={true} />
       <ProtectedRoute path="/admin/pages" component={AdminPagesPage} adminOnly={true} />
       <ProtectedRoute path="/admin/pages/:id" component={AdminPageEditPage} adminOnly={true} />

@@ -1,9 +1,8 @@
 import { useState } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
-import { Helmet } from "react-helmet";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import AdminLayout from "@/components/admin/layout";
+import { AdminLayout } from "@/components/admin/layout";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
@@ -54,11 +53,7 @@ export default function AdsTxtPage() {
   };
 
   return (
-    <AdminLayout>
-      <Helmet>
-        <title>Ads.txt Management | Admin</title>
-      </Helmet>
-      
+    <AdminLayout title="Ads.txt Management">
       <div className="container mx-auto py-6">
         <h1 className="text-3xl font-bold mb-6">Ads.txt Management</h1>
         
