@@ -115,6 +115,30 @@ export function registerGameRoutes(app: Express) {
     }
   });
   
+  // Get a random game
+  app.get('/api/games/random', async (req: Request, res: Response) => {
+    try {
+      // Get all active games
+      const { games } = await storage.getGames({
+        status: 'active',
+        limit: 1000 // Set a high limit to get all active games
+      });
+      
+      if (games.length === 0) {
+        return res.status(404).json({ error: 'No games found' });
+      }
+      
+      // Select a random game
+      const randomIndex = Math.floor(Math.random() * games.length);
+      const randomGame = games[randomIndex];
+      
+      res.status(200).json(randomGame);
+    } catch (error: any) {
+      console.error('Error fetching random game:', error);
+      res.status(500).json({ error: 'Failed to fetch random game', details: error.message });
+    }
+  });
+
   // Get featured games
   app.get('/api/games/featured', async (req: Request, res: Response) => {
     try {
