@@ -50,7 +50,8 @@ export function registerSettingsRoutes(app: Express) {
         siteLogo: z.string().url().optional().nullable(),
         siteFavicon: z.string().url().optional().nullable(),
         useTextLogo: z.boolean().optional(),
-        textLogoColor: z.string().optional()
+        textLogoColor: z.string().optional(),
+        adsTxt: z.string().optional()
       });
       
       const settingsData = schema.parse(req.body);

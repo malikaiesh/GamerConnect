@@ -295,7 +295,8 @@ export const insertSiteSettingsSchema = createInsertSchema(siteSettings, {
   siteLogo: (schema) => schema.url("Logo URL must be a valid URL").optional().nullable(),
   siteFavicon: (schema) => schema.url("Favicon URL must be a valid URL").optional().nullable(),
   useTextLogo: (schema) => schema.optional().default(true),
-  textLogoColor: (schema) => schema.optional().default('#4f46e5')
+  textLogoColor: (schema) => schema.optional().default('#4f46e5'),
+  adsTxt: (schema) => schema.optional()
 });
 
 export const insertPushNotificationSchema = createInsertSchema(pushNotifications, {
