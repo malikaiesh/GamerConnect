@@ -12,6 +12,12 @@ import AuthPage from "@/pages/auth-page";
 import CategoriesPage from "@/pages/categories-page";
 import TopGamesPage from "@/pages/top-games-page";
 import InstallPage from "@/pages/install-page";
+import AboutPage from "@/pages/about-page";
+import ContactPage from "@/pages/contact-page";
+import PrivacyPage from "@/pages/privacy-page";
+import TermsPage from "@/pages/terms-page";
+import CookiePolicyPage from "@/pages/cookie-policy-page";
+import FAQPage from "@/pages/faq-page";
 import AdminDashboard from "@/pages/admin/dashboard";
 import AdminGames from "@/pages/admin/games";
 import AdminBlog from "@/pages/admin/blog";
@@ -32,11 +38,22 @@ function Router() {
       <Route path="/top-games" component={TopGamesPage} />
       <Route path="/auth" component={AuthPage} />
       <Route path="/install" component={InstallPage} />
+      
+      {/* Static Pages */}
+      <Route path="/about" component={AboutPage} />
+      <Route path="/contact" component={ContactPage} />
+      <Route path="/privacy" component={PrivacyPage} />
+      <Route path="/terms" component={TermsPage} />
+      <Route path="/cookie-policy" component={CookiePolicyPage} />
+      <Route path="/faq" component={FAQPage} />
+
+      {/* Admin Routes */}
       <ProtectedRoute path="/admin/dashboard" component={AdminDashboard} adminOnly={true} />
       <ProtectedRoute path="/admin/games" component={AdminGames} adminOnly={true} />
       <ProtectedRoute path="/admin/blog" component={AdminBlog} adminOnly={true} />
       <ProtectedRoute path="/admin/homepage-content" component={AdminHomepageContent} adminOnly={true} />
       <ProtectedRoute path="/admin/settings" component={AdminSettings} adminOnly={true} />
+      
       {/* Fallback to 404 */}
       <Route component={NotFound} />
     </Switch>
