@@ -8,7 +8,7 @@ export const gameSourceEnum = pgEnum('game_source', ['api', 'custom']);
 export const gameStatusEnum = pgEnum('game_status', ['active', 'inactive', 'featured']);
 export const gameFileTypeEnum = pgEnum('game_file_type', ['html5', 'apk', 'ios', 'unity']);
 export const blogStatusEnum = pgEnum('blog_status', ['draft', 'published']);
-export const notificationTypeEnum = pgEnum('notification_type', ['alert', 'banner', 'modal', 'slide-in', 'toast']);
+export const notificationTypeEnum = pgEnum('notification_type', ['alert', 'banner', 'modal', 'slide-in', 'toast', 'web-push', 'survey']);
 export const contentStatusEnum = pgEnum('content_status', ['active', 'inactive']);
 export const pageTypeEnum = pgEnum('page_type', ['about', 'contact', 'privacy', 'terms', 'cookie-policy', 'faq', 'custom']);
 export const apiKeyTypeEnum = pgEnum('api_key_type', ['tinymce', 'game-monetize', 'analytics', 'custom']);
@@ -165,6 +165,57 @@ export const analytics = pgTable('analytics', {
 });
 
 // API Keys table
+// Push Notification Subscribers table
+export const pushSubscribers = pgTable('push_subscribers', {
+  id: serial('id').primaryKey(),
+  endpoint: text('endpoint').notNull().unique(),
+  p256dh: text('p256dh').notNull(),
+  auth: text('auth').notNull(),
+  userAgent: text('user_agent'),
+  browser: text('browser'),
+  os: text('os'),
+  deviceType: text('device_type'),
+  country: text('country'),
+  region: text('region'),
+  city: text('city'),
+  lastSent: timestamp('last_sent'),
+  status: text('status').default('active').notNull(),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+  updatedAt: timestamp('updated_at').defaultNow().notNull()
+});
+
+// Push Notification Campaigns table
+export const pushCampaigns = pgTable('push_campaigns', {
+  id: serial('id').primaryKey(),
+  name: text('name').notNull(),
+  title: text('title').notNull(),
+  message: text('message').notNull(),
+  image: text('image'),
+  link: text('link'),
+  actionYes: text('action_yes'),
+  actionNo: text('action_no'),
+  isSurvey: boolean('is_survey').default(false),
+  targetAll: boolean('target_all').default(true),
+  targetFilters: json('target_filters').default({}),
+  sentCount: integer('sent_count').default(0),
+  deliveredCount: integer('delivered_count').default(0),
+  clickCount: integer('click_count').default(0),
+  scheduleDate: timestamp('schedule_date'),
+  status: text('status').default('draft').notNull(),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+  updatedAt: timestamp('updated_at').defaultNow().notNull()
+});
+
+// Push Notification Campaign Responses table
+export const pushResponses = pgTable('push_responses', {
+  id: serial('id').primaryKey(),
+  campaignId: integer('campaign_id').references(() => pushCampaigns.id).notNull(),
+  subscriberId: integer('subscriber_id').references(() => pushSubscribers.id).notNull(),
+  response: text('response'),
+  clicked: boolean('clicked').default(false),
+  createdAt: timestamp('created_at').defaultNow().notNull()
+});
+
 export const apiKeys = pgTable('api_keys', {
   id: serial('id').primaryKey(),
   name: text('name').notNull(),

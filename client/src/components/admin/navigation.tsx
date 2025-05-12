@@ -1,7 +1,7 @@
 import { Link, useLocation } from "wouter";
 import { useAuth } from "@/hooks/use-auth";
 import { cn } from "@/lib/utils";
-import { Gamepad2, Book, Settings, LayoutDashboard, FileText, LogOut, Home, FileSymlink, Key, ImageIcon, Map, Code, BarChart, Files } from "lucide-react";
+import { Gamepad2, Book, Settings, LayoutDashboard, FileText, LogOut, Home, FileSymlink, Key, ImageIcon, Map, Code, BarChart, Files, Bell } from "lucide-react";
 
 export default function AdminNavigation() {
   const [location] = useLocation();
@@ -175,6 +175,20 @@ export default function AdminNavigation() {
             >
               <BarChart size={18} />
               Blog Ads
+            </Link>
+          </li>
+          <li>
+            <Link
+              href="/admin/push-notifications"
+              className={cn(
+                "flex items-center gap-3 px-3 py-2 rounded-lg transition-colors",
+                isActive("/admin/push-notifications")
+                  ? "bg-primary text-white"
+                  : "text-gray-300 hover:bg-gray-800"
+              )}
+            >
+              <Bell size={18} />
+              Push Notifications
             </Link>
           </li>
           <li>
