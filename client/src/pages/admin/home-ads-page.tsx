@@ -11,6 +11,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Checkbox } from "@/components/ui/checkbox";
 import { 
   Form, 
   FormControl, 
@@ -209,6 +210,8 @@ export default function AdminHomeAdsPage() {
       position: ad.position,
       adCode: ad.adCode,
       status: ad.status,
+      isGoogleAd: ad.isGoogleAd || false,
+      adEnabled: ad.adEnabled !== false, // If undefined, treat as true
     });
     setIsEditDialogOpen(true);
   };
@@ -306,6 +309,50 @@ export default function AdminHomeAdsPage() {
                             </SelectContent>
                           </Select>
                           <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={addForm.control}
+                      name="isGoogleAd"
+                      render={({ field }) => (
+                        <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4">
+                          <FormControl>
+                            <Checkbox
+                              checked={field.value}
+                              onCheckedChange={field.onChange}
+                            />
+                          </FormControl>
+                          <div className="space-y-1 leading-none">
+                            <FormLabel>
+                              This is a Google Ad
+                            </FormLabel>
+                            <FormDescription>
+                              Check this if you're using Google AdSense code
+                            </FormDescription>
+                          </div>
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={addForm.control}
+                      name="adEnabled"
+                      render={({ field }) => (
+                        <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4">
+                          <FormControl>
+                            <Checkbox
+                              checked={field.value}
+                              onCheckedChange={field.onChange}
+                            />
+                          </FormControl>
+                          <div className="space-y-1 leading-none">
+                            <FormLabel>
+                              Ad Enabled
+                            </FormLabel>
+                            <FormDescription>
+                              Uncheck to temporarily hide this ad without deleting it
+                            </FormDescription>
+                          </div>
                         </FormItem>
                       )}
                     />
