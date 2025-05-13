@@ -89,24 +89,9 @@ export function RichTextEditor({
           onEditorChange={(newValue) => onChange(newValue)}
           init={{
             height,
-            menubar: true,
-            plugins: [
-              'advlist autolink lists link image charmap print preview anchor',
-              'searchreplace visualblocks code fullscreen',
-              'insertdatetime media table paste code help wordcount',
-              'image media emoticons hr visualchars nonbreaking'
-            ],
-            toolbar: [
-              { name: 'history', items: ['undo', 'redo'] },
-              { name: 'styles', items: ['styleselect'] },
-              { name: 'formatting', items: ['bold', 'italic', 'underline', 'strikethrough'] },
-              { name: 'alignment', items: ['alignleft', 'aligncenter', 'alignright', 'alignjustify'] },
-              { name: 'indentation', items: ['outdent', 'indent'] },
-              { name: 'lists', items: ['numlist', 'bullist'] },
-              { name: 'insertions', items: ['link', 'image', 'media', 'emoticons', 'hr'] },
-              { name: 'tools', items: ['searchreplace', 'code', 'fullscreen'] },
-              { name: 'more', items: ['more'] },
-            ],
+            menubar: 'file edit view insert format tools table help',
+            plugins: 'advlist autolink lists link image charmap print preview anchor searchreplace visualblocks code fullscreen insertdatetime media table paste code help wordcount image media emoticons hr visualchars nonbreaking',
+            toolbar: 'undo redo | formatselect styleselect | bold italic underline strikethrough | alignleft aligncenter alignright alignjustify | outdent indent | numlist bullist | link image media table emoticons hr | searchreplace code fullscreen',
             formats: {
               h1: { block: 'h1' },
               h2: { block: 'h2' },
@@ -132,6 +117,12 @@ export function RichTextEditor({
             relative_urls: false,
             remove_script_host: false,
             convert_urls: true,
+            
+            // Table options
+            table_advtab: true,
+            table_cell_advtab: true,
+            table_row_advtab: true,
+            table_responsive_width: true,
             
             // Additional customization
             placeholder,
