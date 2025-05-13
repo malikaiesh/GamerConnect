@@ -869,7 +869,7 @@ class DatabaseStorage implements IStorage {
   async getActivePushNotifications(): Promise<PushNotification[]> {
     return db.select()
       .from(pushNotifications)
-      .where(eq(pushNotifications.isActive, true))
+      .where(eq(pushNotifications.active, true))
       .orderBy(desc(pushNotifications.createdAt));
   }
   async createPushNotification(notification: Omit<InsertPushNotification, "createdAt" | "updatedAt">): Promise<PushNotification> { throw new Error("Not implemented"); }
