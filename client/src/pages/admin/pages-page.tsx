@@ -163,8 +163,8 @@ export default function PagesAdminPage() {
 
         <Card>
           <CardHeader>
-            <CardTitle>Pages</CardTitle>
-            <CardDescription>
+            <CardTitle className="text-foreground">Pages</CardTitle>
+            <CardDescription className="text-muted-foreground">
               Manage content for static pages on your website
             </CardDescription>
           </CardHeader>
@@ -217,12 +217,12 @@ export default function PagesAdminPage() {
               </div>
             ) : isError ? (
               <div className="text-center p-12 text-destructive">
-                <p>Error loading pages. Please try again.</p>
+                <p className="text-foreground">Error loading pages. Please try again.</p>
               </div>
             ) : !data || !data.pages || data.pages.length === 0 ? (
               <div className="text-center p-12 border rounded-lg border-dashed">
                 <File className="h-12 w-12 mx-auto text-muted-foreground" />
-                <h3 className="mt-4 text-lg font-semibold">No pages found</h3>
+                <h3 className="mt-4 text-lg font-semibold text-foreground">No pages found</h3>
                 <p className="text-muted-foreground">
                   Get started by creating a new page.
                 </p>
@@ -342,8 +342,8 @@ export default function PagesAdminPage() {
         <Dialog open={deletingPageId !== null} onOpenChange={(open) => !open && setDeletingPageId(null)}>
           <DialogContent>
             <DialogHeader>
-              <DialogTitle>Confirm Deletion</DialogTitle>
-              <DialogDescription>
+              <DialogTitle className="text-foreground">Confirm Deletion</DialogTitle>
+              <DialogDescription className="text-muted-foreground">
                 Are you sure you want to delete this page? This action cannot be undone.
               </DialogDescription>
             </DialogHeader>

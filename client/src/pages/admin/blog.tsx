@@ -55,11 +55,11 @@ export default function AdminBlog() {
         
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
           <TabsList>
-            <TabsTrigger value="list">Blog Posts</TabsTrigger>
-            <TabsTrigger value="form">
+            <TabsTrigger value="list" className="text-foreground">Blog Posts</TabsTrigger>
+            <TabsTrigger value="form" className="text-foreground">
               {isCreateMode ? "Add New Post" : "Edit Post"}
             </TabsTrigger>
-            <TabsTrigger value="internal-links">
+            <TabsTrigger value="internal-links" className="text-foreground">
               <LinkIcon className="mr-2 h-4 w-4" />
               Internal Links
             </TabsTrigger>
