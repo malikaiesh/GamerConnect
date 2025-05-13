@@ -382,14 +382,14 @@ export default function HomeAdsPage() {
                       name="name"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Ad Name</FormLabel>
+                          <FormLabel className="text-foreground">Ad Name</FormLabel>
                           <FormControl>
                             <Input
                               placeholder="e.g., Featured Games Promotion"
                               {...field}
                             />
                           </FormControl>
-                          <FormDescription>
+                          <FormDescription className="text-muted-foreground">
                             A name to help you identify this ad
                           </FormDescription>
                           <FormMessage />
@@ -401,7 +401,7 @@ export default function HomeAdsPage() {
                       name="position"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Position</FormLabel>
+                          <FormLabel className="text-foreground">Position</FormLabel>
                           <Select
                             onValueChange={(value) => {
                               field.onChange(value);
@@ -423,7 +423,7 @@ export default function HomeAdsPage() {
                               ))}
                             </SelectContent>
                           </Select>
-                          <FormDescription>
+                          <FormDescription className="text-muted-foreground">
                             Where this ad will appear on the homepage
                           </FormDescription>
                           <FormMessage />
@@ -442,8 +442,8 @@ export default function HomeAdsPage() {
                             />
                           </FormControl>
                           <div className="space-y-1 leading-none">
-                            <FormLabel>Google Ad</FormLabel>
-                            <FormDescription>
+                            <FormLabel className="text-foreground">Google Ad</FormLabel>
+                            <FormDescription className="text-muted-foreground">
                               Check this if this is a Google AdSense ad
                             </FormDescription>
                           </div>
@@ -455,7 +455,7 @@ export default function HomeAdsPage() {
                       name="adCode"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Ad Code (HTML/JS){addForm.watch("isGoogleAd") && " *"}</FormLabel>
+                          <FormLabel className="text-foreground">Ad Code (HTML/JS){addForm.watch("isGoogleAd") && " *"}</FormLabel>
                           <FormControl>
                             <Textarea
                               placeholder={addForm.watch("isGoogleAd") 
@@ -465,7 +465,7 @@ export default function HomeAdsPage() {
                               rows={6}
                             />
                           </FormControl>
-                          <FormDescription>
+                          <FormDescription className="text-muted-foreground">
                             {addForm.watch("isGoogleAd") 
                               ? "Paste the Google AdSense code (required for Google Ads)"
                               : "Paste the HTML or JavaScript code for your ad"}
@@ -482,14 +482,14 @@ export default function HomeAdsPage() {
                           name="imageUrl"
                           render={({ field }) => (
                             <FormItem>
-                              <FormLabel>Image URL (Optional)</FormLabel>
+                              <FormLabel className="text-foreground">Image URL (Optional)</FormLabel>
                               <FormControl>
                                 <Input
                                   placeholder="https://example.com/ad-image.jpg"
                                   {...field}
                                 />
                               </FormControl>
-                              <FormDescription>
+                              <FormDescription className="text-muted-foreground">
                                 URL of the image for this ad
                               </FormDescription>
                               <FormMessage />
@@ -501,14 +501,14 @@ export default function HomeAdsPage() {
                           name="targetUrl"
                           render={({ field }) => (
                             <FormItem>
-                              <FormLabel>Target URL (Optional)</FormLabel>
+                              <FormLabel className="text-foreground">Target URL (Optional)</FormLabel>
                               <FormControl>
                                 <Input
                                   placeholder="https://example.com/landing-page"
                                   {...field}
                                 />
                               </FormControl>
-                              <FormDescription>
+                              <FormDescription className="text-muted-foreground">
                                 URL where users will be sent when they click on the ad
                               </FormDescription>
                               <FormMessage />
