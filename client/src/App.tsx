@@ -39,6 +39,9 @@ import PushNotificationSubscribersPage from "@/pages/admin/push-notifications/su
 import PushNotificationAnalyticsPage from "@/pages/admin/push-notifications/analytics-page";
 import NotificationFormPage from "@/pages/admin/push-notifications/notification-form-page";
 import CampaignFormPage from "@/pages/admin/push-notifications/campaign-form-page";
+import AccountsUsersPage from "@/pages/admin/accounts/users";
+import AccountsLocationsPage from "@/pages/admin/accounts/locations";
+import AccountsSignupsPage from "@/pages/admin/accounts/signups";
 import { Providers } from "./lib/providers";
 import { ProtectedRoute } from "./lib/protected-route";
 import { useAuth } from "@/hooks/use-auth";
@@ -89,6 +92,11 @@ function Router() {
       <ProtectedRoute path="/admin/push-notifications/campaigns/:id" component={CampaignFormPage} adminOnly={true} />
       <ProtectedRoute path="/admin/push-notifications/subscribers" component={PushNotificationSubscribersPage} adminOnly={true} />
       <ProtectedRoute path="/admin/push-notifications/analytics" component={PushNotificationAnalyticsPage} adminOnly={true} />
+      
+      {/* User Accounts Routes */}
+      <ProtectedRoute path="/admin/accounts/users" component={AccountsUsersPage} adminOnly={true} />
+      <ProtectedRoute path="/admin/accounts/locations" component={AccountsLocationsPage} adminOnly={true} />
+      <ProtectedRoute path="/admin/accounts/signups" component={AccountsSignupsPage} adminOnly={true} />
       
       {/* Fallback to 404 */}
       <Route component={NotFound} />
