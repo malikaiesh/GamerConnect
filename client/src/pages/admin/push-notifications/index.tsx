@@ -87,7 +87,7 @@ export default function PushNotificationsPage() {
       cell: ({ row }) => (
         <div className="max-w-md">
           <div className="font-medium">{row.original.title}</div>
-          <div className="text-sm text-gray-500 dark:text-gray-400 truncate">
+          <div className="text-sm text-muted-foreground truncate">
             {row.original.message}
           </div>
         </div>
@@ -132,7 +132,7 @@ export default function PushNotificationsPage() {
           <div className="text-sm">Impressions: {row.original.impressionCount.toLocaleString()}</div>
           <div className="text-sm">Clicks: {row.original.clickCount.toLocaleString()}</div>
           {row.original.impressionCount > 0 && (
-            <div className="text-xs text-gray-500">
+            <div className="text-xs text-muted-foreground">
               CTR: {((row.original.clickCount / row.original.impressionCount) * 100).toFixed(2)}%
             </div>
           )}
@@ -223,7 +223,7 @@ export default function PushNotificationsPage() {
                       : ""
                   }`}>
                     <h3 className="font-medium text-lg">{previewNotification.title}</h3>
-                    <p className="text-gray-600 dark:text-gray-300 mt-1">{previewNotification.message}</p>
+                    <p className="text-muted-foreground mt-1">{previewNotification.message}</p>
                     
                     {previewNotification.image && (
                       <img 
@@ -235,7 +235,7 @@ export default function PushNotificationsPage() {
                     
                     {previewNotification.link && (
                       <div className="mt-3">
-                        <span className="text-sm text-blue-500">Link: {previewNotification.link}</span>
+                        <span className="text-sm text-primary">Link: {previewNotification.link}</span>
                       </div>
                     )}
                     
@@ -247,10 +247,10 @@ export default function PushNotificationsPage() {
                     </div>
                   </div>
                   
-                  <div className="mt-4 text-sm text-gray-500">
-                    <p>Type: <span className="font-medium">{previewNotification.type}</span></p>
-                    <p>Created: <span className="font-medium">{format(new Date(previewNotification.createdAt), "MMM d, yyyy")}</span></p>
-                    <p>Status: <span className={`font-medium ${previewNotification.active ? "text-green-500" : "text-red-500"}`}>
+                  <div className="mt-4 text-sm text-muted-foreground">
+                    <p>Type: <span className="font-medium text-foreground">{previewNotification.type}</span></p>
+                    <p>Created: <span className="font-medium text-foreground">{format(new Date(previewNotification.createdAt), "MMM d, yyyy")}</span></p>
+                    <p>Status: <span className={`font-medium ${previewNotification.active ? "text-emerald-500" : "text-destructive"}`}>
                       {previewNotification.active ? "Active" : "Inactive"}
                     </span></p>
                   </div>
