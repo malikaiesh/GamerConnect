@@ -861,13 +861,86 @@ class DatabaseStorage implements IStorage {
 
   // Rest of the methods would go here...
 
-  // Minimal implementation to avoid TypeScript errors
-  async getBlogCategoryById(id: number): Promise<BlogCategory | null> { return null; }
-  async getBlogCategoryBySlug(slug: string): Promise<BlogCategory | null> { return null; }
-  async getBlogCategories(): Promise<BlogCategory[]> { return []; }
-  async createBlogCategory(category: Omit<InsertBlogCategory, "createdAt">): Promise<BlogCategory> { throw new Error("Not implemented"); }
-  async updateBlogCategory(id: number, categoryData: Partial<InsertBlogCategory>): Promise<BlogCategory | null> { return null; }
-  async deleteBlogCategory(id: number): Promise<boolean> { return false; }
+  async getBlogCategoryById(id: number): Promise<BlogCategory | null> {
+    try {
+      const [category] = await db.select()
+        .from(blogCategories)
+        .where(eq(blogCategories.id, id));
+      
+      return category || null;
+    } catch (error) {
+      console.error(`Error fetching blog category with ID ${id}:`, error);
+      return null;
+    }
+  }
+  
+  async getBlogCategoryBySlug(slug: string): Promise<BlogCategory | null> {
+    try {
+      const [category] = await db.select()
+        .from(blogCategories)
+        .where(eq(blogCategories.slug, slug));
+      
+      return category || null;
+    } catch (error) {
+      console.error(`Error fetching blog category with slug ${slug}:`, error);
+      return null;
+    }
+  }
+  
+  async getBlogCategories(): Promise<BlogCategory[]> {
+    try {
+      const categories = await db.select()
+        .from(blogCategories)
+        .orderBy(asc(blogCategories.name));
+      
+      return categories;
+    } catch (error) {
+      console.error('Error fetching blog categories:', error);
+      return [];
+    }
+  }
+  
+  async createBlogCategory(category: Omit<InsertBlogCategory, "createdAt">): Promise<BlogCategory> {
+    try {
+      const [newCategory] = await db.insert(blogCategories)
+        .values({
+          ...category,
+          createdAt: new Date()
+        })
+        .returning();
+      
+      return newCategory;
+    } catch (error) {
+      console.error('Error creating blog category:', error);
+      throw new Error('Failed to create blog category');
+    }
+  }
+  
+  async updateBlogCategory(id: number, categoryData: Partial<InsertBlogCategory>): Promise<BlogCategory | null> {
+    try {
+      const [updatedCategory] = await db.update(blogCategories)
+        .set(categoryData)
+        .where(eq(blogCategories.id, id))
+        .returning();
+      
+      return updatedCategory || null;
+    } catch (error) {
+      console.error(`Error updating blog category with ID ${id}:`, error);
+      return null;
+    }
+  }
+  
+  async deleteBlogCategory(id: number): Promise<boolean> {
+    try {
+      await db.delete(blogCategories)
+        .where(eq(blogCategories.id, id));
+      
+      return true;
+    } catch (error) {
+      console.error(`Error deleting blog category with ID ${id}:`, error);
+      return false;
+    }
+  }
   
   async getBlogPostById(id: number): Promise<BlogPost | null> {
     try {
@@ -1055,6 +1128,34 @@ class DatabaseStorage implements IStorage {
   
   async getRecentBlogPosts(limit?: number): Promise<BlogPost[]> {
     return this.getRecentPosts(limit);
+  }
+  
+  async getRelatedBlogPosts(options: { categoryId?: number, excludeId?: number, limit?: number }): Promise<BlogPost[]> {
+    try {
+      const { categoryId, excludeId, limit = 3 } = options;
+      
+      let query = db.select()
+        .from(blogPosts)
+        .where(eq(blogPosts.status, 'published'))
+        .orderBy(desc(blogPosts.createdAt))
+        .limit(limit);
+      
+      // If category ID is provided, filter by category
+      if (categoryId) {
+        query = query.where(eq(blogPosts.categoryId, categoryId));
+      }
+      
+      // If exclude ID is provided, exclude that post
+      if (excludeId) {
+        query = query.where(not(eq(blogPosts.id, excludeId)));
+      }
+      
+      const posts = await query;
+      return posts;
+    } catch (error) {
+      console.error('Error fetching related blog posts:', error);
+      return [];
+    }
   }
   async publishBlogPost(id: number): Promise<BlogPost | null> {
     try {
