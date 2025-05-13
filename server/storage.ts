@@ -257,38 +257,71 @@ class DatabaseStorage implements IStorage {
     return result.length ? result[0] : null;
   }
   
-  async getUsersByStatus(status: 'active' | 'blocked', options: { page?: number, limit?: number, search?: string } = {}): Promise<{ users: User[], total: number, totalPages: number }> {
+  async getUsersByStatus(status?: 'active' | 'blocked', options: { page?: number, limit?: number, search?: string } = {}): Promise<{ users: User[], total: number, totalPages: number }> {
     const { page = 1, limit = 10, search } = options;
     const offset = (page - 1) * limit;
     
-    let queryBuilder = db.select({ count: count() }).from(users).where(eq(users.status, status));
-    let dataQueryBuilder = db.select().from(users).where(eq(users.status, status));
+    let queryBuilder;
+    let dataQueryBuilder;
+    
+    // Handle 'all' case (status is undefined)
+    if (!status) {
+      queryBuilder = db.select({ count: count() }).from(users);
+      dataQueryBuilder = db.select().from(users);
+    } else {
+      queryBuilder = db.select({ count: count() }).from(users).where(eq(users.status, status));
+      dataQueryBuilder = db.select().from(users).where(eq(users.status, status));
+    }
     
     // Add search filter if provided
     if (search) {
       const searchLower = `%${search.toLowerCase()}%`;
       
-      queryBuilder = db.select({ count: count() })
-        .from(users)
-        .where(and(
-          eq(users.status, status),
-          or(
-            like(users.username, searchLower),
-            like(users.email || '', searchLower),
-            like(users.country || '', searchLower)
-          )
-        ));
-      
-      dataQueryBuilder = db.select()
-        .from(users)
-        .where(and(
-          eq(users.status, status),
-          or(
-            like(users.username, searchLower),
-            like(users.email || '', searchLower),
-            like(users.country || '', searchLower)
-          )
-        ));
+      if (!status) {
+        // All users with search
+        queryBuilder = db.select({ count: count() })
+          .from(users)
+          .where(
+            or(
+              like(users.username, searchLower),
+              like(users.email || '', searchLower),
+              like(users.country || '', searchLower)
+            )
+          );
+        
+        dataQueryBuilder = db.select()
+          .from(users)
+          .where(
+            or(
+              like(users.username, searchLower),
+              like(users.email || '', searchLower),
+              like(users.country || '', searchLower)
+            )
+          );
+      } else {
+        // Specific status with search
+        queryBuilder = db.select({ count: count() })
+          .from(users)
+          .where(and(
+            eq(users.status, status),
+            or(
+              like(users.username, searchLower),
+              like(users.email || '', searchLower),
+              like(users.country || '', searchLower)
+            )
+          ));
+        
+        dataQueryBuilder = db.select()
+          .from(users)
+          .where(and(
+            eq(users.status, status),
+            or(
+              like(users.username, searchLower),
+              like(users.email || '', searchLower),
+              like(users.country || '', searchLower)
+            )
+          ));
+      }
     }
     
     const [countResult] = await queryBuilder;

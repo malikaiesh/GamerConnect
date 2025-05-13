@@ -9,10 +9,16 @@ export function registerUserRoutes(app: Express) {
     }
     
     try {
-      const status = req.query.status as 'active' | 'blocked' || 'active';
+      const statusParam = req.query.status as string | undefined;
       const page = parseInt(req.query.page as string) || 1;
       const limit = parseInt(req.query.limit as string) || 10;
       const search = req.query.search as string | undefined;
+      
+      // Convert string status to the expected type or undefined for "all"
+      let status: 'active' | 'blocked' | undefined;
+      if (statusParam === 'active') status = 'active';
+      else if (statusParam === 'blocked') status = 'blocked';
+      // else undefined (all users)
       
       const result = await storage.getUsersByStatus(status, { 
         page, 

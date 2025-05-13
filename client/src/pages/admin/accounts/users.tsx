@@ -25,6 +25,12 @@ import {
   PaginationPrevious,
 } from "@/components/ui/pagination";
 import {
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
+} from "@/components/ui/tabs";
+import {
   Select,
   SelectContent,
   SelectItem,
@@ -34,21 +40,28 @@ import {
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { User } from "@shared/schema";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, Search, UserCheck, UserX } from "lucide-react";
+import { ChevronLeft, ChevronRight, Loader2, Search, Shield, ShieldAlert, UserCheck, UserX } from "lucide-react";
 
 export default function AccountsUsersPage() {
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(10);
   const [search, setSearch] = useState("");
-  const [status, setStatus] = useState<"active" | "blocked">("active");
+  const [activeTab, setActiveTab] = useState<"all" | "active" | "blocked">("all");
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
   const [isConfirmDialogOpen, setIsConfirmDialogOpen] = useState(false);
   const { toast } = useToast();
   const queryClient = useQueryClient();
+
+  // Map tab value to status for API
+  const getStatusFromTab = (tab: string) => {
+    if (tab === "active") return "active";
+    if (tab === "blocked") return "blocked";
+    return undefined; // all users
+  };
 
   // Fetch users with pagination and filtering
   const { data, isLoading } = useQuery<{
@@ -56,16 +69,39 @@ export default function AccountsUsersPage() {
     total: number;
     totalPages: number;
   }>({
-    queryKey: ['/api/admin/users', { status, page, limit, search }],
+    queryKey: ['/api/admin/users', { status: getStatusFromTab(activeTab), page, limit, search }],
     queryFn: async () => {
       const searchParam = search ? `&search=${encodeURIComponent(search)}` : '';
-      const response = await fetch(`/api/admin/users?status=${status}&page=${page}&limit=${limit}${searchParam}`);
+      const statusParam = getStatusFromTab(activeTab) ? `&status=${getStatusFromTab(activeTab)}` : '';
+      const response = await fetch(`/api/admin/users?page=${page}&limit=${limit}${statusParam}${searchParam}`);
       if (!response.ok) {
         throw new Error('Failed to fetch users');
       }
       return response.json();
     },
   });
+
+  // Get counts for active/blocked users for badges
+  const { data: userStats } = useQuery<{
+    totalUsers: number;
+    activeUsers: number; 
+    blockedUsers: number;
+  }>({
+    queryKey: ['/api/admin/user-stats'],
+    queryFn: async () => {
+      const response = await fetch('/api/admin/user-stats');
+      if (!response.ok) {
+        throw new Error('Failed to fetch user stats');
+      }
+      return response.json();
+    },
+  });
+
+  // Reset page when changing tabs
+  const handleTabChange = (value: string) => {
+    setActiveTab(value as "all" | "active" | "blocked");
+    setPage(1);
+  };
 
   // Update user status mutation
   const updateUserStatusMutation = useMutation({
@@ -75,6 +111,7 @@ export default function AccountsUsersPage() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/admin/users'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/admin/user-stats'] });
       toast({
         title: 'User status updated',
         description: `User has been ${selectedUser?.status === 'active' ? 'blocked' : 'activated'} successfully.`,
@@ -108,188 +145,216 @@ export default function AccountsUsersPage() {
   return (
     <AdminLayout>
       <div className="space-y-6">
-        <div className="flex justify-between">
+        <div className="flex justify-between items-center">
           <h2 className="text-3xl font-bold tracking-tight">User Accounts</h2>
-          <div className="flex items-center space-x-2">
-            <Select
-              value={status}
-              onValueChange={(value) => setStatus(value as 'active' | 'blocked')}
-            >
-              <SelectTrigger className="w-[180px]">
-                <SelectValue placeholder="Filter by status" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="active">Active Users</SelectItem>
-                <SelectItem value="blocked">Blocked Users</SelectItem>
-              </SelectContent>
-            </Select>
-
-            <div className="relative">
-              <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-gray-500 dark:text-gray-400" />
-              <Input
-                type="search"
-                placeholder="Search users..."
-                className="pl-8 w-[250px]"
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-              />
-            </div>
+          <div className="relative ml-2">
+            <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-gray-500 dark:text-gray-400" />
+            <Input
+              type="search"
+              placeholder="Search users..."
+              className="pl-8 w-[250px]"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+            />
           </div>
         </div>
 
-        <Card>
-          <CardHeader>
-            <CardTitle>All Users</CardTitle>
-            <CardDescription>
-              Manage user accounts and access permissions
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            {isLoading ? (
-              <div className="flex justify-center py-8">
-                <Loader2 className="h-8 w-8 animate-spin text-primary" />
-              </div>
-            ) : (
-              <>
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>ID</TableHead>
-                      <TableHead>Username</TableHead>
-                      <TableHead>Email</TableHead>
-                      <TableHead>Account Type</TableHead>
-                      <TableHead>Status</TableHead>
-                      <TableHead>Country</TableHead>
-                      <TableHead>Last Login</TableHead>
-                      <TableHead>Actions</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {data?.users.map((user) => (
-                      <TableRow key={user.id}>
-                        <TableCell>{user.id}</TableCell>
-                        <TableCell>
-                          <div className="flex items-center space-x-2">
-                            {user.profilePicture ? (
-                              <img
-                                src={user.profilePicture}
-                                alt={user.username}
-                                className="h-8 w-8 rounded-full object-cover"
-                              />
-                            ) : (
-                              <div className="h-8 w-8 rounded-full bg-gray-200 flex items-center justify-center text-gray-500">
-                                {user.username.charAt(0).toUpperCase()}
-                              </div>
-                            )}
-                            <span>{user.username}</span>
-                            {user.isAdmin && (
-                              <Badge className="ml-2 bg-purple-600">Admin</Badge>
-                            )}
-                          </div>
-                        </TableCell>
-                        <TableCell>{user.email || "-"}</TableCell>
-                        <TableCell>
-                          <Badge
-                            className={
-                              user.accountType === "local"
-                                ? "bg-slate-500"
-                                : user.accountType === "google"
-                                ? "bg-red-500"
-                                : "bg-blue-500"
-                            }
+        <Tabs defaultValue="all" value={activeTab} onValueChange={handleTabChange}>
+          <TabsList className="mb-4">
+            <TabsTrigger value="all" className="relative">
+              All Users
+              {userStats && (
+                <Badge className="ml-2 bg-gray-500">{userStats.totalUsers}</Badge>
+              )}
+            </TabsTrigger>
+            <TabsTrigger value="active" className="relative">
+              <UserCheck className="h-4 w-4 mr-1.5" /> 
+              Active Users
+              {userStats && (
+                <Badge className="ml-2 bg-green-500">{userStats.activeUsers}</Badge>
+              )}
+            </TabsTrigger>
+            <TabsTrigger value="blocked" className="relative">
+              <ShieldAlert className="h-4 w-4 mr-1.5" />
+              Blocked Users
+              {userStats && (
+                <Badge className="ml-2 bg-red-500">{userStats.blockedUsers}</Badge>
+              )}
+            </TabsTrigger>
+          </TabsList>
+
+          <Card>
+            <CardHeader>
+              <CardTitle>
+                {activeTab === "all" && "All Users"}
+                {activeTab === "active" && "Active Users"}
+                {activeTab === "blocked" && "Blocked Users"}
+              </CardTitle>
+              <CardDescription>
+                {activeTab === "all" && "View and manage all user accounts"}
+                {activeTab === "active" && "View and manage active user accounts"}
+                {activeTab === "blocked" && "View and manage blocked user accounts"}
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              {isLoading ? (
+                <div className="flex justify-center py-8">
+                  <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                </div>
+              ) : (
+                <>
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>ID</TableHead>
+                        <TableHead>Username</TableHead>
+                        <TableHead>Email</TableHead>
+                        <TableHead>Account Type</TableHead>
+                        <TableHead>Status</TableHead>
+                        <TableHead>Country</TableHead>
+                        <TableHead>Last Login</TableHead>
+                        <TableHead>Actions</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {data?.users.map((user) => (
+                        <TableRow key={user.id} className={user.status === 'blocked' ? 'bg-red-50 dark:bg-red-900/10' : ''}>
+                          <TableCell>{user.id}</TableCell>
+                          <TableCell>
+                            <div className="flex items-center space-x-2">
+                              {user.profilePicture ? (
+                                <img
+                                  src={user.profilePicture}
+                                  alt={user.username}
+                                  className="h-8 w-8 rounded-full object-cover"
+                                />
+                              ) : (
+                                <div className="h-8 w-8 rounded-full bg-gray-200 flex items-center justify-center text-gray-500">
+                                  {user.username.charAt(0).toUpperCase()}
+                                </div>
+                              )}
+                              <span>{user.username}</span>
+                              {user.isAdmin && (
+                                <Badge className="ml-2 bg-purple-600">Admin</Badge>
+                              )}
+                            </div>
+                          </TableCell>
+                          <TableCell>{user.email || "-"}</TableCell>
+                          <TableCell>
+                            <Badge
+                              className={
+                                user.accountType === "local"
+                                  ? "bg-slate-500"
+                                  : user.accountType === "google"
+                                  ? "bg-red-500"
+                                  : "bg-blue-500"
+                              }
+                            >
+                              {user.accountType}
+                            </Badge>
+                          </TableCell>
+                          <TableCell>
+                            <Badge
+                              className={
+                                user.status === "active"
+                                  ? "bg-green-500"
+                                  : "bg-red-500"
+                              }
+                            >
+                              {user.status}
+                            </Badge>
+                          </TableCell>
+                          <TableCell>{user.country || "-"}</TableCell>
+                          <TableCell>
+                            {user.lastLogin
+                              ? new Date(user.lastLogin).toLocaleDateString()
+                              : "Never"}
+                          </TableCell>
+                          <TableCell>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              className={
+                                user.status === "active"
+                                  ? "text-red-500 border-red-500 hover:bg-red-50"
+                                  : "text-green-500 border-green-500 hover:bg-green-50"
+                              }
+                              onClick={() => prepareStatusChange(user)}
+                              disabled={user.isAdmin || updateUserStatusMutation.isPending}
+                            >
+                              {user.status === "active" ? (
+                                <>
+                                  <UserX className="h-4 w-4 mr-1" /> Block
+                                </>
+                              ) : (
+                                <>
+                                  <UserCheck className="h-4 w-4 mr-1" /> Activate
+                                </>
+                              )}
+                            </Button>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                      {!data?.users.length && (
+                        <TableRow>
+                          <TableCell
+                            colSpan={8}
+                            className="text-center py-8 text-gray-500"
                           >
-                            {user.accountType}
-                          </Badge>
-                        </TableCell>
-                        <TableCell>
-                          <Badge
-                            className={
-                              user.status === "active"
-                                ? "bg-green-500"
-                                : "bg-red-500"
-                            }
-                          >
-                            {user.status}
-                          </Badge>
-                        </TableCell>
-                        <TableCell>{user.country || "-"}</TableCell>
-                        <TableCell>
-                          {user.lastLogin
-                            ? new Date(user.lastLogin).toLocaleDateString()
-                            : "Never"}
-                        </TableCell>
-                        <TableCell>
+                            No users found
+                          </TableCell>
+                        </TableRow>
+                      )}
+                    </TableBody>
+                  </Table>
+
+                  {data && data.totalPages > 1 && (
+                    <Pagination className="mt-6">
+                      <PaginationContent>
+                        <PaginationItem>
                           <Button
                             variant="outline"
                             size="sm"
-                            className={
-                              user.status === "active"
-                                ? "text-red-500 border-red-500 hover:bg-red-50"
-                                : "text-green-500 border-green-500 hover:bg-green-50"
-                            }
-                            onClick={() => prepareStatusChange(user)}
-                            disabled={user.isAdmin || updateUserStatusMutation.isPending}
+                            onClick={() => setPage((p) => Math.max(1, p - 1))}
+                            disabled={page === 1}
+                            className="gap-1 pl-2.5"
                           >
-                            {user.status === "active" ? (
-                              <>
-                                <UserX className="h-4 w-4 mr-1" /> Block
-                              </>
-                            ) : (
-                              <>
-                                <UserCheck className="h-4 w-4 mr-1" /> Activate
-                              </>
-                            )}
+                            <ChevronLeft className="h-4 w-4" />
+                            <span>Previous</span>
                           </Button>
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                    {!data?.users.length && (
-                      <TableRow>
-                        <TableCell
-                          colSpan={8}
-                          className="text-center py-8 text-gray-500"
-                        >
-                          No users found
-                        </TableCell>
-                      </TableRow>
-                    )}
-                  </TableBody>
-                </Table>
-
-                {data && data.totalPages > 1 && (
-                  <Pagination className="mt-6">
-                    <PaginationContent>
-                      <PaginationItem>
-                        <PaginationPrevious
-                          onClick={() => setPage((p) => Math.max(1, p - 1))}
-                          disabled={page === 1}
-                        />
-                      </PaginationItem>
-                      
-                      {[...Array(data.totalPages)].map((_, i) => (
-                        <PaginationItem key={i + 1}>
-                          <PaginationLink
-                            onClick={() => setPage(i + 1)}
-                            isActive={page === i + 1}
-                          >
-                            {i + 1}
-                          </PaginationLink>
                         </PaginationItem>
-                      ))}
-                      
-                      <PaginationItem>
-                        <PaginationNext
-                          onClick={() => setPage((p) => Math.min(data.totalPages, p + 1))}
-                          disabled={page === data.totalPages}
-                        />
-                      </PaginationItem>
-                    </PaginationContent>
-                  </Pagination>
-                )}
-              </>
-            )}
-          </CardContent>
-        </Card>
+                        
+                        {[...Array(data.totalPages)].map((_, i) => (
+                          <PaginationItem key={i + 1}>
+                            <PaginationLink
+                              onClick={() => setPage(i + 1)}
+                              isActive={page === i + 1}
+                            >
+                              {i + 1}
+                            </PaginationLink>
+                          </PaginationItem>
+                        ))}
+                        
+                        <PaginationItem>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => setPage((p) => Math.min(data.totalPages, p + 1))}
+                            disabled={page === data.totalPages}
+                            className="gap-1 pr-2.5"
+                          >
+                            <span>Next</span>
+                            <ChevronRight className="h-4 w-4" />
+                          </Button>
+                        </PaginationItem>
+                      </PaginationContent>
+                    </Pagination>
+                  )}
+                </>
+              )}
+            </CardContent>
+          </Card>
+        </Tabs>
       </div>
 
       {/* Confirmation Dialog */}
