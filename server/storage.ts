@@ -150,6 +150,7 @@ export interface IStorage {
     totalPlays: number
   }>;
   createSlugFromTitle(title: string): Promise<string>;
+  getRelatedGames(gameId: number, category?: string, tags?: string[]): Promise<Game[]>;
   
   // Blog methods
   getBlogCategoryById(id: number): Promise<BlogCategory | null>;
@@ -162,6 +163,13 @@ export interface IStorage {
   getBlogPostById(id: number): Promise<BlogPost | null>;
   getBlogPostBySlug(slug: string): Promise<BlogPost | null>;
   getBlogPosts(options?: { page?: number, limit?: number, status?: string, categoryId?: number }): Promise<{ posts: BlogPost[], total: number, totalPages: number }>;
+  getBlogStats(): Promise<{
+    totalPosts: number,
+    draftPosts: number,
+    publishedPosts: number,
+    totalViews: number,
+    totalCategories: number
+  }>;
   createBlogPost(post: Omit<InsertBlogPost, "createdAt" | "updatedAt">): Promise<BlogPost>;
   updateBlogPost(id: number, postData: Partial<InsertBlogPost>): Promise<BlogPost | null>;
   deleteBlogPost(id: number): Promise<boolean>;
@@ -176,6 +184,18 @@ export interface IStorage {
   // Site Settings methods
   getSiteSettings(): Promise<SiteSetting | null>;
   updateSiteSettings(settingsData: Partial<InsertSiteSetting>): Promise<SiteSetting | null>;
+  
+  // Analytics methods
+  getAnalytics(timeframe: string): Promise<{
+    pageViews: number;
+    uniqueVisitors: number;
+    avgTimeOnSite: number;
+    bounceRate: number;
+    topPages: { path: string; views: number }[];
+    topGames: { name: string; plays: number }[];
+    dailyVisitors: { date: string; visitors: number }[];
+    userDevices: { device: string; count: number }[];
+  }>;
   
   // Push Notification methods
   getPushNotificationById(id: number): Promise<PushNotification | null>;
