@@ -90,8 +90,20 @@ export function RichTextEditor({
           init={{
             height,
             menubar: 'file edit view insert format tools table help',
-            plugins: 'advlist autolink lists link image charmap print preview anchor searchreplace visualblocks code fullscreen insertdatetime media table paste code help wordcount image media emoticons hr visualchars nonbreaking',
-            toolbar: 'undo redo | formatselect styleselect | bold italic underline strikethrough | alignleft aligncenter alignright alignjustify | outdent indent | numlist bullist | link image media table emoticons hr | searchreplace code fullscreen',
+            plugins: [
+              'advlist', 'autolink', 'lists', 'link', 'image', 'charmap', 'preview',
+              'anchor', 'searchreplace', 'visualblocks', 'code', 'fullscreen',
+              'insertdatetime', 'media', 'table', 'help', 'wordcount',
+              'emoticons', 'hr', 'visualchars', 'nonbreaking', 'template',
+              'codesample', 'directionality', 'imagetools', 'quickbars', 'pagebreak'
+            ].join(' '),
+            toolbar: [
+              'undo redo | formatselect styleselect',
+              'bold italic underline strikethrough | alignleft aligncenter alignright alignjustify | outdent indent',
+              'numlist bullist | link image media',
+              'table tableprops tabledelete | tablecellprops tablecellvalign tablecellborderwidth tablecellborderstyle | tableinsertrowbefore tableinsertrowafter tabledeleterow | tableinsertcolbefore tableinsertcolafter tabledeletecol',
+              'emoticons hr codesample | searchreplace code fullscreen'
+            ].join(' | '),
             formats: {
               h1: { block: 'h1' },
               h2: { block: 'h2' },
@@ -112,8 +124,82 @@ export function RichTextEditor({
             content_style: 'body { font-family:Helvetica,Arial,sans-serif; font-size:14px }',
             image_title: true,
             automatic_uploads: true,
-            file_picker_types: 'image',
+            file_picker_types: 'image media',
+            file_picker_callback: function(cb, value, meta) {
+              // Create input element and trigger click
+              const input = document.createElement('input');
+              input.setAttribute('type', 'file');
+              
+              if (meta.filetype === 'image') {
+                input.setAttribute('accept', 'image/*');
+              } else if (meta.filetype === 'media') {
+                input.setAttribute('accept', 'video/*');
+              }
+              
+              input.onchange = function() {
+                if (!input.files || input.files.length === 0) return;
+                
+                const file = input.files[0];
+                const reader = new FileReader();
+                
+                reader.onload = function() {
+                  const id = 'blobid' + (new Date()).getTime();
+                  const blobCache = (window as any).tinymce.activeEditor.editorUpload.blobCache;
+                  const base64 = (reader.result as string).split(',')[1];
+                  const blobInfo = blobCache.create(id, file, base64);
+                  blobCache.add(blobInfo);
+                  
+                  cb(blobInfo.blobUri(), { title: file.name });
+                };
+                
+                reader.readAsDataURL(file);
+              };
+              
+              input.click();
+            },
             images_upload_url: '/api/upload-image',
+            images_upload_handler: function(blobInfo, progress) {
+              return new Promise((resolve, reject) => {
+                const xhr = new XMLHttpRequest();
+                xhr.open('POST', '/api/upload-image');
+                
+                xhr.upload.onprogress = function(e) {
+                  progress(e.loaded / e.total * 100);
+                };
+                
+                xhr.onload = function() {
+                  if (xhr.status === 403) {
+                    reject({ message: 'HTTP Error: ' + xhr.status, remove: true });
+                    return;
+                  }
+                  
+                  if (xhr.status < 200 || xhr.status >= 300) {
+                    reject('HTTP Error: ' + xhr.status);
+                    return;
+                  }
+                  
+                  try {
+                    const json = JSON.parse(xhr.responseText);
+                    if (!json || typeof json.location != 'string') {
+                      reject('Invalid JSON: ' + xhr.responseText);
+                      return;
+                    }
+                    resolve(json.location);
+                  } catch (e) {
+                    reject('Invalid JSON: ' + xhr.responseText);
+                  }
+                };
+                
+                xhr.onerror = function() {
+                  reject('Image upload failed due to a network error.');
+                };
+                
+                const formData = new FormData();
+                formData.append('file', blobInfo.blob(), blobInfo.filename());
+                
+                xhr.send(formData);
+              });
+            },
             relative_urls: false,
             remove_script_host: false,
             convert_urls: true,
