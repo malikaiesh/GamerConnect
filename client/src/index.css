@@ -212,6 +212,36 @@
     @apply bg-primary text-primary-foreground px-3 py-1 rounded-full text-sm font-medium;
   }
   
+  /* Dropdown styling for user menu */
+  .dropdown-container {
+    position: relative;
+  }
+  
+  .dropdown-menu {
+    display: none;
+    transition: visibility 0s, opacity 0.3s;
+    visibility: hidden;
+    opacity: 0;
+  }
+  
+  .dropdown-container:hover .dropdown-menu {
+    display: block;
+    visibility: visible;
+    opacity: 1;
+  }
+  
+  /* This is the key part that fixes the issue */
+  .dropdown-menu:hover {
+    display: block;
+    visibility: visible;
+    opacity: 1;
+  }
+  
+  /* Add a slight delay before hiding the dropdown */
+  .dropdown-container:not(:hover) .dropdown-menu {
+    transition-delay: 0.3s;
+  }
+  
   /* Blog Ad Styling */
   .ad-wrapper {
     display: block;

@@ -123,12 +123,12 @@ export function Header() {
             
             {/* Auth Links */}
             {user ? (
-              <div className="relative group">
-                <button className="p-2 text-muted-foreground hover:text-primary flex items-center">
+              <div className="relative dropdown-container">
+                <button className="p-2 text-muted-foreground hover:text-primary flex items-center dropdown-trigger">
                   <span className="hidden md:inline-block mr-2">{user.username}</span>
                   <i className="ri-user-line text-xl"></i>
                 </button>
-                <div className="absolute right-0 mt-2 w-48 bg-card rounded-md shadow-lg py-1 z-10 hidden group-hover:block">
+                <div className="absolute right-0 mt-2 w-48 bg-card rounded-md shadow-lg py-1 z-10 dropdown-menu">
                   {user.isAdmin && (
                     <Link href="/admin/dashboard" className="block px-4 py-2 text-sm text-foreground hover:bg-muted">
                       Admin Dashboard
