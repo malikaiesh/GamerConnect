@@ -194,6 +194,7 @@ function App() {
   return (
     <ThemeProvider defaultTheme="modern" defaultMode="light">
       <Providers>
+        <AppHead />
         <AdminHelperNav />
         <Router />
       </Providers>
