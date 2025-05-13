@@ -166,6 +166,16 @@ export function Analytics() {
             <p className="text-xs text-muted-foreground">Average time on site</p>
           </CardContent>
         </Card>
+        
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Bounce Rate</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{data?.bounceRate ? `${data.bounceRate}%` : '0%'}</div>
+            <p className="text-xs text-muted-foreground">Visitors who leave after viewing one page</p>
+          </CardContent>
+        </Card>
       </div>
 
       {/* Charts */}
@@ -202,6 +212,34 @@ export function Analytics() {
 
         <Card className="col-span-1">
           <CardHeader>
+            <CardTitle>Device Distribution</CardTitle>
+          </CardHeader>
+          <CardContent className="h-80">
+            <ResponsiveContainer width="100%" height="100%">
+              <PieChart>
+                <Pie
+                  data={deviceData}
+                  cx="50%"
+                  cy="50%"
+                  labelLine={false}
+                  outerRadius={80}
+                  fill="#8884d8"
+                  dataKey="value"
+                  label={({ name, percent }) => `${name} (${(percent * 100).toFixed(0)}%)`}
+                >
+                  {deviceData.map((entry, index) => (
+                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                  ))}
+                </Pie>
+                <Tooltip formatter={(value) => value.toLocaleString()} />
+                <Legend />
+              </PieChart>
+            </ResponsiveContainer>
+          </CardContent>
+        </Card>
+        
+        <Card className="col-span-1">
+          <CardHeader>
             <CardTitle>Most Visited Pages</CardTitle>
           </CardHeader>
           <CardContent className="h-80">
@@ -222,7 +260,7 @@ export function Analytics() {
         </Card>
       </div>
 
-      <Card>
+      <Card className="col-span-full">
         <CardHeader>
           <CardTitle>Daily Visitors</CardTitle>
         </CardHeader>
