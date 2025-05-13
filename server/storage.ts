@@ -241,6 +241,7 @@ export interface IStorage {
   updateHomeAd(id: number, adData: Partial<InsertHomeAd>): Promise<HomeAd | null>;
   deleteHomeAd(id: number): Promise<boolean>;
   incrementAdImpressions(id: number): Promise<void>;
+  incrementAdImpressionCount(id: number): Promise<void>;
   incrementAdClicks(id: number): Promise<void>;
   
   // Sitemap methods
@@ -1005,8 +1006,30 @@ class DatabaseStorage implements IStorage {
   async createHomeAd(ad: Omit<InsertHomeAd, "createdAt" | "updatedAt">): Promise<HomeAd> { throw new Error("Not implemented"); }
   async updateHomeAd(id: number, adData: Partial<InsertHomeAd>): Promise<HomeAd | null> { return null; }
   async deleteHomeAd(id: number): Promise<boolean> { return false; }
-  async incrementAdImpressions(id: number): Promise<void> {}
-  async incrementAdClicks(id: number): Promise<void> {}
+  async incrementAdImpressions(id: number): Promise<void> {
+    try {
+      await db.update(homeAds)
+        .set({ impressionCount: sql`"impression_count" + 1` })
+        .where(eq(homeAds.id, id));
+    } catch (error) {
+      console.error(`Error incrementing ad impressions for ad ${id}:`, error);
+    }
+  }
+  
+  async incrementAdImpressionCount(id: number): Promise<void> {
+    // Alias function to match the API naming
+    return this.incrementAdImpressions(id);
+  }
+  
+  async incrementAdClicks(id: number): Promise<void> {
+    try {
+      await db.update(homeAds)
+        .set({ clickCount: sql`"click_count" + 1` })
+        .where(eq(homeAds.id, id));
+    } catch (error) {
+      console.error(`Error incrementing ad clicks for ad ${id}:`, error);
+    }
+  }
   
   async getSitemapById(id: number): Promise<Sitemap | null> { return null; }
   async getSitemaps(): Promise<Sitemap[]> { return []; }
