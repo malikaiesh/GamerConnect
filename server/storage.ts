@@ -655,6 +655,14 @@ class DatabaseStorage implements IStorage {
       return [];
     }
   }
+  
+  async getRecentUsersWithLocation(limit: number = 100): Promise<User[]> {
+    return db.select()
+      .from(users)
+      .where(isNotNull(users.location))
+      .orderBy(desc(users.createdAt))
+      .limit(limit);
+  }
 
   // The rest of the methods would be implemented here...
 
@@ -846,6 +854,7 @@ class DatabaseStorage implements IStorage {
     return { posts: [], total: 0, totalPages: 0 }; 
   }
   async getRecentPosts(limit?: number): Promise<BlogPost[]> { return []; }
+  async getRecentBlogPosts(limit?: number): Promise<BlogPost[]> { return this.getRecentPosts(limit); }
   async publishBlogPost(id: number): Promise<BlogPost | null> { return null; }
   
   async rateGame(gameId: number, rating: number): Promise<void> {}
@@ -856,6 +865,12 @@ class DatabaseStorage implements IStorage {
   async getPushNotificationById(id: number): Promise<PushNotification | null> { return null; }
   async getPushNotifications(options?: { page?: number, limit?: number }): Promise<{ notifications: PushNotification[], total: number, totalPages: number }> { 
     return { notifications: [], total: 0, totalPages: 0 }; 
+  }
+  async getActivePushNotifications(): Promise<PushNotification[]> {
+    return db.select()
+      .from(pushNotifications)
+      .where(eq(pushNotifications.isActive, true))
+      .orderBy(desc(pushNotifications.createdAt));
   }
   async createPushNotification(notification: Omit<InsertPushNotification, "createdAt" | "updatedAt">): Promise<PushNotification> { throw new Error("Not implemented"); }
   async updatePushNotification(id: number, notificationData: Partial<InsertPushNotification>): Promise<PushNotification | null> { return null; }
