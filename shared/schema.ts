@@ -110,6 +110,21 @@ export const siteSettings = pgTable('site_settings', {
   currentTheme: text('current_theme').default('modern').notNull(),
   adsTxt: text('ads_txt'),
   
+  // Footer settings
+  footerCopyright: text('footer_copyright'),
+  footerAppStoreLink: text('footer_app_store_link'),
+  footerGooglePlayLink: text('footer_google_play_link'),
+  footerAmazonLink: text('footer_amazon_link'),
+  
+  // Social media links
+  socialFacebook: text('social_facebook'),
+  socialTwitter: text('social_twitter'),
+  socialInstagram: text('social_instagram'),
+  socialYoutube: text('social_youtube'),
+  socialDiscord: text('social_discord'),
+  socialWhatsapp: text('social_whatsapp'),
+  socialTiktok: text('social_tiktok'),
+  
   // Standard blog ad positions
   headerAds: text('header_ads'),
   footerAds: text('footer_ads'),
@@ -360,7 +375,22 @@ export const insertSiteSettingsSchema = createInsertSchema(siteSettings, {
   siteFavicon: (schema) => schema.url("Favicon URL must be a valid URL").optional().nullable(),
   useTextLogo: (schema) => schema.optional().default(true),
   textLogoColor: (schema) => schema.optional().default('#4f46e5'),
-  adsTxt: (schema) => schema.optional()
+  adsTxt: (schema) => schema.optional(),
+  
+  // Footer settings
+  footerCopyright: (schema) => schema.optional(),
+  footerAppStoreLink: (schema) => schema.url("App Store URL must be a valid URL").optional().nullable(),
+  footerGooglePlayLink: (schema) => schema.url("Google Play URL must be a valid URL").optional().nullable(),
+  footerAmazonLink: (schema) => schema.url("Amazon URL must be a valid URL").optional().nullable(),
+  
+  // Social media links
+  socialFacebook: (schema) => schema.url("Facebook URL must be a valid URL").optional().nullable(),
+  socialTwitter: (schema) => schema.url("Twitter URL must be a valid URL").optional().nullable(),
+  socialInstagram: (schema) => schema.url("Instagram URL must be a valid URL").optional().nullable(),
+  socialYoutube: (schema) => schema.url("YouTube URL must be a valid URL").optional().nullable(),
+  socialDiscord: (schema) => schema.url("Discord URL must be a valid URL").optional().nullable(),
+  socialWhatsapp: (schema) => schema.url("WhatsApp URL must be a valid URL").optional().nullable(),
+  socialTiktok: (schema) => schema.url("TikTok URL must be a valid URL").optional().nullable()
 });
 
 export const insertPushNotificationSchema = createInsertSchema(pushNotifications, {
