@@ -1741,6 +1741,15 @@ class DatabaseStorage implements IStorage {
   
   async generateSitemap(type: string): Promise<Sitemap | null> {
     try {
+      // Import sitemap utility functions
+      const { 
+        generateUrlsetXml, 
+        generateSitemapIndexXml, 
+        getGameUrls, 
+        getBlogUrls, 
+        getPageUrls 
+      } = await import('../utils/sitemap');
+      
       // Get the base URL from site settings
       const siteSettings = await this.getSiteSettings();
       const baseUrl = siteSettings?.siteUrl || 'http://localhost:5000';
@@ -1755,50 +1764,64 @@ class DatabaseStorage implements IStorage {
         // Main sitemap is an index of all other sitemaps
         const sitemapList = await this.getSitemaps();
         const items = sitemapList
-          .filter(item => item.type !== 'main')
+          .filter(item => item.type !== 'main' && item.isEnabled)
           .map(item => ({
             loc: `${baseUrl}${item.url}`,
             lastmod: item.lastGenerated.toISOString()
           }));
         
         itemCount = items.length;
-        xmlContent = '';  // In a real implementation, we'd generate XML here
+        xmlContent = generateSitemapIndexXml(items);
         
       } else if (type === 'games') {
-        const activeGames = await db
-          .select()
-          .from(games)
-          .where(eq(games.status, 'active'));
-        
-        itemCount = activeGames.length;
-        xmlContent = '';  // In a real implementation, we'd generate XML here
+        const urls = await getGameUrls(baseUrl);
+        itemCount = urls.length;
+        xmlContent = generateUrlsetXml(urls);
         
       } else if (type === 'blog') {
-        const publishedPosts = await db
-          .select()
-          .from(blogPosts)
-          .where(eq(blogPosts.status, 'published'));
-        
-        itemCount = publishedPosts.length;
-        xmlContent = '';  // In a real implementation, we'd generate XML here
+        const urls = await getBlogUrls(baseUrl);
+        itemCount = urls.length;
+        xmlContent = generateUrlsetXml(urls);
         
       } else if (type === 'pages') {
-        const pages = await db
-          .select()
-          .from(staticPages);
-        
-        itemCount = pages.length;
-        xmlContent = '';  // In a real implementation, we'd generate XML here
+        const urls = await getPageUrls(baseUrl);
+        itemCount = urls.length;
+        xmlContent = generateUrlsetXml(urls);
+      }
+      
+      // Create filesystem directory for sitemaps if it doesn't exist
+      const fs = await import('fs/promises');
+      const path = await import('path');
+      const sitemapsDir = path.join(process.cwd(), 'client/public/sitemaps');
+      
+      try {
+        await fs.mkdir(sitemapsDir, { recursive: true });
+      } catch (error) {
+        console.error('Error creating sitemaps directory:', error);
+      }
+      
+      // Save XML content to file
+      const filename = type === 'main' ? 'sitemap.xml' : `sitemap-${type}.xml`;
+      const filePath = path.join(sitemapsDir, filename);
+      
+      try {
+        await fs.writeFile(filePath, xmlContent);
+        console.log(`Sitemap ${filename} written to ${filePath}`);
+      } catch (error) {
+        console.error(`Error writing sitemap file ${filename}:`, error);
       }
       
       // Update the sitemap record in the database
       const existingSitemap = await this.getSitemapByType(type);
+      const url = type === 'main' ? '/sitemaps/sitemap.xml' : `/sitemaps/sitemap-${type}.xml`;
       
       if (existingSitemap) {
         const [updatedSitemap] = await db.update(sitemaps)
           .set({
+            url,
             lastGenerated: now,
             itemCount,
+            content: xmlContent, // Save XML content to database as well
             updatedAt: now
           })
           .where(eq(sitemaps.type, type as any))
@@ -1808,13 +1831,13 @@ class DatabaseStorage implements IStorage {
         
       } else {
         // Create a new sitemap record if it doesn't exist
-        const url = type === 'main' ? '/sitemap.xml' : `/sitemap-${type}.xml`;
         const [newSitemap] = await db.insert(sitemaps)
           .values({
             type: type as any,
             url,
             lastGenerated: now,
             itemCount,
+            content: xmlContent, // Save XML content to database
             isEnabled: true,
             createdAt: now,
             updatedAt: now

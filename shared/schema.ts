@@ -609,6 +609,7 @@ export const sitemaps = pgTable('sitemaps', {
   lastGenerated: timestamp('last_generated').defaultNow().notNull(),
   url: text('url').notNull(),
   itemCount: integer('item_count').default(0).notNull(),
+  content: text('content'),
   isEnabled: boolean('is_enabled').default(true).notNull(),
   createdAt: timestamp('created_at').defaultNow().notNull(),
   updatedAt: timestamp('updated_at').defaultNow().notNull()
