@@ -128,7 +128,7 @@ export function BlogForm({ post, onSuccess }: BlogFormProps) {
               name="title"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Title</FormLabel>
+                  <FormLabel className="text-foreground">Title</FormLabel>
                   <FormControl>
                     <Input placeholder="Enter post title" {...field} />
                   </FormControl>
@@ -144,11 +144,11 @@ export function BlogForm({ post, onSuccess }: BlogFormProps) {
                   name="slug"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Slug</FormLabel>
+                      <FormLabel className="text-foreground">Slug</FormLabel>
                       <FormControl>
                         <Input placeholder="my-blog-post" {...field} />
                       </FormControl>
-                      <FormDescription>Used for the URL (e.g., /blog/my-blog-post)</FormDescription>
+                      <FormDescription className="text-muted-foreground">Used for the URL (e.g., /blog/my-blog-post)</FormDescription>
                       <FormMessage />
                     </FormItem>
                   )}
@@ -164,7 +164,7 @@ export function BlogForm({ post, onSuccess }: BlogFormProps) {
               name="featuredImage"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Featured Image URL</FormLabel>
+                  <FormLabel className="text-foreground">Featured Image URL</FormLabel>
                   <FormControl>
                     <Input placeholder="https://example.com/image.jpg" {...field} />
                   </FormControl>
@@ -179,13 +179,13 @@ export function BlogForm({ post, onSuccess }: BlogFormProps) {
                 name="categoryId"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Category</FormLabel>
+                    <FormLabel className="text-foreground">Category</FormLabel>
                     <Select
                       onValueChange={(value) => field.onChange(parseInt(value))}
                       value={field.value.toString()}
                     >
                       <FormControl>
-                        <SelectTrigger>
+                        <SelectTrigger className="text-foreground">
                           <SelectValue placeholder="Select category" />
                         </SelectTrigger>
                       </FormControl>
@@ -207,7 +207,7 @@ export function BlogForm({ post, onSuccess }: BlogFormProps) {
                 name="tags"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Tags</FormLabel>
+                    <FormLabel className="text-foreground">Tags</FormLabel>
                     <FormControl>
                       <Input placeholder="gaming, strategy, review (comma separated)" {...field} />
                     </FormControl>
@@ -222,11 +222,11 @@ export function BlogForm({ post, onSuccess }: BlogFormProps) {
               name="excerpt"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Excerpt</FormLabel>
+                  <FormLabel className="text-foreground">Excerpt</FormLabel>
                   <FormControl>
                     <Textarea placeholder="Brief summary of the post" rows={2} {...field} />
                   </FormControl>
-                  <FormDescription>A brief summary that appears in post listings</FormDescription>
+                  <FormDescription className="text-muted-foreground">A brief summary that appears in post listings</FormDescription>
                   <FormMessage />
                 </FormItem>
               )}
@@ -237,7 +237,7 @@ export function BlogForm({ post, onSuccess }: BlogFormProps) {
               name="content"
               render={({ field }) => (
                 <FormItem className="col-span-2">
-                  <FormLabel>Content</FormLabel>
+                  <FormLabel className="text-foreground">Content</FormLabel>
                   <FormControl>
                     <div className="border rounded-md">
                       <RichTextEditor
@@ -258,13 +258,13 @@ export function BlogForm({ post, onSuccess }: BlogFormProps) {
                 name="status"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Status</FormLabel>
+                    <FormLabel className="text-foreground">Status</FormLabel>
                     <Select
                       onValueChange={field.onChange}
                       defaultValue={field.value}
                     >
                       <FormControl>
-                        <SelectTrigger>
+                        <SelectTrigger className="text-foreground">
                           <SelectValue placeholder="Select status" />
                         </SelectTrigger>
                       </FormControl>
@@ -283,7 +283,7 @@ export function BlogForm({ post, onSuccess }: BlogFormProps) {
                 name="author"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Author</FormLabel>
+                    <FormLabel className="text-foreground">Author</FormLabel>
                     <FormControl>
                       <Input placeholder="Author name" {...field} />
                     </FormControl>
@@ -297,7 +297,7 @@ export function BlogForm({ post, onSuccess }: BlogFormProps) {
                 name="authorAvatar"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Author Avatar URL (optional)</FormLabel>
+                    <FormLabel className="text-foreground">Author Avatar URL (optional)</FormLabel>
                     <FormControl>
                       <Input placeholder="https://example.com/avatar.jpg" {...field} value={field.value || ""} />
                     </FormControl>
