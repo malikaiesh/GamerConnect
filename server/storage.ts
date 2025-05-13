@@ -28,6 +28,12 @@ import {
   Sitemap,
   InsertSitemap,
   Analytic,
+  Role,
+  InsertRole,
+  Permission,
+  InsertPermission,
+  RolePermission,
+  InsertRolePermission,
   users,
   games,
   blogCategories,
@@ -40,7 +46,10 @@ import {
   apiKeys,
   homeAds,
   sitemaps,
-  analytics
+  analytics,
+  roles,
+  permissions,
+  rolePermissions
 } from "@shared/schema";
 
 // Create session store
@@ -52,6 +61,26 @@ const sessionStore = new PostgresSessionStore({
 });
 
 export interface IStorage {
+  // Role and Permission methods
+  getRoles(): Promise<Role[]>;
+  getRoleById(id: number): Promise<Role | null>;
+  getRoleByName(name: string): Promise<Role | null>;
+  createRole(role: Omit<InsertRole, "createdAt" | "updatedAt">): Promise<Role>;
+  updateRole(id: number, role: Partial<InsertRole>): Promise<Role | null>;
+  deleteRole(id: number): Promise<boolean>;
+  
+  getPermissions(): Promise<Permission[]>;
+  getPermissionById(id: number): Promise<Permission | null>;
+  getPermissionsByResource(resource: string): Promise<Permission[]>;
+  
+  getRolePermissions(roleId: number): Promise<Permission[]>;
+  assignPermissionToRole(roleId: number, permissionId: number): Promise<RolePermission>;
+  removePermissionFromRole(roleId: number, permissionId: number): Promise<boolean>;
+  
+  getUserRole(userId: number): Promise<Role | null>;
+  assignRoleToUser(userId: number, roleId: number): Promise<User | null>;
+  hasPermission(userId: number, resource: string, action: string): Promise<boolean>;
+  
   // User methods
   getUserById(id: number): Promise<User | null>;
   getUserByUsername(username: string): Promise<User | null>;

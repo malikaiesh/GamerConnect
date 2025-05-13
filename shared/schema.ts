@@ -1,4 +1,4 @@
-import { pgTable, text, serial, integer, boolean, timestamp, json, pgEnum } from 'drizzle-orm/pg-core';
+import { pgTable, text, serial, integer, boolean, timestamp, json, pgEnum, uniqueIndex } from 'drizzle-orm/pg-core';
 import { createInsertSchema, createSelectSchema } from 'drizzle-zod';
 import { relations } from 'drizzle-orm';
 import { z } from 'zod';
@@ -21,6 +21,41 @@ export const userAccountTypeEnum = pgEnum('user_account_type', ['local', 'google
 // User Status Enum
 export const userStatusEnum = pgEnum('user_status', ['active', 'blocked']);
 
+// Roles table
+export const roles = pgTable('roles', {
+  id: serial('id').primaryKey(),
+  name: text('name').notNull().unique(),
+  description: text('description'),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+  updatedAt: timestamp('updated_at').defaultNow().notNull()
+});
+
+// Permissions table
+export const permissions = pgTable('permissions', {
+  id: serial('id').primaryKey(),
+  resource: text('resource').notNull(),
+  action: text('action').notNull(),
+  description: text('description'),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+  updatedAt: timestamp('updated_at').defaultNow().notNull()
+}, (table) => {
+  return {
+    resourceActionIdx: uniqueIndex('resource_action_idx').on(table.resource, table.action)
+  };
+});
+
+// Role-Permission junction table
+export const rolePermissions = pgTable('role_permissions', {
+  id: serial('id').primaryKey(),
+  roleId: integer('role_id').notNull().references(() => roles.id, { onDelete: 'cascade' }),
+  permissionId: integer('permission_id').notNull().references(() => permissions.id, { onDelete: 'cascade' }),
+  createdAt: timestamp('created_at').defaultNow().notNull()
+}, (table) => {
+  return {
+    rolePermissionIdx: uniqueIndex('role_permission_idx').on(table.roleId, table.permissionId)
+  };
+});
+
 // Users table
 export const users = pgTable('users', {
   id: serial('id').primaryKey(),
@@ -28,6 +63,7 @@ export const users = pgTable('users', {
   email: text('email').unique(),
   password: text('password'),
   isAdmin: boolean('is_admin').default(false).notNull(),
+  roleId: integer('role_id').references(() => roles.id, { onDelete: 'set null' }),
   profilePicture: text('profile_picture'),
   bio: text('bio'),
   country: text('country'),
@@ -326,6 +362,34 @@ export const gamesRelations = relations(games, ({ many }) => ({
   ratings: many(ratings)
 }));
 
+export const usersRelations = relations(users, ({ many, one }) => ({
+  reviews: many(ratings),
+  role: one(roles, {
+    fields: [users.roleId],
+    references: [roles.id]
+  })
+}));
+
+export const rolesRelations = relations(roles, ({ many }) => ({
+  users: many(users),
+  rolePermissions: many(rolePermissions)
+}));
+
+export const permissionsRelations = relations(permissions, ({ many }) => ({
+  rolePermissions: many(rolePermissions)
+}));
+
+export const rolePermissionsRelations = relations(rolePermissions, ({ one }) => ({
+  role: one(roles, {
+    fields: [rolePermissions.roleId],
+    references: [roles.id]
+  }),
+  permission: one(permissions, {
+    fields: [rolePermissions.permissionId],
+    references: [permissions.id]
+  })
+}));
+
 export const ratingsRelations = relations(ratings, ({ one }) => ({
   game: one(games, {
     fields: [ratings.gameId],
@@ -345,6 +409,20 @@ export const blogPostsRelations = relations(blogPosts, ({ one }) => ({
 }));
 
 // Schemas for validation
+// Role and Permission schemas
+export const insertRoleSchema = createInsertSchema(roles, {
+  name: (schema) => schema.min(3, "Role name must be at least 3 characters"),
+  description: (schema) => schema.optional().nullable()
+});
+
+export const insertPermissionSchema = createInsertSchema(permissions, {
+  resource: (schema) => schema.min(2, "Resource name must be at least 2 characters"),
+  action: (schema) => schema.min(2, "Action name must be at least 2 characters"),
+  description: (schema) => schema.optional().nullable()
+});
+
+export const insertRolePermissionSchema = createInsertSchema(rolePermissions);
+
 export const insertUserSchema = createInsertSchema(users, {
   username: (schema) => schema.min(3, "Username must be at least 3 characters"),
   email: (schema) => schema.email("Must be a valid email").optional().nullable(),
@@ -355,6 +433,7 @@ export const insertUserSchema = createInsertSchema(users, {
   accountType: (schema) => schema.optional(),
   socialId: (schema) => schema.optional().nullable(),
   status: (schema) => schema.optional(),
+  roleId: (schema) => schema.optional().nullable(),
   location: (schema) => schema.optional().nullable()
 });
 
@@ -443,6 +522,15 @@ export const insertStaticPageSchema = createInsertSchema(staticPages, {
 });
 
 // Types for TypeScript
+export type Role = typeof roles.$inferSelect;
+export type InsertRole = z.infer<typeof insertRoleSchema>;
+
+export type Permission = typeof permissions.$inferSelect;
+export type InsertPermission = z.infer<typeof insertPermissionSchema>;
+
+export type RolePermission = typeof rolePermissions.$inferSelect;
+export type InsertRolePermission = z.infer<typeof insertRolePermissionSchema>;
+
 export type User = typeof users.$inferSelect;
 export type InsertUser = z.infer<typeof insertUserSchema>;
 
