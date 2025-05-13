@@ -6,10 +6,14 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useAuth } from "@/hooks/use-auth";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
-import { Loader2 } from "lucide-react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Separator } from "@/components/ui/separator";
+import { Loader2, Mail, Github } from "lucide-react";
+import { FaGoogle, FaFacebook } from "react-icons/fa";
 
 // Form validation schemas
 const loginSchema = z.object({
@@ -19,11 +23,15 @@ const loginSchema = z.object({
 
 const registerSchema = z.object({
   username: z.string().min(3, { message: "Username must be at least 3 characters" }),
+  email: z.string().email({ message: "Please enter a valid email address" }).optional().or(z.literal('')),
   password: z
     .string()
     .min(6, { message: "Password must be at least 6 characters" })
     .max(100),
   confirmPassword: z.string(),
+  bio: z.string().max(500, { message: "Bio should be less than 500 characters" }).optional().or(z.literal('')),
+  country: z.string().optional().or(z.literal('')),
+  profilePicture: z.string().url({ message: "Please enter a valid URL" }).optional().or(z.literal(''))
 }).refine((data) => data.password === data.confirmPassword, {
   message: "Passwords do not match",
   path: ["confirmPassword"],
@@ -51,8 +59,12 @@ export default function AuthPage() {
     resolver: zodResolver(registerSchema),
     defaultValues: {
       username: "",
+      email: "",
       password: "",
       confirmPassword: "",
+      bio: "",
+      country: "",
+      profilePicture: "",
     },
   });
 

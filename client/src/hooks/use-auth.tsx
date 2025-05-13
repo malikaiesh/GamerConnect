@@ -14,10 +14,14 @@ type AuthContextType = {
   error: Error | null;
   loginMutation: UseMutationResult<SelectUser, Error, LoginData>;
   logoutMutation: UseMutationResult<void, Error, void>;
-  registerMutation: UseMutationResult<SelectUser, Error, InsertUser>;
+  registerMutation: UseMutationResult<SelectUser, Error, RegisterData>;
+  updateProfileMutation: UseMutationResult<SelectUser, Error, ProfileUpdateData>;
+  socialLogin: (provider: 'google' | 'facebook') => void;
 };
 
 type LoginData = Pick<InsertUser, "username" | "password">;
+type RegisterData = Pick<InsertUser, "username" | "password" | "email" | "profilePicture" | "bio" | "country">;
+type ProfileUpdateData = Pick<InsertUser, "bio" | "country" | "profilePicture">;
 
 export const AuthContext = createContext<AuthContextType | null>(null);
 export function AuthProvider({ children }: { children: ReactNode }) {
@@ -53,7 +57,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   });
 
   const registerMutation = useMutation({
-    mutationFn: async (credentials: InsertUser) => {
+    mutationFn: async (credentials: RegisterData) => {
       const res = await apiRequest("POST", "/api/register", credentials);
       return await res.json();
     },
@@ -72,6 +76,32 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       });
     },
   });
+  
+  const updateProfileMutation = useMutation({
+    mutationFn: async (profileData: ProfileUpdateData) => {
+      const res = await apiRequest("PATCH", "/api/user/profile", profileData);
+      return await res.json();
+    },
+    onSuccess: (user: SelectUser) => {
+      queryClient.setQueryData(["/api/user"], user);
+      toast({
+        title: "Profile updated",
+        description: "Your profile has been successfully updated.",
+      });
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Profile update failed",
+        description: error.message,
+        variant: "destructive",
+      });
+    },
+  });
+  
+  const socialLogin = (provider: 'google' | 'facebook') => {
+    // Social login works by redirecting to the provider's authentication page
+    window.location.href = `/api/auth/${provider}`;
+  };
 
   const logoutMutation = useMutation({
     mutationFn: async () => {
@@ -102,6 +132,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         loginMutation,
         logoutMutation,
         registerMutation,
+        updateProfileMutation,
+        socialLogin,
       }}
     >
       {children}
