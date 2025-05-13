@@ -4,6 +4,7 @@ import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useAuth } from "@/hooks/use-auth";
+import { useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -14,6 +15,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Separator } from "@/components/ui/separator";
 import { Loader2, Mail, Github } from "lucide-react";
 import { FaGoogle, FaFacebook } from "react-icons/fa";
+import { SiteSetting } from "@shared/schema";
 
 // Form validation schemas
 const loginSchema = z.object({
@@ -44,6 +46,11 @@ export default function AuthPage() {
   const [activeTab, setActiveTab] = useState<string>("login");
   const { user, loginMutation, registerMutation, socialLogin, isLoading } = useAuth();
   const [location, navigate] = useLocation();
+  
+  // Fetch site settings for logo configuration
+  const { data: settings } = useQuery<SiteSetting>({
+    queryKey: ['/api/settings'],
+  });
 
   // Login form
   const loginForm = useForm<LoginValues>({
@@ -118,10 +125,20 @@ export default function AuthPage() {
       <div className="w-full md:w-1/2 bg-blue-600 p-10 flex items-center justify-center">
         <div className="max-w-md text-white">
           <div className="flex items-center space-x-2 mb-8">
-            <i className="ri-gamepad-line text-white text-4xl"></i>
-            <h1 className="text-3xl font-bold font-poppins">
-              Game<span className="text-yellow-300">Zone</span>
-            </h1>
+            {settings?.siteLogo && !settings?.useTextLogo ? (
+              <img 
+                src={settings.siteLogo} 
+                alt={settings.siteTitle || 'Game Zone'} 
+                className="h-12 w-auto" 
+              />
+            ) : (
+              <>
+                <i className="ri-gamepad-line text-white text-4xl"></i>
+                <h1 className="text-3xl font-bold font-poppins">
+                  {settings?.siteTitle ? settings.siteTitle : 'Game'}<span className="text-yellow-300">Zone</span>
+                </h1>
+              </>
+            )}
           </div>
           <h2 className="text-3xl md:text-4xl font-bold mb-4">The Ultimate Gaming Experience!</h2>
           <p className="text-lg mb-6">

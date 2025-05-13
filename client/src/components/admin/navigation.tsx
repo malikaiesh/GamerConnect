@@ -1,8 +1,10 @@
 import { Link, useLocation } from "wouter";
 import { useAuth } from "@/hooks/use-auth";
+import { useQuery } from "@tanstack/react-query";
 import { cn } from "@/lib/utils";
 import { Gamepad2, Book, Settings, LayoutDashboard, FileText, LogOut, Home, FileSymlink, Key, ImageIcon, Map, Code, BarChart, Files, Bell, Users, Send, Activity, BarChart3 } from "lucide-react";
 import { useState } from "react";
+import { SiteSetting } from "@shared/schema";
 
 export default function AdminNavigation() {
   const [expandedSubMenus, setExpandedSubMenus] = useState<Record<string, boolean>>({
@@ -10,6 +12,11 @@ export default function AdminNavigation() {
   });
   const [location] = useLocation();
   const { logoutMutation, user } = useAuth();
+  
+  // Fetch site settings for logo configuration
+  const { data: settings } = useQuery<SiteSetting>({
+    queryKey: ['/api/settings'],
+  });
 
   const handleLogout = () => {
     logoutMutation.mutate();
@@ -34,10 +41,23 @@ export default function AdminNavigation() {
     <div className="bg-gray-900 text-gray-100 min-h-screen w-64 flex flex-col">
       <div className="p-4 border-b border-gray-800">
         <Link href="/" className="flex items-center">
-          <i className="ri-gamepad-line text-primary text-3xl"></i>
-          <span className="text-xl font-bold font-poppins ml-2">
-            Game<span className="text-primary">Zone</span>
-          </span>
+          {settings?.siteLogo && !settings?.useTextLogo ? (
+            <img 
+              src={settings.siteLogo} 
+              alt={settings.siteTitle || 'Game Zone'} 
+              className="h-8 w-auto" 
+            />
+          ) : (
+            <>
+              <i className="ri-gamepad-line text-primary text-3xl"></i>
+              <span 
+                className="text-xl font-bold font-poppins ml-2"
+                style={settings?.textLogoColor ? { color: settings.textLogoColor } : {}}
+              >
+                {settings?.siteTitle ? settings.siteTitle : 'Game'}
+              </span>
+            </>
+          )}
         </Link>
       </div>
 
