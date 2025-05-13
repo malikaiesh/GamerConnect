@@ -533,7 +533,7 @@ export default function HomeAdsPage() {
                           >
                             <FormControl>
                               <SelectTrigger>
-                                <SelectValue placeholder="Select a status" />
+                                <SelectValue className="text-foreground" placeholder="Select a status" />
                               </SelectTrigger>
                             </FormControl>
                             <SelectContent>
