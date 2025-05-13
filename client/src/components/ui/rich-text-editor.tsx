@@ -20,6 +20,7 @@ export function RichTextEditor({
 }: RichTextEditorProps) {
   const [isLoading, setIsLoading] = useState(true);
   const editorRef = useRef<any>(null);
+  const apiKey = import.meta.env.VITE_TINYMCE_API_KEY || '';
   
   useEffect(() => {
     // Auto-focus workaround for when the editor is initially loaded but hidden
@@ -43,7 +44,7 @@ export function RichTextEditor({
       )}
       <div className={isLoading ? 'hidden' : ''}>
         <Editor
-          apiKey={process.env.TINYMCE_API_KEY}
+          apiKey={apiKey}
           onInit={(evt, editor) => {
             editorRef.current = editor;
             setIsLoading(false);
