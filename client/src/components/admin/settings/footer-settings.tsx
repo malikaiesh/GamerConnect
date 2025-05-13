@@ -132,7 +132,8 @@ export function FooterSettings() {
                         />
                       </FormControl>
                       <FormDescription>
-                        Custom copyright text to display in the footer. Leave empty to use the default text.
+                        Custom copyright text to display in the footer. Use {'{year}'} to insert the current year dynamically.
+                        Leave empty to use the default text.
                       </FormDescription>
                       <FormMessage />
                     </FormItem>
