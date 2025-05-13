@@ -257,19 +257,38 @@ class DatabaseStorage implements IStorage {
     return result.length ? result[0] : null;
   }
   
-  async getUsersByStatus(status: 'active' | 'blocked', options: { page?: number, limit?: number } = {}): Promise<{ users: User[], total: number, totalPages: number }> {
-    const { page = 1, limit = 10 } = options;
+  async getUsersByStatus(status: 'active' | 'blocked', options: { page?: number, limit?: number, search?: string } = {}): Promise<{ users: User[], total: number, totalPages: number }> {
+    const { page = 1, limit = 10, search } = options;
     const offset = (page - 1) * limit;
     
-    const [countResult] = await db.select({ count: count() })
-      .from(users)
-      .where(eq(users.status, status));
+    let query = db.select({ count: count() }).from(users).where(eq(users.status, status));
+    let dataQuery = db.select().from(users).where(eq(users.status, status));
+    
+    // Add search filter if provided
+    if (search) {
+      const searchLower = `%${search.toLowerCase()}%`;
       
+      query = query.where(
+        or(
+          ilike(users.username, searchLower),
+          ilike(users.email || '', searchLower),
+          ilike(users.country || '', searchLower)
+        )
+      );
+      
+      dataQuery = dataQuery.where(
+        or(
+          ilike(users.username, searchLower),
+          ilike(users.email || '', searchLower),
+          ilike(users.country || '', searchLower)
+        )
+      );
+    }
+    
+    const [countResult] = await query;
     const total = Number(countResult?.count || 0);
     
-    const result = await db.select()
-      .from(users)
-      .where(eq(users.status, status))
+    const result = await dataQuery
       .limit(limit)
       .offset(offset)
       .orderBy(desc(users.createdAt));
@@ -279,6 +298,19 @@ class DatabaseStorage implements IStorage {
       total,
       totalPages: Math.ceil(total / limit)
     };
+  }
+  
+  async getRecentUsersWithLocation(limit: number = 100): Promise<User[]> {
+    return db.select()
+      .from(users)
+      .where(
+        and(
+          isNotNull(users.location),
+          not(sql`${users.location}::text = '{}'::text`)
+        )
+      )
+      .orderBy(desc(users.createdAt))
+      .limit(limit);
   }
   
   async getNewUsers(days: number = 30): Promise<User[]> {
