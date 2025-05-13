@@ -419,11 +419,8 @@ export default function PageEditPage() {
                             </SelectTrigger>
                           </FormControl>
                           <SelectContent>
-                            {Object.keys(contentStatusEnum.enumValues).map((status) => (
-                              <SelectItem key={status} value={status}>
-                                {status === "active" ? "Active" : "Inactive"}
-                              </SelectItem>
-                            ))}
+                            <SelectItem value="active">Active</SelectItem>
+                            <SelectItem value="inactive">Inactive</SelectItem>
                           </SelectContent>
                         </Select>
                         <FormDescription>
