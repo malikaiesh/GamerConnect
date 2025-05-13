@@ -1252,14 +1252,146 @@ class DatabaseStorage implements IStorage {
   async deleteHomePageContent(id: number): Promise<boolean> { return false; }
   async updateHomePageContentOrder(contents: { id: number, position: number }[]): Promise<HomePageContent[]> { return []; }
   
-  async getStaticPageById(id: number): Promise<StaticPage | null> { return null; }
-  async getStaticPageBySlug(slug: string): Promise<StaticPage | null> { return null; }
-  async getStaticPages(options?: { page?: number, limit?: number, type?: string }): Promise<{ pages: StaticPage[], total: number, totalPages: number }> { 
-    return { pages: [], total: 0, totalPages: 0 }; 
+  async getStaticPageById(id: number): Promise<StaticPage | null> {
+    try {
+      const [page] = await db.select().from(staticPages).where(eq(staticPages.id, id));
+      return page || null;
+    } catch (error) {
+      console.error('Error fetching page by ID:', error);
+      return null;
+    }
   }
-  async createStaticPage(page: Omit<InsertStaticPage, "createdAt" | "updatedAt">): Promise<StaticPage> { throw new Error("Not implemented"); }
-  async updateStaticPage(id: number, pageData: Partial<InsertStaticPage>): Promise<StaticPage | null> { return null; }
-  async deleteStaticPage(id: number): Promise<boolean> { return false; }
+
+  async getStaticPageBySlug(slug: string): Promise<StaticPage | null> {
+    try {
+      const [page] = await db.select().from(staticPages).where(eq(staticPages.slug, slug));
+      return page || null;
+    } catch (error) {
+      console.error('Error fetching page by slug:', error);
+      return null;
+    }
+  }
+
+  async getStaticPageByType(type: string): Promise<StaticPage | null> {
+    try {
+      const [page] = await db.select().from(staticPages).where(eq(staticPages.pageType, type as any));
+      return page || null;
+    } catch (error) {
+      console.error('Error fetching page by type:', error);
+      return null;
+    }
+  }
+
+  async getStaticPages(options?: { 
+    page?: number, 
+    limit?: number, 
+    search?: string,
+    pageType?: string,
+    status?: 'active' | 'inactive' 
+  }): Promise<{ pages: StaticPage[], total: number, totalPages: number }> {
+    try {
+      const { 
+        page = 1, 
+        limit = 10, 
+        search, 
+        pageType,
+        status
+      } = options || {};
+      
+      // Base query for counting total items
+      let countQuery = db.select({ count: sql<number>`count(*)` }).from(staticPages);
+      
+      // Base query for fetching pages
+      let pagesQuery = db.select().from(staticPages);
+      
+      // Apply search filter
+      if (search) {
+        const searchLower = `%${search.toLowerCase()}%`;
+        countQuery = countQuery.where(sql`LOWER(${staticPages.title}) LIKE ${searchLower}`);
+        pagesQuery = pagesQuery.where(sql`LOWER(${staticPages.title}) LIKE ${searchLower}`);
+      }
+      
+      // Apply page type filter
+      if (pageType && pageType !== 'all') {
+        countQuery = countQuery.where(eq(staticPages.pageType, pageType as any));
+        pagesQuery = pagesQuery.where(eq(staticPages.pageType, pageType as any));
+      }
+      
+      // Apply status filter
+      if (status) {
+        countQuery = countQuery.where(eq(staticPages.status, status));
+        pagesQuery = pagesQuery.where(eq(staticPages.status, status));
+      }
+      
+      // Count total items
+      const [countResult] = await countQuery;
+      const total = Number(countResult.count) || 0;
+      
+      // Calculate total pages
+      const totalPages = Math.ceil(total / limit);
+      
+      // Apply pagination
+      const offset = (page - 1) * limit;
+      pagesQuery = pagesQuery
+        .orderBy(desc(staticPages.updatedAt))
+        .limit(limit)
+        .offset(offset);
+      
+      // Fetch pages
+      const pages = await pagesQuery;
+      
+      return { 
+        pages, 
+        total, 
+        totalPages 
+      };
+    } catch (error) {
+      console.error('Error fetching pages:', error);
+      return { pages: [], total: 0, totalPages: 0 };
+    }
+  }
+
+  async createStaticPage(page: Omit<InsertStaticPage, "createdAt" | "updatedAt">): Promise<StaticPage> {
+    try {
+      const [newPage] = await db.insert(staticPages).values({
+        ...page,
+        createdAt: new Date(),
+        updatedAt: new Date()
+      }).returning();
+      
+      return newPage;
+    } catch (error) {
+      console.error('Error creating page:', error);
+      throw error;
+    }
+  }
+
+  async updateStaticPage(id: number, pageData: Partial<InsertStaticPage>): Promise<StaticPage | null> {
+    try {
+      const [updatedPage] = await db.update(staticPages)
+        .set({
+          ...pageData,
+          updatedAt: new Date()
+        })
+        .where(eq(staticPages.id, id))
+        .returning();
+      
+      return updatedPage || null;
+    } catch (error) {
+      console.error('Error updating page:', error);
+      return null;
+    }
+  }
+
+  async deleteStaticPage(id: number): Promise<boolean> {
+    try {
+      const result = await db.delete(staticPages).where(eq(staticPages.id, id)).returning();
+      return result.length > 0;
+    } catch (error) {
+      console.error('Error deleting page:', error);
+      return false;
+    }
+  }
   
   async getApiKeyById(id: number): Promise<ApiKey | null> { return null; }
   async getApiKeys(): Promise<ApiKey[]> { return []; }
