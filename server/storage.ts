@@ -1053,25 +1053,38 @@ class DatabaseStorage implements IStorage {
   
   async getRelatedGames(gameId: number, category?: string, tags?: string[]): Promise<Game[]> {
     try {
+      // Get the current game to find its category if not provided
+      let gameCategory = category;
+      if (!gameCategory) {
+        const currentGame = await this.getGameById(gameId);
+        if (currentGame) {
+          gameCategory = currentGame.category;
+        }
+      }
+      
       // Start with a base query for games other than the current one
-      let query = db.select().from(games)
-        .where(and(
-          // Exclude the current game
-          not(eq(games.id, gameId)),
-          // Only active or featured games
-          or(
-            eq(games.status, 'active'),
-            eq(games.status, 'featured')
-          )
-        ));
+      let relatedGamesQuery = db
+        .select()
+        .from(games);
+      
+      // First, exclude the current game
+      relatedGamesQuery = relatedGamesQuery.where(not(eq(games.id, gameId)));
+      
+      // Then add status condition for active or featured games
+      relatedGamesQuery = relatedGamesQuery.where(
+        or(
+          eq(games.status, 'active'),
+          eq(games.status, 'featured')
+        )
+      );
       
       // If we have a category, find games in the same category
-      if (category) {
-        query = query.where(eq(games.category, category));
+      if (gameCategory) {
+        relatedGamesQuery = relatedGamesQuery.where(eq(games.category, gameCategory));
       }
       
       // For now, we'll order by popularity (plays) and limit to 8
-      const relatedGames = await query
+      const relatedGames = await relatedGamesQuery
         .orderBy(desc(games.plays))
         .limit(8);
         

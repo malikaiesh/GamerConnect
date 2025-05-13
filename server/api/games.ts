@@ -205,6 +205,28 @@ export function registerGameRoutes(app: Express) {
     }
   });
   
+  // Get related games for a specific game
+  app.get('/api/games/related', async (req: Request, res: Response) => {
+    try {
+      const gameId = req.query.gameId ? parseInt(req.query.gameId as string) : 0;
+      const category = req.query.category as string | undefined;
+      const tagsParam = req.query.tags as string | undefined;
+      
+      if (!gameId) {
+        return res.status(400).json({ message: 'Game ID is required' });
+      }
+      
+      // Parse tags if provided
+      const tags = tagsParam ? tagsParam.split(',') : undefined;
+      
+      const relatedGames = await storage.getRelatedGames(gameId, category, tags);
+      res.json(relatedGames);
+    } catch (error) {
+      console.error('Error fetching related games:', error);
+      res.status(500).json({ message: 'Failed to fetch related games' });
+    }
+  });
+  
   // Get a game by ID
   app.get('/api/games/:id([0-9]+)', async (req: Request, res: Response) => {
     try {
