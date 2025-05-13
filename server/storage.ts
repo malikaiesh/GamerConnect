@@ -55,7 +55,24 @@ export interface IStorage {
   // User methods
   getUserById(id: number): Promise<User | null>;
   getUserByUsername(username: string): Promise<User | null>;
-  createUser(user: Omit<InsertUser, "createdAt">): Promise<User>;
+  getUserByEmail(email: string): Promise<User | null>;
+  getUserBySocialId(socialId: string): Promise<User | null>;
+  createUser(user: Omit<InsertUser, "createdAt" | "updatedAt">): Promise<User>;
+  updateUser(id: number, userData: Partial<InsertUser>): Promise<User | null>;
+  updateUserLastLogin(id: number): Promise<void>;
+  updateUserStatus(id: number, status: 'active' | 'blocked'): Promise<User | null>;
+  getUsersByStatus(status: 'active' | 'blocked', options?: { page?: number, limit?: number }): Promise<{ users: User[], total: number, totalPages: number }>;
+  getNewUsers(days?: number): Promise<User[]>;
+  getUsersByCountry(): Promise<{ country: string, count: number }[]>;
+  getUserStats(): Promise<{
+    totalUsers: number,
+    activeUsers: number,
+    blockedUsers: number,
+    newUsersToday: number,
+    newUsersThisWeek: number,
+    newUsersThisMonth: number,
+    usersWithSocialLogin: number
+  }>;
   
   // Game methods
   getGames(options?: GameQueryOptions): Promise<{ games: Game[], totalGames: number, totalPages: number }>;
@@ -192,10 +209,163 @@ class DatabaseStorage implements IStorage {
     const result = await db.select().from(users).where(eq(users.username, username)).limit(1);
     return result.length ? result[0] : null;
   }
+  
+  async getUserByEmail(email: string): Promise<User | null> {
+    const result = await db.select().from(users).where(eq(users.email, email)).limit(1);
+    return result.length ? result[0] : null;
+  }
+  
+  async getUserBySocialId(socialId: string): Promise<User | null> {
+    const result = await db.select().from(users).where(eq(users.socialId, socialId)).limit(1);
+    return result.length ? result[0] : null;
+  }
 
-  async createUser(user: Omit<InsertUser, "createdAt">): Promise<User> {
-    const result = await db.insert(users).values(user).returning();
+  async createUser(user: Omit<InsertUser, "createdAt" | "updatedAt">): Promise<User> {
+    const result = await db.insert(users).values({
+      ...user,
+      createdAt: new Date(),
+      updatedAt: new Date()
+    }).returning();
     return result[0];
+  }
+  
+  async updateUser(id: number, userData: Partial<InsertUser>): Promise<User | null> {
+    const result = await db.update(users)
+      .set({ ...userData, updatedAt: new Date() })
+      .where(eq(users.id, id))
+      .returning();
+    return result.length ? result[0] : null;
+  }
+  
+  async updateUserLastLogin(id: number): Promise<void> {
+    await db.update(users)
+      .set({ 
+        lastLogin: new Date(),
+        updatedAt: new Date()
+      })
+      .where(eq(users.id, id));
+  }
+  
+  async updateUserStatus(id: number, status: 'active' | 'blocked'): Promise<User | null> {
+    const result = await db.update(users)
+      .set({ 
+        status,
+        updatedAt: new Date()
+      })
+      .where(eq(users.id, id))
+      .returning();
+    return result.length ? result[0] : null;
+  }
+  
+  async getUsersByStatus(status: 'active' | 'blocked', options: { page?: number, limit?: number } = {}): Promise<{ users: User[], total: number, totalPages: number }> {
+    const { page = 1, limit = 10 } = options;
+    const offset = (page - 1) * limit;
+    
+    const [countResult] = await db.select({ count: count() })
+      .from(users)
+      .where(eq(users.status, status));
+      
+    const total = Number(countResult?.count || 0);
+    
+    const result = await db.select()
+      .from(users)
+      .where(eq(users.status, status))
+      .limit(limit)
+      .offset(offset)
+      .orderBy(desc(users.createdAt));
+      
+    return {
+      users: result,
+      total,
+      totalPages: Math.ceil(total / limit)
+    };
+  }
+  
+  async getNewUsers(days: number = 30): Promise<User[]> {
+    const date = new Date();
+    date.setDate(date.getDate() - days);
+    
+    return db.select()
+      .from(users)
+      .where(gte(users.createdAt, date))
+      .orderBy(desc(users.createdAt));
+  }
+  
+  async getUsersByCountry(): Promise<{ country: string, count: number }[]> {
+    const result = await db.execute(sql`
+      SELECT country, COUNT(*) as count
+      FROM users
+      WHERE country IS NOT NULL AND country != ''
+      GROUP BY country
+      ORDER BY count DESC
+    `);
+    
+    return result.map(row => ({
+      country: row.country,
+      count: Number(row.count)
+    }));
+  }
+  
+  async getUserStats(): Promise<{
+    totalUsers: number,
+    activeUsers: number,
+    blockedUsers: number,
+    newUsersToday: number,
+    newUsersThisWeek: number,
+    newUsersThisMonth: number,
+    usersWithSocialLogin: number
+  }> {
+    const totalUsers = await db.select({ count: count() }).from(users);
+    
+    const activeUsers = await db.select({ count: count() })
+      .from(users)
+      .where(eq(users.status, 'active'));
+      
+    const blockedUsers = await db.select({ count: count() })
+      .from(users)
+      .where(eq(users.status, 'blocked'));
+      
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    
+    const oneWeekAgo = new Date();
+    oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
+    oneWeekAgo.setHours(0, 0, 0, 0);
+    
+    const oneMonthAgo = new Date();
+    oneMonthAgo.setMonth(oneMonthAgo.getMonth() - 1);
+    oneMonthAgo.setHours(0, 0, 0, 0);
+    
+    const newUsersToday = await db.select({ count: count() })
+      .from(users)
+      .where(gte(users.createdAt, today));
+      
+    const newUsersThisWeek = await db.select({ count: count() })
+      .from(users)
+      .where(gte(users.createdAt, oneWeekAgo));
+      
+    const newUsersThisMonth = await db.select({ count: count() })
+      .from(users)
+      .where(gte(users.createdAt, oneMonthAgo));
+      
+    const usersWithSocialLogin = await db.select({ count: count() })
+      .from(users)
+      .where(
+        or(
+          eq(users.accountType, 'google'),
+          eq(users.accountType, 'facebook')
+        )
+      );
+      
+    return {
+      totalUsers: Number(totalUsers[0]?.count || 0),
+      activeUsers: Number(activeUsers[0]?.count || 0),
+      blockedUsers: Number(blockedUsers[0]?.count || 0),
+      newUsersToday: Number(newUsersToday[0]?.count || 0),
+      newUsersThisWeek: Number(newUsersThisWeek[0]?.count || 0),
+      newUsersThisMonth: Number(newUsersThisMonth[0]?.count || 0),
+      usersWithSocialLogin: Number(usersWithSocialLogin[0]?.count || 0)
+    };
   }
 
   // Game methods

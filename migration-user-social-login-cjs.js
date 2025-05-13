@@ -1,7 +1,5 @@
-import { db, pool } from './db/index.js';
-// Convert to CommonJS if ESM doesn't work
-// const { db, pool } = require('./db/index.ts');
-import { sql } from 'drizzle-orm';
+const { db, pool } = require('./db');
+const { sql } = require('drizzle-orm');
 
 async function updateUsersTable() {
   console.log('Starting migration: Updating users table for social login and profile data...');
