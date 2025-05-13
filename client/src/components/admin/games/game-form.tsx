@@ -101,13 +101,13 @@ export function GameForm({ game, categories, onSuccess }: GameFormProps) {
   };
 
   return (
-    <Card className="w-full">
-      <CardHeader>
+    <Card className="w-full bg-background border-0">
+      <CardHeader className="bg-background border-0">
         <CardTitle className="text-foreground">{game ? "Edit Game" : "Add New Game"}</CardTitle>
       </CardHeader>
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)}>
-          <CardContent className="space-y-4">
+          <CardContent className="space-y-4 bg-background">
             <FormField
               control={form.control}
               name="title"
@@ -324,7 +324,7 @@ export function GameForm({ game, categories, onSuccess }: GameFormProps) {
               />
             </div>
           </CardContent>
-          <CardFooter>
+          <CardFooter className="bg-background border-0">
             <Button type="submit" disabled={mutation.isPending || isUploading}>
               {(mutation.isPending || isUploading) && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
               {game ? "Update Game" : "Add Game"}
