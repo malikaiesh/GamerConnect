@@ -78,6 +78,14 @@ export function Analytics() {
       visitors: item.visitors
     }));
   };
+  
+  const formatDeviceData = (data?: Array<{ device: string; count: number }>) => {
+    if (!data) return [];
+    return data.map(item => ({
+      name: item.device,
+      value: item.count
+    }));
+  };
 
   // Chart colors
   const COLORS = ['#7e57c2', '#ff5722', '#4caf50', '#2196f3', '#ff9800'];
@@ -85,6 +93,7 @@ export function Analytics() {
   const topGamesData = formatTopGamesData(data?.topGames);
   const topPagesData = formatTopPagesData(data?.topPages);
   const dailyData = formatDailyData(data?.dailyVisitors);
+  const deviceData = formatDeviceData(data?.userDevices);
 
   if (isLoading) {
     return (
@@ -150,17 +159,17 @@ export function Analytics() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
-              {data?.averageSessionDuration
-                ? `${Math.floor(data.averageSessionDuration / 60)}m ${data.averageSessionDuration % 60}s`
+              {data?.avgTimeOnSite
+                ? `${Math.floor(data.avgTimeOnSite)}m ${Math.round((data.avgTimeOnSite % 1) * 60)}s`
                 : '0m 0s'}
             </div>
-            <p className="text-xs text-muted-foreground">Average session duration</p>
+            <p className="text-xs text-muted-foreground">Average time on site</p>
           </CardContent>
         </Card>
       </div>
 
       {/* Charts */}
-      <div className="grid gap-4 md:grid-cols-2">
+      <div className="grid gap-4 md:grid-cols-3">
         <Card className="col-span-1">
           <CardHeader>
             <CardTitle>Top Games</CardTitle>
@@ -215,7 +224,7 @@ export function Analytics() {
 
       <Card>
         <CardHeader>
-          <CardTitle>Traffic Trends</CardTitle>
+          <CardTitle>Daily Visitors</CardTitle>
         </CardHeader>
         <CardContent className="h-96">
           <ResponsiveContainer width="100%" height="100%">
@@ -228,9 +237,7 @@ export function Analytics() {
               <YAxis />
               <Tooltip />
               <Legend />
-              <Line type="monotone" dataKey="pageViews" stroke="#7e57c2" activeDot={{ r: 8 }} name="Page Views" />
-              <Line type="monotone" dataKey="uniqueVisitors" stroke="#ff5722" name="Unique Visitors" />
-              <Line type="monotone" dataKey="gamePlayCount" stroke="#4caf50" name="Game Plays" />
+              <Line type="monotone" dataKey="visitors" stroke="#ff5722" activeDot={{ r: 8 }} name="Visitors" />
             </LineChart>
           </ResponsiveContainer>
         </CardContent>
