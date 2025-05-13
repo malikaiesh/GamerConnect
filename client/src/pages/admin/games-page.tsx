@@ -134,7 +134,7 @@ export default function GamesAdminPage() {
   return (
     <div className="container mx-auto py-6 space-y-6">
       <div className="flex justify-between items-center">
-        <h1 className="text-2xl font-bold">Manage Games</h1>
+        <h1 className="text-2xl font-bold text-foreground">Manage Games</h1>
         <Dialog open={createDialogOpen} onOpenChange={setCreateDialogOpen}>
           <DialogTrigger asChild>
             <Button>
@@ -211,19 +211,19 @@ export default function GamesAdminPage() {
           <TableBody>
             {isLoading ? (
               <TableRow>
-                <TableCell colSpan={7} className="text-center py-10">
+                <TableCell colSpan={7} className="text-center py-10 text-muted-foreground">
                   Loading games...
                 </TableCell>
               </TableRow>
             ) : isError ? (
               <TableRow>
-                <TableCell colSpan={7} className="text-center py-10 text-red-500">
+                <TableCell colSpan={7} className="text-center py-10 text-destructive">
                   Error loading games
                 </TableCell>
               </TableRow>
             ) : data.games.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={7} className="text-center py-10">
+                <TableCell colSpan={7} className="text-center py-10 text-muted-foreground">
                   No games found
                 </TableCell>
               </TableRow>
@@ -244,9 +244,9 @@ export default function GamesAdminPage() {
                   <TableCell>{game.source === "api" ? "API" : "Custom"}</TableCell>
                   <TableCell>
                     <div className={`px-2 py-1 rounded-full text-xs inline-block ${
-                      game.status === "active" ? "bg-green-100 text-green-800" :
-                      game.status === "featured" ? "bg-purple-100 text-purple-800" :
-                      "bg-gray-100 text-gray-800"
+                      game.status === "active" ? "bg-green-600/20 text-green-600" :
+                      game.status === "featured" ? "bg-primary/20 text-primary" :
+                      "bg-muted/70 text-muted-foreground"
                     }`}>
                       {game.status.charAt(0).toUpperCase() + game.status.slice(1)}
                     </div>
