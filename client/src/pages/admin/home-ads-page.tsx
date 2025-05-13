@@ -370,8 +370,8 @@ export default function HomeAdsPage() {
               </DialogTrigger>
               <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
                 <DialogHeader>
-                  <DialogTitle>Add New Home Ad</DialogTitle>
-                  <DialogDescription>
+                  <DialogTitle className="text-foreground">Add New Home Ad</DialogTitle>
+                  <DialogDescription className="text-muted-foreground">
                     Create a new ad to display on the homepage
                   </DialogDescription>
                 </DialogHeader>
