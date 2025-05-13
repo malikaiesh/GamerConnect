@@ -312,16 +312,12 @@ export default function AccountsUsersPage() {
                     <Pagination className="mt-6">
                       <PaginationContent>
                         <PaginationItem>
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => setPage((p) => Math.max(1, p - 1))}
-                            disabled={page === 1}
-                            className="gap-1 pl-2.5"
-                          >
-                            <ChevronLeft className="h-4 w-4" />
-                            <span>Previous</span>
-                          </Button>
+                          <div className="cursor-pointer">
+                            <PaginationPrevious 
+                              onClick={() => page > 1 && setPage(p => p - 1)}
+                              className={page === 1 ? "pointer-events-none opacity-50" : ""}
+                            />
+                          </div>
                         </PaginationItem>
                         
                         {[...Array(data.totalPages)].map((_, i) => (
@@ -336,16 +332,12 @@ export default function AccountsUsersPage() {
                         ))}
                         
                         <PaginationItem>
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => setPage((p) => Math.min(data.totalPages, p + 1))}
-                            disabled={page === data.totalPages}
-                            className="gap-1 pr-2.5"
-                          >
-                            <span>Next</span>
-                            <ChevronRight className="h-4 w-4" />
-                          </Button>
+                          <div className="cursor-pointer">
+                            <PaginationNext
+                              onClick={() => page < data.totalPages && setPage(p => p + 1)}
+                              className={page === data.totalPages ? "pointer-events-none opacity-50" : ""}
+                            />
+                          </div>
                         </PaginationItem>
                       </PaginationContent>
                     </Pagination>
