@@ -585,15 +585,15 @@ export default function HomeAdsPage() {
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Name</TableHead>
-                  <TableHead>Position</TableHead>
-                  <TableHead>Type</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead>Ad Enabled</TableHead>
-                  <TableHead>Impressions</TableHead>
-                  <TableHead>Clicks</TableHead>
-                  <TableHead>CTR</TableHead>
-                  <TableHead>Actions</TableHead>
+                  <TableHead className="text-foreground">Name</TableHead>
+                  <TableHead className="text-foreground">Position</TableHead>
+                  <TableHead className="text-foreground">Type</TableHead>
+                  <TableHead className="text-foreground">Status</TableHead>
+                  <TableHead className="text-foreground">Ad Enabled</TableHead>
+                  <TableHead className="text-foreground">Impressions</TableHead>
+                  <TableHead className="text-foreground">Clicks</TableHead>
+                  <TableHead className="text-foreground">CTR</TableHead>
+                  <TableHead className="text-foreground">Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -603,8 +603,8 @@ export default function HomeAdsPage() {
                     : "0.00";
                   return (
                     <TableRow key={ad.id}>
-                      <TableCell>{ad.name}</TableCell>
-                      <TableCell>
+                      <TableCell className="text-foreground">{ad.name}</TableCell>
+                      <TableCell className="text-foreground">
                         {ad.position.split("_").map((word) => word.charAt(0).toUpperCase() + word.slice(1)).join(" ")}
                       </TableCell>
                       <TableCell>
@@ -641,9 +641,9 @@ export default function HomeAdsPage() {
                           {ad.adEnabled ? <ToggleRight className="h-5 w-5" /> : <ToggleLeft className="h-5 w-5" />}
                         </Button>
                       </TableCell>
-                      <TableCell>{ad.impressionCount.toLocaleString()}</TableCell>
-                      <TableCell>{ad.clickCount.toLocaleString()}</TableCell>
-                      <TableCell>{ctr}%</TableCell>
+                      <TableCell className="text-foreground">{ad.impressionCount.toLocaleString()}</TableCell>
+                      <TableCell className="text-foreground">{ad.clickCount.toLocaleString()}</TableCell>
+                      <TableCell className="text-foreground">{ctr}%</TableCell>
                       <TableCell>
                         <div className="flex items-center space-x-1">
                           <Button
