@@ -3,6 +3,7 @@ import { queryClient } from "./lib/queryClient";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { ThemeProvider } from "./lib/theme-provider";
 import { Toaster } from "@/components/ui/toaster";
+import { AppHead } from "@/components/app-head";
 import NotFound from "@/pages/not-found";
 import HomePage from "@/pages/home-page";
 import GamePage from "@/pages/game-page";

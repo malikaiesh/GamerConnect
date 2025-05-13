@@ -14,6 +14,8 @@ import { Loader2, Image } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
 import { Separator } from "@/components/ui/separator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { FileUpload } from "@/components/ui/file-upload";
+import { useState } from "react";
 
 const seoSettingsSchema = z.object({
   siteTitle: z.string().min(3, { message: "Site title must be at least 3 characters" }),
@@ -30,6 +32,8 @@ type SeoSettingsFormValues = z.infer<typeof seoSettingsSchema>;
 export function SeoSettings() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const [logoFile, setLogoFile] = useState<File | null>(null);
+  const [faviconFile, setFaviconFile] = useState<File | null>(null);
 
   // Fetch current settings
   const { data: settings, isLoading } = useQuery<SiteSetting>({
@@ -58,6 +62,40 @@ export function SeoSettings() {
       textLogoColor: settings?.textLogoColor || "#4f46e5",
     },
   });
+  
+  // Mutation for uploading images
+  const uploadImageMutation = useMutation({
+    mutationFn: async (file: File) => {
+      const formData = new FormData();
+      formData.append("file", file);
+      
+      const response = await fetch("/api/upload", {
+        method: "POST",
+        body: formData,
+      });
+      
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error?.message || "Failed to upload image");
+      }
+      
+      return response.json();
+    },
+    onSuccess: (data) => {
+      toast({
+        title: "Image uploaded successfully",
+        description: "Your image has been uploaded.",
+      });
+      return data.location; // Return the URL of the uploaded file
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Upload failed",
+        description: error.message,
+        variant: "destructive",
+      });
+    },
+  });
 
   // Update settings mutation
   const mutation = useMutation({
@@ -80,7 +118,40 @@ export function SeoSettings() {
     },
   });
 
-  const onSubmit = (values: SeoSettingsFormValues) => {
+  const handleLogoUpload = async (file: File): Promise<string> => {
+    const result = await uploadImageMutation.mutateAsync(file);
+    return result.location;
+  };
+
+  const handleFaviconUpload = async (file: File): Promise<string> => {
+    const result = await uploadImageMutation.mutateAsync(file);
+    return result.location;
+  };
+  
+  const onSubmit = async (values: SeoSettingsFormValues) => {
+    // Handle logo file upload if selected
+    if (logoFile && !form.watch('useTextLogo')) {
+      try {
+        const logoUrl = await handleLogoUpload(logoFile);
+        values.siteLogo = logoUrl;
+      } catch (error) {
+        // The upload mutation will handle the error toast
+        return;
+      }
+    }
+    
+    // Handle favicon file upload if selected
+    if (faviconFile) {
+      try {
+        const faviconUrl = await handleFaviconUpload(faviconFile);
+        values.siteFavicon = faviconUrl;
+      } catch (error) {
+        // The upload mutation will handle the error toast
+        return;
+      }
+    }
+    
+    // Submit the form with updated values
     mutation.mutate(values);
   };
 
@@ -230,31 +301,44 @@ export function SeoSettings() {
                     name="siteLogo"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Site Logo URL</FormLabel>
-                        <FormControl>
-                          <div className="space-y-2">
-                            <Input
-                              placeholder="https://example.com/logo.png"
-                              {...field}
-                              value={field.value || ""}
+                        <FormLabel>Site Logo</FormLabel>
+                        <div className="space-y-4">
+                          <FormControl>
+                            <div className="space-y-2">
+                              <Input
+                                placeholder="https://example.com/logo.png"
+                                {...field}
+                                value={field.value || ""}
+                              />
+                              {field.value && (
+                                <div className="h-12 border rounded flex items-center justify-center p-2 bg-muted/20">
+                                  <img 
+                                    src={field.value} 
+                                    alt="Site Logo Preview" 
+                                    className="max-h-full"
+                                    onError={(e) => {
+                                      const target = e.target as HTMLImageElement;
+                                      target.src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect width='18' height='18' x='3' y='3' rx='2' ry='2'/%3E%3Ccircle cx='9' cy='9' r='2'/%3E%3Cpath d='m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21'/%3E%3C/svg%3E";
+                                    }}
+                                  />
+                                </div>
+                              )}
+                            </div>
+                          </FormControl>
+                          <div>
+                            <label className="text-sm font-medium">Or upload a logo file</label>
+                            <FileUpload
+                              onFileSelect={setLogoFile}
+                              accept="image/*"
+                              maxSize={2} // 2MB
+                              initialValue={field.value}
+                              buttonText="Choose Logo"
+                              label="Upload Logo"
                             />
-                            {field.value && (
-                              <div className="h-12 border rounded flex items-center justify-center p-2 bg-muted/20">
-                                <img 
-                                  src={field.value} 
-                                  alt="Site Logo Preview" 
-                                  className="max-h-full"
-                                  onError={(e) => {
-                                    const target = e.target as HTMLImageElement;
-                                    target.src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect width='18' height='18' x='3' y='3' rx='2' ry='2'/%3E%3Ccircle cx='9' cy='9' r='2'/%3E%3Cpath d='m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21'/%3E%3C/svg%3E";
-                                  }}
-                                />
-                              </div>
-                            )}
                           </div>
-                        </FormControl>
+                        </div>
                         <FormDescription>
-                          Enter the URL of your site logo image (recommended size: 180x50px)
+                          Enter the URL or upload a site logo image (recommended size: 180x50px)
                         </FormDescription>
                         <FormMessage />
                       </FormItem>
@@ -267,31 +351,44 @@ export function SeoSettings() {
                   name="siteFavicon"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Favicon URL</FormLabel>
-                      <FormControl>
-                        <div className="space-y-2">
-                          <Input
-                            placeholder="https://example.com/favicon.ico"
-                            {...field}
-                            value={field.value || ""}
+                      <FormLabel>Favicon</FormLabel>
+                      <div className="space-y-4">
+                        <FormControl>
+                          <div className="space-y-2">
+                            <Input
+                              placeholder="https://example.com/favicon.ico"
+                              {...field}
+                              value={field.value || ""}
+                            />
+                            {field.value && (
+                              <div className="h-10 w-10 border rounded flex items-center justify-center p-1 bg-muted/20">
+                                <img 
+                                  src={field.value} 
+                                  alt="Favicon Preview" 
+                                  className="max-h-full max-w-full"
+                                  onError={(e) => {
+                                    const target = e.target as HTMLImageElement;
+                                    target.src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect width='18' height='18' x='3' y='3' rx='2' ry='2'/%3E%3Ccircle cx='9' cy='9' r='2'/%3E%3Cpath d='m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21'/%3E%3C/svg%3E";
+                                  }}
+                                />
+                              </div>
+                            )}
+                          </div>
+                        </FormControl>
+                        <div>
+                          <label className="text-sm font-medium">Or upload a favicon file</label>
+                          <FileUpload
+                            onFileSelect={setFaviconFile}
+                            accept="image/x-icon,image/png,image/jpeg,image/gif,image/svg+xml"
+                            maxSize={1} // 1MB
+                            initialValue={field.value}
+                            buttonText="Choose Favicon"
+                            label="Upload Favicon"
                           />
-                          {field.value && (
-                            <div className="h-10 w-10 border rounded flex items-center justify-center p-1 bg-muted/20">
-                              <img 
-                                src={field.value} 
-                                alt="Favicon Preview" 
-                                className="max-h-full max-w-full"
-                                onError={(e) => {
-                                  const target = e.target as HTMLImageElement;
-                                  target.src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect width='18' height='18' x='3' y='3' rx='2' ry='2'/%3E%3Ccircle cx='9' cy='9' r='2'/%3E%3Cpath d='m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21'/%3E%3C/svg%3E";
-                                }}
-                              />
-                            </div>
-                          )}
                         </div>
-                      </FormControl>
+                      </div>
                       <FormDescription>
-                        Enter the URL of your site favicon (recommended size: 32x32px, formats: .ico, .png)
+                        Enter the URL or upload a favicon file (recommended size: 32x32px, formats: .ico, .png)
                       </FormDescription>
                       <FormMessage />
                     </FormItem>
