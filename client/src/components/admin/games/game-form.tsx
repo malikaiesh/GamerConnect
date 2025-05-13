@@ -103,7 +103,7 @@ export function GameForm({ game, categories, onSuccess }: GameFormProps) {
   return (
     <Card className="w-full">
       <CardHeader>
-        <CardTitle>{game ? "Edit Game" : "Add New Game"}</CardTitle>
+        <CardTitle className="text-foreground">{game ? "Edit Game" : "Add New Game"}</CardTitle>
       </CardHeader>
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)}>
@@ -113,7 +113,7 @@ export function GameForm({ game, categories, onSuccess }: GameFormProps) {
               name="title"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Title</FormLabel>
+                  <FormLabel className="text-foreground">Title</FormLabel>
                   <FormControl>
                     <Input placeholder="Enter game title" {...field} />
                   </FormControl>
@@ -156,11 +156,11 @@ export function GameForm({ game, categories, onSuccess }: GameFormProps) {
                 name="url"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Game URL</FormLabel>
+                    <FormLabel className="text-foreground">Game URL</FormLabel>
                     <FormControl>
                       <Input placeholder="https://example.com/game.html" {...field} value={field.value || ""} />
                     </FormControl>
-                    <FormDescription>For custom games, enter the direct URL to the game</FormDescription>
+                    <FormDescription className="text-muted-foreground">For custom games, enter the direct URL to the game</FormDescription>
                     <FormMessage />
                   </FormItem>
                 )}
@@ -173,7 +173,7 @@ export function GameForm({ game, categories, onSuccess }: GameFormProps) {
                 name="source"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Source</FormLabel>
+                    <FormLabel className="text-foreground">Source</FormLabel>
                     <Select
                       onValueChange={field.onChange}
                       defaultValue={field.value}
