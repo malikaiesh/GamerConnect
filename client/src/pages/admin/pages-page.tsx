@@ -97,6 +97,19 @@ export default function PagesAdminPage() {
     setPage(1); // Reset to first page
     refetch();
   };
+  
+  // Handle type and status changes separately to ensure they update state and close dropdown
+  const handlePageTypeChange = (value: string) => {
+    setPageType(value);
+    // Auto-apply the filter when changed
+    setTimeout(() => refetch(), 100);
+  };
+  
+  const handleStatusChange = (value: string) => {
+    setStatus(value);
+    // Auto-apply the filter when changed
+    setTimeout(() => refetch(), 100);
+  };
 
   const getPageTypeBadge = (type: string) => {
     switch (type) {
@@ -170,7 +183,7 @@ export default function PagesAdminPage() {
                 </div>
               </div>
               
-              <Select value={pageType} onValueChange={setPageType}>
+              <Select value={pageType} onValueChange={handlePageTypeChange}>
                 <SelectTrigger>
                   <SelectValue placeholder="Page Type" />
                 </SelectTrigger>
@@ -182,7 +195,7 @@ export default function PagesAdminPage() {
                 </SelectContent>
               </Select>
               
-              <Select value={status} onValueChange={setStatus}>
+              <Select value={status} onValueChange={handleStatusChange}>
                 <SelectTrigger>
                   <SelectValue placeholder="Status" />
                 </SelectTrigger>
