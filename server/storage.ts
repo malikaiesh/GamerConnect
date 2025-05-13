@@ -977,9 +977,41 @@ class DatabaseStorage implements IStorage {
   async updateApiKey(id: number, apiKeyData: Partial<InsertApiKey>): Promise<ApiKey | null> { return null; }
   async deleteApiKey(id: number): Promise<boolean> { return false; }
   
-  async getHomeAdById(id: number): Promise<HomeAd | null> { return null; }
-  async getHomeAds(options?: { page?: number, limit?: number }): Promise<{ ads: HomeAd[], total: number, totalPages: number }> { 
-    return { ads: [], total: 0, totalPages: 0 }; 
+  async getHomeAdById(id: number): Promise<HomeAd | null> {
+    try {
+      const [homeAd] = await db.select()
+        .from(homeAds)
+        .where(eq(homeAds.id, id));
+      return homeAd || null;
+    } catch (error) {
+      console.error(`Error fetching home ad with ID ${id}:`, error);
+      return null;
+    }
+  }
+  
+  async getHomeAds(options?: { page?: number, limit?: number }): Promise<{ ads: HomeAd[], total: number, totalPages: number }> {
+    try {
+      const page = options?.page || 1;
+      const limit = options?.limit || 10;
+      const offset = (page - 1) * limit;
+
+      const ads = await db.select()
+        .from(homeAds)
+        .limit(limit)
+        .offset(offset)
+        .orderBy(desc(homeAds.updatedAt));
+
+      const [{ value: total }] = await db.select({
+        value: count()
+      }).from(homeAds);
+
+      const totalPages = Math.ceil(total / limit);
+      
+      return { ads, total, totalPages };
+    } catch (error) {
+      console.error("Error fetching home ads:", error);
+      return { ads: [], total: 0, totalPages: 0 };
+    }
   }
   async getHomeAdsByPosition(position: string): Promise<HomeAd[]> {
     try {
@@ -1003,9 +1035,89 @@ class DatabaseStorage implements IStorage {
       return null;
     }
   }
-  async createHomeAd(ad: Omit<InsertHomeAd, "createdAt" | "updatedAt">): Promise<HomeAd> { throw new Error("Not implemented"); }
-  async updateHomeAd(id: number, adData: Partial<InsertHomeAd>): Promise<HomeAd | null> { return null; }
-  async deleteHomeAd(id: number): Promise<boolean> { return false; }
+  async createHomeAd(ad: Omit<InsertHomeAd, "createdAt" | "updatedAt">): Promise<HomeAd> {
+    try {
+      // Extract properties for explicit typing
+      const { 
+        name, 
+        position, 
+        adCode, 
+        status, 
+        imageUrl, 
+        targetUrl, 
+        startDate, 
+        endDate, 
+        isGoogleAd, 
+        adEnabled 
+      } = ad;
+
+      const [result] = await db.insert(homeAds)
+        .values({
+          name,
+          position,
+          adCode,
+          status,
+          imageUrl,
+          targetUrl,
+          startDate,
+          endDate,
+          isGoogleAd: isGoogleAd || false,
+          adEnabled: adEnabled ?? true,
+          clickCount: 0,
+          impressionCount: 0,
+          createdAt: new Date(),
+          updatedAt: new Date()
+        })
+        .returning();
+      
+      return result;
+    } catch (error) {
+      console.error("Error creating home ad:", error);
+      throw error;
+    }
+  }
+  
+  async updateHomeAd(id: number, adData: Partial<InsertHomeAd>): Promise<HomeAd | null> {
+    try {
+      // Create update object with only the fields that exist
+      const updateData: Record<string, any> = { updatedAt: new Date() };
+      
+      // Explicitly add each property if it exists
+      if (adData.name !== undefined) updateData.name = adData.name;
+      if (adData.position !== undefined) updateData.position = adData.position;
+      if (adData.adCode !== undefined) updateData.adCode = adData.adCode;
+      if (adData.status !== undefined) updateData.status = adData.status;
+      if (adData.imageUrl !== undefined) updateData.imageUrl = adData.imageUrl;
+      if (adData.targetUrl !== undefined) updateData.targetUrl = adData.targetUrl;
+      if (adData.startDate !== undefined) updateData.startDate = adData.startDate;
+      if (adData.endDate !== undefined) updateData.endDate = adData.endDate;
+      if (adData.isGoogleAd !== undefined) updateData.isGoogleAd = adData.isGoogleAd;
+      if (adData.adEnabled !== undefined) updateData.adEnabled = adData.adEnabled;
+      
+      const [updatedAd] = await db.update(homeAds)
+        .set(updateData)
+        .where(eq(homeAds.id, id))
+        .returning();
+      
+      return updatedAd || null;
+    } catch (error) {
+      console.error(`Error updating home ad with ID ${id}:`, error);
+      throw error;
+    }
+  }
+  
+  async deleteHomeAd(id: number): Promise<boolean> {
+    try {
+      const result = await db.delete(homeAds)
+        .where(eq(homeAds.id, id))
+        .returning({ id: homeAds.id });
+      
+      return result.length > 0;
+    } catch (error) {
+      console.error(`Error deleting home ad with ID ${id}:`, error);
+      throw error;
+    }
+  }
   async incrementAdImpressions(id: number): Promise<void> {
     try {
       await db.update(homeAds)
@@ -1029,6 +1141,11 @@ class DatabaseStorage implements IStorage {
     } catch (error) {
       console.error(`Error incrementing ad clicks for ad ${id}:`, error);
     }
+  }
+  
+  async incrementAdClickCount(id: number): Promise<void> {
+    // Alias function to match the API naming
+    return this.incrementAdClicks(id);
   }
   
   async getSitemapById(id: number): Promise<Sitemap | null> { return null; }
