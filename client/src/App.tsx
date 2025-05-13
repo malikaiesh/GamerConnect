@@ -42,6 +42,7 @@ import CampaignFormPage from "@/pages/admin/push-notifications/campaign-form-pag
 import AccountsUsersPage from "@/pages/admin/accounts/users";
 import AccountsLocationsPage from "@/pages/admin/accounts/locations";
 import AccountsSignupsPage from "@/pages/admin/accounts/signups";
+import AccountsRolesPage from "@/pages/admin/accounts/roles";
 import { Providers } from "./lib/providers";
 import { ProtectedRoute } from "./lib/protected-route";
 import { useAuth } from "@/hooks/use-auth";
@@ -97,6 +98,7 @@ function Router() {
       <ProtectedRoute path="/admin/accounts/users" component={AccountsUsersPage} adminOnly={true} />
       <ProtectedRoute path="/admin/accounts/locations" component={AccountsLocationsPage} adminOnly={true} />
       <ProtectedRoute path="/admin/accounts/signups" component={AccountsSignupsPage} adminOnly={true} />
+      <ProtectedRoute path="/admin/accounts/roles" component={AccountsRolesPage} adminOnly={true} />
       
       {/* Fallback to 404 */}
       <Route component={NotFound} />
