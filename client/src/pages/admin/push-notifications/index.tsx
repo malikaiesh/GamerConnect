@@ -204,11 +204,11 @@ export default function PushNotificationsPage() {
           <Dialog open={!!previewNotification} onOpenChange={() => setPreviewNotification(null)}>
             <DialogContent>
               <DialogHeader>
-                <DialogTitle className="flex items-center gap-2">
+                <DialogTitle className="flex items-center gap-2 text-foreground">
                   <Bell className="h-5 w-5" />
                   Notification Preview
                 </DialogTitle>
-                <DialogDescription>Preview how the notification will appear to users.</DialogDescription>
+                <DialogDescription className="text-muted-foreground">Preview how the notification will appear to users.</DialogDescription>
               </DialogHeader>
 
               {previewNotification && (
@@ -222,7 +222,7 @@ export default function PushNotificationsPage() {
                       ? "bg-white dark:bg-gray-800 shadow-lg"
                       : ""
                   }`}>
-                    <h3 className="font-medium text-lg">{previewNotification.title}</h3>
+                    <h3 className="font-medium text-lg text-foreground">{previewNotification.title}</h3>
                     <p className="text-muted-foreground mt-1">{previewNotification.message}</p>
                     
                     {previewNotification.image && (

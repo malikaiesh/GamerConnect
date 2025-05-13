@@ -139,7 +139,7 @@ export default function SitemapsPage() {
       <div className="p-6">
         <div className="flex items-center justify-between mb-6">
           <div>
-            <h1 className="text-3xl font-bold tracking-tight">Sitemaps</h1>
+            <h1 className="text-3xl font-bold tracking-tight text-foreground">Sitemaps</h1>
             <p className="text-muted-foreground mt-1">
               Manage and generate XML sitemaps for search engines.
             </p>
