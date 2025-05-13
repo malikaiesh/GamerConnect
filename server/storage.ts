@@ -553,7 +553,7 @@ class DatabaseStorage implements IStorage {
     const limit = options.limit || 10;
     const offset = (page - 1) * limit;
 
-    const users = await db.select()
+    const result = await db.select()
       .from(users)
       .where(eq(users.status, status))
       .limit(limit)
@@ -568,7 +568,7 @@ class DatabaseStorage implements IStorage {
 
     const totalPages = Math.ceil(total / limit);
 
-    return { users, total, totalPages };
+    return { users: result, total, totalPages };
   }
 
   async getNewUsers(days: number = 7): Promise<User[]> {

@@ -570,14 +570,37 @@ export const insertApiKeySchema = createInsertSchema(apiKeys, {
 // Add schema validation for Home Ads
 export const insertHomeAdSchema = createInsertSchema(homeAds, {
   name: (schema) => schema.min(3, "Name must be at least 3 characters"),
-  adCode: (schema) => schema.min(1, "Ad code is required"),
-  imageUrl: (schema) => schema.url("Image URL must be a valid URL").optional().nullable(),
-  targetUrl: (schema) => schema.url("Target URL must be a valid URL").optional().nullable(),
+  adCode: (schema) => schema.optional(),
+  imageUrl: (schema) => schema.refine(
+    (val) => !val || val.length === 0 || /^https?:\/\//.test(val),
+    { message: "Image URL must be a valid URL or empty" }
+  ).optional().nullable(),
+  targetUrl: (schema) => schema.refine(
+    (val) => !val || val.length === 0 || /^https?:\/\//.test(val),
+    { message: "Target URL must be a valid URL or empty" }
+  ).optional().nullable(),
   startDate: (schema) => schema.optional().nullable(),
   endDate: (schema) => schema.optional().nullable(),
   isGoogleAd: (schema) => schema.optional().default(false),
   adEnabled: (schema) => schema.optional().default(true)
-});
+})
+.refine(
+  (data) => {
+    // If it's Google Ad, adCode is required
+    if (data.isGoogleAd) {
+      return !!data.adCode;
+    }
+    // If not Google Ad, either imageUrl+targetUrl or adCode must be provided
+    return (
+      (!!data.imageUrl && !!data.targetUrl) || 
+      !!data.adCode
+    );
+  },
+  {
+    message: "Either provide Ad Code or both Image URL and Target URL",
+    path: ["adCode"]
+  }
+);
 
 // Sitemap table
 export const sitemaps = pgTable('sitemaps', {
