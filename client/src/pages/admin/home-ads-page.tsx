@@ -691,8 +691,8 @@ export default function HomeAdsPage() {
       <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
         <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>Edit Home Ad</DialogTitle>
-            <DialogDescription>
+            <DialogTitle className="text-foreground">Edit Home Ad</DialogTitle>
+            <DialogDescription className="text-muted-foreground">
               Update the properties of this ad
             </DialogDescription>
           </DialogHeader>

@@ -165,8 +165,8 @@ export default function SitemapsPage() {
 
         <Card>
           <CardHeader>
-            <CardTitle>Sitemap Configuration</CardTitle>
-            <CardDescription>
+            <CardTitle className="text-foreground">Sitemap Configuration</CardTitle>
+            <CardDescription className="text-muted-foreground">
               Enable or disable sitemaps and generate them manually.
             </CardDescription>
           </CardHeader>
@@ -179,26 +179,26 @@ export default function SitemapsPage() {
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>Type</TableHead>
-                    <TableHead>URL</TableHead>
-                    <TableHead>Status</TableHead>
-                    <TableHead>Last Generated</TableHead>
-                    <TableHead>URL Count</TableHead>
-                    <TableHead className="text-right">Actions</TableHead>
+                    <TableHead className="text-foreground">Type</TableHead>
+                    <TableHead className="text-foreground">URL</TableHead>
+                    <TableHead className="text-foreground">Status</TableHead>
+                    <TableHead className="text-foreground">Last Generated</TableHead>
+                    <TableHead className="text-foreground">URL Count</TableHead>
+                    <TableHead className="text-right text-foreground">Actions</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {sitemaps?.map((sitemap: any) => (
                     <TableRow key={sitemap.id}>
-                      <TableCell className="font-medium">
+                      <TableCell className="font-medium text-foreground">
                         {getSitemapTypeLabel(sitemap.type)}
                       </TableCell>
-                      <TableCell>
+                      <TableCell className="text-foreground">
                         <a 
                           href={getFullSitemapUrl(sitemap.url)} 
                           target="_blank" 
                           rel="noopener noreferrer"
-                          className="text-blue-600 hover:underline"
+                          className="text-primary hover:underline"
                         >
                           {formatSitemapUrl(sitemap.url)}
                         </a>
@@ -215,12 +215,12 @@ export default function SitemapsPage() {
                           </Badge>
                         </div>
                       </TableCell>
-                      <TableCell>
+                      <TableCell className="text-foreground">
                         {sitemap.lastGenerated 
                           ? format(new Date(sitemap.lastGenerated), 'MMM d, yyyy h:mm a')
                           : 'Never'}
                       </TableCell>
-                      <TableCell>{sitemap.urlCount || 0}</TableCell>
+                      <TableCell className="text-foreground">{sitemap.urlCount || 0}</TableCell>
                       <TableCell className="text-right">
                         <Button
                           onClick={() => handleGenerateSitemap(sitemap.type)}
