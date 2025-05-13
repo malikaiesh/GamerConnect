@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useQuery, useMutation } from "@tanstack/react-query";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -58,23 +58,52 @@ import { useToast } from "@/hooks/use-toast";
 const homeAdFormSchema = z.object({
   name: z.string().min(1, "Name is required"),
   position: z.string().min(1, "Position is required"),
-  adCode: z.string().optional(),
-  imageUrl: z.string().optional(),
-  targetUrl: z.string().optional(),
+  adCode: z.string().min(1, "Ad code is required when using Google Ad").or(z.literal("")),
+  imageUrl: z.string().url("Image URL must be a valid URL").or(z.literal("")),
+  targetUrl: z.string().url("Target URL must be a valid URL").or(z.literal("")),
   status: z.string().min(1, "Status is required"),
   isGoogleAd: z.boolean().optional().default(false),
   adEnabled: z.boolean().optional().default(true),
-});
+})
+.refine(
+  (data) => {
+    // If it's Google Ad, adCode is required
+    if (data.isGoogleAd) {
+      return !!data.adCode;
+    }
+    // If not Google Ad, either imageUrl+targetUrl or adCode must be provided
+    return (!!data.imageUrl && !!data.targetUrl) || !!data.adCode;
+  },
+  {
+    message: "Either provide Ad Code or both Image URL and Target URL",
+    path: ["adCode"],
+  }
+);
 
 // Position options for home ads
 const AD_POSITIONS = [
-  "above_featured_games",
-  "below_featured_games",
-  "above_popular_games",
-  "below_popular_games",
-  "above_about_section",
-  "below_about_section",
+  "above_featured",
+  "below_featured",
+  "above_popular",
+  "below_popular",
+  "above_about",
+  "below_about",
 ];
+
+interface HomeAd {
+  id: number;
+  position: string;
+  adCode: string;
+  status: string;
+  clickCount: number;
+  impressionCount: number;
+  name: string;
+  imageUrl?: string;
+  targetUrl?: string;
+  isGoogleAd: boolean;
+  adEnabled: boolean;
+  createdAt: string;
+}
 
 export default function HomeAdsPage() {
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
@@ -262,7 +291,7 @@ export default function HomeAdsPage() {
   // Update allAdsEnabled state based on fetched data
   useEffect(() => {
     if (homeAds.length > 0) {
-      const allEnabled = homeAds.every(ad => ad.adEnabled !== false);
+      const allEnabled = homeAds.every((ad: HomeAd) => ad.adEnabled !== false);
       setAllAdsEnabled(allEnabled);
     }
   }, [homeAds]);
@@ -273,6 +302,14 @@ export default function HomeAdsPage() {
 
   const onEditSubmit = async (values: z.infer<typeof homeAdFormSchema>) => {
     updateMutation.mutate(values);
+  };
+
+  const handleToggleAd = (id: number, currentStatus: boolean) => {
+    toggleAdMutation.mutate({ id, adEnabled: !currentStatus });
+  };
+
+  const handleToggleAllAds = () => {
+    toggleAllAdsMutation.mutate(!allAdsEnabled);
   };
 
   const handleEditClick = (ad: HomeAd) => {
@@ -291,13 +328,9 @@ export default function HomeAdsPage() {
   };
 
   const handleDeleteClick = (ad: HomeAd) => {
-    deleteMutation.mutate(ad.id);
-  };
-  
-  // Toggle all ads at once
-  const handleToggleAllAds = () => {
-    setAllAdsEnabled(!allAdsEnabled);
-    toggleAllAdsMutation.mutate(!allAdsEnabled);
+    if (window.confirm(`Are you sure you want to delete ${ad.name}?`)) {
+      deleteMutation.mutate(ad.id);
+    }
   };
 
   return (
@@ -339,25 +372,30 @@ export default function HomeAdsPage() {
                     Add New Ad
                   </Button>
                 </DialogTrigger>
-                <DialogContent className="max-h-[90vh] overflow-y-auto">
-                <DialogHeader>
-                  <DialogTitle>Add New Advertisement</DialogTitle>
-                  <DialogDescription>
-                    Create a new advertisement to display on the home page.
-                  </DialogDescription>
-                </DialogHeader>
-                <Form {...addForm}>
-                  <form onSubmit={addForm.handleSubmit(onAddSubmit)}>
-                    <div className="space-y-4 mb-4">
+                <DialogContent className="sm:max-w-[600px]">
+                  <DialogHeader>
+                    <DialogTitle>Add New Home Ad</DialogTitle>
+                    <DialogDescription>
+                      Create a new ad to display on the homepage
+                    </DialogDescription>
+                  </DialogHeader>
+                  <Form {...addForm}>
+                    <form onSubmit={addForm.handleSubmit(onAddSubmit)} className="space-y-4">
                       <FormField
                         control={addForm.control}
                         name="name"
                         render={({ field }) => (
                           <FormItem>
-                            <FormLabel>Name</FormLabel>
+                            <FormLabel>Ad Name</FormLabel>
                             <FormControl>
-                              <Input placeholder="Ad Name" {...field} />
+                              <Input
+                                placeholder="e.g., Featured Games Promotion"
+                                {...field}
+                              />
                             </FormControl>
+                            <FormDescription>
+                              A name to help you identify this ad
+                            </FormDescription>
                             <FormMessage />
                           </FormItem>
                         )}
@@ -378,9 +416,9 @@ export default function HomeAdsPage() {
                                 </SelectTrigger>
                               </FormControl>
                               <SelectContent>
-                                {AD_POSITIONS.map((position) => (
-                                  <SelectItem key={position} value={position}>
-                                    {position.split("_").map((word) => word.charAt(0).toUpperCase() + word.slice(1)).join(" ")}
+                                {AD_POSITIONS.map((pos) => (
+                                  <SelectItem key={pos} value={pos}>
+                                    {pos.split("_").map((word) => word.charAt(0).toUpperCase() + word.slice(1)).join(" ")}
                                   </SelectItem>
                                 ))}
                               </SelectContent>
@@ -412,28 +450,33 @@ export default function HomeAdsPage() {
                           </FormItem>
                         )}
                       />
+                      <FormField
+                        control={addForm.control}
+                        name="adCode"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Ad Code (HTML/JS){addForm.watch("isGoogleAd") && " *"}</FormLabel>
+                            <FormControl>
+                              <Textarea
+                                placeholder={addForm.watch("isGoogleAd") 
+                                  ? "Paste Google AdSense code here" 
+                                  : "Paste ad code here or provide Image URL and Target URL below"}
+                                {...field}
+                                rows={6}
+                              />
+                            </FormControl>
+                            <FormDescription>
+                              {addForm.watch("isGoogleAd") 
+                                ? "Paste the Google AdSense code (required for Google Ads)"
+                                : "Paste the HTML or JavaScript code for your ad"}
+                            </FormDescription>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      
                       {!addForm.watch("isGoogleAd") && (
                         <>
-                          <FormField
-                            control={addForm.control}
-                            name="adCode"
-                            render={({ field }) => (
-                              <FormItem>
-                                <FormLabel>Ad Code (HTML/JS)</FormLabel>
-                                <FormControl>
-                                  <Textarea
-                                    placeholder="Paste ad code here"
-                                    {...field}
-                                    rows={6}
-                                  />
-                                </FormControl>
-                                <FormDescription>
-                                  Paste the HTML or JavaScript code for your ad
-                                </FormDescription>
-                                <FormMessage />
-                              </FormItem>
-                            )}
-                          />
                           <FormField
                             control={addForm.control}
                             name="imageUrl"
@@ -518,22 +561,21 @@ export default function HomeAdsPage() {
                           </FormItem>
                         )}
                       />
-                    </div>
-                    <DialogFooter>
-                      <Button type="submit" disabled={addMutation.isPending}>
-                        {addMutation.isPending ? (
-                          <>
-                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                            Adding...
-                          </>
-                        ) : (
-                          "Add Ad"
-                        )}
-                      </Button>
-                    </DialogFooter>
-                  </form>
-                </Form>
-              </DialogContent>
+                      <DialogFooter>
+                        <Button type="submit" disabled={addMutation.isPending}>
+                          {addMutation.isPending ? (
+                            <>
+                              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                              Adding...
+                            </>
+                          ) : (
+                            "Add Ad"
+                          )}
+                        </Button>
+                      </DialogFooter>
+                    </form>
+                  </Form>
+                </DialogContent>
               </Dialog>
             </div>
           </div>
@@ -578,51 +620,82 @@ export default function HomeAdsPage() {
                           {ad.position.split("_").map((word) => word.charAt(0).toUpperCase() + word.slice(1)).join(" ")}
                         </TableCell>
                         <TableCell>
-                          <div className="flex items-center">
-                            <div className={`w-2 h-2 mr-2 rounded-full ${ad.isGoogleAd ? 'bg-blue-500' : 'bg-purple-500'}`}></div>
-                            {ad.isGoogleAd ? 'Google Ad' : 'Custom Ad'}
-                          </div>
+                          {ad.isGoogleAd ? (
+                            <span className="px-2 py-1 rounded-full bg-blue-100 text-blue-800 text-xs dark:bg-blue-900/30 dark:text-blue-400">
+                              Google Ad
+                            </span>
+                          ) : ad.imageUrl ? (
+                            <span className="px-2 py-1 rounded-full bg-purple-100 text-purple-800 text-xs dark:bg-purple-900/30 dark:text-purple-400">
+                              Banner
+                            </span>
+                          ) : (
+                            <span className="px-2 py-1 rounded-full bg-amber-100 text-amber-800 text-xs dark:bg-amber-900/30 dark:text-amber-400">
+                              HTML/JS
+                            </span>
+                          )}
                         </TableCell>
                         <TableCell>
-                          <div className="flex items-center">
-                            <div className={`w-2 h-2 mr-2 rounded-full ${ad.status === 'active' ? 'bg-green-500' : 'bg-gray-400'}`}></div>
-                            {ad.status === 'active' ? 'Active' : 'Inactive'}
-                          </div>
+                          <span
+                            className={`px-2 py-1 rounded-full ${
+                              ad.status === "active"
+                                ? "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400"
+                                : "bg-gray-100 text-gray-800 dark:bg-gray-900/50 dark:text-gray-400"
+                            } text-xs`}
+                          >
+                            {ad.status.charAt(0).toUpperCase() + ad.status.slice(1)}
+                          </span>
                         </TableCell>
                         <TableCell>
-                          <div className="flex items-center">
-                            <div className={`w-2 h-2 mr-2 rounded-full ${ad.adEnabled ? 'bg-green-500' : 'bg-red-500'}`}></div>
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              className="p-0 h-auto text-sm"
-                              onClick={() => toggleAdMutation.mutate({ id: ad.id, adEnabled: !ad.adEnabled })}
-                              disabled={toggleAdMutation.isPending}
-                            >
-                              {ad.adEnabled ? 'ON' : 'OFF'}
-                            </Button>
-                          </div>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className={
+                              ad.adEnabled
+                                ? "text-green-600 hover:text-green-800 dark:text-green-500 hover:bg-green-100 dark:hover:bg-green-900/20"
+                                : "text-red-600 hover:text-red-800 dark:text-red-500 hover:bg-red-100 dark:hover:bg-red-900/20"
+                            }
+                            onClick={() => handleToggleAd(ad.id, ad.adEnabled)}
+                          >
+                            {ad.adEnabled ? (
+                              <ToggleRight className="h-5 w-5" />
+                            ) : (
+                              <ToggleLeft className="h-5 w-5" />
+                            )}
+                          </Button>
                         </TableCell>
                         <TableCell>{ad.impressionCount.toLocaleString()}</TableCell>
                         <TableCell>{ad.clickCount.toLocaleString()}</TableCell>
                         <TableCell>{ctr}%</TableCell>
                         <TableCell>
-                          <div className="flex items-center space-x-2">
+                          <div className="flex space-x-2">
                             <Button
                               variant="ghost"
                               size="icon"
                               onClick={() => handleEditClick(ad)}
                             >
                               <Pencil className="h-4 w-4" />
+                              <span className="sr-only">Edit</span>
                             </Button>
                             <Button
                               variant="ghost"
                               size="icon"
+                              className="text-red-600 hover:text-red-800 dark:text-red-500 hover:bg-red-100 dark:hover:bg-red-900/20"
                               onClick={() => handleDeleteClick(ad)}
-                              disabled={deleteMutation.isPending}
                             >
-                              <Trash2 className="h-4 w-4 text-red-500" />
+                              <Trash2 className="h-4 w-4" />
+                              <span className="sr-only">Delete</span>
                             </Button>
+                            {ad.targetUrl && (
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                className="text-blue-600 hover:text-blue-800 dark:text-blue-500 hover:bg-blue-100 dark:hover:bg-blue-900/20"
+                                onClick={() => window.open(ad.targetUrl, "_blank")}
+                              >
+                                <ExternalLink className="h-4 w-4" />
+                                <span className="sr-only">Visit</span>
+                              </Button>
+                            )}
                           </div>
                         </TableCell>
                       </TableRow>
@@ -633,189 +706,199 @@ export default function HomeAdsPage() {
             </div>
           )}
 
+          {/* Edit Dialog */}
           <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
-            <DialogContent>
+            <DialogContent className="sm:max-w-[600px]">
               <DialogHeader>
-                <DialogTitle>Edit Advertisement</DialogTitle>
+                <DialogTitle>Edit Home Ad</DialogTitle>
                 <DialogDescription>
-                  Edit existing advertisement details.
+                  Update the details for this ad
                 </DialogDescription>
               </DialogHeader>
               <Form {...editForm}>
-                <form onSubmit={editForm.handleSubmit(onEditSubmit)}>
-                  <div className="space-y-4 mb-4">
-                    <FormField
-                      control={editForm.control}
-                      name="name"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Name</FormLabel>
-                          <FormControl>
-                            <Input placeholder="Ad Name" {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    <FormField
-                      control={editForm.control}
-                      name="position"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Position</FormLabel>
-                          <Select
-                            onValueChange={field.onChange}
-                            defaultValue={field.value}
-                            value={field.value}
-                          >
-                            <FormControl>
-                              <SelectTrigger>
-                                <SelectValue placeholder="Select a position" />
-                              </SelectTrigger>
-                            </FormControl>
-                            <SelectContent>
-                              {AD_POSITIONS.map((position) => (
-                                <SelectItem key={position} value={position}>
-                                  {position.split("_").map((word) => word.charAt(0).toUpperCase() + word.slice(1)).join(" ")}
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                          <FormDescription>
-                            Where this ad will appear on the homepage
-                          </FormDescription>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    <FormField
-                      control={editForm.control}
-                      name="isGoogleAd"
-                      render={({ field }) => (
-                        <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4">
-                          <FormControl>
-                            <Checkbox
-                              checked={field.value}
-                              onCheckedChange={field.onChange}
-                            />
-                          </FormControl>
-                          <div className="space-y-1 leading-none">
-                            <FormLabel>Google Ad</FormLabel>
-                            <FormDescription>
-                              Check this if this is a Google AdSense ad
-                            </FormDescription>
-                          </div>
-                        </FormItem>
-                      )}
-                    />
-                    {!editForm.watch("isGoogleAd") && (
-                      <>
-                        <FormField
-                          control={editForm.control}
-                          name="adCode"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel>Ad Code (HTML/JS)</FormLabel>
-                              <FormControl>
-                                <Textarea
-                                  placeholder="Paste ad code here"
-                                  {...field}
-                                  rows={6}
-                                />
-                              </FormControl>
-                              <FormDescription>
-                                Paste the HTML or JavaScript code for your ad
-                              </FormDescription>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-                        <FormField
-                          control={editForm.control}
-                          name="imageUrl"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel>Image URL (Optional)</FormLabel>
-                              <FormControl>
-                                <Input
-                                  placeholder="https://example.com/ad-image.jpg"
-                                  {...field}
-                                />
-                              </FormControl>
-                              <FormDescription>
-                                If you're using an image for the ad
-                              </FormDescription>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-                        <FormField
-                          control={editForm.control}
-                          name="targetUrl"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel>Target URL (Optional)</FormLabel>
-                              <FormControl>
-                                <Input
-                                  placeholder="https://example.com/landing-page"
-                                  {...field}
-                                />
-                              </FormControl>
-                              <FormDescription>
-                                Where the ad should link to when clicked
-                              </FormDescription>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-                      </>
+                <form onSubmit={editForm.handleSubmit(onEditSubmit)} className="space-y-4">
+                  <FormField
+                    control={editForm.control}
+                    name="name"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Ad Name</FormLabel>
+                        <FormControl>
+                          <Input
+                            placeholder="e.g., Featured Games Promotion"
+                            {...field}
+                          />
+                        </FormControl>
+                        <FormDescription>
+                          A name to help you identify this ad
+                        </FormDescription>
+                        <FormMessage />
+                      </FormItem>
                     )}
-                    <FormField
-                      control={editForm.control}
-                      name="adEnabled"
-                      render={({ field }) => (
-                        <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4">
+                  />
+                  <FormField
+                    control={editForm.control}
+                    name="position"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Position</FormLabel>
+                        <Select
+                          onValueChange={field.onChange}
+                          defaultValue={field.value}
+                          value={field.value}
+                        >
                           <FormControl>
-                            <Checkbox
-                              checked={field.value}
-                              onCheckedChange={field.onChange}
-                            />
+                            <SelectTrigger>
+                              <SelectValue placeholder="Select a position" />
+                            </SelectTrigger>
                           </FormControl>
-                          <div className="space-y-1 leading-none">
-                            <FormLabel>Enabled</FormLabel>
-                            <FormDescription>
-                              Enable or disable this ad
-                            </FormDescription>
-                          </div>
-                        </FormItem>
-                      )}
-                    />
-                    <FormField
-                      control={editForm.control}
-                      name="status"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Status</FormLabel>
-                          <Select
-                            onValueChange={field.onChange}
-                            defaultValue={field.value}
-                            value={field.value}
-                          >
+                          <SelectContent>
+                            {AD_POSITIONS.map((pos) => (
+                              <SelectItem key={pos} value={pos}>
+                                {pos.split("_").map((word) => word.charAt(0).toUpperCase() + word.slice(1)).join(" ")}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                        <FormDescription>
+                          Where this ad will appear on the homepage
+                        </FormDescription>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={editForm.control}
+                    name="isGoogleAd"
+                    render={({ field }) => (
+                      <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4">
+                        <FormControl>
+                          <Checkbox
+                            checked={field.value}
+                            onCheckedChange={field.onChange}
+                          />
+                        </FormControl>
+                        <div className="space-y-1 leading-none">
+                          <FormLabel>Google Ad</FormLabel>
+                          <FormDescription>
+                            Check this if this is a Google AdSense ad
+                          </FormDescription>
+                        </div>
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={editForm.control}
+                    name="adCode"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Ad Code (HTML/JS){editForm.watch("isGoogleAd") && " *"}</FormLabel>
+                        <FormControl>
+                          <Textarea
+                            placeholder={editForm.watch("isGoogleAd") 
+                              ? "Paste Google AdSense code here" 
+                              : "Paste ad code here or provide Image URL and Target URL below"}
+                            {...field}
+                            rows={6}
+                          />
+                        </FormControl>
+                        <FormDescription>
+                          {editForm.watch("isGoogleAd") 
+                            ? "Paste the Google AdSense code (required for Google Ads)"
+                            : "Paste the HTML or JavaScript code for your ad"}
+                        </FormDescription>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  
+                  {!editForm.watch("isGoogleAd") && (
+                    <>
+                      <FormField
+                        control={editForm.control}
+                        name="imageUrl"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Image URL (Optional)</FormLabel>
                             <FormControl>
-                              <SelectTrigger>
-                                <SelectValue placeholder="Select a status" />
-                              </SelectTrigger>
+                              <Input
+                                placeholder="https://example.com/ad-image.jpg"
+                                {...field}
+                              />
                             </FormControl>
-                            <SelectContent>
-                              <SelectItem value="active">Active</SelectItem>
-                              <SelectItem value="inactive">Inactive</SelectItem>
-                            </SelectContent>
-                          </Select>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  </div>
+                            <FormDescription>
+                              If you're using an image for the ad
+                            </FormDescription>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      <FormField
+                        control={editForm.control}
+                        name="targetUrl"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Target URL (Optional)</FormLabel>
+                            <FormControl>
+                              <Input
+                                placeholder="https://example.com/landing-page"
+                                {...field}
+                              />
+                            </FormControl>
+                            <FormDescription>
+                              Where the ad should link to when clicked
+                            </FormDescription>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    </>
+                  )}
+                  <FormField
+                    control={editForm.control}
+                    name="adEnabled"
+                    render={({ field }) => (
+                      <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4">
+                        <FormControl>
+                          <Checkbox
+                            checked={field.value}
+                            onCheckedChange={field.onChange}
+                          />
+                        </FormControl>
+                        <div className="space-y-1 leading-none">
+                          <FormLabel>Enabled</FormLabel>
+                          <FormDescription>
+                            Enable or disable this ad
+                          </FormDescription>
+                        </div>
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={editForm.control}
+                    name="status"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Status</FormLabel>
+                        <Select
+                          onValueChange={field.onChange}
+                          defaultValue={field.value}
+                          value={field.value}
+                        >
+                          <FormControl>
+                            <SelectTrigger>
+                              <SelectValue placeholder="Select a status" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            <SelectItem value="active">Active</SelectItem>
+                            <SelectItem value="inactive">Inactive</SelectItem>
+                          </SelectContent>
+                        </Select>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
                   <DialogFooter>
                     <Button type="submit" disabled={updateMutation.isPending}>
                       {updateMutation.isPending ? (
@@ -836,20 +919,4 @@ export default function HomeAdsPage() {
       </div>
     </div>
   );
-}
-
-// HomeAd type definition
-interface HomeAd {
-  id: number;
-  position: string;
-  adCode: string;
-  status: string;
-  clickCount: number;
-  impressionCount: number;
-  name: string;
-  imageUrl?: string;
-  targetUrl?: string;
-  isGoogleAd: boolean;
-  adEnabled: boolean;
-  createdAt: string;
 }
