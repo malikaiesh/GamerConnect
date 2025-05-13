@@ -35,6 +35,12 @@ export const themes: Theme[] = [
     name: 'Futuristic',
     class: 'futuristic-theme',
     description: 'Sleek blue and purple theme with a tech vibe'
+  },
+  {
+    id: 'lunexa',
+    name: 'Lunexa',
+    class: 'lunexa-theme',
+    description: 'Premium dark theme with deep purple/blue background and vibrant accent colors'
   }
 ];
 

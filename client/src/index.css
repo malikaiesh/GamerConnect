@@ -113,6 +113,46 @@
     --accent-foreground: 0 0% 98%;
     --ring: 210 83% 53%;
   }
+  
+  /* Lunexa Theme (based on the image you shared) */
+  .lunexa-theme {
+    /* Main background is a deep blue/purple gradient */
+    --background: 260 40% 8%;
+    --foreground: 0 0% 98%;
+    
+    /* Card is a slightly lighter variant of the background */
+    --card: 260 35% 12%;
+    --card-foreground: 0 0% 98%;
+    
+    --popover: 260 35% 12%;
+    --popover-foreground: 0 0% 98%;
+    
+    /* Purple accent (similar to the 'Connect' button) */
+    --primary: 270 75% 60%;
+    --primary-foreground: 0 0% 100%;
+    
+    /* Light blue for highlights and icons */
+    --secondary: 195 90% 55%;
+    --secondary-foreground: 0 0% 100%;
+    
+    /* Green for positive trends */
+    --accent: 130 80% 50%;
+    --accent-foreground: 0 0% 100%;
+    
+    --muted: 260 20% 15%;
+    --muted-foreground: 210 10% 70%;
+    
+    /* Red for negative trends */
+    --destructive: 0 80% 55%;
+    --destructive-foreground: 0 0% 100%;
+    
+    --border: 260 20% 18%;
+    --input: 260 20% 20%;
+    --ring: 270 75% 60%;
+    
+    --radius: 0.75rem;
+  }
+}
 
   * {
     @apply border-border;
@@ -161,7 +201,6 @@
   .loading-pulse {
     animation: pulse 1.5s infinite ease-in-out;
   }
-}
 
 @layer components {
   .heading-xl {
