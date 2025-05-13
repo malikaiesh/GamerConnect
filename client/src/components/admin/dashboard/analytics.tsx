@@ -22,15 +22,23 @@ import { Loader2 } from "lucide-react";
 interface AnalyticsData {
   pageViews: number;
   uniqueVisitors: number;
-  gamePlayCount: number;
-  averageSessionDuration: number;
-  topGames: Record<string, number>;
-  topPages: Record<string, number>;
-  dailyStats: Array<{
+  avgTimeOnSite: number;
+  bounceRate: number;
+  topPages: Array<{
+    path: string;
+    views: number;
+  }>;
+  topGames: Array<{
+    name: string;
+    plays: number;
+  }>;
+  dailyVisitors: Array<{
     date: string;
-    pageViews: number;
-    uniqueVisitors: number;
-    gamePlayCount: number;
+    visitors: number;
+  }>;
+  userDevices: Array<{
+    device: string;
+    count: number;
   }>;
 }
 
@@ -45,29 +53,29 @@ export function Analytics() {
   });
 
   // Format chart data
-  const formatTopGamesData = (data?: Record<string, number>) => {
+  const formatTopGamesData = (data?: Array<{ name: string; plays: number }>) => {
     if (!data) return [];
-    return Object.entries(data).map(([name, count]) => ({
-      name: name.length > 15 ? `${name.substring(0, 15)}...` : name,
-      value: count,
-      fullName: name,
+    return data.map(game => ({
+      name: game.name.length > 15 ? `${game.name.substring(0, 15)}...` : game.name,
+      value: game.plays,
+      fullName: game.name,
     })).sort((a, b) => b.value - a.value).slice(0, 5);
   };
 
-  const formatTopPagesData = (data?: Record<string, number>) => {
+  const formatTopPagesData = (data?: Array<{ path: string; views: number }>) => {
     if (!data) return [];
-    return Object.entries(data).map(([path, count]) => ({
-      name: path.length > 20 ? `${path.substring(0, 20)}...` : path,
-      value: count,
-      fullPath: path,
+    return data.map(page => ({
+      name: page.path.length > 20 ? `${page.path.substring(0, 20)}...` : page.path,
+      value: page.views,
+      fullPath: page.path,
     })).sort((a, b) => b.value - a.value).slice(0, 5);
   };
 
-  const formatDailyData = (data?: Array<{ date: string; pageViews: number; uniqueVisitors: number; gamePlayCount: number }>) => {
+  const formatDailyData = (data?: Array<{ date: string; visitors: number }>) => {
     if (!data) return [];
     return data.map(item => ({
-      ...item,
       date: new Date(item.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
+      visitors: item.visitors
     }));
   };
 
@@ -76,7 +84,7 @@ export function Analytics() {
 
   const topGamesData = formatTopGamesData(data?.topGames);
   const topPagesData = formatTopPagesData(data?.topPages);
-  const dailyData = formatDailyData(data?.dailyStats);
+  const dailyData = formatDailyData(data?.dailyVisitors);
 
   if (isLoading) {
     return (
@@ -132,7 +140,7 @@ export function Analytics() {
             <CardTitle className="text-sm font-medium">Game Plays</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{data?.gamePlayCount.toLocaleString() || 0}</div>
+            <div className="text-2xl font-bold">{data?.topGames?.reduce((sum, game) => sum + game.plays, 0).toLocaleString() || 0}</div>
             <p className="text-xs text-muted-foreground">Total game plays in selected period</p>
           </CardContent>
         </Card>

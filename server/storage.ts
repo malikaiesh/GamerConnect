@@ -1062,33 +1062,20 @@ class DatabaseStorage implements IStorage {
         }
       }
       
-      // Start with a base query for games other than the current one
-      let relatedGamesQuery = db
-        .select()
-        .from(games);
+      // Create a raw SQL query to handle this case more directly
+      const query = `
+        SELECT * FROM games 
+        WHERE id != $1 
+        AND (status = 'active' OR status = 'featured')
+        ${gameCategory ? 'AND category = $2' : ''}
+        ORDER BY plays DESC
+        LIMIT 8
+      `;
       
-      // First, exclude the current game
-      relatedGamesQuery = relatedGamesQuery.where(not(eq(games.id, gameId)));
+      const values = gameCategory ? [gameId, gameCategory] : [gameId];
+      const { rows } = await pool.query(query, values);
       
-      // Then add status condition for active or featured games
-      relatedGamesQuery = relatedGamesQuery.where(
-        or(
-          eq(games.status, 'active'),
-          eq(games.status, 'featured')
-        )
-      );
-      
-      // If we have a category, find games in the same category
-      if (gameCategory) {
-        relatedGamesQuery = relatedGamesQuery.where(eq(games.category, gameCategory));
-      }
-      
-      // For now, we'll order by popularity (plays) and limit to 8
-      const relatedGames = await relatedGamesQuery
-        .orderBy(desc(games.plays))
-        .limit(8);
-        
-      return relatedGames;
+      return rows;
     } catch (error) {
       console.error(`Error fetching related games for game ID ${gameId}:`, error);
       return [];
