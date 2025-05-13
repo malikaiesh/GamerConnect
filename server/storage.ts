@@ -126,6 +126,7 @@ export interface IStorage {
     latitude?: number,
     longitude?: number
   }[]>;
+  getRecentUsersWithLocation(limit?: number): Promise<User[]>;
   
   // Game methods
   getGameById(id: number): Promise<Game | null>;
@@ -166,6 +167,7 @@ export interface IStorage {
   deleteBlogPost(id: number): Promise<boolean>;
   searchBlogPosts(query: string, options?: { page?: number, limit?: number }): Promise<{ posts: BlogPost[], total: number, totalPages: number }>;
   getRecentPosts(limit?: number): Promise<BlogPost[]>;
+  getRecentBlogPosts(limit?: number): Promise<BlogPost[]>;
   publishBlogPost(id: number): Promise<BlogPost | null>;
   
   // Rating methods
@@ -187,6 +189,7 @@ export interface IStorage {
   // Home Page Content methods
   getHomePageContentById(id: number): Promise<HomePageContent | null>;
   getHomePageContent(): Promise<HomePageContent[]>;
+  getHomePageContents(): Promise<HomePageContent[]>;
   createHomePageContent(content: Omit<InsertHomePageContent, "createdAt" | "updatedAt">): Promise<HomePageContent>;
   updateHomePageContent(id: number, contentData: Partial<InsertHomePageContent>): Promise<HomePageContent | null>;
   deleteHomePageContent(id: number): Promise<boolean>;
@@ -225,6 +228,7 @@ export interface IStorage {
   createSitemap(sitemap: Omit<InsertSitemap, "createdAt" | "updatedAt">): Promise<Sitemap>;
   updateSitemap(id: number, sitemapData: Partial<InsertSitemap>): Promise<Sitemap | null>;
   deleteSitemap(id: number): Promise<boolean>;
+  generateSitemap(type: string): Promise<Sitemap | null>;
   
   // Analytics methods
   logPageView(page: string, userId?: number): Promise<void>;
@@ -680,8 +684,8 @@ class DatabaseStorage implements IStorage {
 
   async getGames(options: { page?: number, limit?: number, status?: string, source?: string, category?: string } = {}): Promise<{ games: Game[], total: number, totalPages: number }> {
     // Default implementation
-    const games = await db.select().from(games).limit(10);
-    return { games, total: games.length, totalPages: 1 };
+    const gamesData = await db.select().from(games).limit(10);
+    return { games: gamesData, total: gamesData.length, totalPages: 1 };
   }
 
   async createGame(game: Omit<InsertGame, "createdAt" | "updatedAt">): Promise<Game> {
@@ -880,6 +884,7 @@ class DatabaseStorage implements IStorage {
   
   async getHomePageContentById(id: number): Promise<HomePageContent | null> { return null; }
   async getHomePageContent(): Promise<HomePageContent[]> { return []; }
+  async getHomePageContents(): Promise<HomePageContent[]> { return this.getHomePageContent(); }
   async createHomePageContent(content: Omit<InsertHomePageContent, "createdAt" | "updatedAt">): Promise<HomePageContent> { throw new Error("Not implemented"); }
   async updateHomePageContent(id: number, contentData: Partial<InsertHomePageContent>): Promise<HomePageContent | null> { return null; }
   async deleteHomePageContent(id: number): Promise<boolean> { return false; }
@@ -918,6 +923,11 @@ class DatabaseStorage implements IStorage {
   async createSitemap(sitemap: Omit<InsertSitemap, "createdAt" | "updatedAt">): Promise<Sitemap> { throw new Error("Not implemented"); }
   async updateSitemap(id: number, sitemapData: Partial<InsertSitemap>): Promise<Sitemap | null> { return null; }
   async deleteSitemap(id: number): Promise<boolean> { return false; }
+  async generateSitemap(type: string): Promise<Sitemap | null> {
+    // Placeholder implementation - would actually regenerate the sitemap XML
+    console.log(`Generating sitemap for type: ${type}`);
+    return this.getSitemapByType(type);
+  }
   
   async logPageView(page: string, userId?: number): Promise<void> {}
   async logGamePlay(gameId: number, userId?: number): Promise<void> {}
