@@ -2,13 +2,14 @@ import { Link, useLocation } from "wouter";
 import { useAuth } from "@/hooks/use-auth";
 import { useQuery } from "@tanstack/react-query";
 import { cn } from "@/lib/utils";
-import { Gamepad2, Book, Settings, LayoutDashboard, FileText, LogOut, Home, FileSymlink, Key, ImageIcon, Map, Code, BarChart, Files, Bell, Users, Send, Activity, BarChart3 } from "lucide-react";
+import { Gamepad2, Book, Settings, LayoutDashboard, FileText, LogOut, Home, FileSymlink, Key, ImageIcon, Map, Code, BarChart, Files, Bell, Users, Send, Activity, BarChart3, UserRound, UserPlus, MapPin } from "lucide-react";
 import { useState } from "react";
 import { SiteSetting } from "@shared/schema";
 
 export default function AdminNavigation() {
   const [expandedSubMenus, setExpandedSubMenus] = useState<Record<string, boolean>>({
-    pushNotifications: false
+    pushNotifications: false,
+    accounts: false
   });
   const [location] = useLocation();
   const { logoutMutation, user } = useAuth();
@@ -314,6 +315,71 @@ export default function AdminNavigation() {
               <Code size={18} />
               Custom Code
             </Link>
+          </li>
+          <li className="space-y-1">
+            <button
+              onClick={() => toggleSubMenu('accounts')}
+              className={cn(
+                "flex items-center justify-between w-full gap-3 px-3 py-2 rounded-lg transition-colors",
+                isActive("/admin/accounts")
+                  ? "bg-primary text-white"
+                  : "text-gray-300 hover:bg-gray-800"
+              )}
+            >
+              <div className="flex items-center gap-3">
+                <UserRound size={18} />
+                <span>Accounts</span>
+              </div>
+              <span className={cn("transform transition-transform", expandedSubMenus.accounts ? "rotate-180" : "")}>
+                ▼
+              </span>
+            </button>
+            {expandedSubMenus.accounts && (
+              <ul className="ml-6 space-y-1 border-l border-gray-800 pl-2">
+                <li>
+                  <Link
+                    href="/admin/accounts/users"
+                    className={cn(
+                      "flex items-center gap-3 px-3 py-2 rounded-lg transition-colors",
+                      location === "/admin/accounts/users"
+                        ? "bg-primary text-white"
+                        : "text-gray-300 hover:bg-gray-800"
+                    )}
+                  >
+                    <Users size={16} />
+                    All Users
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    href="/admin/accounts/locations"
+                    className={cn(
+                      "flex items-center gap-3 px-3 py-2 rounded-lg transition-colors",
+                      location === "/admin/accounts/locations"
+                        ? "bg-primary text-white"
+                        : "text-gray-300 hover:bg-gray-800"
+                    )}
+                  >
+                    <MapPin size={16} />
+                    User Locations
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    href="/admin/accounts/signups"
+                    className={cn(
+                      "flex items-center gap-3 px-3 py-2 rounded-lg transition-colors",
+                      location === "/admin/accounts/signups"
+                        ? "bg-primary text-white"
+                        : "text-gray-300 hover:bg-gray-800"
+                    )}
+                  >
+                    <UserPlus size={16} />
+                    Signup Stats
+                  </Link>
+                </li>
+              </ul>
+            )}
           </li>
           <li>
             <Link
