@@ -190,6 +190,7 @@ export interface IStorage {
   getHomePageContentById(id: number): Promise<HomePageContent | null>;
   getHomePageContent(): Promise<HomePageContent[]>;
   getHomePageContents(): Promise<HomePageContent[]>;
+  getActiveHomePageContents(): Promise<HomePageContent[]>;
   createHomePageContent(content: Omit<InsertHomePageContent, "createdAt" | "updatedAt">): Promise<HomePageContent>;
   updateHomePageContent(id: number, contentData: Partial<InsertHomePageContent>): Promise<HomePageContent | null>;
   deleteHomePageContent(id: number): Promise<boolean>;
@@ -886,6 +887,10 @@ class DatabaseStorage implements IStorage {
   async getHomePageContentById(id: number): Promise<HomePageContent | null> { return null; }
   async getHomePageContent(): Promise<HomePageContent[]> { return []; }
   async getHomePageContents(): Promise<HomePageContent[]> { return this.getHomePageContent(); }
+  async getActiveHomePageContents(): Promise<HomePageContent[]> { 
+    const contents = await this.getHomePageContent();
+    return contents.filter(content => content.isActive === true);
+  }
   async createHomePageContent(content: Omit<InsertHomePageContent, "createdAt" | "updatedAt">): Promise<HomePageContent> { throw new Error("Not implemented"); }
   async updateHomePageContent(id: number, contentData: Partial<InsertHomePageContent>): Promise<HomePageContent | null> { return null; }
   async deleteHomePageContent(id: number): Promise<boolean> { return false; }
