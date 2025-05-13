@@ -871,8 +871,62 @@ class DatabaseStorage implements IStorage {
   
   async getBlogPostById(id: number): Promise<BlogPost | null> { return null; }
   async getBlogPostBySlug(slug: string): Promise<BlogPost | null> { return null; }
-  async getBlogPosts(options?: { page?: number, limit?: number, status?: string, categoryId?: number }): Promise<{ posts: BlogPost[], total: number, totalPages: number }> { 
-    return { posts: [], total: 0, totalPages: 0 }; 
+  async getBlogPosts(options?: { 
+    page?: number, 
+    limit?: number, 
+    status?: string, 
+    categoryId?: number,
+    search?: string 
+  }): Promise<{ posts: BlogPost[], total: number, totalPages: number }> { 
+    try {
+      const { page = 1, limit = 10, status, categoryId, search } = options || {};
+      
+      // Base query
+      let query = db.select().from(blogPosts);
+      let countQuery = db.select({ count: count() }).from(blogPosts);
+      
+      // Apply filters
+      if (status && (status === 'draft' || status === 'published')) {
+        query = query.where(eq(blogPosts.status, status));
+        countQuery = countQuery.where(eq(blogPosts.status, status));
+      }
+      
+      if (categoryId) {
+        query = query.where(eq(blogPosts.categoryId, categoryId));
+        countQuery = countQuery.where(eq(blogPosts.categoryId, categoryId));
+      }
+      
+      if (search) {
+        const searchPattern = `%${search}%`;
+        query = query.where(or(
+          ilike(blogPosts.title, searchPattern),
+          ilike(blogPosts.content, searchPattern)
+        ));
+        countQuery = countQuery.where(or(
+          ilike(blogPosts.title, searchPattern),
+          ilike(blogPosts.content, searchPattern)
+        ));
+      }
+      
+      // Get total count
+      const [countResult] = await countQuery;
+      const total = Number(countResult?.count) || 0;
+      
+      // Apply pagination
+      query = query
+        .orderBy(desc(blogPosts.createdAt))
+        .limit(limit)
+        .offset((page - 1) * limit);
+      
+      // Get results
+      const posts = await query;
+      const totalPages = Math.ceil(total / limit);
+      
+      return { posts, total, totalPages };
+    } catch (error) {
+      console.error('Error fetching blog posts:', error);
+      return { posts: [], total: 0, totalPages: 0 };
+    }
   }
   async createBlogPost(post: Omit<InsertBlogPost, "createdAt" | "updatedAt">): Promise<BlogPost> { throw new Error("Not implemented"); }
   async updateBlogPost(id: number, postData: Partial<InsertBlogPost>): Promise<BlogPost | null> { return null; }
