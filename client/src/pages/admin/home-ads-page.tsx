@@ -336,7 +336,7 @@ export default function HomeAdsPage() {
     <AdminLayout>
       <div className="space-y-6">
         <div className="flex justify-between items-center">
-          <h1 className="text-2xl font-bold">Home Ads</h1>
+          <h1 className="text-2xl font-bold text-foreground">Home Ads</h1>
           <div className="flex items-center space-x-2">
             <Button 
               variant="outline" 

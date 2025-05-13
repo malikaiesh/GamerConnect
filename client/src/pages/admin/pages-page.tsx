@@ -146,13 +146,13 @@ export default function PagesAdminPage() {
   }
 
   return (
-    <div className="flex min-h-screen bg-gray-100 dark:bg-gray-900">
+    <div className="flex min-h-screen">
       <AdminNavigation />
       
       <div className="flex-1 p-6 lg:p-10">
         <div className="mb-6 flex justify-between items-center">
           <div>
-            <h1 className="text-3xl font-bold">Static Pages</h1>
+            <h1 className="text-3xl font-bold text-foreground">Static Pages</h1>
             <p className="text-muted-foreground">Manage static pages like About, Contact, Privacy Policy, etc.</p>
           </div>
           
@@ -235,20 +235,20 @@ export default function PagesAdminPage() {
                 <table className="w-full text-sm">
                   <thead>
                     <tr className="border-b">
-                      <th className="py-3 px-4 text-left">Title</th>
-                      <th className="py-3 px-4 text-left">Type</th>
-                      <th className="py-3 px-4 text-left">Slug</th>
-                      <th className="py-3 px-4 text-center">Status</th>
-                      <th className="py-3 px-4 text-center">Updated</th>
-                      <th className="py-3 px-4 text-right">Actions</th>
+                      <th className="py-3 px-4 text-left text-foreground">Title</th>
+                      <th className="py-3 px-4 text-left text-foreground">Type</th>
+                      <th className="py-3 px-4 text-left text-foreground">Slug</th>
+                      <th className="py-3 px-4 text-center text-foreground">Status</th>
+                      <th className="py-3 px-4 text-center text-foreground">Updated</th>
+                      <th className="py-3 px-4 text-right text-foreground">Actions</th>
                     </tr>
                   </thead>
                   <tbody>
                     {data?.pages.map((page) => (
                       <tr key={page.id} className="border-b hover:bg-muted/50">
-                        <td className="py-3 px-4 font-medium">{page.title}</td>
+                        <td className="py-3 px-4 font-medium text-foreground">{page.title}</td>
                         <td className="py-3 px-4">{getPageTypeBadge(page.pageType)}</td>
-                        <td className="py-3 px-4 font-mono text-xs">{page.slug}</td>
+                        <td className="py-3 px-4 font-mono text-xs text-foreground">{page.slug}</td>
                         <td className="py-3 px-4 text-center">
                           {page.status === 'active' ? (
                             <Badge variant="success"><CheckCircle2 className="h-3 w-3 mr-1" /> Active</Badge>
