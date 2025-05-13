@@ -68,8 +68,8 @@ export function BlogInternalLinks() {
   return (
     <Card className="w-full">
       <CardHeader>
-        <CardTitle>Blog Internal Links</CardTitle>
-        <CardDescription>
+        <CardTitle className="text-foreground">Blog Internal Links</CardTitle>
+        <CardDescription className="text-muted-foreground">
           Automatically add internal links to blog posts for improved SEO and user experience.
         </CardDescription>
       </CardHeader>
@@ -77,14 +77,14 @@ export function BlogInternalLinks() {
       <CardContent className="space-y-4">
         <div className="rounded-lg border p-4">
           <div className="flex flex-col space-y-2">
-            <h3 className="text-sm font-medium">What are internal links?</h3>
+            <h3 className="text-sm font-medium text-foreground">What are internal links?</h3>
             <p className="text-sm text-muted-foreground">
               Internal links connect your blog posts to other relevant content on your site. 
               They help search engines understand your content structure and keep users engaged 
               by providing paths to related articles.
             </p>
             
-            <h3 className="text-sm font-medium mt-2">How it works</h3>
+            <h3 className="text-sm font-medium mt-2 text-foreground">How it works</h3>
             <p className="text-sm text-muted-foreground">
               Our system analyzes your published blog posts, identifies relevant keywords, 
               and automatically creates links between related articles. This process helps improve:
@@ -101,16 +101,16 @@ export function BlogInternalLinks() {
         {updateInternalLinksMutation.data && (
           <Alert className={updateInternalLinksMutation.data.results.errors > 0 ? 'border-orange-500' : 'border-green-500'}>
             <CheckCircle className="h-4 w-4 text-green-500" />
-            <AlertTitle>Process completed</AlertTitle>
+            <AlertTitle className="text-foreground">Process completed</AlertTitle>
             <AlertDescription>
               <div className="mt-2 text-sm">
                 <div className="grid grid-cols-2 gap-2">
-                  <div>Total posts processed:</div>
-                  <div className="font-medium">{updateInternalLinksMutation.data.results.total}</div>
-                  <div>Posts updated:</div>
-                  <div className="font-medium">{updateInternalLinksMutation.data.results.updated}</div>
-                  <div>Posts skipped:</div>
-                  <div className="font-medium">{updateInternalLinksMutation.data.results.skipped}</div>
+                  <div className="text-foreground">Total posts processed:</div>
+                  <div className="font-medium text-foreground">{updateInternalLinksMutation.data.results.total}</div>
+                  <div className="text-foreground">Posts updated:</div>
+                  <div className="font-medium text-foreground">{updateInternalLinksMutation.data.results.updated}</div>
+                  <div className="text-foreground">Posts skipped:</div>
+                  <div className="font-medium text-foreground">{updateInternalLinksMutation.data.results.skipped}</div>
                   {updateInternalLinksMutation.data.results.errors > 0 && (
                     <>
                       <div className="text-orange-600">Errors:</div>
@@ -127,7 +127,7 @@ export function BlogInternalLinks() {
       <CardFooter className="flex justify-between">
         <div className="text-sm text-muted-foreground">
           {lastUpdate && (
-            <span>Last updated: {lastUpdate.toLocaleString()}</span>
+            <span className="text-foreground">Last updated: {lastUpdate.toLocaleString()}</span>
           )}
         </div>
         <Button 
