@@ -252,6 +252,7 @@ export interface IStorage {
   updateSitemap(id: number, sitemapData: Partial<InsertSitemap>): Promise<Sitemap | null>;
   deleteSitemap(id: number): Promise<boolean>;
   generateSitemap(type: string): Promise<Sitemap | null>;
+  generateAllSitemaps(): Promise<Sitemap[]>;
   
   // Analytics methods
   logPageView(page: string, userId?: number): Promise<void>;
