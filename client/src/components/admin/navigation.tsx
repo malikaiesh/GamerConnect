@@ -213,33 +213,33 @@ export default function AdminNavigation() {
             <button
               onClick={() => toggleSubMenu('pushNotifications')}
               className={cn(
-                "flex items-center justify-between w-full gap-3 px-3 py-2 rounded-lg transition-colors",
-                isActive("/admin/push-notifications")
-                  ? "bg-primary text-white"
-                  : "text-gray-300 hover:bg-gray-800"
+                "flex items-center justify-between w-full gap-3 px-3 py-2.5 rounded-lg transition-all",
+                isActive("/admin/push-notifications") || expandedSubMenus.pushNotifications
+                  ? "bg-primary/15 text-primary shadow-sm"
+                  : "text-card-foreground hover:bg-primary/10 hover:text-primary"
               )}
             >
               <div className="flex items-center gap-3">
-                <Bell size={18} />
+                <Bell size={18} className="text-primary opacity-80" />
                 <span>Push Notifications</span>
               </div>
-              <span className={cn("transform transition-transform", expandedSubMenus.pushNotifications ? "rotate-180" : "")}>
+              <span className={cn("transform transition-transform text-primary opacity-80", expandedSubMenus.pushNotifications ? "rotate-180" : "")}>
                 ▼
               </span>
             </button>
             {expandedSubMenus.pushNotifications && (
-              <ul className="ml-6 space-y-1 border-l border-gray-800 pl-2">
+              <ul className="ml-6 space-y-1 border-l border-border pl-2 mt-1">
                 <li>
                   <Link
                     href="/admin/push-notifications"
                     className={cn(
-                      "flex items-center gap-3 px-3 py-2 rounded-lg transition-colors",
+                      "flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all",
                       location === "/admin/push-notifications"
-                        ? "bg-primary text-white"
-                        : "text-gray-300 hover:bg-gray-800"
+                        ? "bg-primary/10 text-primary"
+                        : "text-card-foreground/80 hover:bg-primary/5 hover:text-primary/90"
                     )}
                   >
-                    <Bell size={16} />
+                    <Bell size={16} className="text-primary opacity-80" />
                     Notifications
                   </Link>
                 </li>
@@ -247,13 +247,13 @@ export default function AdminNavigation() {
                   <Link
                     href="/admin/push-notifications/campaigns"
                     className={cn(
-                      "flex items-center gap-3 px-3 py-2 rounded-lg transition-colors",
+                      "flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all",
                       location === "/admin/push-notifications/campaigns"
-                        ? "bg-primary text-white"
-                        : "text-gray-300 hover:bg-gray-800"
+                        ? "bg-primary/10 text-primary"
+                        : "text-card-foreground/80 hover:bg-primary/5 hover:text-primary/90"
                     )}
                   >
-                    <Send size={16} />
+                    <Send size={16} className="text-primary opacity-80" />
                     Campaigns
                   </Link>
                 </li>
@@ -261,13 +261,13 @@ export default function AdminNavigation() {
                   <Link
                     href="/admin/push-notifications/subscribers"
                     className={cn(
-                      "flex items-center gap-3 px-3 py-2 rounded-lg transition-colors",
+                      "flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all",
                       location === "/admin/push-notifications/subscribers"
-                        ? "bg-primary text-white"
-                        : "text-gray-300 hover:bg-gray-800"
+                        ? "bg-primary/10 text-primary"
+                        : "text-card-foreground/80 hover:bg-primary/5 hover:text-primary/90"
                     )}
                   >
-                    <Users size={16} />
+                    <Users size={16} className="text-primary opacity-80" />
                     Subscribers
                   </Link>
                 </li>
@@ -275,13 +275,13 @@ export default function AdminNavigation() {
                   <Link
                     href="/admin/push-notifications/analytics"
                     className={cn(
-                      "flex items-center gap-3 px-3 py-2 rounded-lg transition-colors",
+                      "flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all",
                       location === "/admin/push-notifications/analytics"
-                        ? "bg-primary text-white"
-                        : "text-gray-300 hover:bg-gray-800"
+                        ? "bg-primary/10 text-primary"
+                        : "text-card-foreground/80 hover:bg-primary/5 hover:text-primary/90"
                     )}
                   >
-                    <Activity size={16} />
+                    <Activity size={16} className="text-primary opacity-80" />
                     Analytics
                   </Link>
                 </li>
@@ -292,13 +292,13 @@ export default function AdminNavigation() {
             <Link
               href="/admin/ads-txt"
               className={cn(
-                "flex items-center gap-3 px-3 py-2 rounded-lg transition-colors",
+                "flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all",
                 isActive("/admin/ads-txt")
-                  ? "bg-primary text-white"
-                  : "text-gray-300 hover:bg-gray-800"
+                  ? "bg-primary/15 text-primary shadow-sm"
+                  : "text-card-foreground hover:bg-primary/10 hover:text-primary"
               )}
             >
-              <Files size={18} />
+              <Files size={18} className="text-primary opacity-80" />
               Ads.txt
             </Link>
           </li>
@@ -306,13 +306,13 @@ export default function AdminNavigation() {
             <Link
               href="/admin/custom-code"
               className={cn(
-                "flex items-center gap-3 px-3 py-2 rounded-lg transition-colors",
+                "flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all",
                 isActive("/admin/custom-code")
-                  ? "bg-primary text-white"
-                  : "text-gray-300 hover:bg-gray-800"
+                  ? "bg-primary/15 text-primary shadow-sm"
+                  : "text-card-foreground hover:bg-primary/10 hover:text-primary"
               )}
             >
-              <Code size={18} />
+              <Code size={18} className="text-primary opacity-80" />
               Custom Code
             </Link>
           </li>
@@ -320,33 +320,33 @@ export default function AdminNavigation() {
             <button
               onClick={() => toggleSubMenu('accounts')}
               className={cn(
-                "flex items-center justify-between w-full gap-3 px-3 py-2 rounded-lg transition-colors",
-                isActive("/admin/accounts")
-                  ? "bg-primary text-white"
-                  : "text-gray-300 hover:bg-gray-800"
+                "flex items-center justify-between w-full gap-3 px-3 py-2.5 rounded-lg transition-all",
+                isActive("/admin/accounts") || expandedSubMenus.accounts
+                  ? "bg-primary/15 text-primary shadow-sm"
+                  : "text-card-foreground hover:bg-primary/10 hover:text-primary"
               )}
             >
               <div className="flex items-center gap-3">
-                <UserRound size={18} />
+                <UserRound size={18} className="text-primary opacity-80" />
                 <span>Accounts</span>
               </div>
-              <span className={cn("transform transition-transform", expandedSubMenus.accounts ? "rotate-180" : "")}>
+              <span className={cn("transform transition-transform text-primary opacity-80", expandedSubMenus.accounts ? "rotate-180" : "")}>
                 ▼
               </span>
             </button>
             {expandedSubMenus.accounts && (
-              <ul className="ml-6 space-y-1 border-l border-gray-800 pl-2">
+              <ul className="ml-6 space-y-1 border-l border-border pl-2 mt-1">
                 <li>
                   <Link
                     href="/admin/accounts/users"
                     className={cn(
-                      "flex items-center gap-3 px-3 py-2 rounded-lg transition-colors",
+                      "flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all",
                       location === "/admin/accounts/users"
-                        ? "bg-primary text-white"
-                        : "text-gray-300 hover:bg-gray-800"
+                        ? "bg-primary/10 text-primary"
+                        : "text-card-foreground/80 hover:bg-primary/5 hover:text-primary/90"
                     )}
                   >
-                    <Users size={16} />
+                    <Users size={16} className="text-primary opacity-80" />
                     All Users
                   </Link>
                 </li>
@@ -354,13 +354,13 @@ export default function AdminNavigation() {
                   <Link
                     href="/admin/accounts/roles"
                     className={cn(
-                      "flex items-center gap-3 px-3 py-2 rounded-lg transition-colors",
+                      "flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all",
                       location === "/admin/accounts/roles"
-                        ? "bg-primary text-white"
-                        : "text-gray-300 hover:bg-gray-800"
+                        ? "bg-primary/10 text-primary"
+                        : "text-card-foreground/80 hover:bg-primary/5 hover:text-primary/90"
                     )}
                   >
-                    <Shield size={16} />
+                    <Shield size={16} className="text-primary opacity-80" />
                     Roles & Permissions
                   </Link>
                 </li>
@@ -368,13 +368,13 @@ export default function AdminNavigation() {
                   <Link
                     href="/admin/accounts/locations"
                     className={cn(
-                      "flex items-center gap-3 px-3 py-2 rounded-lg transition-colors",
+                      "flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all",
                       location === "/admin/accounts/locations"
-                        ? "bg-primary text-white"
-                        : "text-gray-300 hover:bg-gray-800"
+                        ? "bg-primary/10 text-primary"
+                        : "text-card-foreground/80 hover:bg-primary/5 hover:text-primary/90"
                     )}
                   >
-                    <MapPin size={16} />
+                    <MapPin size={16} className="text-primary opacity-80" />
                     User Locations
                   </Link>
                 </li>
@@ -382,13 +382,13 @@ export default function AdminNavigation() {
                   <Link
                     href="/admin/accounts/signups"
                     className={cn(
-                      "flex items-center gap-3 px-3 py-2 rounded-lg transition-colors",
+                      "flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all",
                       location === "/admin/accounts/signups"
-                        ? "bg-primary text-white"
-                        : "text-gray-300 hover:bg-gray-800"
+                        ? "bg-primary/10 text-primary"
+                        : "text-card-foreground/80 hover:bg-primary/5 hover:text-primary/90"
                     )}
                   >
-                    <UserPlus size={16} />
+                    <UserPlus size={16} className="text-primary opacity-80" />
                     Signup Stats
                   </Link>
                 </li>
