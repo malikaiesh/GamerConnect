@@ -338,10 +338,21 @@ class DatabaseStorage implements IStorage {
       ORDER BY count DESC
     `);
     
-    return result.map(row => ({
-      country: row.country,
-      count: Number(row.count)
-    }));
+    // Handle the result properly based on the returned structure
+    if (Array.isArray(result.rows)) {
+      return result.rows.map(row => ({
+        country: row.country,
+        count: Number(row.count)
+      }));
+    } else if (Array.isArray(result)) {
+      return result.map(row => ({
+        country: row.country,
+        count: Number(row.count)
+      }));
+    } else {
+      // Return empty array if no results or unexpected format
+      return [];
+    }
   }
   
   async getUserStats(): Promise<{
