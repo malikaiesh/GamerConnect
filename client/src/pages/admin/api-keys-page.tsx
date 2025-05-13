@@ -225,7 +225,7 @@ export default function ApiKeysPage() {
       <Card>
         <CardHeader className="flex flex-row items-center justify-between">
           <div>
-            <CardTitle>API Keys</CardTitle>
+            <CardTitle className="text-foreground">API Keys</CardTitle>
             <CardDescription>
               Manage your API keys for external services
             </CardDescription>
@@ -259,14 +259,14 @@ export default function ApiKeysPage() {
               <TableBody>
                 {apiKeys.map((apiKey: ApiKey) => (
                   <TableRow key={apiKey.id}>
-                    <TableCell className="font-medium">{apiKey.name}</TableCell>
+                    <TableCell className="font-medium text-foreground">{apiKey.name}</TableCell>
                     <TableCell>
                       <Badge variant="outline" className="capitalize">
                         {apiKey.type}
                       </Badge>
                     </TableCell>
                     <TableCell>
-                      <code className="bg-muted px-1 py-0.5 rounded text-sm">
+                      <code className="bg-muted px-1 py-0.5 rounded text-sm text-foreground">
                         {apiKey.key.substring(0, 8)}...{apiKey.key.substring(apiKey.key.length - 4)}
                       </code>
                     </TableCell>
@@ -276,10 +276,10 @@ export default function ApiKeysPage() {
                           checked={apiKey.isActive}
                           onCheckedChange={() => toggleApiKeyStatus(apiKey)}
                         />
-                        <span>{apiKey.isActive ? 'Active' : 'Inactive'}</span>
+                        <span className="text-foreground">{apiKey.isActive ? 'Active' : 'Inactive'}</span>
                       </div>
                     </TableCell>
-                    <TableCell>{formatDate(apiKey.createdAt)}</TableCell>
+                    <TableCell className="text-foreground">{formatDate(apiKey.createdAt)}</TableCell>
                     <TableCell>
                       <div className="flex space-x-2">
                         <Button
@@ -311,7 +311,7 @@ export default function ApiKeysPage() {
       <Dialog open={openDialog} onOpenChange={setOpenDialog}>
         <DialogContent className="sm:max-w-[525px] max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>
+            <DialogTitle className="text-foreground">
               {dialogMode === 'create' ? 'Add New API Key' : 'Edit API Key'}
             </DialogTitle>
             <DialogDescription>
@@ -323,7 +323,7 @@ export default function ApiKeysPage() {
           <form onSubmit={handleSubmit}>
             <div className="grid gap-4 py-4">
               <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="name" className="text-right">
+                <Label htmlFor="name" className="text-right text-foreground">
                   Name
                 </Label>
                 <Input
@@ -336,7 +336,7 @@ export default function ApiKeysPage() {
                 />
               </div>
               <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="type" className="text-right">
+                <Label htmlFor="type" className="text-right text-foreground">
                   Type
                 </Label>
                 <Select
@@ -360,7 +360,7 @@ export default function ApiKeysPage() {
                 </Select>
               </div>
               <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="key" className="text-right">
+                <Label htmlFor="key" className="text-right text-foreground">
                   API Key
                 </Label>
                 <Input
@@ -373,7 +373,7 @@ export default function ApiKeysPage() {
                 />
               </div>
               <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="description" className="text-right">
+                <Label htmlFor="description" className="text-right text-foreground">
                   Description
                 </Label>
                 <Textarea
@@ -386,7 +386,7 @@ export default function ApiKeysPage() {
                 />
               </div>
               <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="isActive" className="text-right">
+                <Label htmlFor="isActive" className="text-right text-foreground">
                   Active
                 </Label>
                 <div className="flex items-center space-x-2 col-span-3">
@@ -395,7 +395,7 @@ export default function ApiKeysPage() {
                     checked={formData.isActive}
                     onCheckedChange={(checked) => handleSwitchChange('isActive', checked)}
                   />
-                  <span>{formData.isActive ? 'Active' : 'Inactive'}</span>
+                  <span className="text-foreground">{formData.isActive ? 'Active' : 'Inactive'}</span>
                 </div>
               </div>
             </div>
