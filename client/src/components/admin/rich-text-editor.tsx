@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { Editor } from '@tinymce/tinymce-react';
 import { Label } from '@/components/ui/label';
 import { useQuery } from '@tanstack/react-query';
+import { Skeleton } from '@/components/ui/skeleton';
 
 interface RichTextEditorProps {
   id: string;
@@ -10,6 +11,8 @@ interface RichTextEditorProps {
   label?: string;
   height?: number;
   error?: string;
+  placeholder?: string;
+  disabled?: boolean;
 }
 
 export function RichTextEditor({
@@ -18,10 +21,13 @@ export function RichTextEditor({
   onChange,
   label,
   height = 500,
-  error
+  error,
+  placeholder = 'Enter content here...',
+  disabled = false
 }: RichTextEditorProps) {
   const editorRef = useRef<any>(null);
   const [apiKey, setApiKey] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
   
   // Fetch TinyMCE API key from the database
   const { data: tinyMceApiKey } = useQuery({
@@ -61,59 +67,83 @@ export function RichTextEditor({
   return (
     <div className="space-y-2 w-full">
       {label && <Label htmlFor={id}>{label}</Label>}
-      <Editor
-        id={id}
-        apiKey={apiKey || import.meta.env.VITE_TINYMCE_API_KEY || '7m14cqmqt0orpe024qq0jh600cbltgk2kxavr07f92sihixj'} // Try: DB, environment variable, then fallback
-        onInit={(evt, editor) => editorRef.current = editor}
-        value={value}
-        onEditorChange={(newValue) => onChange(newValue)}
-        init={{
-          height,
-          menubar: true,
-          plugins: [
-            'advlist autolink lists link image charmap print preview anchor',
-            'searchreplace visualblocks code fullscreen',
-            'insertdatetime media table paste code help wordcount',
-            'image media emoticons hr visualchars nonbreaking'
-          ],
-          toolbar: [
-            { name: 'history', items: ['undo', 'redo'] },
-            { name: 'styles', items: ['styleselect'] },
-            { name: 'formatting', items: ['bold', 'italic', 'underline', 'strikethrough'] },
-            { name: 'alignment', items: ['alignleft', 'aligncenter', 'alignright', 'alignjustify'] },
-            { name: 'indentation', items: ['outdent', 'indent'] },
-            { name: 'lists', items: ['numlist', 'bullist'] },
-            { name: 'insertions', items: ['link', 'image', 'media', 'emoticons', 'hr'] },
-            { name: 'tools', items: ['searchreplace', 'code', 'fullscreen'] },
-            { name: 'more', items: ['more'] },
-          ],
-          formats: {
-            h1: { block: 'h1' },
-            h2: { block: 'h2' },
-            h3: { block: 'h3' },
-            h4: { block: 'h4' },
-            h5: { block: 'h5' },
-            h6: { block: 'h6' },
-          },
-          style_formats: [
-            { title: 'Paragraph', format: 'p' },
-            { title: 'Heading 1', format: 'h1' },
-            { title: 'Heading 2', format: 'h2' },
-            { title: 'Heading 3', format: 'h3' },
-            { title: 'Heading 4', format: 'h4' },
-            { title: 'Heading 5', format: 'h5' },
-            { title: 'Heading 6', format: 'h6' },
-          ],
-          content_style: 'body { font-family:Helvetica,Arial,sans-serif; font-size:14px }',
-          image_title: true,
-          automatic_uploads: true,
-          file_picker_types: 'image',
-          images_upload_url: '/api/upload',
-          relative_urls: false,
-          remove_script_host: false,
-          convert_urls: true,
-        }}
-      />
+      
+      {isLoading && (
+        <div className="space-y-2">
+          <Skeleton className="h-10 w-full" />
+          <Skeleton className="h-24 w-full" />
+          <Skeleton className="h-10 w-full" />
+        </div>
+      )}
+      
+      <div className={isLoading ? 'hidden' : ''}>
+        <Editor
+          id={id}
+          apiKey={apiKey || import.meta.env.VITE_TINYMCE_API_KEY || '7m14cqmqt0orpe024qq0jh600cbltgk2kxavr07f92sihixj'} // Try: DB, environment variable, then fallback
+          onInit={(evt, editor) => {
+            editorRef.current = editor;
+            setIsLoading(false);
+          }}
+          initialValue={value}
+          value={value}
+          onEditorChange={(newValue) => onChange(newValue)}
+          init={{
+            height,
+            menubar: true,
+            plugins: [
+              'advlist autolink lists link image charmap print preview anchor',
+              'searchreplace visualblocks code fullscreen',
+              'insertdatetime media table paste code help wordcount',
+              'image media emoticons hr visualchars nonbreaking'
+            ],
+            toolbar: [
+              { name: 'history', items: ['undo', 'redo'] },
+              { name: 'styles', items: ['styleselect'] },
+              { name: 'formatting', items: ['bold', 'italic', 'underline', 'strikethrough'] },
+              { name: 'alignment', items: ['alignleft', 'aligncenter', 'alignright', 'alignjustify'] },
+              { name: 'indentation', items: ['outdent', 'indent'] },
+              { name: 'lists', items: ['numlist', 'bullist'] },
+              { name: 'insertions', items: ['link', 'image', 'media', 'emoticons', 'hr'] },
+              { name: 'tools', items: ['searchreplace', 'code', 'fullscreen'] },
+              { name: 'more', items: ['more'] },
+            ],
+            formats: {
+              h1: { block: 'h1' },
+              h2: { block: 'h2' },
+              h3: { block: 'h3' },
+              h4: { block: 'h4' },
+              h5: { block: 'h5' },
+              h6: { block: 'h6' },
+            },
+            style_formats: [
+              { title: 'Paragraph', format: 'p' },
+              { title: 'Heading 1', format: 'h1' },
+              { title: 'Heading 2', format: 'h2' },
+              { title: 'Heading 3', format: 'h3' },
+              { title: 'Heading 4', format: 'h4' },
+              { title: 'Heading 5', format: 'h5' },
+              { title: 'Heading 6', format: 'h6' },
+            ],
+            content_style: 'body { font-family:Helvetica,Arial,sans-serif; font-size:14px }',
+            image_title: true,
+            automatic_uploads: true,
+            file_picker_types: 'image',
+            images_upload_url: '/api/upload',
+            relative_urls: false,
+            remove_script_host: false,
+            convert_urls: true,
+            
+            // Additional customization
+            placeholder,
+            resize: true,
+            branding: false,
+            promotion: false,
+            statusbar: true,
+          }}
+          disabled={disabled}
+        />
+      </div>
+      
       {error && (
         <p className="text-red-500 text-sm mt-1">{error}</p>
       )}
