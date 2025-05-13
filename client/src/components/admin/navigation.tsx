@@ -39,8 +39,8 @@ export default function AdminNavigation() {
   }
 
   return (
-    <div className="bg-gray-900 text-gray-100 min-h-screen w-64 flex flex-col">
-      <div className="p-4 border-b border-gray-800">
+    <div className="bg-card text-card-foreground min-h-screen w-64 flex flex-col border-r border-border">
+      <div className="p-4 border-b border-border bg-primary/10">
         <Link href="/" className="flex items-center">
           {settings?.siteLogo && !settings?.useTextLogo ? (
             <img 
@@ -52,7 +52,7 @@ export default function AdminNavigation() {
             <>
               <i className="ri-gamepad-line text-primary text-3xl"></i>
               <span 
-                className="text-xl font-bold font-poppins ml-2"
+                className="text-xl font-bold font-poppins ml-2 text-primary"
                 style={settings?.textLogoColor ? { color: settings.textLogoColor } : {}}
               >
                 {settings?.siteTitle ? settings.siteTitle : 'Game'}
@@ -62,9 +62,9 @@ export default function AdminNavigation() {
         </Link>
       </div>
 
-      <div className="p-4 text-sm text-gray-400">
-        <p>Welcome, {user.username}</p>
-        <p>Admin Panel</p>
+      <div className="p-4 text-sm text-muted-foreground bg-gradient-to-r from-primary/5 to-transparent">
+        <p className="font-medium">Welcome, {user.username}</p>
+        <p className="opacity-80">Admin Panel</p>
       </div>
 
       <nav className="flex-1 p-4">
@@ -73,13 +73,13 @@ export default function AdminNavigation() {
             <Link
               href="/admin/dashboard"
               className={cn(
-                "flex items-center gap-3 px-3 py-2 rounded-lg transition-colors",
+                "flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all",
                 isActive("/admin/dashboard")
-                  ? "bg-primary text-white"
-                  : "text-gray-300 hover:bg-gray-800"
+                  ? "bg-primary/15 text-primary shadow-sm"
+                  : "text-card-foreground hover:bg-primary/10 hover:text-primary"
               )}
             >
-              <LayoutDashboard size={18} />
+              <LayoutDashboard size={18} className="text-primary opacity-80" />
               Dashboard
             </Link>
           </li>
@@ -87,13 +87,13 @@ export default function AdminNavigation() {
             <Link
               href="/admin/games"
               className={cn(
-                "flex items-center gap-3 px-3 py-2 rounded-lg transition-colors",
+                "flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all",
                 isActive("/admin/games")
-                  ? "bg-primary text-white"
-                  : "text-gray-300 hover:bg-gray-800"
+                  ? "bg-primary/15 text-primary shadow-sm"
+                  : "text-card-foreground hover:bg-primary/10 hover:text-primary"
               )}
             >
-              <Gamepad2 size={18} />
+              <Gamepad2 size={18} className="text-primary opacity-80" />
               Games
             </Link>
           </li>
@@ -101,13 +101,13 @@ export default function AdminNavigation() {
             <Link
               href="/admin/blog"
               className={cn(
-                "flex items-center gap-3 px-3 py-2 rounded-lg transition-colors",
+                "flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all",
                 isActive("/admin/blog")
-                  ? "bg-primary text-white"
-                  : "text-gray-300 hover:bg-gray-800"
+                  ? "bg-primary/15 text-primary shadow-sm"
+                  : "text-card-foreground hover:bg-primary/10 hover:text-primary"
               )}
             >
-              <Book size={18} />
+              <Book size={18} className="text-primary opacity-80" />
               Blog
             </Link>
           </li>
@@ -115,13 +115,13 @@ export default function AdminNavigation() {
             <Link
               href="/admin/pages"
               className={cn(
-                "flex items-center gap-3 px-3 py-2 rounded-lg transition-colors",
+                "flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all",
                 isActive("/admin/pages")
-                  ? "bg-primary text-white"
-                  : "text-gray-300 hover:bg-gray-800"
+                  ? "bg-primary/15 text-primary shadow-sm"
+                  : "text-card-foreground hover:bg-primary/10 hover:text-primary"
               )}
             >
-              <FileSymlink size={18} />
+              <FileSymlink size={18} className="text-primary opacity-80" />
               Pages
             </Link>
           </li>
@@ -129,13 +129,13 @@ export default function AdminNavigation() {
             <Link
               href="/admin/homepage-content"
               className={cn(
-                "flex items-center gap-3 px-3 py-2 rounded-lg transition-colors",
+                "flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all",
                 isActive("/admin/homepage-content")
-                  ? "bg-primary text-white"
-                  : "text-gray-300 hover:bg-gray-800"
+                  ? "bg-primary/15 text-primary shadow-sm"
+                  : "text-card-foreground hover:bg-primary/10 hover:text-primary"
               )}
             >
-              <FileText size={18} />
+              <FileText size={18} className="text-primary opacity-80" />
               Homepage Content
             </Link>
           </li>
@@ -145,11 +145,11 @@ export default function AdminNavigation() {
               target="_blank"
               rel="noopener noreferrer"
               className={cn(
-                "flex items-center gap-3 px-3 py-2 rounded-lg transition-colors",
-                "text-gray-300 hover:bg-gray-800 bg-gray-800/50"
+                "flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all",
+                "text-card-foreground hover:bg-primary/10 hover:text-primary bg-primary/5"
               )}
             >
-              <Home size={18} />
+              <Home size={18} className="text-primary opacity-80" />
               View Site
             </a>
           </li>
@@ -157,13 +157,13 @@ export default function AdminNavigation() {
             <Link
               href="/admin/home-ads"
               className={cn(
-                "flex items-center gap-3 px-3 py-2 rounded-lg transition-colors",
+                "flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all",
                 isActive("/admin/home-ads")
-                  ? "bg-primary text-white"
-                  : "text-gray-300 hover:bg-gray-800"
+                  ? "bg-primary/15 text-primary shadow-sm"
+                  : "text-card-foreground hover:bg-primary/10 hover:text-primary"
               )}
             >
-              <ImageIcon size={18} />
+              <ImageIcon size={18} className="text-primary opacity-80" />
               Home Ads
             </Link>
           </li>
@@ -171,13 +171,13 @@ export default function AdminNavigation() {
             <Link
               href="/admin/api-keys"
               className={cn(
-                "flex items-center gap-3 px-3 py-2 rounded-lg transition-colors",
+                "flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all",
                 isActive("/admin/api-keys")
-                  ? "bg-primary text-white"
-                  : "text-gray-300 hover:bg-gray-800"
+                  ? "bg-primary/15 text-primary shadow-sm"
+                  : "text-card-foreground hover:bg-primary/10 hover:text-primary"
               )}
             >
-              <Key size={18} />
+              <Key size={18} className="text-primary opacity-80" />
               API Keys
             </Link>
           </li>
@@ -185,13 +185,13 @@ export default function AdminNavigation() {
             <Link
               href="/admin/sitemaps"
               className={cn(
-                "flex items-center gap-3 px-3 py-2 rounded-lg transition-colors",
+                "flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all",
                 isActive("/admin/sitemaps")
-                  ? "bg-primary text-white"
-                  : "text-gray-300 hover:bg-gray-800"
+                  ? "bg-primary/15 text-primary shadow-sm"
+                  : "text-card-foreground hover:bg-primary/10 hover:text-primary"
               )}
             >
-              <Map size={18} />
+              <Map size={18} className="text-primary opacity-80" />
               Sitemaps
             </Link>
           </li>
@@ -199,13 +199,13 @@ export default function AdminNavigation() {
             <Link
               href="/admin/blog-ads"
               className={cn(
-                "flex items-center gap-3 px-3 py-2 rounded-lg transition-colors",
+                "flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all",
                 isActive("/admin/blog-ads")
-                  ? "bg-primary text-white"
-                  : "text-gray-300 hover:bg-gray-800"
+                  ? "bg-primary/15 text-primary shadow-sm"
+                  : "text-card-foreground hover:bg-primary/10 hover:text-primary"
               )}
             >
-              <BarChart size={18} />
+              <BarChart size={18} className="text-primary opacity-80" />
               Blog Ads
             </Link>
           </li>
@@ -399,25 +399,25 @@ export default function AdminNavigation() {
             <Link
               href="/admin/settings"
               className={cn(
-                "flex items-center gap-3 px-3 py-2 rounded-lg transition-colors",
+                "flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all",
                 isActive("/admin/settings")
-                  ? "bg-primary text-white"
-                  : "text-gray-300 hover:bg-gray-800"
+                  ? "bg-primary/15 text-primary shadow-sm"
+                  : "text-card-foreground hover:bg-primary/10 hover:text-primary"
               )}
             >
-              <Settings size={18} />
+              <Settings size={18} className="text-primary opacity-80" />
               Settings
             </Link>
           </li>
         </ul>
       </nav>
 
-      <div className="p-4 border-t border-gray-800">
+      <div className="p-4 border-t border-border">
         <button
           onClick={handleLogout}
-          className="flex items-center gap-3 w-full px-3 py-2 text-gray-300 hover:bg-gray-800 rounded-lg transition-colors"
+          className="flex items-center gap-3 w-full px-3 py-2.5 rounded-lg transition-all text-card-foreground hover:bg-destructive/10 hover:text-destructive"
         >
-          <LogOut size={18} />
+          <LogOut size={18} className="text-destructive opacity-80" />
           Logout
         </button>
       </div>
