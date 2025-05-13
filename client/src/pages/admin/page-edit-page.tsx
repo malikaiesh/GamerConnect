@@ -8,6 +8,7 @@ import { ArrowLeft, Loader2, Save, Trash2 } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
 import { useToast } from "@/hooks/use-toast";
 import { queryClient, apiRequest } from "@/lib/queryClient";
+import AdminNavigation from "@/components/admin/navigation";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
@@ -165,18 +166,26 @@ export default function PageEditPage() {
   }
 
   return (
-    <div className="container mx-auto p-4">
-      <div className="flex items-center mb-6">
-        <Button variant="ghost" onClick={() => setLocation("/admin/pages")} className="mr-4">
-          <ArrowLeft className="mr-2 h-4 w-4" /> Back
-        </Button>
-        <h1 className="text-2xl font-bold">
-          {isNew ? "Create New Page" : `Edit Page: ${page?.title}`}
-        </h1>
-      </div>
+    <div className="flex min-h-screen bg-gray-100 dark:bg-gray-900">
+      <AdminNavigation />
+      
+      <div className="flex-1 p-6 lg:p-10">
+        <div className="mb-6 flex items-center">
+          <Button variant="ghost" onClick={() => setLocation("/admin/pages")} className="mr-4">
+            <ArrowLeft className="mr-2 h-4 w-4" /> Back
+          </Button>
+          <div>
+            <h1 className="text-3xl font-bold">
+              {isNew ? "Create New Page" : `Edit Page: ${page?.title}`}
+            </h1>
+            <p className="text-muted-foreground">
+              {isNew ? "Create a new static page for your website" : "Edit content and settings for this page"}
+            </p>
+          </div>
+        </div>
 
-      <Form {...form}>
-        <form onSubmit={form.handleSubmit(onSubmit)}>
+        <Form {...form}>
+          <form onSubmit={form.handleSubmit(onSubmit)}>
           <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
             <div className="md:col-span-3">
               <Card>
@@ -457,6 +466,7 @@ export default function PageEditPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+      </div>
     </div>
   );
 }
