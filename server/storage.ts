@@ -1748,7 +1748,7 @@ class DatabaseStorage implements IStorage {
         getGameUrls, 
         getBlogUrls, 
         getPageUrls 
-      } = await import('../utils/sitemap');
+      } = await import('./utils/sitemap');
       
       // Get the base URL from site settings
       const siteSettings = await this.getSiteSettings();
