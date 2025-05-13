@@ -309,7 +309,7 @@ export default function ApiKeysPage() {
 
       {/* Create/Edit API Key Dialog */}
       <Dialog open={openDialog} onOpenChange={setOpenDialog}>
-        <DialogContent className="sm:max-w-[525px]">
+        <DialogContent className="sm:max-w-[525px] max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>
               {dialogMode === 'create' ? 'Add New API Key' : 'Edit API Key'}
@@ -341,7 +341,12 @@ export default function ApiKeysPage() {
                 </Label>
                 <Select
                   value={formData.type}
-                  onValueChange={(value) => handleSelectChange('type', value)}
+                  onValueChange={(value) => {
+                    handleSelectChange('type', value);
+                    // Force the select to close after selection
+                    document.body.click();
+                  }}
+                  open={false}
                 >
                   <SelectTrigger className="col-span-3">
                     <SelectValue placeholder="Select type" />
