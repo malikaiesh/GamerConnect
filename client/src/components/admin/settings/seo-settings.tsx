@@ -17,12 +17,30 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { FileUpload } from "@/components/ui/file-upload";
 import { useState } from "react";
 
+const validateUrl = (str: string) => {
+  // Allow relative URLs starting with / for uploaded files
+  if (str.startsWith('/')) return true;
+  // Otherwise validate as regular URL
+  try {
+    new URL(str);
+    return true;
+  } catch {
+    return false;
+  }
+};
+
 const seoSettingsSchema = z.object({
   siteTitle: z.string().min(3, { message: "Site title must be at least 3 characters" }),
   metaDescription: z.string().min(10, { message: "Meta description must be at least 10 characters" }),
   keywords: z.string(),
-  siteLogo: z.string().url().optional().nullable(),
-  siteFavicon: z.string().url().optional().nullable(),
+  siteLogo: z.string()
+    .refine(val => !val || validateUrl(val), { message: "Logo must be a valid URL or path" })
+    .optional()
+    .nullable(),
+  siteFavicon: z.string()
+    .refine(val => !val || validateUrl(val), { message: "Favicon must be a valid URL or path" })
+    .optional()
+    .nullable(),
   useTextLogo: z.boolean().default(true),
   textLogoColor: z.string().default("#4f46e5"),
 });
@@ -72,11 +90,12 @@ export function SeoSettings() {
       const response = await fetch("/api/upload", {
         method: "POST",
         body: formData,
+        credentials: 'include' // Include cookies for auth
       });
       
       if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.error?.message || "Failed to upload image");
+        const errorData = await response.json();
+        throw new Error(errorData.error?.message || "Failed to upload image");
       }
       
       return response.json();
@@ -86,7 +105,7 @@ export function SeoSettings() {
         title: "Image uploaded successfully",
         description: "Your image has been uploaded.",
       });
-      return data.location; // Return the URL of the uploaded file
+      return data;
     },
     onError: (error: Error) => {
       toast({
@@ -118,41 +137,68 @@ export function SeoSettings() {
     },
   });
 
-  const handleLogoUpload = async (file: File): Promise<string> => {
-    const result = await uploadImageMutation.mutateAsync(file);
-    return result.location;
-  };
-
-  const handleFaviconUpload = async (file: File): Promise<string> => {
-    const result = await uploadImageMutation.mutateAsync(file);
-    return result.location;
+  const handleFileUpload = async (file: File): Promise<string> => {
+    try {
+      const result = await uploadImageMutation.mutateAsync(file);
+      if (!result || !result.location) {
+        throw new Error("Upload failed: No file location returned");
+      }
+      return result.location;
+    } catch (error) {
+      console.error("File upload error:", error);
+      throw error;
+    }
   };
   
   const onSubmit = async (values: SeoSettingsFormValues) => {
-    // Handle logo file upload if selected
-    if (logoFile && !form.watch('useTextLogo')) {
-      try {
-        const logoUrl = await handleLogoUpload(logoFile);
-        values.siteLogo = logoUrl;
-      } catch (error) {
-        // The upload mutation will handle the error toast
-        return;
+    try {
+      let hasUploadFailed = false;
+      
+      // Handle logo file upload if selected and text logo is not being used
+      if (logoFile && !form.watch('useTextLogo')) {
+        try {
+          const logoUrl = await handleFileUpload(logoFile);
+          values.siteLogo = logoUrl;
+        } catch (error) {
+          hasUploadFailed = true;
+          console.error("Logo upload failed:", error);
+          toast({
+            title: "Logo upload failed",
+            description: "Please try again or use a URL instead",
+            variant: "destructive",
+          });
+        }
       }
-    }
-    
-    // Handle favicon file upload if selected
-    if (faviconFile) {
-      try {
-        const faviconUrl = await handleFaviconUpload(faviconFile);
-        values.siteFavicon = faviconUrl;
-      } catch (error) {
-        // The upload mutation will handle the error toast
-        return;
+      
+      // Handle favicon file upload if selected
+      if (faviconFile) {
+        try {
+          const faviconUrl = await handleFileUpload(faviconFile);
+          values.siteFavicon = faviconUrl;
+        } catch (error) {
+          hasUploadFailed = true;
+          console.error("Favicon upload failed:", error);
+          toast({
+            title: "Favicon upload failed",
+            description: "Please try again or use a URL instead",
+            variant: "destructive",
+          });
+        }
       }
+      
+      // Only proceed with form submission if there were no upload failures
+      if (!hasUploadFailed) {
+        // Submit the form with updated values
+        mutation.mutate(values);
+      }
+    } catch (error) {
+      console.error("Form submission error:", error);
+      toast({
+        title: "Error",
+        description: "Failed to save SEO settings. Please try again.",
+        variant: "destructive",
+      });
     }
-    
-    // Submit the form with updated values
-    mutation.mutate(values);
   };
 
   if (isLoading) {
@@ -325,16 +371,19 @@ export function SeoSettings() {
                               )}
                             </div>
                           </FormControl>
-                          <div>
-                            <label className="text-sm font-medium">Or upload a logo file</label>
-                            <FileUpload
-                              onFileSelect={setLogoFile}
-                              accept="image/*"
-                              maxSize={2} // 2MB
-                              initialValue={field.value}
-                              buttonText="Choose Logo"
-                              label="Upload Logo"
-                            />
+                          <div className="mt-4">
+                            <label className="text-sm font-medium mb-2 block">Or upload a logo file</label>
+                            <div className="border rounded-md p-4 bg-muted/10">
+                              <FileUpload
+                                onFileSelect={setLogoFile}
+                                accept="image/*"
+                                maxSize={2} // 2MB
+                                initialValue={field.value}
+                                buttonText="Choose Logo"
+                                label="Upload Logo"
+                                className="w-full"
+                              />
+                            </div>
                           </div>
                         </div>
                         <FormDescription>
@@ -375,16 +424,19 @@ export function SeoSettings() {
                             )}
                           </div>
                         </FormControl>
-                        <div>
-                          <label className="text-sm font-medium">Or upload a favicon file</label>
-                          <FileUpload
-                            onFileSelect={setFaviconFile}
-                            accept="image/x-icon,image/png,image/jpeg,image/gif,image/svg+xml"
-                            maxSize={1} // 1MB
-                            initialValue={field.value}
-                            buttonText="Choose Favicon"
-                            label="Upload Favicon"
-                          />
+                        <div className="mt-4">
+                          <label className="text-sm font-medium mb-2 block">Or upload a favicon file</label>
+                          <div className="border rounded-md p-4 bg-muted/10">
+                            <FileUpload
+                              onFileSelect={setFaviconFile}
+                              accept="image/x-icon,image/png,image/jpeg,image/gif,image/svg+xml"
+                              maxSize={1} // 1MB
+                              initialValue={field.value}
+                              buttonText="Choose Favicon"
+                              label="Upload Favicon"
+                              className="w-full"
+                            />
+                          </div>
                         </div>
                       </div>
                       <FormDescription>

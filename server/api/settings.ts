@@ -40,6 +40,19 @@ export function registerSettingsRoutes(app: Express) {
     }
   });
   
+  // Utility function to validate URLs including relative ones
+  const validateUrl = (str: string) => {
+    // Allow relative URLs starting with / for uploaded files
+    if (str.startsWith('/')) return true;
+    // Otherwise validate as regular URL
+    try {
+      new URL(str);
+      return true;
+    } catch {
+      return false;
+    }
+  };
+
   // Update SEO settings
   app.patch('/api/settings/seo', async (req: Request, res: Response) => {
     try {
@@ -47,8 +60,14 @@ export function registerSettingsRoutes(app: Express) {
         siteTitle: z.string().min(3),
         metaDescription: z.string().min(10),
         keywords: z.string(),
-        siteLogo: z.string().url().optional().nullable(),
-        siteFavicon: z.string().url().optional().nullable(),
+        siteLogo: z.string()
+          .refine(val => !val || validateUrl(val), { message: "Logo must be a valid URL or path" })
+          .optional()
+          .nullable(),
+        siteFavicon: z.string()
+          .refine(val => !val || validateUrl(val), { message: "Favicon must be a valid URL or path" })
+          .optional()
+          .nullable(),
         useTextLogo: z.boolean().optional(),
         textLogoColor: z.string().optional(),
         adsTxt: z.string().optional()
