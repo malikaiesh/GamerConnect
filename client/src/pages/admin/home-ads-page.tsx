@@ -522,7 +522,7 @@ export default function HomeAdsPage() {
                       name="status"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Status</FormLabel>
+                          <FormLabel className="text-foreground">Status</FormLabel>
                           <Select
                             onValueChange={(value) => {
                               field.onChange(value);
