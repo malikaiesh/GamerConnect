@@ -2,6 +2,7 @@ import { useEffect, useState, useRef } from 'react';
 import { Editor } from '@tinymce/tinymce-react';
 import { FormControl } from '@/components/ui/form';
 import { Skeleton } from '@/components/ui/skeleton';
+import { useQuery } from '@tanstack/react-query';
 
 interface RichTextEditorProps {
   value: string;
@@ -20,7 +21,30 @@ export function RichTextEditor({
 }: RichTextEditorProps) {
   const [isLoading, setIsLoading] = useState(true);
   const editorRef = useRef<any>(null);
-  const apiKey = import.meta.env.VITE_TINYMCE_API_KEY || '';
+  const [apiKey, setApiKey] = useState<string>(import.meta.env.VITE_TINYMCE_API_KEY || '');
+  
+  // Fetch TinyMCE API key from database
+  const { data: tinyMceData } = useQuery({
+    queryKey: ['/api/api-keys/type/tinymce'],
+    queryFn: async () => {
+      try {
+        const res = await fetch('/api/api-keys/type/tinymce');
+        if (!res.ok) return null;
+        return res.json();
+      } catch (error) {
+        console.error('Error fetching TinyMCE API key:', error);
+        return null;
+      }
+    }
+  });
+
+  // Update API key when data is loaded
+  useEffect(() => {
+    if (tinyMceData && tinyMceData.key) {
+      setApiKey(tinyMceData.key);
+      console.log('TinyMCE API key loaded from database');
+    }
+  }, [tinyMceData]);
   
   useEffect(() => {
     // Auto-focus workaround for when the editor is initially loaded but hidden
