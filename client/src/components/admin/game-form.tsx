@@ -636,15 +636,17 @@ export function GameForm({ game, onSuccess }: GameFormProps) {
                           <FormItem>
                             <FormLabel>Game Instructions</FormLabel>
                             <FormControl>
-                              <Textarea 
-                                placeholder="How to play the game..."
-                                className="min-h-24"
-                                {...field}
-                                value={field.value || ""}
-                              />
+                              <div className="border rounded-md">
+                                <RichTextEditor
+                                  id="game-instructions-editor"
+                                  value={field.value || ""}
+                                  onChange={field.onChange}
+                                  height={300}
+                                />
+                              </div>
                             </FormControl>
                             <FormDescription>
-                              Explain how to play the game, controls, etc.
+                              Explain how to play the game, controls, etc. You can add images, videos, and formatted text.
                             </FormDescription>
                             <FormMessage />
                           </FormItem>
