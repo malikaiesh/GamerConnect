@@ -869,8 +869,31 @@ class DatabaseStorage implements IStorage {
   async updateBlogCategory(id: number, categoryData: Partial<InsertBlogCategory>): Promise<BlogCategory | null> { return null; }
   async deleteBlogCategory(id: number): Promise<boolean> { return false; }
   
-  async getBlogPostById(id: number): Promise<BlogPost | null> { return null; }
-  async getBlogPostBySlug(slug: string): Promise<BlogPost | null> { return null; }
+  async getBlogPostById(id: number): Promise<BlogPost | null> {
+    try {
+      const [post] = await db.select()
+        .from(blogPosts)
+        .where(eq(blogPosts.id, id));
+      
+      return post || null;
+    } catch (error) {
+      console.error(`Error fetching blog post with ID ${id}:`, error);
+      return null;
+    }
+  }
+  
+  async getBlogPostBySlug(slug: string): Promise<BlogPost | null> {
+    try {
+      const [post] = await db.select()
+        .from(blogPosts)
+        .where(eq(blogPosts.slug, slug));
+      
+      return post || null;
+    } catch (error) {
+      console.error(`Error fetching blog post with slug ${slug}:`, error);
+      return null;
+    }
+  }
   async getBlogPosts(options?: { 
     page?: number, 
     limit?: number, 
@@ -928,15 +951,128 @@ class DatabaseStorage implements IStorage {
       return { posts: [], total: 0, totalPages: 0 };
     }
   }
-  async createBlogPost(post: Omit<InsertBlogPost, "createdAt" | "updatedAt">): Promise<BlogPost> { throw new Error("Not implemented"); }
-  async updateBlogPost(id: number, postData: Partial<InsertBlogPost>): Promise<BlogPost | null> { return null; }
-  async deleteBlogPost(id: number): Promise<boolean> { return false; }
-  async searchBlogPosts(query: string, options?: { page?: number, limit?: number }): Promise<{ posts: BlogPost[], total: number, totalPages: number }> { 
-    return { posts: [], total: 0, totalPages: 0 }; 
+  async createBlogPost(post: Omit<InsertBlogPost, "createdAt" | "updatedAt">): Promise<BlogPost> {
+    try {
+      const now = new Date();
+      const [newPost] = await db.insert(blogPosts)
+        .values({
+          ...post,
+          createdAt: now,
+          updatedAt: now
+        })
+        .returning();
+      
+      return newPost;
+    } catch (error) {
+      console.error('Error creating blog post:', error);
+      throw new Error('Failed to create blog post');
+    }
   }
-  async getRecentPosts(limit?: number): Promise<BlogPost[]> { return []; }
-  async getRecentBlogPosts(limit?: number): Promise<BlogPost[]> { return this.getRecentPosts(limit); }
-  async publishBlogPost(id: number): Promise<BlogPost | null> { return null; }
+  
+  async updateBlogPost(id: number, postData: Partial<InsertBlogPost>): Promise<BlogPost | null> {
+    try {
+      const [updatedPost] = await db.update(blogPosts)
+        .set({
+          ...postData,
+          updatedAt: new Date()
+        })
+        .where(eq(blogPosts.id, id))
+        .returning();
+      
+      return updatedPost || null;
+    } catch (error) {
+      console.error(`Error updating blog post with ID ${id}:`, error);
+      return null;
+    }
+  }
+  
+  async deleteBlogPost(id: number): Promise<boolean> {
+    try {
+      const result = await db.delete(blogPosts)
+        .where(eq(blogPosts.id, id));
+      
+      return true;
+    } catch (error) {
+      console.error(`Error deleting blog post with ID ${id}:`, error);
+      return false;
+    }
+  }
+  async searchBlogPosts(query: string, options?: { page?: number, limit?: number }): Promise<{ posts: BlogPost[], total: number, totalPages: number }> { 
+    try {
+      const { page = 1, limit = 10 } = options || {};
+      const searchPattern = `%${query}%`;
+      
+      // Base query with search
+      let dbQuery = db.select()
+        .from(blogPosts)
+        .where(or(
+          ilike(blogPosts.title, searchPattern),
+          ilike(blogPosts.content, searchPattern)
+        ));
+      
+      // Get total count
+      const countQuery = db.select({ count: count() })
+        .from(blogPosts)
+        .where(or(
+          ilike(blogPosts.title, searchPattern),
+          ilike(blogPosts.content, searchPattern)
+        ));
+      
+      const [countResult] = await countQuery;
+      const total = Number(countResult?.count) || 0;
+      
+      // Apply pagination
+      dbQuery = dbQuery
+        .orderBy(desc(blogPosts.createdAt))
+        .limit(limit)
+        .offset((page - 1) * limit);
+      
+      // Get results
+      const posts = await dbQuery;
+      const totalPages = Math.ceil(total / limit);
+      
+      return { posts, total, totalPages };
+    } catch (error) {
+      console.error('Error searching blog posts:', error);
+      return { posts: [], total: 0, totalPages: 0 };
+    }
+  }
+  
+  async getRecentPosts(limit?: number): Promise<BlogPost[]> {
+    try {
+      const posts = await db.select()
+        .from(blogPosts)
+        .where(eq(blogPosts.status, 'published'))
+        .orderBy(desc(blogPosts.createdAt))
+        .limit(limit || 3);
+      
+      return posts;
+    } catch (error) {
+      console.error('Error fetching recent blog posts:', error);
+      return [];
+    }
+  }
+  
+  async getRecentBlogPosts(limit?: number): Promise<BlogPost[]> {
+    return this.getRecentPosts(limit);
+  }
+  async publishBlogPost(id: number): Promise<BlogPost | null> {
+    try {
+      // Update the post status to published
+      const [updatedPost] = await db.update(blogPosts)
+        .set({
+          status: 'published',
+          updatedAt: new Date()
+        })
+        .where(eq(blogPosts.id, id))
+        .returning();
+      
+      return updatedPost || null;
+    } catch (error) {
+      console.error(`Error publishing blog post with ID ${id}:`, error);
+      return null;
+    }
+  }
   
   async rateGame(gameId: number, rating: number): Promise<void> {}
   
