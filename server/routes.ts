@@ -13,6 +13,7 @@ import { registerPagesRoutes } from "./api/pages";
 import { registerApiKeyRoutes } from "./api/apiKeys";
 import { registerHomeAdsRoutes } from "./api/homeAds";
 import { registerSitemapRoutes } from "./api/sitemapRoutes";
+import { registerUserRoutes } from "./api/users";
 import pushNotificationsRoutes from "./api/push-notifications";
 import { storage } from "./storage";
 import { db } from "../db";
@@ -120,6 +121,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   registerApiKeyRoutes(app);
   registerHomeAdsRoutes(app);
   registerSitemapRoutes(app);
+  registerUserRoutes(app);
   
   // Register push-notifications API routes
   app.use('/api/push-notifications', pushNotificationsRoutes);

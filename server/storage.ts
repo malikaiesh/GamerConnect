@@ -1,5 +1,5 @@
 import { db, pool } from "@db";
-import { eq, desc, and, or, like, sql, isNull, isNotNull, lte, gte, count, asc } from "drizzle-orm";
+import { eq, desc, and, or, like, sql, isNull, isNotNull, lte, gte, count, asc, ilike, not } from "drizzle-orm";
 import connectPg from "connect-pg-simple";
 import session from "express-session";
 import {
@@ -261,34 +261,40 @@ class DatabaseStorage implements IStorage {
     const { page = 1, limit = 10, search } = options;
     const offset = (page - 1) * limit;
     
-    let query = db.select({ count: count() }).from(users).where(eq(users.status, status));
-    let dataQuery = db.select().from(users).where(eq(users.status, status));
+    let queryBuilder = db.select({ count: count() }).from(users).where(eq(users.status, status));
+    let dataQueryBuilder = db.select().from(users).where(eq(users.status, status));
     
     // Add search filter if provided
     if (search) {
       const searchLower = `%${search.toLowerCase()}%`;
       
-      query = query.where(
-        or(
-          ilike(users.username, searchLower),
-          ilike(users.email || '', searchLower),
-          ilike(users.country || '', searchLower)
-        )
-      );
+      queryBuilder = db.select({ count: count() })
+        .from(users)
+        .where(and(
+          eq(users.status, status),
+          or(
+            like(users.username, searchLower),
+            like(users.email || '', searchLower),
+            like(users.country || '', searchLower)
+          )
+        ));
       
-      dataQuery = dataQuery.where(
-        or(
-          ilike(users.username, searchLower),
-          ilike(users.email || '', searchLower),
-          ilike(users.country || '', searchLower)
-        )
-      );
+      dataQueryBuilder = db.select()
+        .from(users)
+        .where(and(
+          eq(users.status, status),
+          or(
+            like(users.username, searchLower),
+            like(users.email || '', searchLower),
+            like(users.country || '', searchLower)
+          )
+        ));
     }
     
-    const [countResult] = await query;
+    const [countResult] = await queryBuilder;
     const total = Number(countResult?.count || 0);
     
-    const result = await dataQuery
+    const result = await dataQueryBuilder
       .limit(limit)
       .offset(offset)
       .orderBy(desc(users.createdAt));
@@ -306,7 +312,7 @@ class DatabaseStorage implements IStorage {
       .where(
         and(
           isNotNull(users.location),
-          not(sql`${users.location}::text = '{}'::text`)
+          sql`${users.location}::text != '{}'::text`
         )
       )
       .orderBy(desc(users.createdAt))
