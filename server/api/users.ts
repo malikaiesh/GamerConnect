@@ -2,6 +2,87 @@ import { Express, Request, Response } from "express";
 import { storage } from "../storage";
 
 export function registerUserRoutes(app: Express) {
+  // Get a user's role
+  app.get('/api/admin/users/:id/role', async (req: Request, res: Response) => {
+    if (!req.isAuthenticated() || !req.user.isAdmin) {
+      return res.status(403).json({ message: "Insufficient permissions" });
+    }
+    
+    try {
+      const userId = parseInt(req.params.id);
+      if (isNaN(userId)) {
+        return res.status(400).json({ message: 'Invalid user ID' });
+      }
+      
+      const role = await storage.getUserRole(userId);
+      return res.json(role);
+    } catch (error) {
+      console.error('Error fetching user role:', error);
+      return res.status(500).json({ message: 'Failed to fetch user role' });
+    }
+  });
+  
+  // Assign a role to a user
+  app.post('/api/admin/users/:id/role', async (req: Request, res: Response) => {
+    if (!req.isAuthenticated() || !req.user.isAdmin) {
+      return res.status(403).json({ message: "Insufficient permissions" });
+    }
+    
+    try {
+      const userId = parseInt(req.params.id);
+      const roleId = parseInt(req.body.roleId);
+      
+      if (isNaN(userId) || isNaN(roleId)) {
+        return res.status(400).json({ message: 'Invalid user ID or role ID' });
+      }
+      
+      // Check if the role exists
+      const role = await storage.getRoleById(roleId);
+      if (!role) {
+        return res.status(404).json({ message: 'Role not found' });
+      }
+      
+      // Check if the user exists
+      const user = await storage.getUserById(userId);
+      if (!user) {
+        return res.status(404).json({ message: 'User not found' });
+      }
+      
+      const updatedUser = await storage.assignRoleToUser(userId, roleId);
+      return res.json(updatedUser);
+    } catch (error) {
+      console.error('Error assigning role to user:', error);
+      return res.status(500).json({ message: 'Failed to assign role to user' });
+    }
+  });
+  
+  // Remove role from a user
+  app.delete('/api/admin/users/:id/role', async (req: Request, res: Response) => {
+    if (!req.isAuthenticated() || !req.user.isAdmin) {
+      return res.status(403).json({ message: "Insufficient permissions" });
+    }
+    
+    try {
+      const userId = parseInt(req.params.id);
+      
+      if (isNaN(userId)) {
+        return res.status(400).json({ message: 'Invalid user ID' });
+      }
+      
+      // Check if the user exists
+      const user = await storage.getUserById(userId);
+      if (!user) {
+        return res.status(404).json({ message: 'User not found' });
+      }
+      
+      // Set the roleId to null
+      const updatedUser = await storage.updateUser(userId, { roleId: null });
+      return res.json(updatedUser);
+    } catch (error) {
+      console.error('Error removing role from user:', error);
+      return res.status(500).json({ message: 'Failed to remove role from user' });
+    }
+  });
   // Get users by status with pagination
   app.get('/api/admin/users', async (req: Request, res: Response) => {
     if (!req.isAuthenticated() || !req.user.isAdmin) {

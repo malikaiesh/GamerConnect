@@ -228,6 +228,177 @@ class DatabaseStorage implements IStorage {
     this.sessionStore = sessionStore;
   }
 
+  // Role and Permission methods
+  async getRoles(): Promise<Role[]> {
+    return db.select().from(roles).orderBy(asc(roles.name));
+  }
+
+  async getRoleById(id: number): Promise<Role | null> {
+    const result = await db.select().from(roles).where(eq(roles.id, id)).limit(1);
+    return result.length ? result[0] : null;
+  }
+
+  async getRoleByName(name: string): Promise<Role | null> {
+    const result = await db.select().from(roles).where(eq(roles.name, name)).limit(1);
+    return result.length ? result[0] : null;
+  }
+
+  async createRole(role: Omit<InsertRole, "createdAt" | "updatedAt">): Promise<Role> {
+    const result = await db.insert(roles).values({
+      ...role,
+      createdAt: new Date(),
+      updatedAt: new Date()
+    }).returning();
+    return result[0];
+  }
+
+  async updateRole(id: number, role: Partial<InsertRole>): Promise<Role | null> {
+    const result = await db.update(roles)
+      .set({ ...role, updatedAt: new Date() })
+      .where(eq(roles.id, id))
+      .returning();
+    return result.length ? result[0] : null;
+  }
+
+  async deleteRole(id: number): Promise<boolean> {
+    try {
+      // First, unassign this role from any users
+      await db.update(users)
+        .set({ roleId: null })
+        .where(eq(users.roleId, id));
+      
+      // Then delete the role (role_permissions will be deleted via CASCADE)
+      await db.delete(roles).where(eq(roles.id, id));
+      return true;
+    } catch (error) {
+      console.error('Error deleting role:', error);
+      return false;
+    }
+  }
+
+  async getPermissions(): Promise<Permission[]> {
+    return db.select().from(permissions).orderBy(asc(permissions.resource), asc(permissions.action));
+  }
+
+  async getPermissionById(id: number): Promise<Permission | null> {
+    const result = await db.select().from(permissions).where(eq(permissions.id, id)).limit(1);
+    return result.length ? result[0] : null;
+  }
+
+  async getPermissionsByResource(resource: string): Promise<Permission[]> {
+    return db.select().from(permissions).where(eq(permissions.resource, resource)).orderBy(asc(permissions.action));
+  }
+
+  async getRolePermissions(roleId: number): Promise<Permission[]> {
+    const result = await db.select({
+      permission: permissions
+    })
+    .from(rolePermissions)
+    .innerJoin(permissions, eq(rolePermissions.permissionId, permissions.id))
+    .where(eq(rolePermissions.roleId, roleId));
+    
+    return result.map(row => row.permission);
+  }
+
+  async assignPermissionToRole(roleId: number, permissionId: number): Promise<RolePermission> {
+    try {
+      const existingAssignment = await db.select()
+        .from(rolePermissions)
+        .where(and(
+          eq(rolePermissions.roleId, roleId),
+          eq(rolePermissions.permissionId, permissionId)
+        ))
+        .limit(1);
+      
+      if (existingAssignment.length > 0) {
+        return existingAssignment[0];
+      }
+      
+      const result = await db.insert(rolePermissions).values({
+        roleId,
+        permissionId,
+        createdAt: new Date()
+      }).returning();
+      return result[0];
+    } catch (error) {
+      console.error('Error assigning permission to role:', error);
+      throw error;
+    }
+  }
+
+  async removePermissionFromRole(roleId: number, permissionId: number): Promise<boolean> {
+    try {
+      await db.delete(rolePermissions)
+        .where(and(
+          eq(rolePermissions.roleId, roleId),
+          eq(rolePermissions.permissionId, permissionId)
+        ));
+      return true;
+    } catch (error) {
+      console.error('Error removing permission from role:', error);
+      return false;
+    }
+  }
+
+  async getUserRole(userId: number): Promise<Role | null> {
+    const user = await this.getUserById(userId);
+    if (!user || !user.roleId) return null;
+    
+    return this.getRoleById(user.roleId);
+  }
+
+  async assignRoleToUser(userId: number, roleId: number): Promise<User | null> {
+    const result = await db.update(users)
+      .set({ 
+        roleId,
+        updatedAt: new Date()
+      })
+      .where(eq(users.id, userId))
+      .returning();
+    
+    return result.length ? result[0] : null;
+  }
+
+  async hasPermission(userId: number, resource: string, action: string): Promise<boolean> {
+    try {
+      // Check if user is admin first (legacy check)
+      const user = await this.getUserById(userId);
+      if (!user) return false;
+      
+      if (user.isAdmin) return true;
+      
+      // If not admin and no role assigned, no permission
+      if (!user.roleId) return false;
+      
+      // Find the specific permission
+      const permissionResult = await db.select()
+        .from(permissions)
+        .where(and(
+          eq(permissions.resource, resource),
+          eq(permissions.action, action)
+        ))
+        .limit(1);
+      
+      if (!permissionResult.length) return false;
+      
+      const permissionId = permissionResult[0].id;
+      
+      // Check if user's role has this permission
+      const rolePermissionResult = await db.select()
+        .from(rolePermissions)
+        .where(and(
+          eq(rolePermissions.roleId, user.roleId),
+          eq(rolePermissions.permissionId, permissionId)
+        ))
+        .limit(1);
+      
+      return rolePermissionResult.length > 0;
+    } catch (error) {
+      console.error('Error checking permission:', error);
+      return false;
+    }
+  }
+
   // User methods
   async getUserById(id: number): Promise<User | null> {
     const result = await db.select().from(users).where(eq(users.id, id)).limit(1);
