@@ -42,7 +42,7 @@ type RegisterValues = z.infer<typeof registerSchema>;
 
 export default function AuthPage() {
   const [activeTab, setActiveTab] = useState<string>("login");
-  const { user, loginMutation, registerMutation, isLoading } = useAuth();
+  const { user, loginMutation, registerMutation, socialLogin, isLoading } = useAuth();
   const [location, navigate] = useLocation();
 
   // Login form
@@ -92,7 +92,16 @@ export default function AuthPage() {
     registerMutation.mutate({
       username: values.username,
       password: values.password,
+      email: values.email || undefined,
+      bio: values.bio || undefined,
+      country: values.country || undefined,
+      profilePicture: values.profilePicture || undefined,
     });
+  };
+  
+  // Handle social login
+  const handleSocialLogin = (provider: 'google' | 'facebook') => {
+    socialLogin(provider);
   };
 
   if (isLoading) {
@@ -215,6 +224,36 @@ export default function AuthPage() {
                       )}
                       Sign In
                     </Button>
+                    
+                    <div className="relative my-4">
+                      <div className="absolute inset-0 flex items-center">
+                        <span className="w-full border-t border-gray-300"></span>
+                      </div>
+                      <div className="relative flex justify-center text-sm">
+                        <span className="bg-white px-2 text-gray-500">Or continue with</span>
+                      </div>
+                    </div>
+                    
+                    <div className="grid grid-cols-2 gap-4">
+                      <Button 
+                        type="button" 
+                        variant="outline" 
+                        className="bg-white text-black border border-gray-300 hover:bg-gray-100"
+                        onClick={() => handleSocialLogin('google')}
+                      >
+                        <FaGoogle className="mr-2 h-4 w-4 text-red-500" />
+                        Google
+                      </Button>
+                      <Button 
+                        type="button" 
+                        variant="outline" 
+                        className="bg-white text-black border border-gray-300 hover:bg-gray-100"
+                        onClick={() => handleSocialLogin('facebook')}
+                      >
+                        <FaFacebook className="mr-2 h-4 w-4 text-blue-600" />
+                        Facebook
+                      </Button>
+                    </div>
                   </form>
                 </Form>
               </TabsContent>
@@ -234,6 +273,26 @@ export default function AuthPage() {
                               className="bg-white border-gray-300 text-black" 
                               style={{color: 'black'}}
                               placeholder="Choose a username" 
+                              {...field} 
+                            />
+                          </FormControl>
+                          <FormMessage className="text-red-500" />
+                        </FormItem>
+                      )}
+                    />
+                    
+                    <FormField
+                      control={registerForm.control}
+                      name="email"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="text-black font-medium">Email</FormLabel>
+                          <FormControl>
+                            <Input 
+                              className="bg-white border-gray-300 text-black" 
+                              style={{color: 'black'}}
+                              type="email"
+                              placeholder="your@email.com" 
                               {...field} 
                             />
                           </FormControl>
@@ -281,6 +340,74 @@ export default function AuthPage() {
                         </FormItem>
                       )}
                     />
+                    
+                    <FormField
+                      control={registerForm.control}
+                      name="profilePicture"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="text-black font-medium">Profile Picture URL</FormLabel>
+                          <FormControl>
+                            <Input 
+                              className="bg-white border-gray-300 text-black" 
+                              style={{color: 'black'}}
+                              placeholder="https://example.com/picture.jpg" 
+                              {...field} 
+                            />
+                          </FormControl>
+                          <FormMessage className="text-red-500" />
+                        </FormItem>
+                      )}
+                    />
+                    
+                    <FormField
+                      control={registerForm.control}
+                      name="country"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="text-black font-medium">Country</FormLabel>
+                          <Select onValueChange={field.onChange} defaultValue={field.value}>
+                            <FormControl>
+                              <SelectTrigger className="bg-white border-gray-300 text-black">
+                                <SelectValue placeholder="Select your country" />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                              <SelectItem value="United States">United States</SelectItem>
+                              <SelectItem value="United Kingdom">United Kingdom</SelectItem>
+                              <SelectItem value="Canada">Canada</SelectItem>
+                              <SelectItem value="Australia">Australia</SelectItem>
+                              <SelectItem value="Germany">Germany</SelectItem>
+                              <SelectItem value="France">France</SelectItem>
+                              <SelectItem value="India">India</SelectItem>
+                              <SelectItem value="Japan">Japan</SelectItem>
+                              <SelectItem value="Brazil">Brazil</SelectItem>
+                              <SelectItem value="Other">Other</SelectItem>
+                            </SelectContent>
+                          </Select>
+                          <FormMessage className="text-red-500" />
+                        </FormItem>
+                      )}
+                    />
+                    
+                    <FormField
+                      control={registerForm.control}
+                      name="bio"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="text-black font-medium">Bio</FormLabel>
+                          <FormControl>
+                            <Textarea 
+                              className="bg-white border-gray-300 text-black resize-none" 
+                              style={{color: 'black'}}
+                              placeholder="Tell us a bit about yourself..." 
+                              {...field} 
+                            />
+                          </FormControl>
+                          <FormMessage className="text-red-500" />
+                        </FormItem>
+                      )}
+                    />
 
                     <Button
                       type="submit"
@@ -292,6 +419,36 @@ export default function AuthPage() {
                       )}
                       Create Account
                     </Button>
+                    
+                    <div className="relative my-4">
+                      <div className="absolute inset-0 flex items-center">
+                        <span className="w-full border-t border-gray-300"></span>
+                      </div>
+                      <div className="relative flex justify-center text-sm">
+                        <span className="bg-white px-2 text-gray-500">Or continue with</span>
+                      </div>
+                    </div>
+                    
+                    <div className="grid grid-cols-2 gap-4">
+                      <Button 
+                        type="button" 
+                        variant="outline" 
+                        className="bg-white text-black border border-gray-300 hover:bg-gray-100"
+                        onClick={() => handleSocialLogin('google')}
+                      >
+                        <FaGoogle className="mr-2 h-4 w-4 text-red-500" />
+                        Google
+                      </Button>
+                      <Button 
+                        type="button" 
+                        variant="outline" 
+                        className="bg-white text-black border border-gray-300 hover:bg-gray-100"
+                        onClick={() => handleSocialLogin('facebook')}
+                      >
+                        <FaFacebook className="mr-2 h-4 w-4 text-blue-600" />
+                        Facebook
+                      </Button>
+                    </div>
                   </form>
                 </Form>
               </TabsContent>
