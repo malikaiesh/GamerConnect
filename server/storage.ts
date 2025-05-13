@@ -1051,6 +1051,183 @@ class DatabaseStorage implements IStorage {
   async getMostViewedPages(limit?: number): Promise<{ page: string, count: number }[]> { return []; }
   async getMostPlayedGames(limit?: number): Promise<{ gameId: number, title: string, count: number }[]> { return []; }
   
+  async getRelatedGames(gameId: number, category?: string, tags?: string[]): Promise<Game[]> {
+    try {
+      // Start with a base query for games other than the current one
+      let query = db.select().from(games)
+        .where(and(
+          // Exclude the current game
+          not(eq(games.id, gameId)),
+          // Only active or featured games
+          or(
+            eq(games.status, 'active'),
+            eq(games.status, 'featured')
+          )
+        ));
+      
+      // If we have a category, find games in the same category
+      if (category) {
+        query = query.where(eq(games.category, category));
+      }
+      
+      // For now, we'll order by popularity (plays) and limit to 8
+      const relatedGames = await query
+        .orderBy(desc(games.plays))
+        .limit(8);
+        
+      return relatedGames;
+    } catch (error) {
+      console.error(`Error fetching related games for game ID ${gameId}:`, error);
+      return [];
+    }
+  }
+  
+  async getBlogStats(): Promise<{
+    totalPosts: number,
+    draftPosts: number,
+    publishedPosts: number,
+    totalViews: number,
+    totalCategories: number
+  }> {
+    try {
+      // Get total posts
+      const [{ value: totalPosts }] = await db.select({
+        value: count()
+      }).from(blogPosts);
+      
+      // Get draft posts
+      const [{ value: draftPosts }] = await db.select({
+        value: count()
+      }).from(blogPosts).where(eq(blogPosts.status, 'draft'));
+      
+      // Get published posts
+      const [{ value: publishedPosts }] = await db.select({
+        value: count()
+      }).from(blogPosts).where(eq(blogPosts.status, 'published'));
+      
+      // Get categories count
+      const [{ value: totalCategories }] = await db.select({
+        value: count()
+      }).from(blogCategories);
+      
+      // Use a more explicit approach to sum views
+      let totalViews = 0;
+      const allPosts = await db.select({
+        views: blogPosts.views
+      }).from(blogPosts);
+      
+      // Sum up all the views manually
+      for (const post of allPosts) {
+        totalViews += post.views || 0;
+      }
+      
+      return {
+        totalPosts,
+        draftPosts,
+        publishedPosts,
+        totalViews,
+        totalCategories
+      };
+    } catch (error) {
+      console.error('Error fetching blog stats:', error);
+      return {
+        totalPosts: 0,
+        draftPosts: 0,
+        publishedPosts: 0,
+        totalViews: 0,
+        totalCategories: 0
+      };
+    }
+  }
+  
+  async getAnalytics(timeframe: string): Promise<{
+    pageViews: number;
+    uniqueVisitors: number;
+    avgTimeOnSite: number;
+    bounceRate: number;
+    topPages: { path: string; views: number }[];
+    topGames: { name: string; plays: number }[];
+    dailyVisitors: { date: string; visitors: number }[];
+    userDevices: { device: string; count: number }[];
+  }> {
+    try {
+      // Get days to look back based on timeframe
+      let daysToLookBack = 7; // Default to 7 days
+      if (timeframe === '30days') {
+        daysToLookBack = 30;
+      } else if (timeframe === '90days') {
+        daysToLookBack = 90;
+      }
+      
+      // For now, return structured mock data that represents what we would get from the database
+      // In a real implementation, this would query the analytics table
+      
+      // Generate dates for the chart
+      const dailyVisitors = [];
+      for (let i = 0; i < daysToLookBack; i++) {
+        const date = new Date();
+        date.setDate(date.getDate() - i);
+        const formattedDate = date.toISOString().split('T')[0]; // YYYY-MM-DD
+        dailyVisitors.unshift({
+          date: formattedDate,
+          visitors: Math.floor(Math.random() * 500) + 100 // Random data between 100-600
+        });
+      }
+      
+      // Get top games from actual database
+      const topGamesData = await this.getMostPlayedGames(5);
+      const topGames = await Promise.all(topGamesData.map(async (game) => {
+        const gameInfo = await this.getGameById(game.gameId);
+        return {
+          name: gameInfo?.title || `Game ${game.gameId}`,
+          plays: game.count
+        };
+      }));
+      
+      // Mock data for remaining fields
+      return {
+        pageViews: 15780,
+        uniqueVisitors: 4230,
+        avgTimeOnSite: 4.5, // minutes
+        bounceRate: 42.8, // percentage
+        topPages: [
+          { path: '/', views: 4200 },
+          { path: '/games', views: 3100 },
+          { path: '/blog', views: 1800 },
+          { path: '/about', views: 850 },
+          { path: '/contact', views: 450 }
+        ],
+        topGames: topGames.length > 0 ? topGames : [
+          { name: 'Racing Champions', plays: 3400 },
+          { name: 'Shadow Ninja', plays: 2800 },
+          { name: 'Fantasy Quest', plays: 2300 },
+          { name: 'Cosmic Defender', plays: 1900 },
+          { name: 'Puzzle Master', plays: 1500 }
+        ],
+        dailyVisitors,
+        userDevices: [
+          { device: 'Desktop', count: 2560 },
+          { device: 'Mobile', count: 1420 },
+          { device: 'Tablet', count: 250 }
+        ]
+      };
+    } catch (error) {
+      console.error('Error fetching analytics:', error);
+      
+      // Return default structure with zeros
+      return {
+        pageViews: 0,
+        uniqueVisitors: 0,
+        avgTimeOnSite: 0,
+        bounceRate: 0,
+        topPages: [],
+        topGames: [],
+        dailyVisitors: [],
+        userDevices: []
+      };
+    }
+  }
+  
   async createPushSubscriber(subscriber: InsertPushSubscriber): Promise<PushSubscriber> { throw new Error("Not implemented"); }
   async getPushSubscriberByEndpoint(endpoint: string): Promise<PushSubscriber | null> { return null; }
   async updatePushSubscriber(id: number, data: Partial<InsertPushSubscriber>): Promise<PushSubscriber | null> { return null; }
