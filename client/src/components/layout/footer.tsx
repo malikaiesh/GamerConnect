@@ -35,21 +35,41 @@ export function Footer() {
               Your ultimate destination for free online gaming and gaming news.
             </p>
             <div className="flex space-x-4">
-              <a href="#" className="text-gray-400 hover:text-white transition-colors">
-                <i className="ri-facebook-fill text-xl"></i>
-              </a>
-              <a href="#" className="text-gray-400 hover:text-white transition-colors">
-                <i className="ri-twitter-fill text-xl"></i>
-              </a>
-              <a href="#" className="text-gray-400 hover:text-white transition-colors">
-                <i className="ri-instagram-fill text-xl"></i>
-              </a>
-              <a href="#" className="text-gray-400 hover:text-white transition-colors">
-                <i className="ri-youtube-fill text-xl"></i>
-              </a>
-              <a href="#" className="text-gray-400 hover:text-white transition-colors">
-                <i className="ri-discord-fill text-xl"></i>
-              </a>
+              {settings?.socialFacebook && (
+                <a href={settings.socialFacebook} target="_blank" rel="noopener noreferrer" className="text-gray-400 hover:text-white transition-colors">
+                  <i className="ri-facebook-fill text-xl"></i>
+                </a>
+              )}
+              {settings?.socialTwitter && (
+                <a href={settings.socialTwitter} target="_blank" rel="noopener noreferrer" className="text-gray-400 hover:text-white transition-colors">
+                  <i className="ri-twitter-fill text-xl"></i>
+                </a>
+              )}
+              {settings?.socialInstagram && (
+                <a href={settings.socialInstagram} target="_blank" rel="noopener noreferrer" className="text-gray-400 hover:text-white transition-colors">
+                  <i className="ri-instagram-fill text-xl"></i>
+                </a>
+              )}
+              {settings?.socialYoutube && (
+                <a href={settings.socialYoutube} target="_blank" rel="noopener noreferrer" className="text-gray-400 hover:text-white transition-colors">
+                  <i className="ri-youtube-fill text-xl"></i>
+                </a>
+              )}
+              {settings?.socialDiscord && (
+                <a href={settings.socialDiscord} target="_blank" rel="noopener noreferrer" className="text-gray-400 hover:text-white transition-colors">
+                  <i className="ri-discord-fill text-xl"></i>
+                </a>
+              )}
+              {settings?.socialWhatsapp && (
+                <a href={settings.socialWhatsapp} target="_blank" rel="noopener noreferrer" className="text-gray-400 hover:text-white transition-colors">
+                  <i className="ri-whatsapp-line text-xl"></i>
+                </a>
+              )}
+              {settings?.socialTiktok && (
+                <a href={settings.socialTiktok} target="_blank" rel="noopener noreferrer" className="text-gray-400 hover:text-white transition-colors">
+                  <i className="ri-tiktok-line text-xl"></i>
+                </a>
+              )}
             </div>
           </div>
           
@@ -131,27 +151,39 @@ export function Footer() {
               Get the best gaming experience with our mobile app
             </p>
             <div className="space-y-3">
-              <a href="#" className="flex items-center bg-gray-800 hover:bg-gray-700 text-white px-4 py-2 rounded-lg transition-colors">
-                <i className="ri-app-store-fill text-2xl mr-3"></i>
-                <div>
-                  <div className="text-xs">Download on the</div>
-                  <div className="text-sm font-semibold">App Store</div>
-                </div>
-              </a>
-              <a href="#" className="flex items-center bg-gray-800 hover:bg-gray-700 text-white px-4 py-2 rounded-lg transition-colors">
-                <i className="ri-google-play-fill text-2xl mr-3"></i>
-                <div>
-                  <div className="text-xs">Get it on</div>
-                  <div className="text-sm font-semibold">Google Play</div>
-                </div>
-              </a>
-              <a href="#" className="flex items-center bg-gray-800 hover:bg-gray-700 text-white px-4 py-2 rounded-lg transition-colors">
-                <i className="ri-amazon-fill text-2xl mr-3"></i>
-                <div>
-                  <div className="text-xs">Available at</div>
-                  <div className="text-sm font-semibold">Amazon</div>
-                </div>
-              </a>
+              {settings?.footerAppStoreLink ? (
+                <a href={settings.footerAppStoreLink} target="_blank" rel="noopener noreferrer" className="flex items-center bg-gray-800 hover:bg-gray-700 text-white px-4 py-2 rounded-lg transition-colors">
+                  <i className="ri-app-store-fill text-2xl mr-3"></i>
+                  <div>
+                    <div className="text-xs">Download on the</div>
+                    <div className="text-sm font-semibold">App Store</div>
+                  </div>
+                </a>
+              ) : null}
+              
+              {settings?.footerGooglePlayLink ? (
+                <a href={settings.footerGooglePlayLink} target="_blank" rel="noopener noreferrer" className="flex items-center bg-gray-800 hover:bg-gray-700 text-white px-4 py-2 rounded-lg transition-colors">
+                  <i className="ri-google-play-fill text-2xl mr-3"></i>
+                  <div>
+                    <div className="text-xs">Get it on</div>
+                    <div className="text-sm font-semibold">Google Play</div>
+                  </div>
+                </a>
+              ) : null}
+              
+              {settings?.footerAmazonLink ? (
+                <a href={settings.footerAmazonLink} target="_blank" rel="noopener noreferrer" className="flex items-center bg-gray-800 hover:bg-gray-700 text-white px-4 py-2 rounded-lg transition-colors">
+                  <i className="ri-amazon-fill text-2xl mr-3"></i>
+                  <div>
+                    <div className="text-xs">Available at</div>
+                    <div className="text-sm font-semibold">Amazon</div>
+                  </div>
+                </a>
+              ) : null}
+              
+              {!settings?.footerAppStoreLink && !settings?.footerGooglePlayLink && !settings?.footerAmazonLink && (
+                <p className="text-gray-500 text-sm">No mobile apps available yet</p>
+              )}
             </div>
           </div>
         </div>

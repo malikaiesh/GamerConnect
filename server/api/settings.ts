@@ -134,6 +134,36 @@ export function registerSettingsRoutes(app: Express) {
     }
   });
   
+  // Update footer and social media settings
+  app.patch('/api/settings/footer', async (req: Request, res: Response) => {
+    try {
+      const schema = z.object({
+        footerCopyright: z.string().optional(),
+        footerAppStoreLink: z.string().url("App Store URL must be a valid URL").optional().nullable(),
+        footerGooglePlayLink: z.string().url("Google Play URL must be a valid URL").optional().nullable(),
+        footerAmazonLink: z.string().url("Amazon URL must be a valid URL").optional().nullable(),
+        socialFacebook: z.string().url("Facebook URL must be a valid URL").optional().nullable(),
+        socialTwitter: z.string().url("Twitter URL must be a valid URL").optional().nullable(),
+        socialInstagram: z.string().url("Instagram URL must be a valid URL").optional().nullable(),
+        socialYoutube: z.string().url("YouTube URL must be a valid URL").optional().nullable(),
+        socialDiscord: z.string().url("Discord URL must be a valid URL").optional().nullable(),
+        socialWhatsapp: z.string().url("WhatsApp URL must be a valid URL").optional().nullable(),
+        socialTiktok: z.string().url("TikTok URL must be a valid URL").optional().nullable()
+      });
+      
+      const settingsData = schema.parse(req.body);
+      const updatedSettings = await storage.updateSiteSettings(settingsData);
+      
+      res.json(updatedSettings);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ message: 'Invalid footer settings data', errors: error.errors });
+      }
+      console.error('Error updating footer settings:', error);
+      res.status(500).json({ message: 'Failed to update footer settings' });
+    }
+  });
+  
   // Update all settings at once
   app.put('/api/settings', async (req: Request, res: Response) => {
     try {
