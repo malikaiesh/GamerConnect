@@ -412,7 +412,7 @@ export default function HomeAdsPage() {
                           >
                             <FormControl>
                               <SelectTrigger>
-                                <SelectValue placeholder="Select a position" />
+                                <SelectValue className="text-foreground" placeholder="Select a position" />
                               </SelectTrigger>
                             </FormControl>
                             <SelectContent>
@@ -758,8 +758,8 @@ export default function HomeAdsPage() {
                       />
                     </FormControl>
                     <div className="space-y-1 leading-none">
-                      <FormLabel>Google Ad</FormLabel>
-                      <FormDescription>
+                      <FormLabel className="text-foreground">Google Ad</FormLabel>
+                      <FormDescription className="text-muted-foreground">
                         Check this if this is a Google AdSense ad
                       </FormDescription>
                     </div>
@@ -771,7 +771,7 @@ export default function HomeAdsPage() {
                 name="adCode"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Ad Code (HTML/JS){editForm.watch("isGoogleAd") && " *"}</FormLabel>
+                    <FormLabel className="text-foreground">Ad Code (HTML/JS){editForm.watch("isGoogleAd") && " *"}</FormLabel>
                     <FormControl>
                       <Textarea
                         placeholder={editForm.watch("isGoogleAd") 
@@ -781,7 +781,7 @@ export default function HomeAdsPage() {
                         rows={6}
                       />
                     </FormControl>
-                    <FormDescription>
+                    <FormDescription className="text-muted-foreground">
                       {editForm.watch("isGoogleAd") 
                         ? "Paste the Google AdSense code (required for Google Ads)"
                         : "Paste the HTML or JavaScript code for your ad"}
@@ -798,14 +798,14 @@ export default function HomeAdsPage() {
                     name="imageUrl"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Image URL (Optional)</FormLabel>
+                        <FormLabel className="text-foreground">Image URL (Optional)</FormLabel>
                         <FormControl>
                           <Input
                             placeholder="https://example.com/ad-image.jpg"
                             {...field}
                           />
                         </FormControl>
-                        <FormDescription>
+                        <FormDescription className="text-muted-foreground">
                           URL of the image for this ad
                         </FormDescription>
                         <FormMessage />
@@ -817,14 +817,14 @@ export default function HomeAdsPage() {
                     name="targetUrl"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Target URL (Optional)</FormLabel>
+                        <FormLabel className="text-foreground">Target URL (Optional)</FormLabel>
                         <FormControl>
                           <Input
                             placeholder="https://example.com/landing-page"
                             {...field}
                           />
                         </FormControl>
-                        <FormDescription>
+                        <FormDescription className="text-muted-foreground">
                           URL where users will be sent when they click on the ad
                         </FormDescription>
                         <FormMessage />
@@ -838,7 +838,7 @@ export default function HomeAdsPage() {
                 name="status"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Status</FormLabel>
+                    <FormLabel className="text-foreground">Status</FormLabel>
                     <Select
                       onValueChange={(value) => {
                         field.onChange(value);
@@ -850,7 +850,7 @@ export default function HomeAdsPage() {
                     >
                       <FormControl>
                         <SelectTrigger>
-                          <SelectValue placeholder="Select a status" />
+                          <SelectValue className="text-foreground" placeholder="Select a status" />
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
