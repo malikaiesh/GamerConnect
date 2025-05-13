@@ -215,6 +215,7 @@ export interface IStorage {
   getHomeAdById(id: number): Promise<HomeAd | null>;
   getHomeAds(options?: { page?: number, limit?: number }): Promise<{ ads: HomeAd[], total: number, totalPages: number }>;
   getHomeAdsByPosition(position: string): Promise<HomeAd[]>;
+  getHomeAdByPosition(position: string): Promise<HomeAd | null>;
   createHomeAd(ad: Omit<InsertHomeAd, "createdAt" | "updatedAt">): Promise<HomeAd>;
   updateHomeAd(id: number, adData: Partial<InsertHomeAd>): Promise<HomeAd | null>;
   deleteHomeAd(id: number): Promise<boolean>;
@@ -911,6 +912,10 @@ class DatabaseStorage implements IStorage {
     return { ads: [], total: 0, totalPages: 0 }; 
   }
   async getHomeAdsByPosition(position: string): Promise<HomeAd[]> { return []; }
+  async getHomeAdByPosition(position: string): Promise<HomeAd | null> { 
+    const ads = await this.getHomeAdsByPosition(position);
+    return ads.length > 0 ? ads[0] : null;
+  }
   async createHomeAd(ad: Omit<InsertHomeAd, "createdAt" | "updatedAt">): Promise<HomeAd> { throw new Error("Not implemented"); }
   async updateHomeAd(id: number, adData: Partial<InsertHomeAd>): Promise<HomeAd | null> { return null; }
   async deleteHomeAd(id: number): Promise<boolean> { return false; }
