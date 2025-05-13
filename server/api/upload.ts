@@ -1,73 +1,97 @@
-import { Express, Request, Response } from 'express';
-import multer from 'multer';
-import path from 'path';
-import fs from 'fs';
+import { Express, Request, Response } from "express";
+import multer from "multer";
+import path from "path";
+import fs from "fs";
+import { nanoid } from "nanoid";
 
-// Configure storage
+// Configure multer storage
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
-    const uploadDir = path.join(process.cwd(), 'uploads');
-    // Create directory if it doesn't exist
+    const uploadDir = path.join(process.cwd(), "uploads");
+    
+    // Create the uploads directory if it doesn't exist
     if (!fs.existsSync(uploadDir)) {
       fs.mkdirSync(uploadDir, { recursive: true });
     }
+    
     cb(null, uploadDir);
   },
   filename: function (req, file, cb) {
-    // Ensure unique filename
-    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
-    const ext = path.extname(file.originalname);
-    cb(null, file.fieldname + '-' + uniqueSuffix + ext);
+    // Create a unique filename with original extension
+    const uniqueId = nanoid(10);
+    const fileExt = path.extname(file.originalname).toLowerCase();
+    const safeName = file.originalname
+      .replace(/[^a-zA-Z0-9-_.]/g, '-')
+      .toLowerCase()
+      .substring(0, 20);
+    
+    cb(null, `${safeName}-${uniqueId}${fileExt}`);
   }
 });
 
-// Create multer upload instance
-const upload = multer({ 
-  storage: storage,
-  limits: {
-    fileSize: 5 * 1024 * 1024, // 5MB limit
-  },
-  fileFilter: (req, file, cb) => {
-    // Accept only images
-    const allowedMimes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
-    if (allowedMimes.includes(file.mimetype)) {
-      cb(null, true);
-    } else {
-      cb(new Error('Invalid file type. Only JPEG, PNG, GIF and WEBP image files are allowed.') as any);
-    }
+// Define allowed file types
+const imageFilter = (req: Request, file: Express.Multer.File, cb: multer.FileFilterCallback) => {
+  const allowedMimeTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+  
+  if (allowedMimeTypes.includes(file.mimetype)) {
+    cb(null, true);
+  } else {
+    cb(new Error('Only images are allowed (JPEG, PNG, GIF, WEBP)'));
   }
-}).single('file');
+};
+
+// Setup upload middleware
+const upload = multer({
+  storage,
+  fileFilter: imageFilter,
+  limits: {
+    fileSize: 5 * 1024 * 1024, // 5MB max file size
+  }
+});
 
 export function registerUploadRoutes(app: Express) {
-  // Route to handle file uploads for TinyMCE
-  app.post('/api/upload', (req: Request, res: Response) => {
-    upload(req, res, function (err) {
+  // Handle image uploads for TinyMCE editor
+  app.post('/api/upload-image', (req, res) => {
+    // Check authentication
+    if (!req.isAuthenticated() || !req.user.isAdmin) {
+      return res.status(403).json({ 
+        error: { message: "You must be an admin to upload images" } 
+      });
+    }
+    
+    // Use multer middleware for single file upload
+    upload.single('file')(req, res, (err) => {
       if (err) {
-        console.error('Upload error:', err);
-        return res.status(400).json({
-          location: '',
-          error: {
-            message: err.message
+        if (err instanceof multer.MulterError) {
+          // A Multer error occurred
+          if (err.code === 'LIMIT_FILE_SIZE') {
+            return res.status(400).json({
+              error: { message: "File is too large (max 5MB)" }
+            });
           }
-        });
-      }
-      
-      // If file was uploaded successfully
-      if (req.file) {
-        // Generate URL for the uploaded file
-        const fileUrl = `/uploads/${req.file.filename}`;
-        // Return response in format expected by TinyMCE
-        return res.status(200).json({
-          location: fileUrl
-        });
-      }
-      
-      // Handle case when no file was uploaded
-      return res.status(400).json({
-        location: '',
-        error: {
-          message: 'No file was uploaded'
+          return res.status(400).json({
+            error: { message: err.message }
+          });
         }
+        
+        // Other errors
+        return res.status(400).json({
+          error: { message: err.message }
+        });
+      }
+      
+      // If no file was uploaded
+      if (!req.file) {
+        return res.status(400).json({
+          error: { message: "No file was uploaded" }
+        });
+      }
+      
+      // File uploaded successfully, return location to TinyMCE
+      const fileUrl = `/uploads/${req.file.filename}`;
+      
+      return res.status(200).json({
+        location: fileUrl,
       });
     });
   });

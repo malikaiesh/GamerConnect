@@ -4,11 +4,11 @@ import { z } from "zod";
 import { Button } from "@/components/ui/button";
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { HomePageContent, contentStatusEnum } from "@shared/schema";
 import { useToast } from "@/hooks/use-toast";
 import { useState } from "react";
+import { RichTextEditor } from "@/components/ui/rich-text-editor";
 
 // Create a schema for the form
 const formSchema = z.object({
@@ -97,26 +97,27 @@ export function HomepageContentForm({
               <FormLabel>Content</FormLabel>
               <div className="space-y-4">
                 <div className="bg-muted p-3 rounded-md text-sm border">
-                  <div className="font-semibold mb-2">Formatting Guide:</div>
+                  <div className="font-semibold mb-2">Editor Tools:</div>
                   <ul className="list-disc ml-5 space-y-1">
-                    <li><span className="font-semibold"># Heading 1</span> - For main headings</li>
-                    <li><span className="font-semibold">## Heading 2</span> - For sub-headings</li>
-                    <li><span className="font-semibold">**bold text**</span> - For bold text</li>
-                    <li><span className="font-semibold">Q: Your question?</span> - For FAQ questions</li>
-                    <li><span className="font-semibold">A: Your answer</span> - For FAQ answers</li>
+                    <li><span className="font-semibold">Formatting toolbar</span> - Use the toolbar for bold, italic, lists, and more</li>
+                    <li><span className="font-semibold">Headings</span> - Select text and choose from heading styles (H1-H5)</li>
+                    <li><span className="font-semibold">Insert media</span> - Add images directly into your content</li>
+                    <li><span className="font-semibold">Links</span> - Create and edit hyperlinks in your content</li>
+                    <li><span className="font-semibold">Tables</span> - Insert and format tables for structured content</li>
                   </ul>
                 </div>
                 <FormControl>
-                  <Textarea 
-                    placeholder="Enter content text with formatting" 
-                    className="min-h-80 font-mono text-sm" 
-                    {...field} 
+                  <RichTextEditor 
+                    value={field.value} 
+                    onChange={field.onChange}
+                    height={500}
+                    placeholder="Enter rich content with formatting, images, and more..."
                   />
                 </FormControl>
               </div>
               <FormDescription>
-                This content can be up to 3000 words. Use double line breaks to separate paragraphs. 
-                Use the formatting guide above to create headings, subheadings, FAQs, and bold text.
+                This content can be up to 3000 words. Format your content using the toolbar above. 
+                You can insert images, create headings, add links, and more to make your content engaging.
               </FormDescription>
               <FormMessage />
             </FormItem>
