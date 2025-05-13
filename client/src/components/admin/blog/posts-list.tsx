@@ -215,24 +215,24 @@ export function PostsList({ onEditPost, onAddPost }: PostsListProps) {
                   aria-label="Select all posts"
                 />
               </TableHead>
-              <TableHead>Title</TableHead>
-              <TableHead className="hidden md:table-cell">Category</TableHead>
-              <TableHead className="hidden md:table-cell">Author</TableHead>
-              <TableHead className="hidden md:table-cell">Status</TableHead>
-              <TableHead className="hidden md:table-cell">Date</TableHead>
-              <TableHead className="text-right">Actions</TableHead>
+              <TableHead className="text-foreground">Title</TableHead>
+              <TableHead className="hidden md:table-cell text-foreground">Category</TableHead>
+              <TableHead className="hidden md:table-cell text-foreground">Author</TableHead>
+              <TableHead className="hidden md:table-cell text-foreground">Status</TableHead>
+              <TableHead className="hidden md:table-cell text-foreground">Date</TableHead>
+              <TableHead className="text-right text-foreground">Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {isLoading ? (
               <TableRow>
-                <TableCell colSpan={7} className="text-center py-8">
+                <TableCell colSpan={7} className="text-center py-8 text-foreground">
                   <Loader2 className="h-6 w-6 animate-spin mx-auto" />
                 </TableCell>
               </TableRow>
             ) : data?.posts?.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={7} className="text-center py-8">
+                <TableCell colSpan={7} className="text-center py-8 text-foreground">
                   No posts found. Try a different search or add a new post.
                 </TableCell>
               </TableRow>
@@ -246,7 +246,7 @@ export function PostsList({ onEditPost, onAddPost }: PostsListProps) {
                       aria-label={`Select ${post.title}`}
                     />
                   </TableCell>
-                  <TableCell className="font-medium">
+                  <TableCell className="font-medium text-foreground">
                     <div className="flex items-center gap-2">
                       <img
                         src={post.featuredImage}
@@ -256,9 +256,9 @@ export function PostsList({ onEditPost, onAddPost }: PostsListProps) {
                       <span className="truncate max-w-[150px]">{post.title}</span>
                     </div>
                   </TableCell>
-                  <TableCell className="hidden md:table-cell">{getCategoryName(post.categoryId)}</TableCell>
-                  <TableCell className="hidden md:table-cell">{post.author}</TableCell>
-                  <TableCell className="hidden md:table-cell">
+                  <TableCell className="hidden md:table-cell text-foreground">{getCategoryName(post.categoryId)}</TableCell>
+                  <TableCell className="hidden md:table-cell text-foreground">{post.author}</TableCell>
+                  <TableCell className="hidden md:table-cell text-foreground">
                     <span className={`px-2 py-1 rounded-full text-xs ${
                       post.status === 'published' 
                         ? 'bg-primary/20 text-primary' 
@@ -267,7 +267,7 @@ export function PostsList({ onEditPost, onAddPost }: PostsListProps) {
                       {post.status}
                     </span>
                   </TableCell>
-                  <TableCell className="hidden md:table-cell">
+                  <TableCell className="hidden md:table-cell text-foreground">
                     {formatDate(post.publishedAt || post.createdAt)}
                   </TableCell>
                   <TableCell className="text-right">
@@ -288,8 +288,8 @@ export function PostsList({ onEditPost, onAddPost }: PostsListProps) {
                         </DialogTrigger>
                         <DialogContent>
                           <DialogHeader>
-                            <DialogTitle>Delete Post</DialogTitle>
-                            <DialogDescription>
+                            <DialogTitle className="text-foreground">Delete Post</DialogTitle>
+                            <DialogDescription className="text-muted-foreground">
                               Are you sure you want to delete "{post.title}"? This action cannot be undone.
                             </DialogDescription>
                           </DialogHeader>
@@ -318,7 +318,7 @@ export function PostsList({ onEditPost, onAddPost }: PostsListProps) {
       {/* Pagination */}
       {totalPages > 1 && (
         <div className="flex items-center justify-between">
-          <div className="text-sm text-muted-foreground">
+          <div className="text-sm text-foreground">
             Showing {((page - 1) * limit) + 1}-{Math.min(page * limit, data?.totalPosts || 0)} of {data?.totalPosts || 0}
           </div>
           <Pagination>

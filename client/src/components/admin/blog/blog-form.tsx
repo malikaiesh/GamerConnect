@@ -118,7 +118,7 @@ export function BlogForm({ post, onSuccess }: BlogFormProps) {
   return (
     <Card className="w-full">
       <CardHeader>
-        <CardTitle>{post ? "Edit Blog Post" : "Add New Blog Post"}</CardTitle>
+        <CardTitle className="text-foreground">{post ? "Edit Blog Post" : "Add New Blog Post"}</CardTitle>
       </CardHeader>
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)}>
