@@ -1393,11 +1393,81 @@ class DatabaseStorage implements IStorage {
     }
   }
   
-  async getApiKeyById(id: number): Promise<ApiKey | null> { return null; }
-  async getApiKeys(): Promise<ApiKey[]> { return []; }
-  async getApiKeyByType(type: string): Promise<ApiKey | null> { return null; }
-  async createApiKey(apiKey: Omit<InsertApiKey, "createdAt" | "updatedAt">): Promise<ApiKey> { throw new Error("Not implemented"); }
-  async updateApiKey(id: number, apiKeyData: Partial<InsertApiKey>): Promise<ApiKey | null> { return null; }
+  async getApiKeyById(id: number): Promise<ApiKey | null> {
+    try {
+      const [apiKey] = await db.select().from(apiKeys).where(eq(apiKeys.id, id));
+      return apiKey || null;
+    } catch (error) {
+      console.error('Error fetching API key by ID:', error);
+      return null;
+    }
+  }
+
+  async getApiKeys(): Promise<ApiKey[]> {
+    try {
+      const allApiKeys = await db.select().from(apiKeys);
+      return allApiKeys;
+    } catch (error) {
+      console.error('Error fetching API keys:', error);
+      return [];
+    }
+  }
+
+  async getApiKeyByType(type: string): Promise<ApiKey | null> {
+    try {
+      const [apiKey] = await db.select().from(apiKeys)
+        .where(eq(apiKeys.type, type as any))
+        .where(eq(apiKeys.isActive, true))
+        .orderBy(desc(apiKeys.createdAt));
+      
+      return apiKey || null;
+    } catch (error) {
+      console.error('Error fetching API key by type:', error);
+      return null;
+    }
+  }
+
+  async createApiKey(apiKey: Omit<InsertApiKey, "createdAt" | "updatedAt">): Promise<ApiKey> {
+    try {
+      const [newApiKey] = await db.insert(apiKeys).values({
+        ...apiKey,
+        createdAt: new Date(),
+        updatedAt: new Date()
+      }).returning();
+      
+      return newApiKey;
+    } catch (error) {
+      console.error('Error creating API key:', error);
+      throw error;
+    }
+  }
+
+  async updateApiKey(id: number, apiKeyData: Partial<InsertApiKey>): Promise<ApiKey | null> {
+    try {
+      const [updatedApiKey] = await db.update(apiKeys)
+        .set({
+          ...apiKeyData,
+          updatedAt: new Date()
+        })
+        .where(eq(apiKeys.id, id))
+        .returning();
+      
+      return updatedApiKey || null;
+    } catch (error) {
+      console.error('Error updating API key:', error);
+      return null;
+    }
+  }
+
+  async deleteApiKey(id: number): Promise<boolean> {
+    try {
+      const result = await db.delete(apiKeys).where(eq(apiKeys.id, id)).returning();
+      return result.length > 0;
+    } catch (error) {
+      console.error('Error deleting API key:', error);
+      return false;
+    }
+  }
   async deleteApiKey(id: number): Promise<boolean> { return false; }
   
   async getHomeAdById(id: number): Promise<HomeAd | null> {
