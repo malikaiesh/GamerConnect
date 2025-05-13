@@ -79,7 +79,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   
   const updateProfileMutation = useMutation({
     mutationFn: async (profileData: ProfileUpdateData) => {
-      const res = await apiRequest("PATCH", "/api/user/profile", profileData);
+      const res = await apiRequest("PUT", "/api/user/profile", profileData);
       return await res.json();
     },
     onSuccess: (user: SelectUser) => {
