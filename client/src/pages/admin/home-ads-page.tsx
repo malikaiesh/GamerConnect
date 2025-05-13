@@ -242,7 +242,7 @@ export default function HomeAdsPage() {
 
   // Fetch all home ads
   const {
-    data: homeAds = [],
+    data,
     isLoading,
     error,
   } = useQuery({
@@ -255,6 +255,9 @@ export default function HomeAdsPage() {
       return await response.json();
     },
   });
+  
+  // Extract the ads array from the response
+  const homeAds = data?.ads || [];
   
   // Update allAdsEnabled state based on fetched data
   useEffect(() => {
