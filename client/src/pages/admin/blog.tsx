@@ -38,13 +38,13 @@ export default function AdminBlog() {
   };
   
   return (
-    <div className="flex min-h-screen bg-gray-100 dark:bg-gray-900">
+    <div className="flex min-h-screen bg-background">
       <AdminNavigation />
       
       <div className="flex-1 p-6 lg:p-10">
         <div className="mb-6 flex justify-between items-center">
           <div>
-            <h1 className="text-3xl font-bold">Blog Management</h1>
+            <h1 className="text-3xl font-bold text-foreground">Blog Management</h1>
             <p className="text-muted-foreground">Create and manage blog posts</p>
           </div>
           

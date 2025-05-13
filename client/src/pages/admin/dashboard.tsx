@@ -20,13 +20,13 @@ export default function AdminDashboard() {
   });
 
   return (
-    <div className="flex min-h-screen bg-gray-100 dark:bg-gray-900">
+    <div className="flex min-h-screen bg-background">
       <AdminNavigation />
       
       <div className="flex-1 p-6 lg:p-10">
         <div className="space-y-6">
           <div>
-            <h1 className="text-3xl font-bold mb-2">Dashboard</h1>
+            <h1 className="text-3xl font-bold mb-2 text-foreground">Dashboard</h1>
             <p className="text-muted-foreground">Welcome to GameZone Admin Panel</p>
           </div>
           
