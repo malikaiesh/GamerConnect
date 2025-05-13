@@ -403,7 +403,11 @@ export default function HomeAdsPage() {
                         <FormItem>
                           <FormLabel>Position</FormLabel>
                           <Select
-                            onValueChange={field.onChange}
+                            onValueChange={(value) => {
+                              field.onChange(value);
+                              // Force the dropdown to close properly
+                              setTimeout(() => document.body.click(), 100);
+                            }}
                             defaultValue={field.value}
                           >
                             <FormControl>
