@@ -960,10 +960,27 @@ class DatabaseStorage implements IStorage {
   async getHomeAds(options?: { page?: number, limit?: number }): Promise<{ ads: HomeAd[], total: number, totalPages: number }> { 
     return { ads: [], total: 0, totalPages: 0 }; 
   }
-  async getHomeAdsByPosition(position: string): Promise<HomeAd[]> { return []; }
+  async getHomeAdsByPosition(position: string): Promise<HomeAd[]> {
+    try {
+      const results = await db.select()
+        .from(homeAds)
+        .where(eq(homeAds.position, position))
+        .orderBy(desc(homeAds.updatedAt));
+      return results;
+    } catch (error) {
+      console.error(`Error fetching home ads for position ${position}:`, error);
+      return [];
+    }
+  }
+  
   async getHomeAdByPosition(position: string): Promise<HomeAd | null> { 
-    const ads = await this.getHomeAdsByPosition(position);
-    return ads.length > 0 ? ads[0] : null;
+    try {
+      const ads = await this.getHomeAdsByPosition(position);
+      return ads.length > 0 ? ads[0] : null;
+    } catch (error) {
+      console.error(`Error fetching home ad for position ${position}:`, error);
+      return null;
+    }
   }
   async createHomeAd(ad: Omit<InsertHomeAd, "createdAt" | "updatedAt">): Promise<HomeAd> { throw new Error("Not implemented"); }
   async updateHomeAd(id: number, adData: Partial<InsertHomeAd>): Promise<HomeAd | null> { return null; }
