@@ -387,7 +387,7 @@ export default function PageEditPage() {
                             </SelectTrigger>
                           </FormControl>
                           <SelectContent>
-                            {Object.keys(pageTypeEnum.enumValues).map((type) => (
+                            {Object.entries(pageTypeEnum.enumValues).map(([type]) => (
                               <SelectItem key={type} value={type}>
                                 {type.charAt(0).toUpperCase() + type.slice(1).replace('-', ' ')}
                               </SelectItem>

@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { Link, useLocation } from "wouter";
-import { Edit, Trash2, Plus, File, Search, RefreshCw, CheckCircle2, XCircle } from "lucide-react";
+import { Edit, Trash2, Plus, File, Search, RefreshCw, CheckCircle2, XCircle, Eye } from "lucide-react";
 import { pageTypeEnum, contentStatusEnum } from "@/lib/constants";
 import { queryClient } from "@/lib/queryClient";
 import { useAuth } from "@/hooks/use-auth";
@@ -189,7 +189,7 @@ export default function PagesAdminPage() {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">All Types</SelectItem>
-                  {Object.keys(pageTypeEnum.enumValues).map((type) => (
+                  {Object.entries(pageTypeEnum.enumValues).map(([type]) => (
                     <SelectItem key={type} value={type}>{type.charAt(0).toUpperCase() + type.slice(1).replace('-', ' ')}</SelectItem>
                   ))}
                 </SelectContent>
@@ -264,9 +264,20 @@ export default function PagesAdminPage() {
                             <Button
                               variant="outline"
                               size="sm"
+                              className="h-8 w-8 p-0 text-blue-500"
                               asChild
                             >
-                              <Link to={`/admin/pages/${page.id}`}>
+                              <Link to={`/pages/${page.slug}`} target="_blank">
+                                <Eye className="h-4 w-4" />
+                                <span className="sr-only">View</span>
+                              </Link>
+                            </Button>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              asChild
+                            >
+                              <Link to={`/admin/pages/edit/${page.id}`}>
                                 <Edit className="h-4 w-4" />
                                 <span className="sr-only">Edit</span>
                               </Link>
