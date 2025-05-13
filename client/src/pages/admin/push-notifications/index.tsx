@@ -83,10 +83,10 @@ export default function PushNotificationsPage() {
     {
       id: "title",
       accessorKey: "title",
-      header: "Title & Message",
+      header: () => <span className="text-foreground">Title & Message</span>,
       cell: ({ row }) => (
         <div className="max-w-md">
-          <div className="font-medium">{row.original.title}</div>
+          <div className="font-medium text-foreground">{row.original.title}</div>
           <div className="text-sm text-muted-foreground truncate">
             {row.original.message}
           </div>
@@ -96,7 +96,7 @@ export default function PushNotificationsPage() {
     {
       id: "type",
       accessorKey: "type",
-      header: "Type",
+      header: () => <span className="text-foreground">Type</span>,
       cell: ({ row }) => (
         <Badge
           variant={
@@ -116,7 +116,7 @@ export default function PushNotificationsPage() {
     {
       id: "active",
       accessorKey: "active",
-      header: "Active",
+      header: () => <span className="text-foreground">Active</span>,
       cell: ({ row }) => (
         <Switch
           checked={row.original.active}
@@ -126,11 +126,11 @@ export default function PushNotificationsPage() {
     },
     {
       id: "stats",
-      header: "Statistics",
+      header: () => <span className="text-foreground">Statistics</span>,
       cell: ({ row }) => (
         <div className="flex flex-col">
-          <div className="text-sm">Impressions: {row.original.impressionCount.toLocaleString()}</div>
-          <div className="text-sm">Clicks: {row.original.clickCount.toLocaleString()}</div>
+          <div className="text-sm text-foreground">Impressions: {row.original.impressionCount.toLocaleString()}</div>
+          <div className="text-sm text-foreground">Clicks: {row.original.clickCount.toLocaleString()}</div>
           {row.original.impressionCount > 0 && (
             <div className="text-xs text-muted-foreground">
               CTR: {((row.original.clickCount / row.original.impressionCount) * 100).toFixed(2)}%
@@ -142,12 +142,12 @@ export default function PushNotificationsPage() {
     {
       id: "created",
       accessorKey: "createdAt",
-      header: "Created",
-      cell: ({ row }) => format(new Date(row.original.createdAt), "MMM d, yyyy"),
+      header: () => <span className="text-foreground">Created</span>,
+      cell: ({ row }) => <span className="text-foreground">{format(new Date(row.original.createdAt), "MMM d, yyyy")}</span>,
     },
     {
       id: "actions",
-      header: "Actions",
+      header: () => <span className="text-foreground">Actions</span>,
       cell: ({ row }) => (
         <div className="flex items-center gap-2">
           <Button

@@ -144,8 +144,8 @@ export default function GamesAdminPage() {
           </DialogTrigger>
           <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
             <DialogHeader>
-              <DialogTitle>Create New Game</DialogTitle>
-              <DialogDescription>
+              <DialogTitle className="text-foreground">Create New Game</DialogTitle>
+              <DialogDescription className="text-muted-foreground">
                 Fill out the form below to create a new game.
               </DialogDescription>
             </DialogHeader>
@@ -199,13 +199,13 @@ export default function GamesAdminPage() {
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>Title</TableHead>
-              <TableHead>Category</TableHead>
-              <TableHead>Source</TableHead>
-              <TableHead>Status</TableHead>
-              <TableHead>Plays</TableHead>
-              <TableHead>Rating</TableHead>
-              <TableHead className="text-right">Actions</TableHead>
+              <TableHead className="text-foreground">Title</TableHead>
+              <TableHead className="text-foreground">Category</TableHead>
+              <TableHead className="text-foreground">Source</TableHead>
+              <TableHead className="text-foreground">Status</TableHead>
+              <TableHead className="text-foreground">Plays</TableHead>
+              <TableHead className="text-foreground">Rating</TableHead>
+              <TableHead className="text-right text-foreground">Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -230,7 +230,7 @@ export default function GamesAdminPage() {
             ) : (
               data.games.map((game: Game) => (
                 <TableRow key={game.id}>
-                  <TableCell className="font-medium">
+                  <TableCell className="font-medium text-foreground">
                     <div className="flex items-center gap-3">
                       <img 
                         src={game.thumbnail} 
@@ -240,8 +240,8 @@ export default function GamesAdminPage() {
                       {game.title}
                     </div>
                   </TableCell>
-                  <TableCell>{game.category}</TableCell>
-                  <TableCell>{game.source === "api" ? "API" : "Custom"}</TableCell>
+                  <TableCell className="text-foreground">{game.category}</TableCell>
+                  <TableCell className="text-foreground">{game.source === "api" ? "API" : "Custom"}</TableCell>
                   <TableCell>
                     <div className={`px-2 py-1 rounded-full text-xs inline-block ${
                       game.status === "active" ? "bg-green-600/20 text-green-600" :
@@ -310,8 +310,8 @@ export default function GamesAdminPage() {
       <Dialog open={editDialogOpen} onOpenChange={setEditDialogOpen}>
         <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>Edit Game</DialogTitle>
-            <DialogDescription>
+            <DialogTitle className="text-foreground">Edit Game</DialogTitle>
+            <DialogDescription className="text-muted-foreground">
               Make changes to the game details.
             </DialogDescription>
           </DialogHeader>
@@ -328,8 +328,8 @@ export default function GamesAdminPage() {
       <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Confirm Deletion</DialogTitle>
-            <DialogDescription>
+            <DialogTitle className="text-foreground">Confirm Deletion</DialogTitle>
+            <DialogDescription className="text-muted-foreground">
               Are you sure you want to delete the game "{selectedGame?.title}"? This action cannot be undone.
             </DialogDescription>
           </DialogHeader>
