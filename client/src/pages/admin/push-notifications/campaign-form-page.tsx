@@ -39,7 +39,7 @@ import { format } from "date-fns";
 const formSchema = z.object({
   name: z.string().min(3, "Name must be at least 3 characters"),
   title: z.string().min(3, "Title must be at least 3 characters"),
-  message: z.string().min(5, "Message must be at least 5 characters"),
+  message: z.string().min(10, "Message must be at least 10 characters"),
   image: z.string().url("Must be a valid URL").optional().nullable(),
   link: z.string().url("Must be a valid URL").optional().nullable(),
   actionYes: z.string().optional().nullable(),
@@ -318,7 +318,7 @@ export default function CampaignFormPage() {
                         />
                       </FormControl>
                       <FormDescription>
-                        The main content of the notification.
+                        The main content of the notification. Must be at least 10 characters.
                       </FormDescription>
                       <FormMessage />
                     </FormItem>
