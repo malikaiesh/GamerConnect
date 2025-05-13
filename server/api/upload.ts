@@ -95,4 +95,50 @@ export function registerUploadRoutes(app: Express) {
       });
     });
   });
+
+  // General file upload route for logo, favicon, etc.
+  app.post('/api/upload', (req, res) => {
+    // Check authentication
+    if (!req.isAuthenticated()) {
+      return res.status(403).json({ 
+        error: { message: "You must be logged in to upload files" } 
+      });
+    }
+    
+    // Use multer middleware for single file upload
+    upload.single('file')(req, res, (err) => {
+      if (err) {
+        if (err instanceof multer.MulterError) {
+          // A Multer error occurred
+          if (err.code === 'LIMIT_FILE_SIZE') {
+            return res.status(400).json({
+              error: { message: "File is too large (max 5MB)" }
+            });
+          }
+          return res.status(400).json({
+            error: { message: err.message }
+          });
+        }
+        
+        // Other errors
+        return res.status(400).json({
+          error: { message: err.message }
+        });
+      }
+      
+      // If no file was uploaded
+      if (!req.file) {
+        return res.status(400).json({
+          error: { message: "No file was uploaded" }
+        });
+      }
+      
+      // File uploaded successfully, return the URL
+      const fileUrl = `/uploads/${req.file.filename}`;
+      
+      return res.status(200).json({
+        location: fileUrl,
+      });
+    });
+  });
 }
