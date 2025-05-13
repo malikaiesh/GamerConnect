@@ -222,7 +222,7 @@ export function setupAuth(app: Express) {
         {
           clientID: process.env.GOOGLE_CLIENT_ID,
           clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-          callbackURL: '/auth/google/callback',
+          callbackURL: '/api/auth/google/callback',
           passReqToCallback: true
         },
         async (req, accessToken, refreshToken, profile, done) => {
@@ -246,7 +246,7 @@ export function setupAuth(app: Express) {
         {
           clientID: process.env.FACEBOOK_APP_ID,
           clientSecret: process.env.FACEBOOK_APP_SECRET,
-          callbackURL: '/auth/facebook/callback',
+          callbackURL: '/api/auth/facebook/callback',
           profileFields: ['id', 'emails', 'name', 'picture.type(large)'],
           passReqToCallback: true
         },
@@ -380,13 +380,13 @@ export function setupAuth(app: Express) {
   });
   
   // Social login routes - Google
-  app.get('/auth/google', passport.authenticate('google', { 
+  app.get('/api/auth/google', passport.authenticate('google', { 
     scope: ['profile', 'email'] 
   }));
   
-  app.get('/auth/google/callback', 
+  app.get('/api/auth/google/callback', 
     passport.authenticate('google', { 
-      failureRedirect: '/login' 
+      failureRedirect: '/auth' 
     }),
     (req, res) => {
       // Successful authentication, redirect home.
@@ -395,13 +395,13 @@ export function setupAuth(app: Express) {
   );
   
   // Social login routes - Facebook
-  app.get('/auth/facebook', passport.authenticate('facebook', { 
+  app.get('/api/auth/facebook', passport.authenticate('facebook', { 
     scope: ['email'] 
   }));
   
-  app.get('/auth/facebook/callback', 
+  app.get('/api/auth/facebook/callback', 
     passport.authenticate('facebook', { 
-      failureRedirect: '/login' 
+      failureRedirect: '/auth' 
     }),
     (req, res) => {
       // Successful authentication, redirect home.
