@@ -1640,16 +1640,192 @@ class DatabaseStorage implements IStorage {
     return this.incrementAdClicks(id);
   }
   
-  async getSitemapById(id: number): Promise<Sitemap | null> { return null; }
-  async getSitemaps(): Promise<Sitemap[]> { return []; }
-  async getSitemapByType(type: string): Promise<Sitemap | null> { return null; }
-  async createSitemap(sitemap: Omit<InsertSitemap, "createdAt" | "updatedAt">): Promise<Sitemap> { throw new Error("Not implemented"); }
-  async updateSitemap(id: number, sitemapData: Partial<InsertSitemap>): Promise<Sitemap | null> { return null; }
-  async deleteSitemap(id: number): Promise<boolean> { return false; }
+  async getSitemapById(id: number): Promise<Sitemap | null> {
+    try {
+      const [sitemap] = await db.select().from(sitemaps).where(eq(sitemaps.id, id));
+      return sitemap || null;
+    } catch (error) {
+      console.error(`Error getting sitemap by ID ${id}:`, error);
+      return null;
+    }
+  }
+  
+  async getSitemaps(): Promise<Sitemap[]> {
+    try {
+      const allSitemaps = await db.select().from(sitemaps);
+      return allSitemaps;
+    } catch (error) {
+      console.error('Error getting sitemaps:', error);
+      return [];
+    }
+  }
+  
+  async getSitemapByType(type: string): Promise<Sitemap | null> {
+    try {
+      const [sitemap] = await db.select()
+        .from(sitemaps)
+        .where(eq(sitemaps.type, type as any));
+      return sitemap || null;
+    } catch (error) {
+      console.error(`Error getting sitemap by type ${type}:`, error);
+      return null;
+    }
+  }
+  
+  async createSitemap(sitemap: Omit<InsertSitemap, "createdAt" | "updatedAt">): Promise<Sitemap> {
+    try {
+      const [newSitemap] = await db.insert(sitemaps)
+        .values({
+          ...sitemap,
+          createdAt: new Date(),
+          updatedAt: new Date()
+        })
+        .returning();
+      
+      return newSitemap;
+    } catch (error) {
+      console.error('Error creating sitemap:', error);
+      throw error;
+    }
+  }
+  
+  async updateSitemap(id: number, sitemapData: Partial<InsertSitemap>): Promise<Sitemap | null> {
+    try {
+      const [updatedSitemap] = await db.update(sitemaps)
+        .set({
+          ...sitemapData,
+          updatedAt: new Date()
+        })
+        .where(eq(sitemaps.id, id))
+        .returning();
+      
+      return updatedSitemap || null;
+    } catch (error) {
+      console.error(`Error updating sitemap with ID ${id}:`, error);
+      return null;
+    }
+  }
+  
+  async deleteSitemap(id: number): Promise<boolean> {
+    try {
+      const result = await db.delete(sitemaps)
+        .where(eq(sitemaps.id, id))
+        .returning();
+      
+      return result.length > 0;
+    } catch (error) {
+      console.error(`Error deleting sitemap with ID ${id}:`, error);
+      return false;
+    }
+  }
+
+  async generateAllSitemaps(): Promise<Sitemap[]> {
+    try {
+      const allSitemapTypes = ['main', 'games', 'blog', 'pages'];
+      const results: Sitemap[] = [];
+      
+      for (const type of allSitemapTypes) {
+        const result = await this.generateSitemap(type);
+        if (result) {
+          results.push(result);
+        }
+      }
+      
+      return results;
+    } catch (error) {
+      console.error('Error generating all sitemaps:', error);
+      throw error;
+    }
+  }
+  
   async generateSitemap(type: string): Promise<Sitemap | null> {
-    // Placeholder implementation - would actually regenerate the sitemap XML
-    console.log(`Generating sitemap for type: ${type}`);
-    return this.getSitemapByType(type);
+    try {
+      // Get the base URL from site settings
+      const siteSettings = await this.getSiteSettings();
+      const baseUrl = siteSettings?.siteUrl || 'http://localhost:5000';
+      
+      // Initialize variables for sitemap data
+      let itemCount = 0;
+      let xmlContent = '';
+      const now = new Date();
+      
+      // Generate XML based on sitemap type
+      if (type === 'main') {
+        // Main sitemap is an index of all other sitemaps
+        const sitemapList = await this.getSitemaps();
+        const items = sitemapList
+          .filter(item => item.type !== 'main')
+          .map(item => ({
+            loc: `${baseUrl}${item.url}`,
+            lastmod: item.lastGenerated.toISOString()
+          }));
+        
+        itemCount = items.length;
+        xmlContent = '';  // In a real implementation, we'd generate XML here
+        
+      } else if (type === 'games') {
+        const activeGames = await db
+          .select()
+          .from(games)
+          .where(eq(games.status, 'active'));
+        
+        itemCount = activeGames.length;
+        xmlContent = '';  // In a real implementation, we'd generate XML here
+        
+      } else if (type === 'blog') {
+        const publishedPosts = await db
+          .select()
+          .from(blogPosts)
+          .where(eq(blogPosts.status, 'published'));
+        
+        itemCount = publishedPosts.length;
+        xmlContent = '';  // In a real implementation, we'd generate XML here
+        
+      } else if (type === 'pages') {
+        const pages = await db
+          .select()
+          .from(staticPages);
+        
+        itemCount = pages.length;
+        xmlContent = '';  // In a real implementation, we'd generate XML here
+      }
+      
+      // Update the sitemap record in the database
+      const existingSitemap = await this.getSitemapByType(type);
+      
+      if (existingSitemap) {
+        const [updatedSitemap] = await db.update(sitemaps)
+          .set({
+            lastGenerated: now,
+            itemCount,
+            updatedAt: now
+          })
+          .where(eq(sitemaps.type, type as any))
+          .returning();
+        
+        return updatedSitemap;
+        
+      } else {
+        // Create a new sitemap record if it doesn't exist
+        const url = type === 'main' ? '/sitemap.xml' : `/sitemap-${type}.xml`;
+        const [newSitemap] = await db.insert(sitemaps)
+          .values({
+            type: type as any,
+            url,
+            lastGenerated: now,
+            itemCount,
+            isEnabled: true,
+            createdAt: now,
+            updatedAt: now
+          })
+          .returning();
+        
+        return newSitemap;
+      }
+    } catch (error) {
+      console.error(`Error generating sitemap for type ${type}:`, error);
+      return null;
+    }
   }
   
   async logPageView(page: string, userId?: number): Promise<void> {}
