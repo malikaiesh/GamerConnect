@@ -103,7 +103,7 @@ export default function AdminHomepageContent() {
     <AdminLayout title="Homepage Content Management">
       <div className="container mx-auto py-6">
         <div className="flex justify-between items-center mb-6">
-          <h1 className="text-3xl font-bold">Homepage Content Management</h1>
+          <h1 className="text-3xl font-bold text-foreground">Homepage Content Management</h1>
           <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
             <DialogTrigger asChild>
               <Button className="flex items-center gap-2">
@@ -113,8 +113,8 @@ export default function AdminHomepageContent() {
             </DialogTrigger>
             <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
               <DialogHeader>
-                <DialogTitle>Create New Homepage Content</DialogTitle>
-                <DialogDescription>
+                <DialogTitle className="text-foreground">Create New Homepage Content</DialogTitle>
+                <DialogDescription className="text-muted-foreground">
                   Create content that will be displayed on the homepage. Content with 'Active' status will be shown to users.
                 </DialogDescription>
               </DialogHeader>
@@ -194,8 +194,8 @@ export default function AdminHomepageContent() {
         <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
           <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
             <DialogHeader>
-              <DialogTitle>Edit Homepage Content</DialogTitle>
-              <DialogDescription>
+              <DialogTitle className="text-foreground">Edit Homepage Content</DialogTitle>
+              <DialogDescription className="text-muted-foreground">
                 Update the content that will be displayed on the homepage.
               </DialogDescription>
             </DialogHeader>
@@ -218,8 +218,8 @@ export default function AdminHomepageContent() {
         <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
           <AlertDialogContent>
             <AlertDialogHeader>
-              <AlertDialogTitle>Are you sure?</AlertDialogTitle>
-              <AlertDialogDescription>
+              <AlertDialogTitle className="text-foreground">Are you sure?</AlertDialogTitle>
+              <AlertDialogDescription className="text-muted-foreground">
                 This action cannot be undone. This will permanently delete the selected content from the database.
               </AlertDialogDescription>
             </AlertDialogHeader>
@@ -248,8 +248,8 @@ function ContentCard({ content, onEdit, onDelete }: ContentCardProps) {
       <CardHeader>
         <div className="flex items-center justify-between">
           <div>
-            <CardTitle>{content.title}</CardTitle>
-            <CardDescription>Position: {content.position}</CardDescription>
+            <CardTitle className="text-foreground">{content.title}</CardTitle>
+            <CardDescription className="text-muted-foreground">Position: {content.position}</CardDescription>
           </div>
           <Badge variant={content.status === 'active' ? 'default' : 'secondary'}>
             {content.status === 'active' ? 'Active' : 'Inactive'}
