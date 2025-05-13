@@ -368,7 +368,7 @@ export default function HomeAdsPage() {
                   Add New Ad
                 </Button>
               </DialogTrigger>
-              <DialogContent className="sm:max-w-[600px]">
+              <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
                 <DialogHeader>
                   <DialogTitle>Add New Home Ad</DialogTitle>
                   <DialogDescription>
@@ -689,7 +689,7 @@ export default function HomeAdsPage() {
       </div>
 
       <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
-        <DialogContent className="sm:max-w-[600px]">
+        <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Edit Home Ad</DialogTitle>
             <DialogDescription>
