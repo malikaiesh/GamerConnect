@@ -15,13 +15,35 @@ export const apiKeyTypeEnum = pgEnum('api_key_type', ['tinymce', 'game-monetize'
 export const adPositionEnum = pgEnum('ad_position', ['above_featured', 'below_featured', 'above_popular', 'below_popular', 'above_about', 'below_about']);
 export const sitemapTypeEnum = pgEnum('sitemap_type', ['games', 'blog', 'pages', 'main']);
 
+// User Account Type Enum
+export const userAccountTypeEnum = pgEnum('user_account_type', ['local', 'google', 'facebook']);
+
+// User Status Enum
+export const userStatusEnum = pgEnum('user_status', ['active', 'blocked']);
+
 // Users table
 export const users = pgTable('users', {
   id: serial('id').primaryKey(),
   username: text('username').notNull().unique(),
-  password: text('password').notNull(),
+  email: text('email').unique(),
+  password: text('password'),
   isAdmin: boolean('is_admin').default(false).notNull(),
-  createdAt: timestamp('created_at').defaultNow().notNull()
+  profilePicture: text('profile_picture'),
+  bio: text('bio'),
+  country: text('country'),
+  accountType: userAccountTypeEnum('account_type').default('local').notNull(),
+  socialId: text('social_id'), // Google or Facebook ID
+  status: userStatusEnum('status').default('active').notNull(),
+  lastLogin: timestamp('last_login'),
+  location: json('location').$type<{
+    ip?: string;
+    city?: string;
+    country?: string;
+    latitude?: number;
+    longitude?: number;
+  }>(),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+  updatedAt: timestamp('updated_at').defaultNow().notNull()
 });
 
 // Games table
@@ -325,7 +347,15 @@ export const blogPostsRelations = relations(blogPosts, ({ one }) => ({
 // Schemas for validation
 export const insertUserSchema = createInsertSchema(users, {
   username: (schema) => schema.min(3, "Username must be at least 3 characters"),
-  password: (schema) => schema.min(6, "Password must be at least 6 characters")
+  email: (schema) => schema.email("Must be a valid email").optional().nullable(),
+  password: (schema) => schema.min(6, "Password must be at least 6 characters").optional().nullable(),
+  profilePicture: (schema) => schema.url("Profile picture must be a valid URL").optional().nullable(),
+  bio: (schema) => schema.max(500, "Bio must not exceed 500 characters").optional().nullable(),
+  country: (schema) => schema.optional().nullable(),
+  accountType: (schema) => schema.optional(),
+  socialId: (schema) => schema.optional().nullable(),
+  status: (schema) => schema.optional(),
+  location: (schema) => schema.optional().nullable()
 });
 
 export const insertGameSchema = createInsertSchema(games, {
