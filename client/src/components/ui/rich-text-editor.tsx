@@ -68,7 +68,7 @@ export function RichTextEditor({
       )}
       <div className={isLoading ? 'hidden' : ''}>
         <Editor
-          apiKey={apiKey}
+          apiKey={apiKey || import.meta.env.VITE_TINYMCE_API_KEY || '7m14cqmqt0orpe024qq0jh600cbltgk2kxavr07f92sihixj'}
           onInit={(evt, editor) => {
             editorRef.current = editor;
             setIsLoading(false);
@@ -118,7 +118,7 @@ export function RichTextEditor({
             `,
             // Image upload settings
             file_picker_types: 'image media',
-            images_upload_url: '/api/upload-image',
+            images_upload_url: '/api/upload',
             automatic_uploads: true,
             images_reuse_filename: true,
             relative_urls: false,
