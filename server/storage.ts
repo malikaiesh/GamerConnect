@@ -865,8 +865,52 @@ class DatabaseStorage implements IStorage {
   
   async rateGame(gameId: number, rating: number): Promise<void> {}
   
-  async getSiteSettings(): Promise<SiteSetting | null> { return null; }
-  async updateSiteSettings(settingsData: Partial<InsertSiteSetting>): Promise<SiteSetting | null> { return null; }
+  async getSiteSettings(): Promise<SiteSetting | null> {
+    try {
+      const settings = await db.select().from(siteSettings).limit(1);
+      return settings.length > 0 ? settings[0] : null;
+    } catch (error) {
+      console.error('Error fetching site settings:', error);
+      return null;
+    }
+  }
+  
+  async updateSiteSettings(settingsData: Partial<InsertSiteSetting>): Promise<SiteSetting | null> {
+    try {
+      // Check if settings exist
+      const existingSettings = await this.getSiteSettings();
+      
+      if (existingSettings) {
+        // Update existing settings
+        const [updated] = await db.update(siteSettings)
+          .set({
+            ...settingsData,
+            updatedAt: new Date()
+          })
+          .where(eq(siteSettings.id, existingSettings.id))
+          .returning();
+          
+        return updated;
+      } else {
+        // Create new settings if they don't exist
+        const [newSettings] = await db.insert(siteSettings)
+          .values({
+            siteTitle: settingsData.siteTitle || 'Gaming Portal',
+            metaDescription: settingsData.metaDescription || 'Your one-stop gaming destination',
+            keywords: settingsData.keywords || 'games, online games, gaming',
+            currentTheme: settingsData.currentTheme || 'modern',
+            ...settingsData,
+            updatedAt: new Date()
+          })
+          .returning();
+          
+        return newSettings;
+      }
+    } catch (error) {
+      console.error('Error updating site settings:', error);
+      return null;
+    }
+  }
   
   async getPushNotificationById(id: number): Promise<PushNotification | null> { return null; }
   async getPushNotifications(options?: { page?: number, limit?: number }): Promise<{ notifications: PushNotification[], total: number, totalPages: number }> { 
@@ -889,7 +933,7 @@ class DatabaseStorage implements IStorage {
   async getHomePageContents(): Promise<HomePageContent[]> { return this.getHomePageContent(); }
   async getActiveHomePageContents(): Promise<HomePageContent[]> { 
     const contents = await this.getHomePageContent();
-    return contents.filter(content => content.isActive === true);
+    return contents.filter(content => content.status === 'active');
   }
   async createHomePageContent(content: Omit<InsertHomePageContent, "createdAt" | "updatedAt">): Promise<HomePageContent> { throw new Error("Not implemented"); }
   async updateHomePageContent(id: number, contentData: Partial<InsertHomePageContent>): Promise<HomePageContent | null> { return null; }
