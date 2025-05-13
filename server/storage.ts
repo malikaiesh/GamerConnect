@@ -1240,18 +1240,122 @@ class DatabaseStorage implements IStorage {
   async deletePushNotification(id: number): Promise<boolean> { return false; }
   async incrementNotificationImpressions(id: number): Promise<void> {}
   async incrementNotificationClicks(id: number): Promise<void> {}
-  
-  async getHomePageContentById(id: number): Promise<HomePageContent | null> { return null; }
-  async getHomePageContent(): Promise<HomePageContent[]> { return []; }
-  async getHomePageContents(): Promise<HomePageContent[]> { return this.getHomePageContent(); }
-  async getActiveHomePageContents(): Promise<HomePageContent[]> { 
-    const contents = await this.getHomePageContent();
-    return contents.filter(content => content.status === 'active');
+  async getHomePageContent(): Promise<HomePageContent[]> {
+    try {
+      const contents = await db.select().from(homePageContent).orderBy(asc(homePageContent.position));
+      return contents;
+    } catch (error) {
+      console.error('Error fetching homepage content:', error);
+      return [];
+    }
   }
-  async createHomePageContent(content: Omit<InsertHomePageContent, "createdAt" | "updatedAt">): Promise<HomePageContent> { throw new Error("Not implemented"); }
-  async updateHomePageContent(id: number, contentData: Partial<InsertHomePageContent>): Promise<HomePageContent | null> { return null; }
-  async deleteHomePageContent(id: number): Promise<boolean> { return false; }
-  async updateHomePageContentOrder(contents: { id: number, position: number }[]): Promise<HomePageContent[]> { return []; }
+  
+  async getHomePageContents(): Promise<HomePageContent[]> { 
+    return this.getHomePageContent();
+  }
+
+  async getHomePageContentById(id: number): Promise<HomePageContent | null> {
+    try {
+      const [content] = await db.select().from(homePageContent).where(eq(homePageContent.id, id));
+      return content || null;
+    } catch (error) {
+      console.error('Error fetching homepage content by ID:', error);
+      return null;
+    }
+  }
+
+  async getActiveHomePageContents(): Promise<HomePageContent[]> { 
+    try {
+      const contents = await db.select().from(homePageContent)
+        .where(eq(homePageContent.status, 'active'))
+        .orderBy(asc(homePageContent.position));
+      return contents;
+    } catch (error) {
+      console.error('Error fetching active homepage contents:', error);
+      return [];
+    }
+  }
+
+  async createHomePageContent(content: Omit<InsertHomePageContent, "createdAt" | "updatedAt">): Promise<HomePageContent> { 
+    try {
+      // Get the highest position to place new content at the end
+      const existingContents = await this.getHomePageContents();
+      const position = existingContents.length > 0 
+        ? Math.max(...existingContents.map(c => c.position)) + 1 
+        : 0;
+
+      // Create the new content with proper position
+      const contentWithPosition = {
+        ...content,
+        position: content.position ?? position
+      };
+
+      const [newContent] = await db.insert(homePageContent)
+        .values(contentWithPosition)
+        .returning();
+        
+      return newContent;
+    } catch (error) {
+      console.error('Error creating homepage content:', error);
+      throw error;
+    }
+  }
+
+  async updateHomePageContent(id: number, contentData: Partial<InsertHomePageContent>): Promise<HomePageContent | null> { 
+    try {
+      const [updatedContent] = await db.update(homePageContent)
+        .set({
+          ...contentData,
+          updatedAt: new Date()
+        })
+        .where(eq(homePageContent.id, id))
+        .returning();
+
+      return updatedContent || null;
+    } catch (error) {
+      console.error('Error updating homepage content:', error);
+      return null;
+    }
+  }
+
+  async deleteHomePageContent(id: number): Promise<boolean> { 
+    try {
+      const result = await db.delete(homePageContent)
+        .where(eq(homePageContent.id, id));
+
+      return true;
+    } catch (error) {
+      console.error('Error deleting homepage content:', error);
+      return false;
+    }
+  }
+
+  async updateHomePageContentOrder(contents: { id: number, position: number }[]): Promise<HomePageContent[]> { 
+    try {
+      // Use a transaction to ensure all updates succeed or fail together
+      const updatedContents = await db.transaction(async (tx) => {
+        const results: HomePageContent[] = [];
+        
+        for (const item of contents) {
+          const [updated] = await tx.update(homePageContent)
+            .set({ position: item.position, updatedAt: new Date() })
+            .where(eq(homePageContent.id, item.id))
+            .returning();
+            
+          if (updated) {
+            results.push(updated);
+          }
+        }
+        
+        return results;
+      });
+      
+      return updatedContents;
+    } catch (error) {
+      console.error('Error updating homepage content order:', error);
+      return [];
+    }
+  }
   
   async getStaticPageById(id: number): Promise<StaticPage | null> {
     try {

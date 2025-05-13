@@ -324,6 +324,14 @@ export const homePageContent = pgTable('homepage_content', {
   updatedAt: timestamp('updated_at').defaultNow().notNull()
 });
 
+// Homepage Content validation schema
+export const insertHomePageContentSchema = createInsertSchema(homePageContent, {
+  title: (schema) => schema.min(3, "Title must be at least 3 characters"),
+  content: (schema) => schema.min(10, "Content must be at least 10 characters"),
+  position: (schema) => schema.optional(),
+  status: (schema) => schema.optional().default('active')
+});
+
 // Static Pages table
 export const staticPages = pgTable('static_pages', {
   id: serial('id').primaryKey(),
@@ -506,11 +514,6 @@ export const insertPushNotificationSchema = createInsertSchema(pushNotifications
   title: (schema) => schema.min(3, "Title must be at least 3 characters"),
   message: (schema) => schema.min(10, "Message must be at least 10 characters"),
   image: (schema) => schema.url("Image must be a valid URL").optional().nullable()
-});
-
-export const insertHomePageContentSchema = createInsertSchema(homePageContent, {
-  title: (schema) => schema.min(3, "Title must be at least 3 characters"),
-  content: (schema) => schema.min(50, "Content must be at least 50 characters")
 });
 
 export const insertStaticPageSchema = createInsertSchema(staticPages, {
