@@ -1468,7 +1468,6 @@ class DatabaseStorage implements IStorage {
       return false;
     }
   }
-  async deleteApiKey(id: number): Promise<boolean> { return false; }
   
   async getHomeAdById(id: number): Promise<HomeAd | null> {
     try {
