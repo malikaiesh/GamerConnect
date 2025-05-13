@@ -34,7 +34,7 @@ export function RichTextEditor({
   }, []);
 
   return (
-    <FormControl>
+    <>
       {isLoading && (
         <div className="space-y-2">
           <Skeleton className="h-10 w-full" />
@@ -146,6 +146,6 @@ export function RichTextEditor({
           }}
         />
       </div>
-    </FormControl>
+    </>
   );
 }
