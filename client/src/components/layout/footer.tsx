@@ -1,16 +1,35 @@
 import { Link } from 'wouter';
+import { useQuery } from '@tanstack/react-query';
+import { SiteSetting } from '@shared/schema';
 
 export function Footer() {
+  const { data: settings } = useQuery<SiteSetting>({
+    queryKey: ['/api/settings'],
+  });
+
   return (
     <footer className="bg-gray-900 text-white pt-12 pb-6">
       <div className="container mx-auto px-4">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-8">
           <div>
             <div className="flex items-center space-x-2 mb-4">
-              <i className="ri-gamepad-line text-primary text-3xl"></i>
-              <span className="text-2xl font-bold font-poppins">
-                Game<span className="text-primary">Zone</span>
-              </span>
+              {settings?.siteLogo && !settings?.useTextLogo ? (
+                <img 
+                  src={settings.siteLogo} 
+                  alt={settings.siteTitle || 'Game Zone'} 
+                  className="h-10 w-auto" 
+                />
+              ) : (
+                <>
+                  <i className="ri-gamepad-line text-primary text-3xl"></i>
+                  <span 
+                    className="text-2xl font-bold font-poppins"
+                    style={settings?.textLogoColor ? { color: settings.textLogoColor } : {}}
+                  >
+                    {settings?.siteTitle ? settings.siteTitle : 'Game'}
+                  </span>
+                </>
+              )}
             </div>
             <p className="text-gray-400 mb-4">
               Your ultimate destination for free online gaming and gaming news.
@@ -140,7 +159,7 @@ export function Footer() {
         <div className="border-t border-gray-800 pt-6 mt-6">
           <div className="flex flex-col md:flex-row justify-between items-center">
             <p className="text-gray-500 text-sm mb-4 md:mb-0">
-              &copy; {new Date().getFullYear()} GameZone. All rights reserved.
+              &copy; {new Date().getFullYear()} {settings?.siteTitle || 'GameZone'}. All rights reserved.
             </p>
             <div className="flex space-x-6 text-sm text-gray-500">
               <Link href="/privacy" className="hover:text-gray-400 transition-colors">

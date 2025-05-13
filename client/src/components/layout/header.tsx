@@ -68,7 +68,7 @@ export function Header() {
                     className="text-2xl font-bold font-poppins ml-2 text-foreground"
                     style={settings?.textLogoColor ? { color: settings.textLogoColor } : {}}
                   >
-                    {settings?.siteTitle ? settings.siteTitle : 'Game'}<span className="text-primary">Zone</span>
+                    {settings?.siteTitle ? settings.siteTitle : 'Game'}
                   </span>
                 </>
               )}
