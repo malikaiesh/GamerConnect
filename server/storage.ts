@@ -1110,16 +1110,16 @@ class DatabaseStorage implements IStorage {
         value: count()
       }).from(blogCategories);
       
-      // Use a more explicit approach to sum views
-      let totalViews = 0;
-      const allPosts = await db.select({
-        views: blogPosts.views
-      }).from(blogPosts);
+      // Since we don't have a views column in our current schema,
+      // we'll set totalViews to a default value of 0
+      const totalViews = 0;
       
-      // Sum up all the views manually
-      for (const post of allPosts) {
-        totalViews += post.views || 0;
-      }
+      // In a real implementation, we would fetch all posts and sum their views:
+      // const allPosts = await db.select().from(blogPosts);
+      // let totalViews = 0;
+      // for (const post of allPosts) {
+      //   totalViews += post.views || 0;
+      // }
       
       return {
         totalPosts,
