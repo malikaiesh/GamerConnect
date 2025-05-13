@@ -1,50 +1,98 @@
-import { Router } from 'express';
+import { Express, Request, Response } from 'express';
 import { storage } from '../storage';
-import { isAdmin } from '../middleware';
+import { isAuthenticated, hasPermission } from '../middleware';
 
-const router = Router();
-
-// Get all permissions
-router.get('/', isAdmin, async (req, res) => {
-  try {
-    const permissions = await storage.getPermissions();
-    res.json(permissions);
-  } catch (error) {
-    console.error('Error fetching permissions:', error);
-    res.status(500).json({ message: 'Internal server error' });
-  }
-});
-
-// Get a specific permission by ID
-router.get('/:id', isAdmin, async (req, res) => {
-  try {
-    const id = parseInt(req.params.id);
-    if (isNaN(id)) {
-      return res.status(400).json({ message: 'Invalid permission ID' });
+/**
+ * Register routes for permission management
+ */
+export function registerPermissionRoutes(app: Express) {
+  // Get all permissions
+  app.get('/api/permissions', isAuthenticated, hasPermission('users', 'view'), async (req: Request, res: Response) => {
+    try {
+      const permissions = await storage.getAllPermissions();
+      res.status(200).json(permissions);
+    } catch (error) {
+      console.error('Error fetching permissions:', error);
+      res.status(500).json({ message: 'Failed to fetch permissions' });
     }
+  });
 
-    const permission = await storage.getPermissionById(id);
-    if (!permission) {
-      return res.status(404).json({ message: 'Permission not found' });
+  // Get a specific permission by ID
+  app.get('/api/permissions/:id', isAuthenticated, hasPermission('users', 'view'), async (req: Request, res: Response) => {
+    try {
+      const permissionId = parseInt(req.params.id);
+      if (isNaN(permissionId)) {
+        return res.status(400).json({ message: 'Invalid permission ID' });
+      }
+
+      const permission = await storage.getPermissionById(permissionId);
+      if (!permission) {
+        return res.status(404).json({ message: 'Permission not found' });
+      }
+
+      res.status(200).json(permission);
+    } catch (error) {
+      console.error(`Error fetching permission with ID ${req.params.id}:`, error);
+      res.status(500).json({ message: 'Failed to fetch permission' });
     }
+  });
 
-    res.json(permission);
-  } catch (error) {
-    console.error('Error fetching permission:', error);
-    res.status(500).json({ message: 'Internal server error' });
-  }
-});
+  // Get permissions by resource
+  app.get('/api/permissions/resource/:resourceName', isAuthenticated, hasPermission('users', 'view'), async (req: Request, res: Response) => {
+    try {
+      const resourceName = req.params.resourceName;
+      
+      if (!resourceName || resourceName.trim() === '') {
+        return res.status(400).json({ message: 'Resource name is required' });
+      }
 
-// Get permissions by resource
-router.get('/resource/:resource', isAdmin, async (req, res) => {
-  try {
-    const { resource } = req.params;
-    const permissions = await storage.getPermissionsByResource(resource);
-    res.json(permissions);
-  } catch (error) {
-    console.error('Error fetching permissions by resource:', error);
-    res.status(500).json({ message: 'Internal server error' });
-  }
-});
+      const permissions = await storage.getPermissionsByResource(resourceName);
+      res.status(200).json(permissions);
+    } catch (error) {
+      console.error(`Error fetching permissions for resource ${req.params.resourceName}:`, error);
+      res.status(500).json({ message: 'Failed to fetch permissions for resource' });
+    }
+  });
 
-export default router;
+  // Get users by permission
+  app.get('/api/permissions/:id/users', isAuthenticated, hasPermission('users', 'view'), async (req: Request, res: Response) => {
+    try {
+      const permissionId = parseInt(req.params.id);
+      if (isNaN(permissionId)) {
+        return res.status(400).json({ message: 'Invalid permission ID' });
+      }
+
+      const permission = await storage.getPermissionById(permissionId);
+      if (!permission) {
+        return res.status(404).json({ message: 'Permission not found' });
+      }
+
+      const users = await storage.getUsersByPermission(permissionId);
+      res.status(200).json(users);
+    } catch (error) {
+      console.error(`Error fetching users with permission ID ${req.params.id}:`, error);
+      res.status(500).json({ message: 'Failed to fetch users with permission' });
+    }
+  });
+
+  // Get roles by permission
+  app.get('/api/permissions/:id/roles', isAuthenticated, hasPermission('users', 'view'), async (req: Request, res: Response) => {
+    try {
+      const permissionId = parseInt(req.params.id);
+      if (isNaN(permissionId)) {
+        return res.status(400).json({ message: 'Invalid permission ID' });
+      }
+
+      const permission = await storage.getPermissionById(permissionId);
+      if (!permission) {
+        return res.status(404).json({ message: 'Permission not found' });
+      }
+
+      const roles = await storage.getRolesByPermission(permissionId);
+      res.status(200).json(roles);
+    } catch (error) {
+      console.error(`Error fetching roles with permission ID ${req.params.id}:`, error);
+      res.status(500).json({ message: 'Failed to fetch roles with permission' });
+    }
+  });
+}

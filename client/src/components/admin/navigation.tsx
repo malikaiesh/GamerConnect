@@ -2,7 +2,7 @@ import { Link, useLocation } from "wouter";
 import { useAuth } from "@/hooks/use-auth";
 import { useQuery } from "@tanstack/react-query";
 import { cn } from "@/lib/utils";
-import { Gamepad2, Book, Settings, LayoutDashboard, FileText, LogOut, Home, FileSymlink, Key, ImageIcon, Map, Code, BarChart, Files, Bell, Users, Send, Activity, BarChart3, UserRound, UserPlus, MapPin } from "lucide-react";
+import { Gamepad2, Book, Settings, LayoutDashboard, FileText, LogOut, Home, FileSymlink, Key, ImageIcon, Map, Code, BarChart, Files, Bell, Users, Send, Activity, BarChart3, UserRound, UserPlus, MapPin, Shield } from "lucide-react";
 import { useState } from "react";
 import { SiteSetting } from "@shared/schema";
 
@@ -348,6 +348,20 @@ export default function AdminNavigation() {
                   >
                     <Users size={16} />
                     All Users
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    href="/admin/accounts/roles"
+                    className={cn(
+                      "flex items-center gap-3 px-3 py-2 rounded-lg transition-colors",
+                      location === "/admin/accounts/roles"
+                        ? "bg-primary text-white"
+                        : "text-gray-300 hover:bg-gray-800"
+                    )}
+                  >
+                    <Shield size={16} />
+                    Roles & Permissions
                   </Link>
                 </li>
                 <li>

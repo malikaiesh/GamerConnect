@@ -15,8 +15,8 @@ import { registerHomeAdsRoutes } from "./api/homeAds";
 import { registerSitemapRoutes } from "./api/sitemapRoutes";
 import { registerUserRoutes } from "./api/users";
 import pushNotificationsRoutes from "./api/push-notifications";
-import rolesRoutes from "./api/roles";
-import permissionsRoutes from "./api/permissions";
+import { registerRoleRoutes } from "./api/roles";
+import { registerPermissionRoutes } from "./api/permissions";
 import { storage } from "./storage";
 import { db } from "../db";
 import { games, blogPosts, staticPages } from "@shared/schema";
@@ -129,8 +129,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.use('/api/push-notifications', pushNotificationsRoutes);
   
   // Register role and permission API routes
-  app.use('/api/roles', rolesRoutes);
-  app.use('/api/permissions', permissionsRoutes);
+  registerRoleRoutes(app);
+  registerPermissionRoutes(app);
   
   // Serve uploaded files from the uploads directory
   app.use('/uploads', express.static(path.join(process.cwd(), 'uploads')));
