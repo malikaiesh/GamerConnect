@@ -128,7 +128,7 @@ export function RichTextEditor({
             image_title: true,
             automatic_uploads: true,
             file_picker_types: 'image',
-            images_upload_url: '/api/upload',
+            images_upload_url: '/api/upload-image',
             relative_urls: false,
             remove_script_host: false,
             convert_urls: true,
