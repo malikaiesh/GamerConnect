@@ -22,7 +22,7 @@ import {
   ShieldAlert, 
   ShieldCheck,
   UserCheck,
-  FingerPrint
+  Fingerprint
 } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { useToast } from "@/hooks/use-toast";
@@ -81,7 +81,6 @@ export default function SecuritySettingsPage() {
     toast({
       title: "Security settings updated",
       description: "Your security settings have been saved successfully.",
-      variant: "success",
     });
   };
 
@@ -422,7 +421,7 @@ export default function SecuritySettingsPage() {
           <CardContent className="bg-background">
             <div className="space-y-4">
               <div className="flex items-start space-x-4 p-4 rounded-lg bg-primary/5">
-                <FingerPrint className="h-6 w-6 text-primary mt-0.5" />
+                <Fingerprint className="h-6 w-6 text-primary mt-0.5" />
                 <div>
                   <h3 className="text-foreground font-medium mb-1">User Behavior Analytics</h3>
                   <p className="text-muted-foreground text-sm mb-3">

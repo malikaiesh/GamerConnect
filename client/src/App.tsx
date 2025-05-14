@@ -43,6 +43,9 @@ import AccountsUsersPage from "@/pages/admin/accounts/users";
 import AccountsLocationsPage from "@/pages/admin/accounts/locations";
 import AccountsSignupsPage from "@/pages/admin/accounts/signups";
 import AccountsRolesPage from "@/pages/admin/accounts/roles";
+import SecurityTwoFactorPage from "@/pages/admin/security/two-factor";
+import SecurityLogsPage from "@/pages/admin/security/logs";
+import SecuritySettingsPage from "@/pages/admin/security/settings";
 import { Providers } from "./lib/providers";
 import { ProtectedRoute } from "./lib/protected-route";
 import { useAuth } from "@/hooks/use-auth";
@@ -99,6 +102,11 @@ function Router() {
       <ProtectedRoute path="/admin/accounts/locations" component={AccountsLocationsPage} adminOnly={true} />
       <ProtectedRoute path="/admin/accounts/signups" component={AccountsSignupsPage} adminOnly={true} />
       <ProtectedRoute path="/admin/accounts/roles" component={AccountsRolesPage} adminOnly={true} />
+      
+      {/* Security Routes */}
+      <ProtectedRoute path="/admin/security/two-factor" component={SecurityTwoFactorPage} adminOnly={true} />
+      <ProtectedRoute path="/admin/security/logs" component={SecurityLogsPage} adminOnly={true} />
+      <ProtectedRoute path="/admin/security/settings" component={SecuritySettingsPage} adminOnly={true} />
       
       {/* Fallback to 404 */}
       <Route component={NotFound} />

@@ -1,5 +1,5 @@
 import { ReactNode } from "react";
-import AdminLayout from "@/components/admin/layout";
+import { AdminLayout } from "@/components/admin/layout";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useLocation, Link } from "wouter";
 import { cn } from "@/lib/utils";

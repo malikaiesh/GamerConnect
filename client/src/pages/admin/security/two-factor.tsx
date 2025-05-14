@@ -51,7 +51,6 @@ export default function TwoFactorPage() {
       toast({
         title: "Two-Factor Authentication Enabled",
         description: "Your account is now secured with 2FA.",
-        variant: "success",
       });
     } else {
       toast({
