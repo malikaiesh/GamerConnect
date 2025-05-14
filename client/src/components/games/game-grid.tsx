@@ -14,6 +14,7 @@ interface GameGridProps {
   showRank?: boolean;
   rankOffset?: number;
   onGameClick?: (game: Game) => void;
+  loadMoreLabel?: string;
 }
 
 export function GameGrid({
@@ -27,7 +28,8 @@ export function GameGrid({
   className = '',
   showRank = false,
   rankOffset = 0,
-  onGameClick
+  onGameClick,
+  loadMoreLabel = 'Load More Games'
 }: GameGridProps) {
   const [gridCols, setGridCols] = useState(getColumnClass(columns));
   
@@ -105,9 +107,9 @@ export function GameGrid({
         <div className="flex justify-center mt-8">
           <button 
             onClick={onLoadMore}
-            className="bg-card border border-border text-foreground px-6 py-2 rounded-lg hover:bg-muted transition-colors shadow-md flex items-center"
+            className="bg-primary text-primary-foreground px-6 py-2 rounded-lg hover:bg-primary/90 transition-colors shadow-md flex items-center"
           >
-            Load More Games <i className="ri-arrow-down-line ml-2"></i>
+            {loadMoreLabel} <i className="ri-arrow-down-line ml-2"></i>
           </button>
         </div>
       )}

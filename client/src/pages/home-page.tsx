@@ -18,9 +18,10 @@ import { apiRequest } from '@/lib/queryClient';
 export default function HomePage() {
   const [activeCategory, setActiveCategory] = useState('all');
   const [showMoreFeatured, setShowMoreFeatured] = useState(false);
-  const [showMorePopular, setShowMorePopular] = useState(false);
+  const [allPopularGames, setAllPopularGames] = useState<Game[]>([]);
   const [popularGamesPage, setPopularGamesPage] = useState(1);
   const [popularGamesLimit] = useState(15); // Show 15 games per page
+  const [hasMorePopularGames, setHasMorePopularGames] = useState(true);
   const [activeNotification, setActiveNotification] = useState<PushNotificationType | null>(null);
   
   // Fetch featured games
@@ -30,10 +31,41 @@ export default function HomePage() {
   });
   
   // Fetch popular games based on active category and pagination
-  const { data: popularGames = [], isLoading: loadingPopular } = useQuery<Game[]>({
-    queryKey: ['/api/games/popular', { category: activeCategory, page: popularGamesPage, limit: popularGamesLimit }],
+  const { data: popularGamesPage1 = [], isLoading: loadingPopular } = useQuery<Game[]>({
+    queryKey: ['/api/games/popular', { category: activeCategory, page: 1, limit: popularGamesLimit }],
     staleTime: 5 * 60 * 1000, // 5 minutes
   });
+  
+  // Fetch additional pages of popular games
+  const { data: additionalPopularGames = [], isLoading: loadingMorePopular } = useQuery<Game[]>({
+    queryKey: ['/api/games/popular', { category: activeCategory, page: popularGamesPage, limit: popularGamesLimit }],
+    staleTime: 5 * 60 * 1000, // 5 minutes
+    enabled: popularGamesPage > 1, // Only fetch additional pages when popularGamesPage > 1
+  });
+  
+  // Update allPopularGames when first page is loaded
+  useEffect(() => {
+    if (popularGamesPage === 1) {
+      setAllPopularGames(popularGamesPage1);
+    }
+  }, [popularGamesPage1]);
+  
+  // Update allPopularGames when additional pages are loaded
+  useEffect(() => {
+    if (popularGamesPage > 1 && additionalPopularGames.length > 0) {
+      setAllPopularGames(prevGames => {
+        // Filter out any duplicates by ID
+        const existingIds = new Set(prevGames.map(game => game.id));
+        const newGames = additionalPopularGames.filter(game => !existingIds.has(game.id));
+        return [...prevGames, ...newGames];
+      });
+      
+      // If we received fewer games than the limit, there are no more games to load
+      if (additionalPopularGames.length < popularGamesLimit) {
+        setHasMorePopularGames(false);
+      }
+    }
+  }, [additionalPopularGames, popularGamesPage, popularGamesLimit]);
   
   // Fetch blog posts
   const { data: blogPosts = [], isLoading: loadingBlog } = useQuery<BlogPost[]>({
@@ -62,6 +94,9 @@ export default function HomePage() {
   // Handle category filter change
   const handleCategoryChange = (category: string) => {
     setActiveCategory(category);
+    setPopularGamesPage(1); // Reset to page 1 when changing categories
+    setHasMorePopularGames(true); // Reset hasMorePopularGames when changing categories
+    setAllPopularGames([]); // Clear all loaded games when changing categories
   };
   
   // Track notification impression
