@@ -219,7 +219,7 @@ export default function SecuritySettingsPage() {
               <div className="space-y-2">
                 <Label>Password Expiration</Label>
                 <Select 
-                  value={passwordSettings?.passwordExpiration.toString()} 
+                  value={passwordSettings?.passwordExpiration?.toString() || '90'} 
                   onValueChange={(value) => handlePasswordSettingsChange('passwordExpiration', parseInt(value))}
                 >
                   <SelectTrigger>
@@ -239,7 +239,7 @@ export default function SecuritySettingsPage() {
               <div className="space-y-2">
                 <Label>Previous Password Restriction</Label>
                 <Select 
-                  value={passwordSettings?.preventPasswordReuse.toString()} 
+                  value={passwordSettings?.preventPasswordReuse?.toString() || '5'} 
                   onValueChange={(value) => handlePasswordSettingsChange('preventPasswordReuse', parseInt(value))}
                 >
                   <SelectTrigger>
@@ -311,7 +311,7 @@ export default function SecuritySettingsPage() {
                 <div className="space-y-2">
                   <Label htmlFor="max-attempts">Failed Login Attempts</Label>
                   <Select 
-                    value={passwordSettings?.accountLockout.maxAttempts.toString()}
+                    value={passwordSettings?.accountLockout?.maxAttempts?.toString() || '5'}
                     onValueChange={(value) => handleLockoutSettingsChange('maxAttempts', parseInt(value))}
                   >
                     <SelectTrigger>
@@ -329,7 +329,7 @@ export default function SecuritySettingsPage() {
                 <div className="space-y-2">
                   <Label htmlFor="lockout-period">Lockout Duration</Label>
                   <Select 
-                    value={passwordSettings?.accountLockout.lockoutPeriod.toString()}
+                    value={passwordSettings?.accountLockout?.lockoutPeriod?.toString() || '30'}
                     onValueChange={(value) => handleLockoutSettingsChange('lockoutPeriod', parseInt(value))}
                   >
                     <SelectTrigger>
@@ -347,7 +347,7 @@ export default function SecuritySettingsPage() {
                 <div className="space-y-2">
                   <Label htmlFor="reset-counter">Reset Counter After</Label>
                   <Select 
-                    value={passwordSettings?.accountLockout.resetCounterAfter.toString()}
+                    value={passwordSettings?.accountLockout?.resetCounterAfter?.toString() || '15'}
                     onValueChange={(value) => handleLockoutSettingsChange('resetCounterAfter', parseInt(value))}
                   >
                     <SelectTrigger>
@@ -382,7 +382,7 @@ export default function SecuritySettingsPage() {
               <div className="space-y-2">
                 <Label htmlFor="session-timeout">Session Timeout</Label>
                 <Select 
-                  value={sessionSettings?.sessionTimeout.toString()}
+                  value={sessionSettings?.sessionTimeout?.toString() || '60'}
                   onValueChange={(value) => handleSessionSettingsChange('sessionTimeout', parseInt(value))}
                 >
                   <SelectTrigger>
