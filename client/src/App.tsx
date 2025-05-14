@@ -142,7 +142,7 @@ function Router() {
         <Suspense fallback={<LoadingFallback />}><FAQPage /></Suspense>
       </Route>
 
-      {/* Admin Routes */}
+      {/* Admin Routes - using path + component pattern for route-based protected routes */}
       <Route path="/admin/dashboard">
         <ProtectedRoute adminOnly={true}>
           <Suspense fallback={<LoadingFallback />}><AdminDashboard /></Suspense>
