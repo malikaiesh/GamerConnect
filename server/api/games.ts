@@ -107,11 +107,21 @@ export function registerGameRoutes(app: Express) {
   // Get game categories
   app.get('/api/games/categories', async (req: Request, res: Response) => {
     try {
+      // Set cache headers to improve performance
+      res.set('Cache-Control', 'public, max-age=300'); // Cache for 5 minutes
+      
       const categories = await storage.getGameCategories();
+      
+      if (!categories || categories.length === 0) {
+        // If no categories found, return a default set
+        return res.json(['Action', 'Adventure', 'Arcade', 'Puzzle', 'Racing', 'Sports', 'Strategy']);
+      }
+      
       res.json(categories);
     } catch (error) {
       console.error('Error fetching game categories:', error);
-      res.status(500).json({ message: 'Failed to fetch game categories' });
+      // Return a default set of categories on error
+      res.json(['Action', 'Adventure', 'Arcade', 'Puzzle', 'Racing', 'Sports', 'Strategy']);
     }
   });
   

@@ -9,10 +9,22 @@ interface GameFiltersProps {
 
 export function GameFilters({ onFilter, activeCategory }: GameFiltersProps) {
   const [scrollable, setScrollable] = useState(false);
+  const [retryCount, setRetryCount] = useState(0);
   
-  const { data: categories = [], isLoading } = useQuery({
+  // Pre-defined default categories to use as fallback
+  const defaultCategories = ['Action', 'Adventure', 'Arcade', 'Puzzle', 'Racing', 'Sports', 'Strategy'];
+  
+  const { 
+    data: categories = [], 
+    isLoading,
+    isError,
+    refetch 
+  } = useQuery({
     queryKey: ['/api/games/categories'],
     queryFn: fetcher,
+    staleTime: 5 * 60 * 1000, // 5 minutes
+    retry: 3,
+    retryDelay: 1000
   });
 
   // Add a container ref to check if we need horizontal scrolling
@@ -25,15 +37,33 @@ export function GameFilters({ onFilter, activeCategory }: GameFiltersProps) {
     };
     
     window.addEventListener('resize', checkOverflow);
-    // Check after categories are loaded
+    
+    // Check after categories are loaded with a delay to ensure DOM is updated
     if (!isLoading) {
-      setTimeout(checkOverflow, 100);
+      const timer = setTimeout(checkOverflow, 200);
+      return () => clearTimeout(timer);
     }
     
     return () => window.removeEventListener('resize', checkOverflow);
   }, [categories, isLoading]);
   
-  if (isLoading) {
+  // Auto retry if there's an error
+  useEffect(() => {
+    if (isError && retryCount < 3) {
+      const timer = setTimeout(() => {
+        setRetryCount(prev => prev + 1);
+        refetch();
+      }, 2000);
+      
+      return () => clearTimeout(timer);
+    }
+  }, [isError, retryCount, refetch]);
+  
+  // If error persists after retries, use default categories
+  const displayCategories = isError ? defaultCategories : categories;
+  
+  // Show loading state when loading
+  if (isLoading && !isError) {
     return (
       <div className="bg-muted/50 py-4">
         <div className="container mx-auto px-4">
@@ -64,7 +94,7 @@ export function GameFilters({ onFilter, activeCategory }: GameFiltersProps) {
               All Games
             </button>
             
-            {categories.map((category: string) => (
+            {displayCategories.map((category: string) => (
               <button 
                 key={category}
                 onClick={() => onFilter(category)}
