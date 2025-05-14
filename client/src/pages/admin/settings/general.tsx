@@ -32,12 +32,13 @@ import { z } from "zod";
 import { SiteSetting } from "@shared/schema";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 
-// Custom URL validator that allows empty strings or valid URLs
+// Custom URL validator that requires valid URLs when not empty
 const urlSchema = z.string()
   .refine(
     val => !val || val === "" || /^https?:\/\//.test(val),
     { message: "Must be a valid URL starting with http:// or https://" }
   )
+  .transform(val => val === "" ? null : val) // Convert empty strings to null
   .optional()
   .nullable();
 
@@ -250,8 +251,25 @@ export default function GeneralSettingsPage() {
       }
       
       // Then update the settings
-      const response = await apiRequest('PUT', '/api/settings', data);
-      return await response.json();
+      const response = await fetch('/api/settings', {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(data),
+      });
+      
+      const responseData = await response.json();
+      
+      if (!response.ok) {
+        // Create an error object with the response for better error handling
+        const error: any = new Error(responseData.message || 'Error updating settings');
+        error.response = response;
+        error.data = responseData;
+        throw error;
+      }
+      
+      return responseData;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/settings'] });
@@ -260,10 +278,28 @@ export default function GeneralSettingsPage() {
         description: "General settings have been updated successfully.",
       });
     },
-    onError: (error: Error) => {
+    onError: async (error: any) => {
+      console.error("Settings update error:", error);
+      
+      // Try to extract error details
+      let errorMessage = error.message;
+      
+      if (error.data) {
+        console.log("Error data:", error.data);
+        
+        if (error.data.errors && error.data.errors.length > 0) {
+          // Format the validation errors for better readability
+          errorMessage = error.data.errors.map((err: any) => 
+            `${err.path}: ${err.message}`
+          ).join('\n');
+        } else if (error.data.message) {
+          errorMessage = error.data.message;
+        }
+      }
+      
       toast({
         title: "Error updating settings",
-        description: error.message,
+        description: errorMessage,
         variant: "destructive",
       });
     }
