@@ -14,7 +14,8 @@ export function registerUrlRedirectRoutes(app: Express) {
       const limit = Number(req.query.limit) || 10;
       const search = req.query.search as string | undefined;
       
-      const { redirects, total } = await storage.getAllRedirects(page, limit, search);
+      const result = await storage.getUrlRedirects({ page, limit, search });
+      const { redirects, total } = result;
       
       return res.status(200).json({
         redirects,
@@ -39,7 +40,7 @@ export function registerUrlRedirectRoutes(app: Express) {
         return res.status(400).json({ error: 'Invalid ID' });
       }
 
-      const redirect = await storage.getRedirect(id);
+      const redirect = await storage.getUrlRedirectById(id);
       if (!redirect) {
         return res.status(404).json({ error: 'Redirect not found' });
       }
