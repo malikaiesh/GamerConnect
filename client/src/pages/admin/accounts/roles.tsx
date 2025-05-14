@@ -22,6 +22,7 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
+import { Switch } from "@/components/ui/switch";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -65,6 +66,10 @@ const roleFormSchema = z.object({
   id: z.number().optional(),
   name: z.string().min(3, "Role name must be at least 3 characters"),
   description: z.string().optional().nullable(),
+  // User management fields
+  addUser: z.boolean().optional(),
+  email: z.string().email("Invalid email address").optional(),
+  password: z.string().min(8, "Password must be at least 8 characters").optional(),
 });
 
 type RoleForm = z.infer<typeof roleFormSchema>;
@@ -132,6 +137,9 @@ export default function RolesPage() {
     defaultValues: {
       name: "",
       description: "",
+      addUser: false,
+      email: "",
+      password: "",
     },
   });
 
@@ -646,6 +654,70 @@ export default function RolesPage() {
                   </FormItem>
                 )}
               />
+
+              <div className="border-t border-border pt-4 mt-4">
+                <h3 className="text-lg font-medium mb-2">User Management</h3>
+                
+                <FormField
+                  control={form.control}
+                  name="addUser"
+                  render={({ field }) => (
+                    <FormItem className="flex flex-row items-center justify-between space-x-2 space-y-0 rounded-md border p-4 mb-4">
+                      <div className="space-y-0.5">
+                        <FormLabel className="text-base">Create User With This Role</FormLabel>
+                        <FormDescription>
+                          Toggle to create a new user with this role
+                        </FormDescription>
+                      </div>
+                      <FormControl>
+                        <Switch
+                          checked={field.value}
+                          onCheckedChange={field.onChange}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                {form.watch("addUser") && (
+                  <div className="space-y-4 border-l-2 border-primary/20 pl-4 py-2">
+                    <FormField
+                      control={form.control}
+                      name="email"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Email Address</FormLabel>
+                          <FormControl>
+                            <Input type="email" placeholder="user@example.com" {...field} />
+                          </FormControl>
+                          <FormDescription>
+                            Email address for the new user
+                          </FormDescription>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    <FormField
+                      control={form.control}
+                      name="password"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Password</FormLabel>
+                          <FormControl>
+                            <Input type="password" placeholder="••••••••" {...field} />
+                          </FormControl>
+                          <FormDescription>
+                            Create a secure password for the new user
+                          </FormDescription>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+                )}
+              </div>
 
               <DialogFooter>
                 <Button
