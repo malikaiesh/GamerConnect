@@ -545,10 +545,10 @@ export default function RolesPage() {
               Manage roles and assign permissions to control access to different parts of the system
             </p>
           </div>
-        <Button onClick={openCreateRoleDialog} className="gap-2">
-          <Plus size={16} /> Add Role
-        </Button>
-      </div>
+          <Button onClick={openCreateRoleDialog} className="gap-2">
+            <Plus size={16} /> Add Role
+          </Button>
+        </div>
 
       <Tabs defaultValue="roles" onValueChange={(value) => setCurrentTab(value as "roles" | "permissions")}>
         <TabsList className="mb-6">
