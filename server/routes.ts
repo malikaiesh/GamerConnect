@@ -147,6 +147,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Register role and permission API routes
   registerRoleRoutes(app);
   registerPermissionRoutes(app);
+  
+  // Register URL redirects API routes
+  registerUrlRedirectRoutes(app);
 
   // Register security routes
   registerSecurityRoutes(app);

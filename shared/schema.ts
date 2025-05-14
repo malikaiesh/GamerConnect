@@ -757,7 +757,15 @@ export const urlRedirects = pgTable('url_redirects', {
   updatedAt: timestamp('updated_at').defaultNow().notNull()
 });
 
-export const insertUrlRedirectSchema = createInsertSchema(urlRedirects);
+export const urlRedirectInsertSchema = createInsertSchema(urlRedirects, {
+  sourceUrl: (schema) => schema.min(1, "Source URL is required"),
+  targetUrl: (schema) => schema.min(1, "Target URL is required"),
+  statusCode: (schema) => schema.int().gte(300, "Status code must be >= 300").lte(308, "Status code must be <= 308"),
+  isActive: (schema) => schema.optional().default(true)
+});
+
+export const urlRedirectUpdateSchema = urlRedirectInsertSchema.partial();
 
 export type UrlRedirect = typeof urlRedirects.$inferSelect;
-export type InsertUrlRedirect = z.infer<typeof insertUrlRedirectSchema>;
+export type UrlRedirectInsert = z.infer<typeof urlRedirectInsertSchema>;
+export type UrlRedirectUpdate = z.infer<typeof urlRedirectUpdateSchema>;

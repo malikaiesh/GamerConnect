@@ -55,6 +55,8 @@ const AdminSitemapsPage = lazy(() => import("@/pages/admin/sitemaps-page"));
 const AdminBlogAdsPage = lazy(() => import("@/pages/admin/blog-ads-page"));
 const AdminCustomCodePage = lazy(() => import("@/pages/admin/custom-code-page"));
 const AdsTxtPage = lazy(() => import("@/pages/admin/ads-txt-page"));
+// Admin settings pages
+const AdminRedirectsPage = lazy(() => import("@/pages/admin/settings/redirects"));
 // Admin accounts pages
 const AdminUsersPage = lazy(() => import("@/pages/admin/accounts/users"));
 const AdminRolesPage = lazy(() => import("@/pages/admin/accounts/roles"));
@@ -211,6 +213,11 @@ function Router() {
       <Route path="/admin/settings">
         <ProtectedRoute adminOnly={true}>
           <Suspense fallback={<LoadingFallback />}><AdminSettings /></Suspense>
+        </ProtectedRoute>
+      </Route>
+      <Route path="/admin/settings/redirects">
+        <ProtectedRoute adminOnly={true}>
+          <Suspense fallback={<LoadingFallback />}><AdminRedirectsPage /></Suspense>
         </ProtectedRoute>
       </Route>
       
