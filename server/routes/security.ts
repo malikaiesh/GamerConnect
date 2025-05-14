@@ -20,10 +20,10 @@ export function registerSecurityRoutes(app: Express) {
       // Map to a safer response object (don't expose the token)
       const safeSessionsData = sessions.map(session => ({
         id: session.id,
-        device: session.deviceInfo.device,
-        browser: session.deviceInfo.browser,
-        os: session.deviceInfo.os,
-        location: session.location,
+        device: session.deviceInfo?.device || 'Unknown',
+        browser: session.deviceInfo?.browser || 'Unknown',
+        os: session.deviceInfo?.os || 'Unknown',
+        location: session.location || { country: 'Unknown', city: 'Unknown' },
         lastActivity: session.lastActivity,
         createdAt: session.createdAt,
         current: session.token === req.session?.id // Determine if this is the current session
@@ -115,15 +115,7 @@ export function registerSecurityRoutes(app: Express) {
         where: eq(userSessions.status, 'active'),
         orderBy: userSessions.lastActivity,
         with: {
-          user: {
-            columns: {
-              id: true,
-              username: true,
-              email: true,
-              createdAt: true,
-              role: true
-            }
-          }
+          user: true
         }
       });
 
@@ -131,13 +123,13 @@ export function registerSecurityRoutes(app: Express) {
       const safeSessionsData = sessions.map(session => ({
         id: session.id,
         userId: session.userId,
-        username: session.user.username,
-        userRole: session.user.role,
-        device: session.deviceInfo.device,
-        browser: session.deviceInfo.browser,
-        os: session.deviceInfo.os,
-        ipAddress: session.ipAddress,
-        location: session.location,
+        username: session.user?.username || 'Unknown',
+        userRole: session.user?.isAdmin ? 'admin' : 'user',
+        device: session.deviceInfo?.device || 'Unknown',
+        browser: session.deviceInfo?.browser || 'Unknown',
+        os: session.deviceInfo?.os || 'Unknown',
+        ipAddress: session.ipAddress || 'Unknown',
+        location: session.location || { country: 'Unknown', city: 'Unknown' },
         lastActivity: session.lastActivity,
         createdAt: session.createdAt,
         expiresAt: session.expiresAt

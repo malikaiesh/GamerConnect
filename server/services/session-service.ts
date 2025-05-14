@@ -1,6 +1,6 @@
 import { db } from '@db';
 import { userSessions, users, sessionStatusEnum } from '@shared/schema';
-import { eq, and, desc, lt, gt } from 'drizzle-orm';
+import { eq, and, desc, lt, gt, sql } from 'drizzle-orm';
 import { Request } from 'express';
 import crypto from 'crypto';
 
@@ -109,8 +109,7 @@ export class SessionService {
         and(
           eq(userSessions.userId, userId),
           eq(userSessions.status, 'active'),
-          userId ? eq(userSessions.userId, userId) : undefined,
-          currentSessionId ? eq(userSessions.id, currentSessionId, true) : undefined
+          sql`${userSessions.id} != ${currentSessionId}` // this excludes the current session
         )
       );
   }
