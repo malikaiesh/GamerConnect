@@ -39,7 +39,7 @@ import {
   PaginationLink,
   PaginationNext,
   PaginationPrevious 
-} from '@/components/ui/pagination';
+} from '@/components/ui/pagination-simple';
 import { 
   Tooltip,
   TooltipContent,
