@@ -16,14 +16,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import {
-  Pagination,
-  PaginationContent,
-  PaginationItem,
-  PaginationLink,
-  PaginationNext,
-  PaginationPrevious,
-} from "@/components/ui/pagination";
+import Pagination from "@/components/ui/pagination";
 import {
   Tabs,
   TabsContent,
@@ -309,38 +302,12 @@ export default function AccountsUsersPage() {
                   </Table>
 
                   {data && data.totalPages > 1 && (
-                    <Pagination className="mt-6">
-                      <PaginationContent>
-                        <PaginationItem>
-                          <div className="cursor-pointer">
-                            <PaginationPrevious 
-                              onClick={() => page > 1 && setPage(p => p - 1)}
-                              className={page === 1 ? "pointer-events-none opacity-50" : ""}
-                            />
-                          </div>
-                        </PaginationItem>
-                        
-                        {[...Array(data.totalPages)].map((_, i) => (
-                          <PaginationItem key={i + 1}>
-                            <PaginationLink
-                              onClick={() => setPage(i + 1)}
-                              isActive={page === i + 1}
-                            >
-                              {i + 1}
-                            </PaginationLink>
-                          </PaginationItem>
-                        ))}
-                        
-                        <PaginationItem>
-                          <div className="cursor-pointer">
-                            <PaginationNext
-                              onClick={() => page < data.totalPages && setPage(p => p + 1)}
-                              className={page === data.totalPages ? "pointer-events-none opacity-50" : ""}
-                            />
-                          </div>
-                        </PaginationItem>
-                      </PaginationContent>
-                    </Pagination>
+                    <Pagination
+                      currentPage={page}
+                      totalPages={data.totalPages}
+                      onPageChange={setPage}
+                      maxVisiblePages={5}
+                    />
                   )}
                 </>
               )}
