@@ -248,7 +248,7 @@ export default function RolesPage() {
   const createRoleMutation = useMutation({
     mutationFn: async (data: RoleForm) => {
       // Extract user data if present
-      const { addUser, email, password, ...roleData } = data;
+      const { addUser, email, password, assignRoles, ...roleData } = data;
       
       // Create the role
       const response = await fetch('/api/roles', {
@@ -268,6 +268,12 @@ export default function RolesPage() {
       
       // If user creation is enabled, create the user with this role
       if (addUser && email && password) {
+        // Prepare role IDs - include both the created role and any additional roles selected
+        const userRoles = [createdRole.id];
+        if (assignRoles && assignRoles.length > 0) {
+          userRoles.push(...assignRoles);
+        }
+        
         const userResponse = await fetch('/api/admin/users', {
           method: 'POST',
           headers: {
@@ -276,7 +282,7 @@ export default function RolesPage() {
           body: JSON.stringify({
             email,
             password,
-            roleId: createdRole.id,
+            roles: userRoles, // Send multiple roles
             // Use email as username if not specified
             username: email.split('@')[0],
             status: 'active',
@@ -874,6 +880,63 @@ export default function RolesPage() {
                         )
                       }}
                     />
+
+                    {/* Additional Roles Selection */}
+                    <div className="mt-4 space-y-2">
+                      <h4 className="text-sm font-medium">Additional Roles</h4>
+                      <p className="text-sm text-muted-foreground mb-2">
+                        Select additional roles for this user
+                      </p>
+                      
+                      <FormField
+                        control={form.control}
+                        name="assignRoles"
+                        render={() => (
+                          <FormItem className="space-y-3">
+                            <div className="grid grid-cols-2 gap-2 border rounded-md p-3 max-h-40 overflow-y-auto">
+                              {roles?.filter(role => dialogMode !== "edit" || role.id !== selectedRole?.id)
+                                .map((role) => (
+                                <FormField
+                                  key={role.id}
+                                  control={form.control}
+                                  name="assignRoles"
+                                  render={({ field }) => {
+                                    return (
+                                      <FormItem
+                                        key={role.id}
+                                        className="flex flex-row items-start space-x-3 space-y-0 p-2 rounded hover:bg-accent"
+                                      >
+                                        <FormControl>
+                                          <Checkbox
+                                            checked={field.value?.includes(role.id)}
+                                            onCheckedChange={(checked) => {
+                                              return checked
+                                                ? field.onChange([...(field.value || []), role.id])
+                                                : field.onChange(field.value?.filter((value) => value !== role.id) || [])
+                                            }}
+                                          />
+                                        </FormControl>
+                                        <div className="space-y-1 leading-none">
+                                          <FormLabel className="font-normal cursor-pointer">
+                                            {role.name}
+                                          </FormLabel>
+                                          {role.description && (
+                                            <p className="text-xs text-muted-foreground">
+                                              {role.description}
+                                            </p>
+                                          )}
+                                        </div>
+                                      </FormItem>
+                                    )
+                                  }}
+                                />
+                              ))}
+                            </div>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    </div>
                   </div>
                 )}
               </div>
