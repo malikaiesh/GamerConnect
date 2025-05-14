@@ -495,7 +495,7 @@ router.delete("/campaigns/:id", isAuthenticated, isAdmin, async (req, res) => {
 
 // === PUSH ANALYTICS ENDPOINTS ===
 
-// Get analytics data
+// Get analytics data (no ID parameter)
 router.get("/analytics", isAuthenticated, isAdmin, async (req, res) => {
   try {
     // Get subscriber stats
