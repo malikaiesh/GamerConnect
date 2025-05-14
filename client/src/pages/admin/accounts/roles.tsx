@@ -26,6 +26,7 @@ import { Switch } from "@/components/ui/switch";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
   Select,
   SelectContent,
@@ -35,7 +36,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Loader2, Plus, Edit, Trash2, UserCheck, X, Shield } from "lucide-react";
+import { Loader2, Plus, Edit, Trash2, UserCheck, X, Shield, Eye, EyeOff } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -47,7 +48,6 @@ import {
 } from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Separator } from "@/components/ui/separator";
-import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
 import {
   Table,
@@ -85,6 +85,8 @@ const roleFormSchema = z.object({
     .refine(password => !password || password.length >= 8, {
       message: "Password must be at least 8 characters"
     }),
+  // Multiple roles for user
+  assignRoles: z.array(z.number()).optional(),
 }).refine(data => {
   // If addUser is true, both email and password must be provided
   if (data.addUser) {
@@ -189,6 +191,7 @@ export default function RolesPage() {
           addUser: false,
           email: "",
           password: "",
+          assignRoles: [],
         });
         // Don't use templates in edit mode
         setSelectedTemplate("");
@@ -199,6 +202,7 @@ export default function RolesPage() {
           addUser: false,
           email: "",
           password: "",
+          assignRoles: [],
         });
         // Set default template to custom in create mode
         setSelectedTemplate("custom");
@@ -839,18 +843,36 @@ export default function RolesPage() {
                     <FormField
                       control={form.control}
                       name="password"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Password</FormLabel>
-                          <FormControl>
-                            <Input type="password" placeholder="••••••••" {...field} />
-                          </FormControl>
-                          <FormDescription>
-                            Create a secure password for the new user
-                          </FormDescription>
-                          <FormMessage />
-                        </FormItem>
-                      )}
+                      render={({ field }) => {
+                        const [showPassword, setShowPassword] = useState(false);
+                        return (
+                          <FormItem>
+                            <FormLabel>Password</FormLabel>
+                            <div className="flex items-center space-x-2">
+                              <FormControl className="flex-1">
+                                <Input 
+                                  type={showPassword ? "text" : "password"} 
+                                  placeholder="••••••••" 
+                                  {...field} 
+                                />
+                              </FormControl>
+                              <Button
+                                type="button"
+                                variant="outline"
+                                size="icon"
+                                onClick={() => setShowPassword(!showPassword)}
+                                className="h-10 w-10"
+                              >
+                                {showPassword ? <Eye className="h-4 w-4" /> : <EyeOff className="h-4 w-4" />}
+                              </Button>
+                            </div>
+                            <FormDescription>
+                              Create a secure password for the new user
+                            </FormDescription>
+                            <FormMessage />
+                          </FormItem>
+                        )
+                      }}
                     />
                   </div>
                 )}
