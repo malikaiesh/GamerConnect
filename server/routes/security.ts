@@ -1,9 +1,22 @@
 import { Express, Request, Response } from 'express';
 import { db } from '@db';
-import { userSessions } from '@shared/schema';
+import { userSessions, users } from '@shared/schema';
 import { eq, and } from 'drizzle-orm';
 import { isAuthenticated, isAdmin } from '../middleware';
 import { SessionService } from '../services/session-service';
+import { z } from 'zod';
+import { scrypt, randomBytes, timingSafeEqual } from 'crypto';
+import { promisify } from 'util';
+
+// Promisify scrypt
+const scryptAsync = promisify(scrypt);
+
+// Function to hash passwords
+async function hashPassword(password: string): Promise<string> {
+  const salt = randomBytes(16).toString('hex');
+  const buf = (await scryptAsync(password, salt, 64)) as Buffer;
+  return `${buf.toString('hex')}.${salt}`;
+}
 
 export function registerSecurityRoutes(app: Express) {
   /**
@@ -247,5 +260,70 @@ export function registerSecurityRoutes(app: Express) {
     };
 
     res.json(mockSettings);
+  });
+
+  /**
+   * Reset a user's password (admin only)
+   */
+  app.post('/api/security/reset-password', isAuthenticated, isAdmin, async (req: Request, res: Response) => {
+    try {
+      // Validate request data
+      const resetPasswordSchema = z.object({
+        userId: z.string().or(z.number()).transform(val => Number(val)),
+        newPassword: z.string().min(8, "Password must be at least 8 characters"),
+      });
+
+      const { userId, newPassword } = resetPasswordSchema.parse(req.body);
+      
+      // Get the user
+      const user = await db.query.users.findFirst({
+        where: eq(users.id, userId)
+      });
+      
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+      
+      // Hash the new password
+      const hashedPassword = await hashPassword(newPassword);
+      
+      // Update the user's password
+      await db.update(users)
+        .set({ 
+          password: hashedPassword,
+          updatedAt: new Date()
+        })
+        .where(eq(users.id, userId));
+      
+      // Log the action
+      console.log(`Admin ${req.user?.username} (ID: ${req.user?.id}) reset password for user ${user.username} (ID: ${userId})`);
+      
+      // Return success
+      return res.status(200).json({ message: "Password was reset successfully" });
+    } catch (error) {
+      console.error('Error resetting password:', error);
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ message: 'Invalid request data', errors: error.errors });
+      }
+      return res.status(500).json({ message: 'An error occurred while resetting the password' });
+    }
+  });
+  
+  /**
+   * Get a list of users with email for admin password reset
+   */
+  app.get('/api/admin/users/emails', isAuthenticated, isAdmin, async (req: Request, res: Response) => {
+    try {
+      const usersList = await db.select({
+        id: users.id,
+        username: users.username,
+        email: users.email
+      }).from(users);
+      
+      return res.json(usersList);
+    } catch (error) {
+      console.error('Error fetching users list:', error);
+      return res.status(500).json({ message: 'An error occurred while fetching users list' });
+    }
   });
 }
