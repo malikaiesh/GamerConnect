@@ -88,7 +88,7 @@ export default function HomePage() {
   }, [activeNotification]);
   
   return (
-    <div className="min-h-screen flex flex-col">
+    <div className="min-h-screen flex flex-col bg-background">
       <Header />
       
       {/* Hero Section */}
@@ -134,7 +134,7 @@ export default function HomePage() {
       <HomeAd position="above_featured" />
       
       {/* Featured Games Section */}
-      <section id="featured" className="py-10">
+      <section id="featured" className="py-10 bg-background">
         <div className="container mx-auto px-4">
           <div className="flex justify-between items-center mb-6">
             <h2 className="heading-md">Featured Games</h2>
@@ -158,7 +158,7 @@ export default function HomePage() {
       <HomeAd position="below_featured" />
       
       {/* Random Game Banner */}
-      <section className="py-8 bg-primary-50 dark:bg-primary-900/20">
+      <section className="py-8 bg-background">
         <div className="container mx-auto px-4">
           <div className="flex flex-col md:flex-row items-center justify-between bg-card rounded-2xl shadow-lg p-6 md:p-8">
             <div className="mb-6 md:mb-0 md:mr-8">
@@ -194,7 +194,7 @@ export default function HomePage() {
       <HomeAd position="above_popular" />
       
       {/* Popular Games Section */}
-      <section id="games" className="py-10">
+      <section id="games" className="py-10 bg-background">
         <div className="container mx-auto px-4">
           <div className="flex justify-between items-center mb-6">
             <h2 className="heading-md">Popular Games</h2>
@@ -245,7 +245,7 @@ export default function HomePage() {
       <HomeAd position="above_about" />
       
       {/* Homepage Content Section */}
-      <section className="py-10">
+      <section className="py-10 bg-background">
         <div className="container mx-auto px-4">
           <div className="mb-6">
             <h2 className="heading-md text-center">About GameZone</h2>
