@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo, memo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -42,7 +42,109 @@ interface AnalyticsData {
   }>;
 }
 
+// Chart colors
+const COLORS = ['#7e57c2', '#ff5722', '#4caf50', '#2196f3', '#ff9800'];
 const defaultTimeframe = '7days';
+
+// Memoized chart components for better performance
+const MemoizedStatsCard = memo(({ title, value, description }: { title: string; value: string; description: string }) => (
+  <Card>
+    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+      <CardTitle className="text-sm font-medium">{title}</CardTitle>
+    </CardHeader>
+    <CardContent>
+      <div className="text-2xl font-bold">{value}</div>
+      <p className="text-xs text-muted-foreground">{description}</p>
+    </CardContent>
+  </Card>
+));
+
+const MemoizedPieChart = memo(({ data, title, formatter }: { 
+  data: Array<any>; 
+  title: string;
+  formatter?: (value: any, name?: string, props?: any) => any;
+}) => (
+  <Card className="col-span-1">
+    <CardHeader>
+      <CardTitle>{title}</CardTitle>
+    </CardHeader>
+    <CardContent className="h-80">
+      <ResponsiveContainer width="100%" height="100%">
+        <PieChart>
+          <Pie
+            data={data}
+            cx="50%"
+            cy="50%"
+            labelLine={false}
+            outerRadius={80}
+            fill="#8884d8"
+            dataKey="value"
+            label={({ name, percent }) => `${name} (${(percent * 100).toFixed(0)}%)`}
+          >
+            {data.map((entry, index) => (
+              <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+            ))}
+          </Pie>
+          <Tooltip formatter={formatter} />
+          <Legend />
+        </PieChart>
+      </ResponsiveContainer>
+    </CardContent>
+  </Card>
+));
+
+const MemoizedBarChart = memo(({ data, title }: { data: Array<any>; title: string }) => (
+  <Card className="col-span-1">
+    <CardHeader>
+      <CardTitle>{title}</CardTitle>
+    </CardHeader>
+    <CardContent className="h-80">
+      <ResponsiveContainer width="100%" height="100%">
+        <BarChart
+          data={data}
+          layout="vertical"
+          margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
+        >
+          <CartesianGrid strokeDasharray="3 3" horizontal={false} />
+          <XAxis type="number" />
+          <YAxis dataKey="name" type="category" width={100} />
+          <Tooltip formatter={(value, name, props) => [value, props.payload.fullPath]} />
+          <Bar dataKey="value" fill="#7e57c2" />
+        </BarChart>
+      </ResponsiveContainer>
+    </CardContent>
+  </Card>
+));
+
+const MemoizedLineChart = memo(({ data, title }: { data: Array<any>; title: string }) => (
+  <Card className="col-span-full">
+    <CardHeader>
+      <CardTitle>{title}</CardTitle>
+    </CardHeader>
+    <CardContent className="h-96">
+      <ResponsiveContainer width="100%" height="100%">
+        <LineChart
+          data={data}
+          margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
+        >
+          <CartesianGrid strokeDasharray="3 3" />
+          <XAxis dataKey="date" />
+          <YAxis />
+          <Tooltip />
+          <Legend />
+          <Line 
+            type="monotone" 
+            dataKey="visitors" 
+            stroke="#ff5722" 
+            activeDot={{ r: 8 }} 
+            name="Visitors" 
+            isAnimationActive={false} // Disable animations for performance
+          />
+        </LineChart>
+      </ResponsiveContainer>
+    </CardContent>
+  </Card>
+));
 
 export function Analytics() {
   const [timeframe, setTimeframe] = useState<string>(defaultTimeframe);
@@ -50,55 +152,65 @@ export function Analytics() {
   const { data, isLoading, isError } = useQuery<AnalyticsData>({
     queryKey: ['/api/analytics', timeframe],
     staleTime: 5 * 60 * 1000, // 5 minutes
-    cacheTime: 10 * 60 * 1000, // 10 minutes
+    gcTime: 10 * 60 * 1000, // 10 minutes (replaced cacheTime with gcTime)
     // Initial load only, we'll let the user manually refresh when needed
     refetchOnMount: true,
     refetchOnWindowFocus: false,
     refetchOnReconnect: false,
   });
 
-  // Format chart data
-  const formatTopGamesData = (data?: Array<{ name: string; plays: number }>) => {
-    if (!data) return [];
-    return data.map(game => ({
-      name: game.name.length > 15 ? `${game.name.substring(0, 15)}...` : game.name,
-      value: game.plays,
-      fullName: game.name,
-    })).sort((a, b) => b.value - a.value).slice(0, 5);
-  };
+  // Memoized data transformations to prevent unnecessary recalculations
+  const topGamesData = useMemo(() => {
+    if (!data?.topGames) return [];
+    return data.topGames
+      .map(game => ({
+        name: game.name.length > 15 ? `${game.name.substring(0, 15)}...` : game.name,
+        value: game.plays,
+        fullName: game.name,
+      }))
+      .sort((a, b) => b.value - a.value)
+      .slice(0, 5);
+  }, [data?.topGames]);
 
-  const formatTopPagesData = (data?: Array<{ path: string; views: number }>) => {
-    if (!data) return [];
-    return data.map(page => ({
-      name: page.path.length > 20 ? `${page.path.substring(0, 20)}...` : page.path,
-      value: page.views,
-      fullPath: page.path,
-    })).sort((a, b) => b.value - a.value).slice(0, 5);
-  };
+  const topPagesData = useMemo(() => {
+    if (!data?.topPages) return [];
+    return data.topPages
+      .map(page => ({
+        name: page.path.length > 20 ? `${page.path.substring(0, 20)}...` : page.path,
+        value: page.views,
+        fullPath: page.path,
+      }))
+      .sort((a, b) => b.value - a.value)
+      .slice(0, 5);
+  }, [data?.topPages]);
 
-  const formatDailyData = (data?: Array<{ date: string; visitors: number }>) => {
-    if (!data) return [];
-    return data.map(item => ({
+  const dailyData = useMemo(() => {
+    if (!data?.dailyVisitors) return [];
+    return data.dailyVisitors.map(item => ({
       date: new Date(item.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
       visitors: item.visitors
     }));
-  };
+  }, [data?.dailyVisitors]);
   
-  const formatDeviceData = (data?: Array<{ device: string; count: number }>) => {
-    if (!data) return [];
-    return data.map(item => ({
+  const deviceData = useMemo(() => {
+    if (!data?.userDevices) return [];
+    return data.userDevices.map(item => ({
       name: item.device,
       value: item.count
     }));
-  };
+  }, [data?.userDevices]);
 
-  // Chart colors
-  const COLORS = ['#7e57c2', '#ff5722', '#4caf50', '#2196f3', '#ff9800'];
+  // Memoized total game plays calculation
+  const totalGamePlays = useMemo(() => {
+    if (!data?.topGames) return 0;
+    return data.topGames.reduce((sum, game) => sum + game.plays, 0);
+  }, [data?.topGames]);
 
-  const topGamesData = formatTopGamesData(data?.topGames);
-  const topPagesData = formatTopPagesData(data?.topPages);
-  const dailyData = formatDailyData(data?.dailyVisitors);
-  const deviceData = formatDeviceData(data?.userDevices);
+  // Formatted session time
+  const formattedSessionTime = useMemo(() => {
+    if (!data?.avgTimeOnSite) return '0m 0s';
+    return `${Math.floor(data.avgTimeOnSite)}m ${Math.round((data.avgTimeOnSite % 1) * 60)}s`;
+  }, [data?.avgTimeOnSite]);
 
   if (isLoading) {
     return (
@@ -129,162 +241,57 @@ export function Analytics() {
         </Tabs>
       </div>
 
-      {/* Stats Cards */}
+      {/* Stats Cards - Using memoized components */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Page Views</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{data?.pageViews.toLocaleString() || 0}</div>
-            <p className="text-xs text-muted-foreground">Total page views in selected period</p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Unique Visitors</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{data?.uniqueVisitors.toLocaleString() || 0}</div>
-            <p className="text-xs text-muted-foreground">Total unique visitors in selected period</p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Game Plays</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{data?.topGames?.reduce((sum, game) => sum + game.plays, 0).toLocaleString() || 0}</div>
-            <p className="text-xs text-muted-foreground">Total game plays in selected period</p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Avg. Session</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">
-              {data?.avgTimeOnSite
-                ? `${Math.floor(data.avgTimeOnSite)}m ${Math.round((data.avgTimeOnSite % 1) * 60)}s`
-                : '0m 0s'}
-            </div>
-            <p className="text-xs text-muted-foreground">Average time on site</p>
-          </CardContent>
-        </Card>
-        
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Bounce Rate</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{data?.bounceRate ? `${data.bounceRate}%` : '0%'}</div>
-            <p className="text-xs text-muted-foreground">Visitors who leave after viewing one page</p>
-          </CardContent>
-        </Card>
+        <MemoizedStatsCard 
+          title="Page Views" 
+          value={data?.pageViews.toLocaleString() || '0'} 
+          description="Total page views in selected period" 
+        />
+        <MemoizedStatsCard 
+          title="Unique Visitors" 
+          value={data?.uniqueVisitors.toLocaleString() || '0'} 
+          description="Total unique visitors in selected period" 
+        />
+        <MemoizedStatsCard 
+          title="Game Plays" 
+          value={totalGamePlays.toLocaleString()} 
+          description="Total game plays in selected period" 
+        />
+        <MemoizedStatsCard 
+          title="Avg. Session" 
+          value={formattedSessionTime} 
+          description="Average time on site" 
+        />
+        <MemoizedStatsCard 
+          title="Bounce Rate" 
+          value={data?.bounceRate ? `${data.bounceRate}%` : '0%'} 
+          description="Visitors who leave after viewing one page" 
+        />
       </div>
 
-      {/* Charts */}
+      {/* Charts - Using memoized components */}
       <div className="grid gap-4 md:grid-cols-3">
-        <Card className="col-span-1">
-          <CardHeader>
-            <CardTitle>Top Games</CardTitle>
-          </CardHeader>
-          <CardContent className="h-80">
-            <ResponsiveContainer width="100%" height="100%">
-              <PieChart>
-                <Pie
-                  data={topGamesData}
-                  cx="50%"
-                  cy="50%"
-                  labelLine={false}
-                  outerRadius={80}
-                  fill="#8884d8"
-                  dataKey="value"
-                  label={({ name, percent }) => `${name} (${(percent * 100).toFixed(0)}%)`}
-                >
-                  {topGamesData.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                  ))}
-                </Pie>
-                <Tooltip 
-                  formatter={(value, name, props) => [value, props.payload.fullName]} 
-                />
-                <Legend />
-              </PieChart>
-            </ResponsiveContainer>
-          </CardContent>
-        </Card>
-
-        <Card className="col-span-1">
-          <CardHeader>
-            <CardTitle>Device Distribution</CardTitle>
-          </CardHeader>
-          <CardContent className="h-80">
-            <ResponsiveContainer width="100%" height="100%">
-              <PieChart>
-                <Pie
-                  data={deviceData}
-                  cx="50%"
-                  cy="50%"
-                  labelLine={false}
-                  outerRadius={80}
-                  fill="#8884d8"
-                  dataKey="value"
-                  label={({ name, percent }) => `${name} (${(percent * 100).toFixed(0)}%)`}
-                >
-                  {deviceData.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                  ))}
-                </Pie>
-                <Tooltip formatter={(value) => value.toLocaleString()} />
-                <Legend />
-              </PieChart>
-            </ResponsiveContainer>
-          </CardContent>
-        </Card>
-        
-        <Card className="col-span-1">
-          <CardHeader>
-            <CardTitle>Most Visited Pages</CardTitle>
-          </CardHeader>
-          <CardContent className="h-80">
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart
-                data={topPagesData}
-                layout="vertical"
-                margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
-              >
-                <CartesianGrid strokeDasharray="3 3" horizontal={false} />
-                <XAxis type="number" />
-                <YAxis dataKey="name" type="category" width={100} />
-                <Tooltip formatter={(value, name, props) => [value, props.payload.fullPath]} />
-                <Bar dataKey="value" fill="#7e57c2" />
-              </BarChart>
-            </ResponsiveContainer>
-          </CardContent>
-        </Card>
+        <MemoizedPieChart 
+          data={topGamesData} 
+          title="Top Games" 
+          formatter={(value, name, props) => [value, props.payload.fullName]} 
+        />
+        <MemoizedPieChart 
+          data={deviceData} 
+          title="Device Distribution" 
+          formatter={(value) => value.toLocaleString()} 
+        />
+        <MemoizedBarChart 
+          data={topPagesData} 
+          title="Most Visited Pages" 
+        />
       </div>
 
-      <Card className="col-span-full">
-        <CardHeader>
-          <CardTitle>Daily Visitors</CardTitle>
-        </CardHeader>
-        <CardContent className="h-96">
-          <ResponsiveContainer width="100%" height="100%">
-            <LineChart
-              data={dailyData}
-              margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
-            >
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="date" />
-              <YAxis />
-              <Tooltip />
-              <Legend />
-              <Line type="monotone" dataKey="visitors" stroke="#ff5722" activeDot={{ r: 8 }} name="Visitors" />
-            </LineChart>
-          </ResponsiveContainer>
-        </CardContent>
-      </Card>
+      <MemoizedLineChart 
+        data={dailyData} 
+        title="Daily Visitors" 
+      />
     </div>
   );
 }
