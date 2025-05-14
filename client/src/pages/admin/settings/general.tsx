@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import AdminLayout from "@/components/layout/admin-layout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -264,7 +264,7 @@ export default function GeneralSettingsPage() {
                     
                     <FormField
                       control={form.control}
-                      name="metaKeywords"
+                      name="keywords"
                       render={({ field }) => (
                         <FormItem>
                           <FormLabel>Meta Keywords</FormLabel>
@@ -403,10 +403,10 @@ export default function GeneralSettingsPage() {
                     <div className="space-y-2 pt-4">
                       <Label htmlFor="favicon-upload">Favicon</Label>
                       <div className="flex items-center gap-4">
-                        {(faviconPreview || settings?.faviconUrl) && (
+                        {(faviconPreview || settings?.siteFavicon) && (
                           <div className="w-12 h-12 border rounded-md overflow-hidden flex items-center justify-center">
                             <img 
-                              src={faviconPreview || settings?.faviconUrl} 
+                              src={faviconPreview || settings?.siteFavicon} 
                               alt="Favicon preview" 
                               className="max-w-full max-h-full object-contain"
                             />
