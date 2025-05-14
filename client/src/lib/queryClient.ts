@@ -99,23 +99,72 @@ export const getQueryFn: <T>(options: {
     }
   };
 
+// Helper for setting different cache times for different API endpoints
+const getCacheSettings = (queryKey: string) => {
+  // Frequently accessed but rarely changing data - cache longer
+  if (
+    queryKey.includes('/api/settings') || 
+    queryKey.includes('/api/categories') ||
+    queryKey.includes('/api/static-pages')
+  ) {
+    return {
+      staleTime: 30 * 60 * 1000, // 30 minutes
+      gcTime: 60 * 60 * 1000, // 60 minutes
+    };
+  }
+  
+  // Semi-dynamic data - moderate cache time
+  if (
+    queryKey.includes('/api/games/featured') || 
+    queryKey.includes('/api/homepage-content')
+  ) {
+    return {
+      staleTime: 10 * 60 * 1000, // 10 minutes
+      gcTime: 20 * 60 * 1000, // 20 minutes
+    };
+  }
+  
+  // Most dynamic data - shorter cache time
+  return {
+    staleTime: 5 * 60 * 1000, // 5 minutes
+    gcTime: 15 * 60 * 1000, // 15 minutes
+  };
+};
+
 export const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
       queryFn: getQueryFn({ on401: "throw" }),
       refetchInterval: false,
       refetchOnWindowFocus: false,
-      staleTime: 5 * 60 * 1000, // 5 minutes
+      staleTime: 5 * 60 * 1000, // Default: 5 minutes
+      gcTime: 15 * 60 * 1000, // Default: 15 minutes
       retry: false,
-      gcTime: 15 * 60 * 1000, // 15 minutes
-      cacheTime: 15 * 60 * 1000, // 15 minutes
-      refetchOnMount: true, // Refetch on mount if data is stale
-      refetchOnReconnect: true, // Refetch on reconnect if data is stale
+      refetchOnMount: true,
+      refetchOnReconnect: true,
     },
     mutations: {
       retry: false,
-      // Reduce network traffic by batching mutation requests
-      networkMode: 'always',
+      networkMode: 'always', // Reduce network traffic by batching mutation requests
+    },
+  },
+});
+
+// Override cache settings based on query key
+const originalDefaultQueryFn = queryClient.getDefaultOptions().queries?.queryFn;
+queryClient.setDefaultOptions({
+  queries: {
+    ...queryClient.getDefaultOptions().queries,
+    queryFn: (context) => {
+      const queryKey = context.queryKey[0] as string;
+      const cacheSettings = getCacheSettings(queryKey);
+      
+      // Override the staleTime and gcTime based on the query key
+      context.options.staleTime = cacheSettings.staleTime;
+      context.options.gcTime = cacheSettings.gcTime;
+      
+      // Call the original query function
+      return originalDefaultQueryFn?.(context) as Promise<unknown>;
     },
   },
 });
