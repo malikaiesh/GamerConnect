@@ -244,8 +244,8 @@ interface ContentCardProps {
 
 function ContentCard({ content, onEdit, onDelete }: ContentCardProps) {
   return (
-    <Card>
-      <CardHeader>
+    <Card className="bg-background border-0">
+      <CardHeader className="bg-background border-0">
         <div className="flex items-center justify-between">
           <div>
             <CardTitle className="text-foreground">{content.title}</CardTitle>
@@ -256,7 +256,7 @@ function ContentCard({ content, onEdit, onDelete }: ContentCardProps) {
           </Badge>
         </div>
       </CardHeader>
-      <CardContent>
+      <CardContent className="bg-background">
         <div className="max-h-40 overflow-y-auto prose prose-sm dark:prose-invert">
           {content.content.split('\n\n').slice(0, 3).map((paragraph, idx) => (
             <p key={idx} className="mb-2 text-muted-foreground">{paragraph}</p>
@@ -266,7 +266,7 @@ function ContentCard({ content, onEdit, onDelete }: ContentCardProps) {
           )}
         </div>
       </CardContent>
-      <CardFooter className="flex justify-end gap-2">
+      <CardFooter className="flex justify-end gap-2 bg-background border-0">
         <Button variant="outline" size="sm" onClick={onEdit} className="flex items-center gap-1">
           <Edit size={16} />
           Edit
