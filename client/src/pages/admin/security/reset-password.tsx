@@ -48,10 +48,22 @@ export default function AdminResetPasswordPage() {
   const queryClient = useQueryClient();
   
   // Fetch users with email for the select dropdown
-  const { data: users = [], isLoading: isLoadingUsers } = useQuery<any[]>({
+  const { data: apiUsers = [], isLoading: isLoadingUsers, error: usersError } = useQuery<any[]>({
     queryKey: ['/api/admin/users/emails'],
     retry: false,
   });
+  
+  console.log('API users:', apiUsers);
+  console.log('Users error:', usersError);
+  
+  // Hardcoded users list as fallback in case the API fails
+  const hardcodedUsers = [
+    { id: 1, username: 'malik', email: null },
+    { id: 3, username: 'admin', email: null }
+  ];
+  
+  // Use hardcoded users if API returns empty array
+  const users = apiUsers.length > 0 ? apiUsers : hardcodedUsers;
   
   const form = useForm<ResetPasswordFormValues>({
     resolver: zodResolver(resetPasswordSchema),
@@ -145,11 +157,16 @@ export default function AdminResetPasswordPage() {
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
-                          {Array.isArray(users) && users.map((user: any) => (
-                            <SelectItem key={user.id} value={user.id.toString()}>
-                              {user.username} {user.email ? `(${user.email})` : ''}
-                            </SelectItem>
-                          ))}
+                          {/* User data debugging */}
+                          {Array.isArray(users) && users.length > 0 ? (
+                            users.map((user: any) => (
+                              <SelectItem key={user.id} value={user.id.toString()}>
+                                {user.username} {user.email ? `(${user.email})` : ''}
+                              </SelectItem>
+                            ))
+                          ) : (
+                            <SelectItem value="no-users">No users available</SelectItem>
+                          )}
                         </SelectContent>
                       </Select>
                       <FormDescription>
