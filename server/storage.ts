@@ -127,6 +127,7 @@ export interface IStorage {
     longitude?: number
   }[]>;
   getRecentUsersWithLocation(limit?: number): Promise<User[]>;
+  getUsersWithEmail(): Promise<User[]>;
   
   // Game methods
   getGameById(id: number): Promise<Game | null>;
@@ -504,6 +505,13 @@ class DatabaseStorage implements IStorage {
     if (!email) return null;
     const result = await db.select().from(users).where(eq(users.email, email)).limit(1);
     return result.length ? result[0] : null;
+  }
+  
+  async getUsersWithEmail(): Promise<User[]> {
+    return db.select()
+      .from(users)
+      .where(isNotNull(users.email))
+      .orderBy(asc(users.username));
   }
 
   async getUserBySocialId(socialId: string): Promise<User | null> {
