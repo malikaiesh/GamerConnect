@@ -165,11 +165,11 @@ export default function TwoFactorAuthPage() {
         <TabsList>
           <TabsTrigger value="methods">
             <Smartphone className="h-4 w-4 mr-2" />
-            Authentication Methods
+            2FA Verification Methods
           </TabsTrigger>
           <TabsTrigger value="recovery">
             <KeySquare className="h-4 w-4 mr-2" />
-            Recovery Keys
+            Backup & Recovery Keys
           </TabsTrigger>
         </TabsList>
 
@@ -234,9 +234,9 @@ export default function TwoFactorAuthPage() {
         <TabsContent value="recovery" className="space-y-4">
           <Card>
             <CardHeader>
-              <CardTitle>Recovery Keys</CardTitle>
+              <CardTitle>Account Recovery Keys</CardTitle>
               <CardDescription>
-                Recovery keys allow you to access your account if you lose your authentication device
+                Backup access codes that let you regain access to your account if you lose your authentication device
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
