@@ -402,7 +402,7 @@ export default function SecuritySettingsPage() {
               <div className="space-y-2">
                 <Label htmlFor="max-sessions">Maximum Simultaneous Sessions</Label>
                 <Select 
-                  value={sessionSettings?.simultaneousSessions.toString()}
+                  value={sessionSettings?.simultaneousSessions?.toString() || '3'}
                   onValueChange={(value) => handleSessionSettingsChange('simultaneousSessions', parseInt(value))}
                 >
                   <SelectTrigger>
@@ -473,7 +473,7 @@ export default function SecuritySettingsPage() {
               <div className="space-y-2">
                 <Label htmlFor="2fa-validity">2FA Verification Period</Label>
                 <Select 
-                  value={twoFactorSettings?.validityPeriod.toString()}
+                  value={twoFactorSettings?.validityPeriod?.toString() || '30'}
                   onValueChange={(value) => handleTwoFactorSettingsChange('validityPeriod', parseInt(value))}
                 >
                   <SelectTrigger>
