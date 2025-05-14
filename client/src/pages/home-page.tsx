@@ -92,30 +92,48 @@ export default function HomePage() {
       <Header />
       
       {/* Hero Section */}
-      <section className="bg-primary text-primary-foreground py-12">
-        <div className="container mx-auto px-4">
+      <section className="relative py-16 overflow-hidden" style={{
+        background: "linear-gradient(135deg, hsl(260 40% 12%) 0%, hsl(270 45% 15%) 100%)",
+        boxShadow: "0 4px 30px rgba(0, 0, 0, 0.2)",
+      }}>
+        {/* Decorative circles */}
+        <div className="absolute -top-24 -left-24 w-64 h-64 rounded-full bg-primary/10 blur-3xl"></div>
+        <div className="absolute top-1/2 right-20 w-80 h-80 rounded-full bg-secondary/10 blur-3xl"></div>
+        <div className="absolute -bottom-20 left-1/3 w-72 h-72 rounded-full bg-accent/10 blur-3xl"></div>
+        
+        <div className="container mx-auto px-4 relative z-10">
           <div className="flex flex-col md:flex-row items-center justify-between">
             <div className="md:w-1/2 mb-8 md:mb-0">
-              <h1 className="heading-xl mb-4">Play the Best Free Online Games</h1>
-              <p className="text-lg md:text-xl mb-6 opacity-90">
-                Discover thousands of free games across all genres. No downloads required - play instantly in your browser!
+              <h1 className="heading-xl mb-4 text-white">
+                <span className="block bg-clip-text text-transparent bg-gradient-to-r from-secondary to-primary">Play the Best</span> 
+                Gaming Experience
+              </h1>
+              <p className="text-lg md:text-xl mb-6 text-white/90">
+                Discover thousands of immersive games across all genres. No downloads required - play instantly in your browser!
               </p>
               <div className="flex flex-wrap gap-4">
                 <Link href="#games" className="btn-secondary">
                   Play Now
                 </Link>
-                <Link href="#categories" className="bg-white/20 hover:bg-white/30 text-primary-foreground font-bold py-3 px-6 rounded-lg transition-colors backdrop-blur-sm">
+                <Link href="#categories" className="bg-white/10 hover:bg-white/20 text-white font-bold py-3 px-6 rounded-lg transition-colors backdrop-blur-sm border border-white/10">
                   Browse Categories
                 </Link>
                 <RandomGameButton 
                   variant="outline" 
                   size="lg"
-                  className="border-white text-white hover:bg-white/20"
+                  className="border-white/20 text-white hover:bg-white/10"
                 />
               </div>
             </div>
             <div className="md:w-1/2 relative">
-              <img src="https://images.unsplash.com/photo-1588495752527-77d65c21f7cd?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&h=400&q=80" alt="Gaming controller with colorful game elements" className="rounded-xl shadow-2xl" />
+              <div className="relative rounded-2xl overflow-hidden border border-white/10 shadow-[0_0_25px_rgba(124,58,237,0.15)]">
+                <img 
+                  src="https://images.unsplash.com/photo-1542751371-adc38448a05e?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&h=400&q=80" 
+                  alt="Gaming setup with neon lighting" 
+                  className="rounded-xl shadow-2xl w-full object-cover" 
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
+              </div>
               <div className="absolute -top-4 -right-4 bg-accent text-accent-foreground text-lg font-bold py-2 px-4 rounded-lg shadow-lg transform rotate-3">
                 New Games Daily!
               </div>
@@ -258,44 +276,56 @@ export default function HomePage() {
       <HomeAd position="below_about" />
       
       {/* App Download Section */}
-      <section className="py-12 bg-primary text-primary-foreground">
-        <div className="container mx-auto px-4">
+      <section className="py-16 relative overflow-hidden" style={{
+        background: "linear-gradient(135deg, hsl(260 40% 12%) 0%, hsl(270 45% 15%) 100%)",
+      }}>
+        {/* Decorative elements */}
+        <div className="absolute -top-24 right-24 w-64 h-64 rounded-full bg-primary/10 blur-3xl"></div>
+        <div className="absolute -bottom-20 left-10 w-80 h-80 rounded-full bg-secondary/10 blur-3xl"></div>
+        
+        <div className="container mx-auto px-4 relative z-10">
           <div className="flex flex-col md:flex-row items-center justify-between">
             <div className="md:w-1/2 mb-8 md:mb-0">
-              <h2 className="heading-lg mb-4">Take GameZone With You Anywhere</h2>
-              <p className="text-lg md:text-xl mb-6 opacity-90">
+              <h2 className="heading-lg mb-4 text-white">
+                <span className="bg-clip-text text-transparent bg-gradient-to-r from-secondary to-primary">Take Gaming</span> With You Anywhere
+              </h2>
+              <p className="text-lg md:text-xl mb-6 text-white/80">
                 Download our mobile app and play your favorite games on the go. Available on iOS, Android, and Amazon devices.
               </p>
               <div className="flex flex-wrap gap-4">
-                <a href="#" className="flex items-center bg-background text-foreground hover:bg-muted px-5 py-3 rounded-lg transition-colors">
-                  <i className="ri-app-store-fill text-3xl mr-3"></i>
+                <a href="#" className="flex items-center backdrop-blur-sm bg-white/10 border border-white/10 text-white hover:bg-white/20 px-5 py-3 rounded-lg transition-colors">
+                  <i className="ri-app-store-fill text-3xl mr-3 text-secondary"></i>
                   <div>
-                    <div className="text-xs">Download on the</div>
+                    <div className="text-xs text-white/70">Download on the</div>
                     <div className="text-lg font-semibold">App Store</div>
                   </div>
                 </a>
-                <a href="#" className="flex items-center bg-background text-foreground hover:bg-muted px-5 py-3 rounded-lg transition-colors">
-                  <i className="ri-google-play-fill text-3xl mr-3"></i>
+                <a href="#" className="flex items-center backdrop-blur-sm bg-white/10 border border-white/10 text-white hover:bg-white/20 px-5 py-3 rounded-lg transition-colors">
+                  <i className="ri-google-play-fill text-3xl mr-3 text-secondary"></i>
                   <div>
-                    <div className="text-xs">Get it on</div>
+                    <div className="text-xs text-white/70">Get it on</div>
                     <div className="text-lg font-semibold">Google Play</div>
                   </div>
                 </a>
-                <a href="#" className="flex items-center bg-background text-foreground hover:bg-muted px-5 py-3 rounded-lg transition-colors">
-                  <i className="ri-amazon-fill text-3xl mr-3"></i>
+                <a href="#" className="flex items-center backdrop-blur-sm bg-white/10 border border-white/10 text-white hover:bg-white/20 px-5 py-3 rounded-lg transition-colors">
+                  <i className="ri-amazon-fill text-3xl mr-3 text-secondary"></i>
                   <div>
-                    <div className="text-xs">Available at</div>
+                    <div className="text-xs text-white/70">Available at</div>
                     <div className="text-lg font-semibold">Amazon</div>
                   </div>
                 </a>
               </div>
             </div>
             <div className="md:w-1/2 flex justify-center">
-              <img 
-                src="https://images.unsplash.com/photo-1591337676887-a217a6970a8a?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&h=600&q=80" 
-                alt="GameZone mobile app on smartphone" 
-                className="max-w-xs md:max-w-sm rounded-3xl shadow-2xl transform -rotate-6"
-              />
+              <div className="relative">
+                <img 
+                  src="https://images.unsplash.com/photo-1609067958753-3a695f5cdb13?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&h=600&q=80" 
+                  alt="Mobile gaming experience" 
+                  className="max-w-xs md:max-w-sm rounded-3xl border border-white/10 shadow-[0_0_25px_rgba(124,58,237,0.15)] transform -rotate-6 relative z-10"
+                />
+                <div className="absolute -bottom-10 -right-10 w-24 h-24 rounded-full bg-secondary shadow-[0_0_20px_rgba(56,189,248,0.3)] z-0 animate-pulse"></div>
+                <div className="absolute -top-6 -left-6 w-16 h-16 rounded-full bg-primary shadow-[0_0_20px_rgba(124,58,237,0.3)] z-0 animate-pulse" style={{animationDelay: '1s'}}></div>
+              </div>
             </div>
           </div>
         </div>
