@@ -288,10 +288,11 @@ export interface IStorage {
   // URL Redirects methods
   getUrlRedirects(options?: { page?: number, limit?: number, search?: string }): Promise<{ redirects: UrlRedirect[], total: number, totalPages: number }>;
   getUrlRedirectById(id: number): Promise<UrlRedirect | null>;
-  createUrlRedirect(redirect: Omit<InsertUrlRedirect, "createdAt" | "updatedAt">): Promise<UrlRedirect>;
-  updateUrlRedirect(id: number, data: Partial<InsertUrlRedirect>): Promise<UrlRedirect | null>;
+  createUrlRedirect(redirect: Omit<UrlRedirectInsert, "createdAt" | "updatedAt">): Promise<UrlRedirect>;
+  updateUrlRedirect(id: number, data: UrlRedirectUpdate): Promise<UrlRedirect | null>;
   deleteUrlRedirect(id: number): Promise<boolean>;
   getRedirectForSourceUrl(sourceUrl: string): Promise<UrlRedirect | null>;
+  toggleUrlRedirectStatus(id: number): Promise<UrlRedirect | null>;
 }
 
 class DatabaseStorage implements IStorage {
@@ -2239,7 +2240,7 @@ class DatabaseStorage implements IStorage {
     }
   }
   
-  async createUrlRedirect(redirect: Omit<InsertUrlRedirect, "createdAt" | "updatedAt">): Promise<UrlRedirect> {
+  async createUrlRedirect(redirect: Omit<UrlRedirectInsert, "createdAt" | "updatedAt">): Promise<UrlRedirect> {
     try {
       const [newRedirect] = await db.insert(urlRedirects)
         .values({
@@ -2256,7 +2257,7 @@ class DatabaseStorage implements IStorage {
     }
   }
   
-  async updateUrlRedirect(id: number, data: Partial<InsertUrlRedirect>): Promise<UrlRedirect | null> {
+  async updateUrlRedirect(id: number, data: UrlRedirectUpdate): Promise<UrlRedirect | null> {
     try {
       const [updatedRedirect] = await db.update(urlRedirects)
         .set({
@@ -2300,6 +2301,30 @@ class DatabaseStorage implements IStorage {
       return redirect || null;
     } catch (error) {
       console.error(`Error fetching URL redirect for source URL ${sourceUrl}:`, error);
+      return null;
+    }
+  }
+  
+  async toggleUrlRedirectStatus(id: number): Promise<UrlRedirect | null> {
+    try {
+      // First, get the current status
+      const redirect = await this.getUrlRedirectById(id);
+      if (!redirect) {
+        return null;
+      }
+      
+      // Toggle the status
+      const [updatedRedirect] = await db.update(urlRedirects)
+        .set({
+          isActive: !redirect.isActive,
+          updatedAt: new Date()
+        })
+        .where(eq(urlRedirects.id, id))
+        .returning();
+      
+      return updatedRedirect || null;
+    } catch (error) {
+      console.error(`Error toggling URL redirect status with ID ${id}:`, error);
       return null;
     }
   }
