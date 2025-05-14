@@ -25,6 +25,7 @@ import { games, blogPosts, staticPages } from "@shared/schema";
 import { eq } from "drizzle-orm";
 import fs from "fs/promises";
 import path from "path";
+import { initializeSendGrid } from "./services/email-service";
 
 // Function to check if application is installed
 async function isInstalled(): Promise<boolean> {
@@ -86,6 +87,14 @@ async function installationCheckMiddleware(req: Request, res: Response, next: Ne
 }
 
 export async function registerRoutes(app: Express): Promise<Server> {
+  // Initialize SendGrid with API key from database
+  try {
+    await initializeSendGrid();
+    console.log('SendGrid API initialized');
+  } catch (error) {
+    console.error('Error initializing SendGrid:', error);
+  }
+
   // Add installation check middleware
   app.use(installationCheckMiddleware);
   
