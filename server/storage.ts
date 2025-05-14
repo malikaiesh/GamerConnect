@@ -1285,15 +1285,27 @@ class DatabaseStorage implements IStorage {
     }
   }
 
-  async getActiveHomePageContents(): Promise<HomePageContent[]> { 
+  async getActiveHomePageContents(limit: number = 2, page: number = 1): Promise<{ contents: HomePageContent[], total: number }> { 
     try {
+      // First get the total count of active contents
+      const [totalResult] = await db.select({ 
+        count: sql<number>`count(*)` 
+      }).from(homePageContent)
+        .where(eq(homePageContent.status, 'active'));
+      
+      const total = Number(totalResult?.count || 0);
+      
+      // Then get the paginated content
       const contents = await db.select().from(homePageContent)
         .where(eq(homePageContent.status, 'active'))
-        .orderBy(asc(homePageContent.position));
-      return contents;
+        .orderBy(asc(homePageContent.position))
+        .limit(limit)
+        .offset((page - 1) * limit);
+      
+      return { contents, total };
     } catch (error) {
       console.error('Error fetching active homepage contents:', error);
-      return [];
+      return { contents: [], total: 0 };
     }
   }
 

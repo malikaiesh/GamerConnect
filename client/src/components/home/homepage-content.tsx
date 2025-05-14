@@ -4,13 +4,28 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { HomePageContent } from "@shared/schema";
-import { ChevronDown, ChevronUp } from "lucide-react";
+import { ChevronDown, ChevronUp, Plus } from "lucide-react";
+
+interface HomePageContentResponse {
+  contents: HomePageContent[];
+  pagination: {
+    page: number;
+    limit: number;
+    total: number;
+    hasMore: boolean;
+  };
+}
 
 export function HomepageContent() {
   const [expanded, setExpanded] = useState<Record<number, boolean>>({});
+  const [page, setPage] = useState(1);
   
-  const { data: contents, isLoading, error } = useQuery<HomePageContent[]>({
-    queryKey: ['/api/homepage-content/active'],
+  const { 
+    data, 
+    isLoading, 
+    error
+  } = useQuery<HomePageContentResponse>({
+    queryKey: ['/api/homepage-content/active', { page, limit: 2 }],
   });
 
   // Toggle expanded state for a specific content block
@@ -128,9 +143,16 @@ export function HomepageContent() {
     );
   }
 
-  if (error || !contents || contents.length === 0) {
+  if (error || !data || !data.contents || data.contents.length === 0) {
     return null;
   }
+  
+  const contents = data.contents;
+  const hasMoreContent = data.pagination.hasMore;
+  
+  const loadMoreContent = () => {
+    setPage(prev => prev + 1);
+  };
 
   return (
     <div className="container py-8">
@@ -154,7 +176,7 @@ export function HomepageContent() {
                 ) : (
                   <>
                     <ChevronDown className="h-4 w-4" />
-                    Load More
+                    Read More
                   </>
                 )}
               </Button>
@@ -162,6 +184,29 @@ export function HomepageContent() {
           </CardContent>
         </Card>
       ))}
+      
+      {hasMoreContent && (
+        <div className="flex justify-center mt-4 mb-8">
+          <Button 
+            variant="outline" 
+            className="px-6 flex items-center gap-2"
+            onClick={loadMoreContent}
+            disabled={isLoading}
+          >
+            {isLoading ? (
+              <>
+                <span className="animate-spin h-4 w-4 border-2 border-current border-t-transparent rounded-full"></span>
+                Loading...
+              </>
+            ) : (
+              <>
+                <Plus className="h-4 w-4" />
+                Load More Content
+              </>
+            )}
+          </Button>
+        </div>
+      )}
     </div>
   );
 }

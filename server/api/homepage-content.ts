@@ -18,8 +18,20 @@ export function registerHomePageContentRoutes(app: Express) {
   // Get only active homepage content
   app.get('/api/homepage-content/active', async (req: Request, res: Response) => {
     try {
-      const contents = await storage.getActiveHomePageContents();
-      res.json(contents);
+      const limit = parseInt(req.query.limit as string) || 2; // Default to 2 items
+      const page = parseInt(req.query.page as string) || 1; // Default to page 1
+      
+      const { contents, total } = await storage.getActiveHomePageContents(limit, page);
+      
+      res.json({
+        contents,
+        pagination: {
+          page,
+          limit,
+          total,
+          hasMore: total > page * limit
+        }
+      });
     } catch (error) {
       console.error('Error fetching active homepage content:', error);
       res.status(500).json({ message: 'Internal server error' });
