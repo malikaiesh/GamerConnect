@@ -64,6 +64,11 @@ const AdminRolesPage = lazy(() => import("@/pages/admin/accounts/roles"));
 const AdminSignupsPage = lazy(() => import("@/pages/admin/accounts/signups"));
 const AdminLocationsPage = lazy(() => import("@/pages/admin/accounts/locations"));
 
+// Admin security pages
+const AdminTwoFactorPage = lazy(() => import("@/pages/admin/security/two-factor"));
+const AdminSecurityLogsPage = lazy(() => import("@/pages/admin/security/logs"));
+const AdminSecuritySettingsPage = lazy(() => import("@/pages/admin/security/settings"));
+
 // Admin Helper Navigation
 const AdminHelperNav = () => {
   const { user } = useAuth();
@@ -246,6 +251,23 @@ function Router() {
       <Route path="/admin/accounts/locations">
         <ProtectedRoute adminOnly={true}>
           <Suspense fallback={<LoadingFallback />}><AdminLocationsPage /></Suspense>
+        </ProtectedRoute>
+      </Route>
+      
+      {/* Admin Security Routes */}
+      <Route path="/admin/security/two-factor">
+        <ProtectedRoute adminOnly={true}>
+          <Suspense fallback={<LoadingFallback />}><AdminTwoFactorPage /></Suspense>
+        </ProtectedRoute>
+      </Route>
+      <Route path="/admin/security/logs">
+        <ProtectedRoute adminOnly={true}>
+          <Suspense fallback={<LoadingFallback />}><AdminSecurityLogsPage /></Suspense>
+        </ProtectedRoute>
+      </Route>
+      <Route path="/admin/security/settings">
+        <ProtectedRoute adminOnly={true}>
+          <Suspense fallback={<LoadingFallback />}><AdminSecuritySettingsPage /></Suspense>
         </ProtectedRoute>
       </Route>
       
