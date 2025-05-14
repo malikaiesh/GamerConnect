@@ -108,6 +108,11 @@ export default function HomePage() {
     }
   };
   
+  // Handle loading more popular games
+  const handleLoadMorePopular = () => {
+    setPopularGamesPage(prevPage => prevPage + 1);
+  };
+  
   // Track notification click
   const trackNotificationClick = async (notificationId: number) => {
     try {
@@ -263,14 +268,21 @@ export default function HomePage() {
             </div>
           </div>
           
+          {/* Show loading state separately for additional pages */}
+          {popularGamesPage > 1 && loadingMorePopular && (
+            <div className="flex justify-center my-4">
+              <div className="animate-spin h-8 w-8 border-4 border-primary border-t-transparent rounded-full"></div>
+            </div>
+          )}
+          
           <GameGrid 
-            games={popularGames} 
-            loading={loadingPopular}
+            games={allPopularGames} 
+            loading={popularGamesPage === 1 ? loadingPopular : false}
             columns={5}
             cardSize="sm"
             showLoadMore={true}
-            onLoadMore={() => setPopularGamesPage(prevPage => prevPage + 1)}
-            hasMoreGames={popularGames.length >= popularGamesLimit}
+            onLoadMore={handleLoadMorePopular}
+            hasMoreGames={hasMorePopularGames}
             loadMoreLabel="Load More Games"
           />
         </div>
