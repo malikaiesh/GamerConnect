@@ -1,6 +1,7 @@
 import express, { type Express, Request, Response, NextFunction } from "express";
 import { createServer, type Server } from "http";
 import { setupAuth } from "./auth";
+import { isAuthenticated, isAdmin } from "./middleware/auth";
 import { registerGameRoutes } from "./api/games";
 import { registerBlogRoutes } from "./api/blog";
 import { registerSettingsRoutes } from "./api/settings";
@@ -22,8 +23,8 @@ import { registerSecurityRoutes } from "./routes/security";
 import authResetRoutes from "./routes/auth-reset";
 import { storage } from "./storage";
 import { db } from "../db";
-import { games, blogPosts, staticPages } from "@shared/schema";
-import { eq } from "drizzle-orm";
+import { games, blogPosts, staticPages, pushSubscribers, pushCampaigns } from "@shared/schema";
+import { eq, count, gte, sql } from "drizzle-orm";
 import fs from "fs/promises";
 import path from "path";
 import { initializeSendGrid } from "./services/email-service";
@@ -143,6 +144,113 @@ export async function registerRoutes(app: Express): Promise<Server> {
   
   // Register push-notifications API routes
   app.use('/api/push-notifications', pushNotificationsRoutes);
+  
+  // Register additional push notifications analytics endpoint
+  app.get('/api/push-notifications-analytics', isAuthenticated, isAdmin, async (req, res) => {
+    try {
+      // Get subscriber stats
+      const totalSubscribers = await db
+        .select({ count: count() })
+        .from(pushSubscribers);
+      
+      const activeSubscribers = await db
+        .select({ count: count() })
+        .from(pushSubscribers)
+        .where(eq(pushSubscribers.status, 'active'));
+      
+      // Get new subscribers from today
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      
+      const newTodaySubscribers = await db
+        .select({ count: count() })
+        .from(pushSubscribers)
+        .where(gte(pushSubscribers.createdAt, today));
+      
+      // Get new subscribers from this week
+      const weekAgo = new Date();
+      weekAgo.setDate(weekAgo.getDate() - 7);
+      
+      const newThisWeekSubscribers = await db
+        .select({ count: count() })
+        .from(pushSubscribers)
+        .where(gte(pushSubscribers.createdAt, weekAgo));
+      
+      // Get device stats
+      const deviceStats = await db
+        .select({
+          deviceType: pushSubscribers.deviceType,
+          count: count()
+        })
+        .from(pushSubscribers)
+        .groupBy(pushSubscribers.deviceType);
+      
+      // Get browser stats
+      const browserStats = await db
+        .select({
+          browser: pushSubscribers.browser,
+          count: count()
+        })
+        .from(pushSubscribers)
+        .groupBy(pushSubscribers.browser);
+      
+      // Get country stats
+      const countryStats = await db
+        .select({
+          country: pushSubscribers.country,
+          count: count()
+        })
+        .from(pushSubscribers)
+        .groupBy(pushSubscribers.country);
+      
+      // Get campaign stats - with proper typed values
+      const campaignStats = await db
+        .select({
+          total: count(),
+          active: sql`SUM(CASE WHEN ${pushCampaigns.status} != 'draft' THEN 1 ELSE 0 END)::int`,
+          sent: sql`COALESCE(SUM(${pushCampaigns.sentCount}), 0)::int`,
+          clicks: sql`COALESCE(SUM(${pushCampaigns.clickCount}), 0)::int`
+        })
+        .from(pushCampaigns);
+      
+      // Format stats for frontend
+      const analytics = {
+        subscribers: {
+          total: totalSubscribers[0]?.count || 0,
+          active: activeSubscribers[0]?.count || 0,
+          newToday: newTodaySubscribers[0]?.count || 0,
+          newThisWeek: newThisWeekSubscribers[0]?.count || 0,
+          byDevice: deviceStats.map(stat => ({
+            name: stat.deviceType || 'Unknown',
+            value: Number(stat.count)
+          })),
+          byBrowser: browserStats.map(stat => ({
+            name: stat.browser || 'Unknown',
+            value: Number(stat.count)
+          })),
+          byCountry: countryStats.map(stat => ({
+            name: stat.country || 'Unknown',
+            value: Number(stat.count)
+          })),
+          growth: [] // TODO: Add subscriber growth stats over time
+        },
+        campaigns: {
+          total: campaignStats[0]?.total || 0,
+          active: campaignStats[0]?.active || 0,
+          sent: campaignStats[0]?.sent || 0,
+          clicks: campaignStats[0]?.clicks || 0,
+          ctr: campaignStats[0]?.sent ? (Number(campaignStats[0].clicks) / Number(campaignStats[0].sent)) * 100 : 0,
+          performance: [], // TODO: Add campaign performance stats
+          byDay: [] // TODO: Add campaign daily stats
+        }
+      };
+      
+      res.json(analytics);
+    } catch (error) {
+      console.error("Error fetching push analytics:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
   
   // Register role and permission API routes
   registerRoleRoutes(app);

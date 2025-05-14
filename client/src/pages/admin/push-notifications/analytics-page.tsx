@@ -35,7 +35,7 @@ type AnalyticsData = {
 
 export default function PushNotificationAnalyticsPage() {
   const { data, isLoading } = useQuery<AnalyticsData>({
-    queryKey: ["/api/push-notifications/analytics"],
+    queryKey: ["/api/push-notifications-analytics"],
   });
 
   return (
