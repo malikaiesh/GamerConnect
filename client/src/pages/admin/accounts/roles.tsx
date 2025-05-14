@@ -26,6 +26,15 @@ import { Switch } from "@/components/ui/switch";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
+import {
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectLabel,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Loader2, Plus, Edit, Trash2, UserCheck, X, Shield } from "lucide-react";
 import {
   Dialog,
@@ -127,6 +136,17 @@ export default function RolesPage() {
   const [dialogMode, setDialogMode] = useState<"create" | "edit">("create");
   const [rolePermissions, setRolePermissions] = useState<number[]>([]);
   const [allPermissions, setAllPermissions] = useState<Permission[]>([]);
+  const [selectedTemplate, setSelectedTemplate] = useState<string>("custom");
+  
+  // Predefined role templates
+  const roleTemplates = [
+    { value: "editor", label: "Editor", description: "Can edit content but not change system settings" },
+    { value: "moderator", label: "Moderator", description: "Can manage users, games, and content but not settings" },
+    { value: "analyst", label: "Analyst", description: "View only access to analytics and statistics" },
+    { value: "content_editor", label: "Content Editor", description: "Can add and edit games and blog posts only" },
+    { value: "admin", label: "Administrator", description: "Full access to all system functionality" },
+    { value: "custom", label: "Custom Role", description: "" },
+  ];
 
   // Fetch all roles
   const { 
@@ -662,7 +682,7 @@ export default function RolesPage() {
 
       {/* Role Creation/Editing Dialog */}
       <Dialog open={isRoleDialogOpen} onOpenChange={setIsRoleDialogOpen}>
-        <DialogContent>
+        <DialogContent className="max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>
               {dialogMode === "create" ? "Create New Role" : "Edit Role"}
