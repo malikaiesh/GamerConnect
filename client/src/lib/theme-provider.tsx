@@ -1,8 +1,8 @@
-import { createContext, useState, useEffect, ReactNode } from "react";
+import * as React from "react";
 import { themes, getCurrentTheme, setTheme, isDarkMode, toggleDarkMode } from "@/lib/themes";
 
 type ThemeProviderProps = {
-  children: ReactNode;
+  children: React.ReactNode;
   defaultTheme?: string;
   defaultMode?: 'light' | 'dark';
 };
@@ -14,7 +14,7 @@ type ThemeContextType = {
   toggleDarkMode: () => void;
 };
 
-export const ThemeContext = createContext<ThemeContextType>({
+export const ThemeContext = React.createContext<ThemeContextType>({
   theme: "modern",
   setTheme: () => {},
   isDark: false,
@@ -26,12 +26,12 @@ export function ThemeProvider({
   defaultTheme = "modern",
   defaultMode = "light",
 }: ThemeProviderProps) {
-  const [theme, setThemeState] = useState(defaultTheme);
-  const [isDark, setIsDark] = useState(defaultMode === "dark");
-  const [mounted, setMounted] = useState(false);
+  const [theme, setThemeState] = React.useState(defaultTheme);
+  const [isDark, setIsDark] = React.useState(defaultMode === "dark");
+  const [mounted, setMounted] = React.useState(false);
 
   // Only run client-side
-  useEffect(() => {
+  React.useEffect(() => {
     setMounted(true);
     
     // Initialize from local storage if available
