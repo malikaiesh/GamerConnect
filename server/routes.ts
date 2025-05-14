@@ -18,6 +18,7 @@ import pushNotificationsRoutes from "./api/push-notifications";
 import { registerRoleRoutes } from "./api/roles";
 import { registerPermissionRoutes } from "./api/permissions";
 import { registerSecurityRoutes } from "./routes/security";
+import authResetRoutes from "./routes/auth-reset";
 import { storage } from "./storage";
 import { db } from "../db";
 import { games, blogPosts, staticPages } from "@shared/schema";
@@ -136,6 +137,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Register security routes
   registerSecurityRoutes(app);
   
+  // Register password reset routes
+  app.use('/api/auth/reset', authResetRoutes);
+  
   // Serve uploaded files from the uploads directory
   app.use('/uploads', express.static(path.join(process.cwd(), 'uploads')));
 
@@ -207,13 +211,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Get the URLs based on the sitemap type
       switch (type) {
         case 'games': {
-          const games = await db.select({
+          const gamesList = await db.select({
             id: games.id,
             slug: games.slug,
             updatedAt: games.updatedAt
           }).from(games).where(eq(games.status, 'active'));
           
-          items = games.map(game => ({
+          items = gamesList.map(game => ({
             loc: `${baseUrl}/game/${game.slug}`,
             lastmod: game.updatedAt ? new Date(game.updatedAt).toISOString() : new Date().toISOString(),
             changefreq: 'weekly',
