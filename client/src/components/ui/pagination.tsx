@@ -1,6 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { ChevronLeft, ChevronRight, MoreHorizontal } from "lucide-react";
 import * as React from "react";
+import { cn } from "@/lib/utils";
 
 // Shadcn-style named exports
 export interface PaginationProps extends React.ComponentProps<"nav"> {
@@ -77,6 +78,31 @@ export function PaginationNext({
     >
       <ChevronRight className="h-4 w-4" />
     </Button>
+  )
+}
+
+export interface PaginationLinkProps
+  extends React.ComponentProps<"a"> {
+  isActive?: boolean;
+}
+
+export function PaginationLink({
+  className,
+  isActive,
+  ...props
+}: PaginationLinkProps) {
+  return (
+    <a
+      aria-current={isActive ? "page" : undefined}
+      className={cn(
+        "flex h-9 w-9 items-center justify-center rounded-md text-sm font-medium transition-colors",
+        isActive
+          ? "bg-primary text-primary-foreground"
+          : "bg-transparent hover:bg-secondary hover:text-secondary-foreground",
+        className
+      )}
+      {...props}
+    />
   )
 }
 
