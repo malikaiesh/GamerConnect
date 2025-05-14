@@ -17,6 +17,7 @@ import { registerUserRoutes } from "./api/users";
 import pushNotificationsRoutes from "./api/push-notifications";
 import { registerRoleRoutes } from "./api/roles";
 import { registerPermissionRoutes } from "./api/permissions";
+import { registerSecurityRoutes } from "./routes/security";
 import { storage } from "./storage";
 import { db } from "../db";
 import { games, blogPosts, staticPages } from "@shared/schema";
@@ -131,6 +132,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Register role and permission API routes
   registerRoleRoutes(app);
   registerPermissionRoutes(app);
+
+  // Register security routes
+  registerSecurityRoutes(app);
   
   // Serve uploaded files from the uploads directory
   app.use('/uploads', express.static(path.join(process.cwd(), 'uploads')));
