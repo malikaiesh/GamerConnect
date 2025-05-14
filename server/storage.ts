@@ -60,7 +60,8 @@ import {
   InsertPushResponse,
   pushSubscribers,
   pushCampaigns,
-  pushResponses
+  pushResponses,
+  urlRedirects
 } from "@shared/schema";
 
 // Create session store
@@ -282,6 +283,14 @@ export interface IStorage {
   // Push Responses methods
   createPushResponse(response: InsertPushResponse): Promise<PushResponse>;
   getPushResponsesByCampaign(campaignId: number): Promise<PushResponse[]>;
+  
+  // URL Redirects methods
+  getUrlRedirects(options?: { page?: number, limit?: number, search?: string }): Promise<{ redirects: UrlRedirect[], total: number, totalPages: number }>;
+  getUrlRedirectById(id: number): Promise<UrlRedirect | null>;
+  createUrlRedirect(redirect: Omit<InsertUrlRedirect, "createdAt" | "updatedAt">): Promise<UrlRedirect>;
+  updateUrlRedirect(id: number, data: Partial<InsertUrlRedirect>): Promise<UrlRedirect | null>;
+  deleteUrlRedirect(id: number): Promise<boolean>;
+  getRedirectForSourceUrl(sourceUrl: string): Promise<UrlRedirect | null>;
 }
 
 class DatabaseStorage implements IStorage {
@@ -2168,6 +2177,131 @@ class DatabaseStorage implements IStorage {
   
   async createPushResponse(response: InsertPushResponse): Promise<PushResponse> { throw new Error("Not implemented"); }
   async getPushResponsesByCampaign(campaignId: number): Promise<PushResponse[]> { return []; }
+
+  // URL Redirects methods implementation
+  async getUrlRedirects(options?: { page?: number, limit?: number, search?: string }): Promise<{ redirects: UrlRedirect[], total: number, totalPages: number }> {
+    try {
+      const page = options?.page || 1;
+      const limit = options?.limit || 10;
+      const offset = (page - 1) * limit;
+      
+      let query = db.select().from(urlRedirects);
+      
+      // Apply search filter if provided
+      if (options?.search) {
+        const search = `%${options.search}%`;
+        query = query.where(
+          or(
+            ilike(urlRedirects.sourceUrl, search),
+            ilike(urlRedirects.targetUrl, search),
+            ilike(urlRedirects.notes || '', search)
+          )
+        );
+      }
+      
+      // Get total count for pagination
+      const [{ value: total }] = await db.select({
+        value: count()
+      }).from(urlRedirects);
+      
+      // Get paginated results
+      const redirects = await query
+        .limit(limit)
+        .offset(offset)
+        .orderBy(desc(urlRedirects.updatedAt));
+      
+      return {
+        redirects,
+        total,
+        totalPages: Math.ceil(total / limit)
+      };
+    } catch (error) {
+      console.error('Error fetching URL redirects:', error);
+      return {
+        redirects: [],
+        total: 0,
+        totalPages: 0
+      };
+    }
+  }
+  
+  async getUrlRedirectById(id: number): Promise<UrlRedirect | null> {
+    try {
+      const [redirect] = await db.select()
+        .from(urlRedirects)
+        .where(eq(urlRedirects.id, id));
+      
+      return redirect || null;
+    } catch (error) {
+      console.error(`Error fetching URL redirect with ID ${id}:`, error);
+      return null;
+    }
+  }
+  
+  async createUrlRedirect(redirect: Omit<InsertUrlRedirect, "createdAt" | "updatedAt">): Promise<UrlRedirect> {
+    try {
+      const [newRedirect] = await db.insert(urlRedirects)
+        .values({
+          ...redirect,
+          createdAt: new Date(),
+          updatedAt: new Date()
+        })
+        .returning();
+      
+      return newRedirect;
+    } catch (error) {
+      console.error('Error creating URL redirect:', error);
+      throw new Error('Failed to create URL redirect');
+    }
+  }
+  
+  async updateUrlRedirect(id: number, data: Partial<InsertUrlRedirect>): Promise<UrlRedirect | null> {
+    try {
+      const [updatedRedirect] = await db.update(urlRedirects)
+        .set({
+          ...data,
+          updatedAt: new Date()
+        })
+        .where(eq(urlRedirects.id, id))
+        .returning();
+      
+      return updatedRedirect || null;
+    } catch (error) {
+      console.error(`Error updating URL redirect with ID ${id}:`, error);
+      return null;
+    }
+  }
+  
+  async deleteUrlRedirect(id: number): Promise<boolean> {
+    try {
+      const result = await db.delete(urlRedirects)
+        .where(eq(urlRedirects.id, id))
+        .returning();
+      
+      return result.length > 0;
+    } catch (error) {
+      console.error(`Error deleting URL redirect with ID ${id}:`, error);
+      return false;
+    }
+  }
+  
+  async getRedirectForSourceUrl(sourceUrl: string): Promise<UrlRedirect | null> {
+    try {
+      const [redirect] = await db.select()
+        .from(urlRedirects)
+        .where(
+          and(
+            eq(urlRedirects.sourceUrl, sourceUrl),
+            eq(urlRedirects.isActive, true)
+          )
+        );
+      
+      return redirect || null;
+    } catch (error) {
+      console.error(`Error fetching URL redirect for source URL ${sourceUrl}:`, error);
+      return null;
+    }
+  }
 }
 
 export const storage: IStorage = new DatabaseStorage();
