@@ -276,9 +276,11 @@ export function registerSecurityRoutes(app: Express) {
       const { userId, newPassword } = resetPasswordSchema.parse(req.body);
       
       // Get the user
-      const user = await db.query.users.findFirst({
-        where: eq(users.id, userId)
-      });
+      const userResult = await db.execute(
+        `SELECT id, username FROM users WHERE id = $1`,
+        [userId]
+      );
+      const user = userResult.rows[0];
       
       if (!user) {
         return res.status(404).json({ message: "User not found" });
@@ -288,12 +290,11 @@ export function registerSecurityRoutes(app: Express) {
       const hashedPassword = await hashPassword(newPassword);
       
       // Update the user's password
-      await db.update(users)
-        .set({ 
-          password: hashedPassword,
-          updatedAt: new Date()
-        })
-        .where(eq(users.id, userId));
+      // Use a raw query to ensure we're using the correct column names
+      await db.execute(
+        `UPDATE users SET password = $1, updated_at = $2 WHERE id = $3`,
+        [hashedPassword, new Date(), userId]
+      );
       
       // Log the action
       console.log(`Admin ${req.user?.username} (ID: ${req.user?.id}) reset password for user ${user.username} (ID: ${userId})`);
@@ -314,13 +315,14 @@ export function registerSecurityRoutes(app: Express) {
    */
   app.get('/api/admin/users/emails', isAuthenticated, isAdmin, async (req: Request, res: Response) => {
     try {
-      const usersList = await db.select({
-        id: users.id,
-        username: users.username,
-        email: users.email
-      }).from(users);
+      // Use db.execute to run raw SQL query to ensure we match the actual database columns
+      const result = await db.execute(
+        `SELECT id, username, email FROM users ORDER BY username`
+      );
       
-      return res.json(usersList);
+      console.log('Fetched users:', result.rows); // Add logging to debug
+      
+      return res.json(result.rows);
     } catch (error) {
       console.error('Error fetching users list:', error);
       return res.status(500).json({ message: 'An error occurred while fetching users list' });
