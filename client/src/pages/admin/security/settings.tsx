@@ -163,15 +163,28 @@ export default function SecuritySettingsPage() {
     <SecurityLayout title="Security Settings" description="Configure security policies for your application">
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight text-foreground">Security Settings</h1>
+          <h1 className="text-3xl font-bold tracking-tight text-foreground">Security Settings Configuration</h1>
           <p className="text-muted-foreground">
-            Configure security policies and restrictions
+            Configure security policies, password requirements, and access restrictions for your platform
           </p>
         </div>
-        <Button onClick={saveAllSettings}>
+        <Button onClick={saveAllSettings} className="bg-green-600 hover:bg-green-700">
           <Save className="h-4 w-4 mr-2" />
           Save All Changes
         </Button>
+      </div>
+      
+      <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 mb-6 dark:bg-amber-950/20 dark:border-amber-900">
+        <div className="flex items-start">
+          <AlertTriangle className="h-5 w-5 text-amber-600 mr-2 mt-0.5 dark:text-amber-500" />
+          <div>
+            <h3 className="text-sm font-medium text-amber-800 dark:text-amber-400">Configuration Settings</h3>
+            <p className="text-sm text-amber-700 dark:text-amber-300">
+              This page allows you to define global security policies that affect how users interact with your platform. 
+              Changes made here will affect all users. To view security events and user activity, visit the <strong>Security Logs</strong> page.
+            </p>
+          </div>
+        </div>
       </div>
 
       <div className="grid gap-6 grid-cols-1">

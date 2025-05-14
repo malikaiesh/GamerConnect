@@ -106,9 +106,9 @@ export default function SecurityLogsPage() {
     <SecurityLayout>
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight text-foreground">Security Logs</h1>
+          <h1 className="text-3xl font-bold tracking-tight text-foreground">Security Event History</h1>
           <p className="text-muted-foreground">
-            Monitor security events and user activity
+            Monitor historical security events, login attempts, and user activities
           </p>
         </div>
         <div className="flex space-x-2">
@@ -120,12 +120,25 @@ export default function SecurityLogsPage() {
           </Button>
         </div>
       </div>
+      
+      <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6 dark:bg-blue-950/20 dark:border-blue-900">
+        <div className="flex items-start">
+          <Clock className="h-5 w-5 text-blue-600 mr-2 mt-0.5 dark:text-blue-400" />
+          <div>
+            <h3 className="text-sm font-medium text-blue-800 dark:text-blue-300">Audit & Activity Logs</h3>
+            <p className="text-sm text-blue-700 dark:text-blue-300">
+              This page displays a history of security events and user activities on your platform. Use it to identify security issues,
+              monitor suspicious activities, and audit user actions. To change security policies and settings, visit the <strong>Security Settings Configuration</strong> page.
+            </p>
+          </div>
+        </div>
+      </div>
 
       <Card className="mb-6">
         <CardHeader className="pb-3">
-          <CardTitle>Security Event Log</CardTitle>
+          <CardTitle>Audit Trail & Event History</CardTitle>
           <CardDescription>
-            Review security events and user activities on your platform
+            Historical record of security events, login attempts, and user activities on your platform
           </CardDescription>
         </CardHeader>
         <CardContent>

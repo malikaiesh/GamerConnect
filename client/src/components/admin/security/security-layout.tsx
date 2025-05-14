@@ -33,27 +33,11 @@ export default function SecurityLayout({ children, title, description }: Securit
       <div className="flex flex-col md:flex-row md:gap-10">
         <aside className="md:w-52 lg:w-64 shrink-0 md:border-r pb-12 md:sticky md:top-16 md:h-[calc(100vh-4rem)] md:overflow-auto">
           <nav className="grid gap-2 p-2 md:p-4">
-            <h3 className="mb-2 px-4 text-lg font-semibold">Security</h3>
-            <Link href="/admin/security/two-factor">
-              <Button 
-                variant={location === "/admin/security/two-factor" ? "secondary" : "ghost"}
-                size="sm"
-                className="w-full justify-start"
-              >
-                <Smartphone className="h-4 w-4 mr-2" />
-                Two-Factor Auth
-              </Button>
-            </Link>
-            <Link href="/admin/security/logs">
-              <Button 
-                variant={location === "/admin/security/logs" ? "secondary" : "ghost"}
-                size="sm"
-                className="w-full justify-start"
-              >
-                <Clock className="h-4 w-4 mr-2" />
-                Security Logs
-              </Button>
-            </Link>
+            <h3 className="mb-2 px-4 text-lg font-semibold">Security Management</h3>
+            
+            <div className="px-4 pt-2 pb-1">
+              <h4 className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Configuration</h4>
+            </div>
             <Link href="/admin/security/settings">
               <Button 
                 variant={location === "/admin/security/settings" ? "secondary" : "ghost"}
@@ -61,7 +45,31 @@ export default function SecurityLayout({ children, title, description }: Securit
                 className="w-full justify-start"
               >
                 <Settings className="h-4 w-4 mr-2" />
-                Security Settings
+                Policy Configuration
+              </Button>
+            </Link>
+            <Link href="/admin/security/two-factor">
+              <Button 
+                variant={location === "/admin/security/two-factor" ? "secondary" : "ghost"}
+                size="sm"
+                className="w-full justify-start"
+              >
+                <Smartphone className="h-4 w-4 mr-2" />
+                Two-Factor Auth Setup
+              </Button>
+            </Link>
+            
+            <div className="px-4 pt-4 pb-1">
+              <h4 className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Monitoring</h4>
+            </div>
+            <Link href="/admin/security/logs">
+              <Button 
+                variant={location === "/admin/security/logs" ? "secondary" : "ghost"}
+                size="sm"
+                className="w-full justify-start"
+              >
+                <Clock className="h-4 w-4 mr-2" />
+                Event History & Audit Log
               </Button>
             </Link>
             <Link href="/admin/security/reset-password">
@@ -71,7 +79,7 @@ export default function SecurityLayout({ children, title, description }: Securit
                 className="w-full justify-start"
               >
                 <KeyRound className="h-4 w-4 mr-2" />
-                Password Reset
+                Password Management
               </Button>
             </Link>
           </nav>

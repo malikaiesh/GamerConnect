@@ -123,9 +123,9 @@ export default function TwoFactorAuthPage() {
     <SecurityLayout>
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight text-foreground">Two-Factor Authentication</h1>
+          <h1 className="text-3xl font-bold tracking-tight text-foreground">Two-Factor Authentication Setup</h1>
           <p className="text-muted-foreground">
-            Add an extra layer of security to your account
+            Configure and manage multi-factor authentication methods for enhanced account security
           </p>
         </div>
         <div>
@@ -136,13 +136,27 @@ export default function TwoFactorAuthPage() {
           )}
         </div>
       </div>
+      
+      <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6 dark:bg-blue-950/20 dark:border-blue-900">
+        <div className="flex items-start">
+          <Shield className="h-5 w-5 text-blue-600 mr-2 mt-0.5 dark:text-blue-400" />
+          <div>
+            <h3 className="text-sm font-medium text-blue-800 dark:text-blue-300">Enhanced Account Protection</h3>
+            <p className="text-sm text-blue-700 dark:text-blue-300">
+              Two-factor authentication adds an extra security layer requiring verification from your devices during login.
+              This prevents unauthorized access even if your password is compromised.
+            </p>
+          </div>
+        </div>
+      </div>
 
       {!twoFactorData?.enabled && (
-        <Alert className="mb-6">
+        <Alert className="mb-6" variant="destructive">
           <AlertTriangle className="h-4 w-4" />
-          <AlertTitle>Your account is not fully protected</AlertTitle>
+          <AlertTitle>Your admin account is vulnerable</AlertTitle>
           <AlertDescription>
-            Enable two-factor authentication to add an extra layer of security to your account.
+            Without two-factor authentication, your administrator account is at higher risk. Enable 2FA immediately to protect
+            your site from unauthorized access.
           </AlertDescription>
         </Alert>
       )}
@@ -162,9 +176,9 @@ export default function TwoFactorAuthPage() {
         <TabsContent value="methods" className="space-y-4">
           <Card>
             <CardHeader className="pb-3">
-              <CardTitle>Authentication Methods</CardTitle>
+              <CardTitle>Available Authentication Methods</CardTitle>
               <CardDescription>
-                Manage the methods you use for two-factor authentication
+                Set up and manage device-based or email verification methods that will be required during login
               </CardDescription>
             </CardHeader>
             <CardContent>
