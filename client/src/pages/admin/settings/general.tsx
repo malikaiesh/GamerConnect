@@ -35,19 +35,18 @@ import { apiRequest, queryClient } from "@/lib/queryClient";
 const generalSettingsSchema = z.object({
   siteTitle: z.string().min(2, "Site title must be at least 2 characters"),
   metaDescription: z.string().max(160, "Meta description should be at most 160 characters"),
-  metaKeywords: z.string(),
-  siteEmail: z.string().email("Please enter a valid email").or(z.string().length(0)),
-  siteLogo: z.string().optional(),
-  faviconUrl: z.string().optional(),
+  keywords: z.string(),
+  siteLogo: z.string().optional().nullable(),
+  siteFavicon: z.string().optional().nullable(),
   useTextLogo: z.boolean().default(false),
   textLogoColor: z.string().optional(),
-  heroTitle: z.string(),
-  heroSubtitle: z.string(),
-  footerText: z.string(),
-  footerFacebookUrl: z.string(),
-  footerTwitterUrl: z.string(),
-  footerInstagramUrl: z.string(),
-  footerYoutubeUrl: z.string(),
+  currentTheme: z.string().optional(),
+  footerCopyright: z.string().optional(),
+  socialFacebook: z.string().optional().nullable(),
+  socialTwitter: z.string().optional().nullable(),
+  socialInstagram: z.string().optional().nullable(),
+  socialYoutube: z.string().optional().nullable(),
+  socialDiscord: z.string().optional().nullable(),
 });
 
 type GeneralSettingsValues = z.infer<typeof generalSettingsSchema>;
@@ -68,19 +67,18 @@ export default function GeneralSettingsPage() {
     defaultValues: {
       siteTitle: "",
       metaDescription: "",
-      metaKeywords: "",
-      siteEmail: "",
+      keywords: "",
       siteLogo: "",
-      faviconUrl: "",
+      siteFavicon: "",
       useTextLogo: false,
       textLogoColor: "#ffffff",
-      heroTitle: "",
-      heroSubtitle: "",
-      footerText: "",
-      footerFacebookUrl: "",
-      footerTwitterUrl: "",
-      footerInstagramUrl: "",
-      footerYoutubeUrl: "",
+      currentTheme: "modern",
+      footerCopyright: "",
+      socialFacebook: "",
+      socialTwitter: "",
+      socialInstagram: "",
+      socialYoutube: "",
+      socialDiscord: "",
     }
   });
 
@@ -90,20 +88,28 @@ export default function GeneralSettingsPage() {
       form.reset({
         siteTitle: settings.siteTitle || "",
         metaDescription: settings.metaDescription || "",
-        metaKeywords: settings.metaKeywords || "",
-        siteEmail: settings.siteEmail || "",
+        keywords: settings.keywords || "",
         siteLogo: settings.siteLogo || "",
-        faviconUrl: settings.faviconUrl || "",
+        siteFavicon: settings.siteFavicon || "",
         useTextLogo: settings.useTextLogo || false,
         textLogoColor: settings.textLogoColor || "#ffffff",
-        heroTitle: settings.heroTitle || "",
-        heroSubtitle: settings.heroSubtitle || "",
-        footerText: settings.footerText || "",
-        footerFacebookUrl: settings.footerFacebookUrl || "",
-        footerTwitterUrl: settings.footerTwitterUrl || "",
-        footerInstagramUrl: settings.footerInstagramUrl || "",
-        footerYoutubeUrl: settings.footerYoutubeUrl || "",
+        currentTheme: settings.currentTheme || "modern",
+        footerCopyright: settings.footerCopyright || "",
+        socialFacebook: settings.socialFacebook || "",
+        socialTwitter: settings.socialTwitter || "",
+        socialInstagram: settings.socialInstagram || "",
+        socialYoutube: settings.socialYoutube || "",
+        socialDiscord: settings.socialDiscord || "",
       });
+
+      // Update the preview images if they exist
+      if (settings.siteLogo) {
+        setLogoPreview(settings.siteLogo);
+      }
+      
+      if (settings.siteFavicon) {
+        setFaviconPreview(settings.siteFavicon);
+      }
     }
   }, [settings, form]);
 
@@ -139,7 +145,7 @@ export default function GeneralSettingsPage() {
         }
         
         const { filePath } = await uploadResponse.json();
-        data.faviconUrl = filePath;
+        data.siteFavicon = filePath;
       }
       
       // Then update the settings
@@ -275,15 +281,15 @@ export default function GeneralSettingsPage() {
                     
                     <FormField
                       control={form.control}
-                      name="siteEmail"
+                      name="currentTheme"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Site Email</FormLabel>
+                          <FormLabel>Current Theme</FormLabel>
                           <FormControl>
                             <Input {...field} />
                           </FormControl>
                           <FormDescription>
-                            Main contact email for your website
+                            Current theme name (e.g., 'modern', 'lunexa')
                           </FormDescription>
                           <FormMessage />
                         </FormItem>
@@ -486,10 +492,10 @@ export default function GeneralSettingsPage() {
                   <CardContent className="space-y-4">
                     <FormField
                       control={form.control}
-                      name="footerText"
+                      name="footerCopyright"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Footer Text</FormLabel>
+                          <FormLabel>Footer Copyright</FormLabel>
                           <FormControl>
                             <Textarea {...field} rows={2} />
                           </FormControl>
@@ -504,7 +510,7 @@ export default function GeneralSettingsPage() {
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <FormField
                         control={form.control}
-                        name="footerFacebookUrl"
+                        name="socialFacebook"
                         render={({ field }) => (
                           <FormItem>
                             <FormLabel>Facebook URL</FormLabel>
@@ -518,7 +524,7 @@ export default function GeneralSettingsPage() {
                       
                       <FormField
                         control={form.control}
-                        name="footerTwitterUrl"
+                        name="socialTwitter"
                         render={({ field }) => (
                           <FormItem>
                             <FormLabel>Twitter URL</FormLabel>
@@ -532,7 +538,7 @@ export default function GeneralSettingsPage() {
                       
                       <FormField
                         control={form.control}
-                        name="footerInstagramUrl"
+                        name="socialInstagram"
                         render={({ field }) => (
                           <FormItem>
                             <FormLabel>Instagram URL</FormLabel>
@@ -546,10 +552,24 @@ export default function GeneralSettingsPage() {
                       
                       <FormField
                         control={form.control}
-                        name="footerYoutubeUrl"
+                        name="socialYoutube"
                         render={({ field }) => (
                           <FormItem>
                             <FormLabel>YouTube URL</FormLabel>
+                            <FormControl>
+                              <Input {...field} />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      
+                      <FormField
+                        control={form.control}
+                        name="socialDiscord"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Discord URL</FormLabel>
                             <FormControl>
                               <Input {...field} />
                             </FormControl>
