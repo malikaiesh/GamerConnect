@@ -60,6 +60,7 @@ const AdsTxtPage = lazy(() => import("@/pages/admin/ads-txt-page"));
 const AdminPushNotificationsPage = lazy(() => import("@/pages/admin/push-notifications"));
 const AdminPushNotificationsCampaignsPage = lazy(() => import("@/pages/admin/push-notifications/campaigns-page"));
 const AdminPushNotificationsAnalyticsPage = lazy(() => import("@/pages/admin/push-notifications/analytics-page"));
+const AdminPushNotificationsSubscribersPage = lazy(() => import("@/pages/admin/push-notifications/subscribers-page"));
 // Admin settings pages
 const AdminRedirectsPage = lazy(() => import("@/pages/admin/settings/redirects"));
 const AdminGeneralSettingsPage = lazy(() => import("@/pages/admin/settings/general"));
@@ -295,6 +296,11 @@ function Router() {
       <Route path="/admin/push-notifications/analytics">
         <ProtectedRoute adminOnly={true}>
           <Suspense fallback={<LoadingFallback />}><AdminPushNotificationsAnalyticsPage /></Suspense>
+        </ProtectedRoute>
+      </Route>
+      <Route path="/admin/push-notifications/subscribers">
+        <ProtectedRoute adminOnly={true}>
+          <Suspense fallback={<LoadingFallback />}><AdminPushNotificationsSubscribersPage /></Suspense>
         </ProtectedRoute>
       </Route>
       

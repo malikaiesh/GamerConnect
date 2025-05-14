@@ -207,6 +207,71 @@ router.get("/subscribers", isAuthenticated, isAdmin, async (req, res) => {
   }
 });
 
+// Get subscriber statistics
+router.get("/subscribers/stats", isAuthenticated, isAdmin, async (req, res) => {
+  try {
+    // Count total subscribers
+    const totalSubscribers = await db
+      .select({ count: count() })
+      .from(pushSubscribers);
+    
+    // Count active subscribers
+    const activeSubscribers = await db
+      .select({ count: count() })
+      .from(pushSubscribers)
+      .where(eq(pushSubscribers.status, 'active'));
+    
+    // Count by device type
+    const deviceStats = await db
+      .select({
+        deviceType: pushSubscribers.deviceType,
+        count: count()
+      })
+      .from(pushSubscribers)
+      .groupBy(pushSubscribers.deviceType);
+    
+    // Count by browser
+    const browserStats = await db
+      .select({
+        browser: pushSubscribers.browser,
+        count: count()
+      })
+      .from(pushSubscribers)
+      .groupBy(pushSubscribers.browser);
+    
+    // Count by country
+    const countryStats = await db
+      .select({
+        country: pushSubscribers.country,
+        count: count()
+      })
+      .from(pushSubscribers)
+      .groupBy(pushSubscribers.country);
+    
+    // Format stats for frontend
+    const stats = {
+      total: totalSubscribers[0]?.count || 0,
+      active: activeSubscribers[0]?.count || 0,
+      desktop: deviceStats.find(s => s.deviceType === 'desktop')?.count || 0,
+      mobile: deviceStats.find(s => s.deviceType === 'mobile')?.count || 0,
+      tablet: deviceStats.find(s => s.deviceType === 'tablet')?.count || 0,
+      browser: browserStats.reduce((acc, stat) => {
+        acc[stat.browser || 'unknown'] = Number(stat.count);
+        return acc;
+      }, {} as Record<string, number>),
+      country: countryStats.reduce((acc, stat) => {
+        acc[stat.country || 'unknown'] = Number(stat.count);
+        return acc;
+      }, {} as Record<string, number>)
+    };
+    
+    res.json(stats);
+  } catch (error) {
+    console.error("Error fetching subscriber stats:", error);
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
+
 // Create a new push subscriber
 router.post("/subscribers", async (req, res) => {
   try {
