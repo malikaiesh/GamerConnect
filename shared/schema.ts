@@ -744,3 +744,20 @@ export type PushCampaign = typeof pushCampaigns.$inferSelect;
 export type InsertPushCampaign = z.infer<typeof insertPushCampaignSchema>;
 export type PushResponse = typeof pushResponses.$inferSelect;
 export type InsertPushResponse = z.infer<typeof insertPushResponseSchema>;
+
+// URL Redirects schema
+export const urlRedirects = pgTable('url_redirects', {
+  id: serial('id').primaryKey(),
+  sourceUrl: text('source_url').notNull(),
+  targetUrl: text('target_url').notNull(),
+  statusCode: integer('status_code').default(301).notNull(),
+  isActive: boolean('is_active').default(true).notNull(),
+  notes: text('notes'),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+  updatedAt: timestamp('updated_at').defaultNow().notNull()
+});
+
+export const insertUrlRedirectSchema = createInsertSchema(urlRedirects);
+
+export type UrlRedirect = typeof urlRedirects.$inferSelect;
+export type InsertUrlRedirect = z.infer<typeof insertUrlRedirectSchema>;
