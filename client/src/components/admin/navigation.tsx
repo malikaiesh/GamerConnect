@@ -2,7 +2,7 @@ import { Link, useLocation } from "wouter";
 import { useAuth } from "@/hooks/use-auth";
 import { useQuery } from "@tanstack/react-query";
 import { cn } from "@/lib/utils";
-import { Gamepad2, Book, Settings, LayoutDashboard, FileText, LogOut, Home, FileSymlink, Key, ImageIcon, Map, Code, BarChart, Files, Bell, Users, Send, Activity, BarChart3, UserRound, UserPlus, MapPin, Shield, Lock, KeyRound, AlertTriangle, FileDigit, Clock } from "lucide-react";
+import { Gamepad2, Book, Settings, LayoutDashboard, FileText, LogOut, Home, FileSymlink, Key, ImageIcon, Map, Code, BarChart, Files, Bell, Users, Send, Activity, BarChart3, UserRound, UserPlus, MapPin, Shield, Lock, KeyRound, AlertTriangle, FileDigit, Clock, ExternalLink } from "lucide-react";
 import { useState } from "react";
 import { SiteSetting } from "@shared/schema";
 
@@ -10,7 +10,8 @@ export default function AdminNavigation() {
   const [expandedSubMenus, setExpandedSubMenus] = useState<Record<string, boolean>>({
     pushNotifications: false,
     accounts: false,
-    adminUsers: false
+    adminUsers: false,
+    settings: false
   });
   const [location] = useLocation();
   const { logoutMutation, user } = useAuth();
@@ -464,19 +465,56 @@ export default function AdminNavigation() {
               </ul>
             )}
           </li>
-          <li>
-            <Link
-              href="/admin/settings"
+          <li className="space-y-1">
+            <button
+              onClick={() => toggleSubMenu('settings')}
               className={cn(
-                "flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all",
-                isActive("/admin/settings")
+                "flex items-center justify-between w-full gap-3 px-3 py-2.5 rounded-lg transition-all",
+                isActive("/admin/settings") || expandedSubMenus.settings
                   ? "bg-primary/15 text-primary shadow-sm"
                   : "text-card-foreground hover:bg-primary/10 hover:text-primary"
               )}
             >
-              <Settings size={18} className="text-primary opacity-80" />
-              Settings
-            </Link>
+              <div className="flex items-center gap-3">
+                <Settings size={18} className="text-primary opacity-80" />
+                <span>Settings</span>
+              </div>
+              <span className={cn("transform transition-transform text-primary opacity-80", expandedSubMenus.settings ? "rotate-180" : "")}>
+                ▼
+              </span>
+            </button>
+            {expandedSubMenus.settings && (
+              <ul className="ml-6 space-y-1 border-l border-border pl-2 mt-1">
+                <li>
+                  <Link
+                    href="/admin/settings/general"
+                    className={cn(
+                      "flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all",
+                      location === "/admin/settings/general"
+                        ? "bg-primary/10 text-primary"
+                        : "text-card-foreground/80 hover:bg-primary/5 hover:text-primary/90"
+                    )}
+                  >
+                    <Settings size={16} className="text-primary opacity-80" />
+                    General Settings
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    href="/admin/settings/redirects"
+                    className={cn(
+                      "flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all",
+                      location === "/admin/settings/redirects"
+                        ? "bg-primary/10 text-primary"
+                        : "text-card-foreground/80 hover:bg-primary/5 hover:text-primary/90"
+                    )}
+                  >
+                    <ExternalLink size={16} className="text-primary opacity-80" />
+                    URL Redirects
+                  </Link>
+                </li>
+              </ul>
+            )}
           </li>
         </ul>
       </nav>
