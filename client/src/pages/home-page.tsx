@@ -19,6 +19,8 @@ export default function HomePage() {
   const [activeCategory, setActiveCategory] = useState('all');
   const [showMoreFeatured, setShowMoreFeatured] = useState(false);
   const [showMorePopular, setShowMorePopular] = useState(false);
+  const [popularGamesPage, setPopularGamesPage] = useState(1);
+  const [popularGamesLimit] = useState(15); // Show 15 games per page
   const [activeNotification, setActiveNotification] = useState<PushNotificationType | null>(null);
   
   // Fetch featured games
@@ -27,9 +29,9 @@ export default function HomePage() {
     staleTime: 5 * 60 * 1000, // 5 minutes
   });
   
-  // Fetch popular games based on active category
+  // Fetch popular games based on active category and pagination
   const { data: popularGames = [], isLoading: loadingPopular } = useQuery<Game[]>({
-    queryKey: ['/api/games/popular', { category: activeCategory }],
+    queryKey: ['/api/games/popular', { category: activeCategory, page: popularGamesPage, limit: popularGamesLimit }],
     staleTime: 5 * 60 * 1000, // 5 minutes
   });
   
@@ -227,13 +229,14 @@ export default function HomePage() {
           </div>
           
           <GameGrid 
-            games={showMorePopular ? popularGames : popularGames.slice(0, 10)} 
+            games={popularGames} 
             loading={loadingPopular}
             columns={5}
             cardSize="sm"
-            showLoadMore={popularGames.length > 10 && !showMorePopular}
-            onLoadMore={() => setShowMorePopular(true)}
-            hasMoreGames={popularGames.length > 10 && !showMorePopular}
+            showLoadMore={true}
+            onLoadMore={() => setPopularGamesPage(prevPage => prevPage + 1)}
+            hasMoreGames={popularGames.length >= popularGamesLimit}
+            loadMoreLabel="Load More Games"
           />
         </div>
       </section>

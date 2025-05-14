@@ -151,16 +151,22 @@ export function registerGameRoutes(app: Express) {
     }
   });
   
-  // Get popular games
+  // Get popular games (all uploaded games)
   app.get('/api/games/popular', async (req: Request, res: Response) => {
     try {
       const category = req.query.category as string;
-      const limit = req.query.limit ? parseInt(req.query.limit as string) : 20; // Default to 20 popular games
+      const limit = req.query.limit ? parseInt(req.query.limit as string) : 100; // Increased limit to show more games
+      const page = req.query.page ? parseInt(req.query.page as string) : 1;
       
-      // Only pass category if it's not 'all'
-      const categoryParam = category === 'all' ? undefined : category;
-      const popularGames = await storage.getPopularGames(categoryParam, limit);
-      res.json(popularGames);
+      // Use getGames instead to get all active games
+      const { games } = await storage.getGames({
+        page,
+        limit,
+        status: 'active',
+        category: category === 'all' ? undefined : category
+      });
+      
+      res.json(games);
     } catch (error) {
       console.error('Error processing popular games request:', error);
       res.status(500).json({ message: 'Failed to fetch popular games' });
