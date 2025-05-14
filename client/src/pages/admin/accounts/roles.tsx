@@ -190,6 +190,8 @@ export default function RolesPage() {
           email: "",
           password: "",
         });
+        // Don't use templates in edit mode
+        setSelectedTemplate("");
       } else {
         form.reset({
           name: "",
@@ -198,7 +200,12 @@ export default function RolesPage() {
           email: "",
           password: "",
         });
+        // Set default template to custom in create mode
+        setSelectedTemplate("custom");
       }
+    } else {
+      // Reset template selection when dialog is closed
+      setSelectedTemplate("custom");
     }
   }, [isRoleDialogOpen, dialogMode, selectedRole, form]);
 
@@ -433,6 +440,20 @@ export default function RolesPage() {
       });
     },
   });
+
+  // Handle template selection change
+  const handleTemplateChange = (value: string) => {
+    setSelectedTemplate(value);
+    const template = roleTemplates.find(t => t.value === value);
+    
+    if (template && value !== "custom") {
+      form.setValue("name", template.label);
+      form.setValue("description", template.description);
+    } else if (value === "custom") {
+      form.setValue("name", "");
+      form.setValue("description", "");
+    }
+  };
 
   // Handle form submission
   const handleCreateRole = (data: RoleForm) => {
@@ -701,6 +722,33 @@ export default function RolesPage() {
               )}
               className="space-y-4"
             >
+              {dialogMode === "create" && (
+                <div className="space-y-2 mb-4">
+                  <h3 className="text-base font-medium">Role Template</h3>
+                  <Select
+                    value={selectedTemplate}
+                    onValueChange={handleTemplateChange}
+                  >
+                    <SelectTrigger className="w-full">
+                      <SelectValue placeholder="Select a role template" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectGroup>
+                        <SelectLabel>Choose a template</SelectLabel>
+                        {roleTemplates.map((template) => (
+                          <SelectItem key={template.value} value={template.value}>
+                            {template.label}
+                          </SelectItem>
+                        ))}
+                      </SelectGroup>
+                    </SelectContent>
+                  </Select>
+                  <p className="text-sm text-muted-foreground">
+                    Select a predefined role or choose "Custom Role" to create your own
+                  </p>
+                </div>
+              )}
+
               <FormField
                 control={form.control}
                 name="name"
@@ -708,7 +756,11 @@ export default function RolesPage() {
                   <FormItem>
                     <FormLabel>Role Name</FormLabel>
                     <FormControl>
-                      <Input placeholder="e.g. Editor" {...field} />
+                      <Input 
+                        placeholder="e.g. Editor" 
+                        {...field} 
+                        disabled={dialogMode === "create" && selectedTemplate !== "custom" && selectedTemplate !== ""}
+                      />
                     </FormControl>
                     <FormDescription>
                       The name of the role as it will appear in the system
@@ -729,6 +781,7 @@ export default function RolesPage() {
                         placeholder="e.g. Can edit content but not change system settings"
                         {...field}
                         value={field.value || ""}
+                        disabled={dialogMode === "create" && selectedTemplate !== "custom" && selectedTemplate !== ""}
                       />
                     </FormControl>
                     <FormDescription>
