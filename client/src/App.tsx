@@ -46,6 +46,9 @@ import AccountsRolesPage from "@/pages/admin/accounts/roles";
 import SecurityTwoFactorPage from "@/pages/admin/security/two-factor";
 import SecurityLogsPage from "@/pages/admin/security/logs";
 import SecuritySettingsPage from "@/pages/admin/security/settings";
+import SecurityResetPasswordPage from "@/pages/admin/security/reset-password";
+import ResetPasswordPage from "@/pages/reset-password-page";
+import AdminResetPasswordPage from "@/pages/admin/reset-password";
 import { Providers } from "./lib/providers";
 import { ProtectedRoute } from "./lib/protected-route";
 import { useAuth } from "@/hooks/use-auth";
@@ -62,6 +65,8 @@ function Router() {
       <Route path="/categories" component={CategoriesPage} />
       <Route path="/top-games" component={TopGamesPage} />
       <Route path="/auth" component={AuthPage} />
+      <Route path="/reset-password" component={ResetPasswordPage} />
+      <Route path="/admin/reset-password" component={AdminResetPasswordPage} />
       <Route path="/install" component={InstallPage} />
       
       {/* Static Pages */}

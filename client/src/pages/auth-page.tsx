@@ -13,8 +13,9 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
-import { Loader2, Mail, Github } from "lucide-react";
+import { Loader2, Mail, Github, KeyRound } from "lucide-react";
 import { FaGoogle, FaFacebook } from "react-icons/fa";
+import { ForgotPasswordForm } from "@/components/auth/forgot-password-form";
 import { SiteSetting } from "@shared/schema";
 
 // Form validation schemas
@@ -44,6 +45,7 @@ type RegisterValues = z.infer<typeof registerSchema>;
 
 export default function AuthPage() {
   const [activeTab, setActiveTab] = useState<string>("login");
+  const [showForgotPassword, setShowForgotPassword] = useState(false);
   const { user, loginMutation, registerMutation, socialLogin, isLoading } = useAuth();
   const [location, navigate] = useLocation();
   
@@ -190,89 +192,107 @@ export default function AuthPage() {
 
               {/* Login Form */}
               <TabsContent value="login">
-                <Form {...loginForm}>
-                  <form onSubmit={loginForm.handleSubmit(onLoginSubmit)} className="space-y-4 mt-4">
-                    <FormField
-                      control={loginForm.control}
-                      name="username"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel className="text-black font-medium">Username</FormLabel>
-                          <FormControl>
-                            <Input 
-                              className="bg-white border-gray-300 text-black" 
-                              style={{color: 'black'}}
-                              placeholder="Enter your username" 
-                              {...field} 
-                            />
-                          </FormControl>
-                          <FormMessage className="text-red-500" />
-                        </FormItem>
-                      )}
-                    />
+                {showForgotPassword ? (
+                  <ForgotPasswordForm 
+                    onBack={() => setShowForgotPassword(false)} 
+                  />
+                ) : (
+                  <Form {...loginForm}>
+                    <form onSubmit={loginForm.handleSubmit(onLoginSubmit)} className="space-y-4 mt-4">
+                      <FormField
+                        control={loginForm.control}
+                        name="username"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel className="text-black font-medium">Username</FormLabel>
+                            <FormControl>
+                              <Input 
+                                className="bg-white border-gray-300 text-black" 
+                                style={{color: 'black'}}
+                                placeholder="Enter your username" 
+                                {...field} 
+                              />
+                            </FormControl>
+                            <FormMessage className="text-red-500" />
+                          </FormItem>
+                        )}
+                      />
 
-                    <FormField
-                      control={loginForm.control}
-                      name="password"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel className="text-black font-medium">Password</FormLabel>
-                          <FormControl>
-                            <Input 
-                              className="bg-white border-gray-300 text-black" 
-                              style={{color: 'black'}}
-                              type="password" 
-                              placeholder="Enter your password" 
-                              {...field} 
-                            />
-                          </FormControl>
-                          <FormMessage className="text-red-500" />
-                        </FormItem>
-                      )}
-                    />
+                      <FormField
+                        control={loginForm.control}
+                        name="password"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel className="text-black font-medium">Password</FormLabel>
+                            <FormControl>
+                              <Input 
+                                className="bg-white border-gray-300 text-black" 
+                                style={{color: 'black'}}
+                                type="password" 
+                                placeholder="Enter your password" 
+                                {...field} 
+                              />
+                            </FormControl>
+                            <FormMessage className="text-red-500" />
+                            <div className="text-right">
+                              <Button
+                                variant="link"
+                                className="text-sm text-blue-600 p-0 h-auto font-normal"
+                                onClick={(e) => {
+                                  e.preventDefault();
+                                  setShowForgotPassword(true);
+                                }}
+                              >
+                                Forgot password?
+                              </Button>
+                            </div>
+                          </FormItem>
+                        )}
+                      />
 
-                    <Button
-                      type="submit"
-                      className="w-full bg-blue-600 hover:bg-blue-700"
-                      disabled={loginMutation.isPending}
-                    >
-                      {loginMutation.isPending && (
-                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      )}
-                      Sign In
-                    </Button>
-                    
-                    <div className="relative my-4">
-                      <div className="absolute inset-0 flex items-center">
-                        <span className="w-full border-t border-gray-300"></span>
-                      </div>
-                      <div className="relative flex justify-center text-sm">
-                        <span className="bg-white px-2 text-gray-500">Or continue with</span>
-                      </div>
-                    </div>
-                    
-                    <div className="grid grid-cols-2 gap-4">
-                      <Button 
-                        type="button" 
-                        variant="outline" 
-                        className="bg-white text-black border border-gray-300 hover:bg-gray-100"
-                        onClick={() => handleSocialLogin('google')}
+                      <Button
+                        type="submit"
+                        className="w-full bg-blue-600 hover:bg-blue-700"
+                        disabled={loginMutation.isPending}
                       >
-                        <FaGoogle className="mr-2 h-4 w-4 text-red-500" />
-                        Google
+                        {loginMutation.isPending && (
+                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        )}
+                        Sign In
                       </Button>
-                      <Button 
-                        type="button" 
-                        variant="outline" 
-                        className="bg-white text-black border border-gray-300 hover:bg-gray-100"
-                        onClick={() => handleSocialLogin('facebook')}
-                      >
-                        <FaFacebook className="mr-2 h-4 w-4 text-blue-600" />
-                        Facebook
-                      </Button>
-                    </div>
-                  </form>
-                </Form>
+                      
+                      <div className="relative my-4">
+                        <div className="absolute inset-0 flex items-center">
+                          <span className="w-full border-t border-gray-300"></span>
+                        </div>
+                        <div className="relative flex justify-center text-sm">
+                          <span className="bg-white px-2 text-gray-500">Or continue with</span>
+                        </div>
+                      </div>
+                      
+                      <div className="grid grid-cols-2 gap-4">
+                        <Button 
+                          type="button" 
+                          variant="outline" 
+                          className="bg-white text-black border border-gray-300 hover:bg-gray-100"
+                          onClick={() => handleSocialLogin('google')}
+                        >
+                          <FaGoogle className="mr-2 h-4 w-4 text-red-500" />
+                          Google
+                        </Button>
+                        <Button 
+                          type="button" 
+                          variant="outline" 
+                          className="bg-white text-black border border-gray-300 hover:bg-gray-100"
+                          onClick={() => handleSocialLogin('facebook')}
+                        >
+                          <FaFacebook className="mr-2 h-4 w-4 text-blue-600" />
+                          Facebook
+                        </Button>
+                      </div>
+                    </form>
+                  </Form>
+                )}
               </TabsContent>
 
               {/* Register Form */}
