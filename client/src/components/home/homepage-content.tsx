@@ -4,7 +4,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { HomePageContent } from "@shared/schema";
-import { ChevronDown, ChevronUp, Plus } from "lucide-react";
+import { ChevronDown, ChevronUp, Plus, ArrowDown } from "lucide-react";
 
 interface HomePageContentResponse {
   contents: HomePageContent[];
@@ -166,7 +166,7 @@ export function HomepageContent() {
                 variant="default" 
                 size="sm"
                 onClick={() => toggleExpanded(content.id)}
-                className="flex items-center gap-1 bg-green-600 hover:bg-green-700"
+                className="flex items-center gap-1 bg-green-600 hover:bg-green-700 text-white font-medium px-4 py-2 rounded-md shadow-md"
               >
                 {expanded[content.id] ? (
                   <>
@@ -189,7 +189,7 @@ export function HomepageContent() {
         <div className="flex justify-center mt-4 mb-8">
           <Button 
             variant="default" 
-            className="px-6 flex items-center gap-2 bg-purple-600 hover:bg-purple-700"
+            className="px-6 flex items-center gap-2 bg-purple-600 hover:bg-purple-700 text-white font-medium py-2 rounded-md shadow-md"
             onClick={loadMoreContent}
             disabled={isLoading}
           >
@@ -200,8 +200,8 @@ export function HomepageContent() {
               </>
             ) : (
               <>
-                <Plus className="h-4 w-4" />
-                Load More Content ↓
+                <ArrowDown className="h-4 w-4" />
+                Load More Content
               </>
             )}
           </Button>
