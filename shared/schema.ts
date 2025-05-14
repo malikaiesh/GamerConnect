@@ -24,6 +24,9 @@ export const userStatusEnum = pgEnum('user_status', ['active', 'blocked']);
 // User Session Status Enum
 export const sessionStatusEnum = pgEnum('session_status', ['active', 'expired', 'revoked']);
 
+// Token Type Enum
+export const tokenTypeEnum = pgEnum('token_type', ['password_reset', 'email_verification', 'admin_reset']);
+
 // Roles table
 export const roles = pgTable('roles', {
   id: serial('id').primaryKey(),
@@ -412,6 +415,28 @@ export const usersRelations = relations(users, ({ many, one }) => ({
 export const userSessionsRelations = relations(userSessions, ({ one }) => ({
   user: one(users, {
     fields: [userSessions.userId],
+    references: [users.id]
+  })
+}));
+
+// Password reset tokens table
+export const passwordResetTokens = pgTable('password_reset_tokens', {
+  id: serial('id').primaryKey(),
+  userId: integer('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
+  token: text('token').notNull().unique(),
+  tokenHash: text('token_hash').notNull(), // Store hashed token for security
+  type: tokenTypeEnum('type').default('password_reset').notNull(),
+  usedAt: timestamp('used_at'), // Track when token was used
+  ipAddress: text('ip_address'), // Track IP that created the token
+  userAgent: text('user_agent'), // Track browser/device info
+  isAdmin: boolean('is_admin').default(false).notNull(), // Whether this is for admin or regular user
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+  expiresAt: timestamp('expires_at').notNull() // Tokens expire after a certain time
+});
+
+export const passwordResetTokensRelations = relations(passwordResetTokens, ({ one }) => ({
+  user: one(users, {
+    fields: [passwordResetTokens.userId],
     references: [users.id]
   })
 }));
