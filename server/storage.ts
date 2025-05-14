@@ -215,7 +215,7 @@ export interface IStorage {
   getHomePageContentById(id: number): Promise<HomePageContent | null>;
   getHomePageContent(): Promise<HomePageContent[]>;
   getHomePageContents(): Promise<HomePageContent[]>;
-  getActiveHomePageContents(): Promise<HomePageContent[]>;
+  getActiveHomePageContents(limit?: number, page?: number): Promise<{ contents: HomePageContent[], total: number }>;
   createHomePageContent(content: Omit<InsertHomePageContent, "createdAt" | "updatedAt">): Promise<HomePageContent>;
   updateHomePageContent(id: number, contentData: Partial<InsertHomePageContent>): Promise<HomePageContent | null>;
   deleteHomePageContent(id: number): Promise<boolean>;
