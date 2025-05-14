@@ -155,18 +155,30 @@ export function registerGameRoutes(app: Express) {
   app.get('/api/games/popular', async (req: Request, res: Response) => {
     try {
       const category = req.query.category as string;
-      const limit = req.query.limit ? parseInt(req.query.limit as string) : 100; // Increased limit to show more games
+      const limit = req.query.limit ? parseInt(req.query.limit as string) : 10;
       const page = req.query.page ? parseInt(req.query.page as string) : 1;
+      const offset = (page - 1) * limit; // Calculate proper offset based on page
       
-      // Use getGames instead to get all active games
-      const { games } = await storage.getGames({
+      // Use getGames instead to get all active games with proper pagination
+      const { games, total } = await storage.getGames({
         page,
         limit,
+        offset, // Add explicit offset
         status: 'active',
         category: category === 'all' ? undefined : category
       });
       
-      res.json(games);
+      // Return both games and pagination metadata
+      res.json({
+        games,
+        pagination: {
+          page,
+          limit,
+          offset,
+          total,
+          hasMore: offset + games.length < total
+        }
+      });
     } catch (error) {
       console.error('Error processing popular games request:', error);
       res.status(500).json({ message: 'Failed to fetch popular games' });

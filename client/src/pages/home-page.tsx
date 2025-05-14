@@ -31,28 +31,36 @@ export default function HomePage() {
   });
   
   // Fetch popular games based on active category and pagination
-  const { data: popularGamesPage1 = [], isLoading: loadingPopular } = useQuery<Game[]>({
+  const { data: popularGamesPage1Data, isLoading: loadingPopular } = useQuery<{ games: Game[], pagination: { hasMore: boolean, total: number } }>({
     queryKey: ['/api/games/popular', { category: activeCategory, page: 1, limit: popularGamesLimit }],
     staleTime: 5 * 60 * 1000, // 5 minutes
   });
   
+  // Extract games and pagination data from the response
+  const popularGamesPage1 = popularGamesPage1Data?.games || [];
+  
   // Fetch additional pages of popular games
-  const { data: additionalPopularGames = [], isLoading: loadingMorePopular } = useQuery<Game[]>({
+  const { data: additionalPopularGamesData, isLoading: loadingMorePopular } = useQuery<{ games: Game[], pagination: { hasMore: boolean, total: number } }>({
     queryKey: ['/api/games/popular', { category: activeCategory, page: popularGamesPage, limit: popularGamesLimit }],
     staleTime: 5 * 60 * 1000, // 5 minutes
     enabled: popularGamesPage > 1, // Only fetch additional pages when popularGamesPage > 1
   });
   
+  // Extract games and pagination data from the response
+  const additionalPopularGames = additionalPopularGamesData?.games || [];
+  
   // Update allPopularGames when first page is loaded
   useEffect(() => {
-    if (popularGamesPage === 1) {
+    if (popularGamesPage === 1 && popularGamesPage1Data) {
       setAllPopularGames(popularGamesPage1);
+      // Use the pagination data to determine if there are more games
+      setHasMorePopularGames(popularGamesPage1Data.pagination.hasMore);
     }
-  }, [popularGamesPage1]);
+  }, [popularGamesPage1, popularGamesPage1Data]);
   
   // Update allPopularGames when additional pages are loaded
   useEffect(() => {
-    if (popularGamesPage > 1 && additionalPopularGames.length > 0) {
+    if (popularGamesPage > 1 && additionalPopularGamesData && additionalPopularGames.length > 0) {
       setAllPopularGames(prevGames => {
         // Filter out any duplicates by ID
         const existingIds = new Set(prevGames.map(game => game.id));
@@ -60,12 +68,10 @@ export default function HomePage() {
         return [...prevGames, ...newGames];
       });
       
-      // If we received fewer games than the limit, there are no more games to load
-      if (additionalPopularGames.length < popularGamesLimit) {
-        setHasMorePopularGames(false);
-      }
+      // Use the pagination data to determine if there are more games
+      setHasMorePopularGames(additionalPopularGamesData.pagination.hasMore);
     }
-  }, [additionalPopularGames, popularGamesPage, popularGamesLimit]);
+  }, [additionalPopularGames, additionalPopularGamesData, popularGamesPage]);
   
   // Fetch blog posts
   const { data: blogPosts = [], isLoading: loadingBlog } = useQuery<BlogPost[]>({
