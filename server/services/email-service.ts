@@ -1,10 +1,30 @@
 import sgMail from '@sendgrid/mail';
+import { storage } from '../storage';
 
-// Initialize SendGrid with API key
+// We will initialize with the environment variable for backward compatibility
+// but then try to get the key from the database
 if (process.env.SENDGRID_API_KEY) {
   sgMail.setApiKey(process.env.SENDGRID_API_KEY);
 } else {
-  console.warn('SENDGRID_API_KEY not set. Email functionality will not work.');
+  console.warn('SENDGRID_API_KEY environment variable not set. Will attempt to use API key from database.');
+}
+
+// Function to initialize SendGrid with the API key from the database
+export const initializeSendGrid = async (): Promise<boolean> => {
+  try {
+    const apiKey = await storage.getApiKeyByType('sendgrid');
+    if (apiKey && apiKey.key && apiKey.isActive) {
+      sgMail.setApiKey(apiKey.key);
+      return true;
+    } else if (!process.env.SENDGRID_API_KEY) {
+      console.warn('SendGrid API key not found in database and environment variable not set. Email functionality will not work.');
+      return false;
+    }
+    return !!process.env.SENDGRID_API_KEY;
+  } catch (error) {
+    console.error('Error initializing SendGrid:', error);
+    return !!process.env.SENDGRID_API_KEY;
+  }
 }
 
 interface EmailContent {
@@ -15,8 +35,16 @@ interface EmailContent {
 }
 
 export const sendEmail = async (content: EmailContent): Promise<boolean> => {
-  if (!process.env.SENDGRID_API_KEY) {
-    console.error('Cannot send email: SENDGRID_API_KEY is not set');
+  // Check if SendGrid is initialized with an API key
+  let apiKeySet = !!process.env.SENDGRID_API_KEY;
+  
+  // If no API key in environment, try to get it from the database
+  if (!apiKeySet) {
+    apiKeySet = await initializeSendGrid();
+  }
+  
+  if (!apiKeySet) {
+    console.error('Cannot send email: No SendGrid API key available');
     return false;
   }
 

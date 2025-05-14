@@ -1,6 +1,6 @@
-import 'dotenv/config';
-import pkg from 'pg';
-const { Pool } = pkg;
+const dotenv = require('dotenv');
+dotenv.config();
+const { Pool } = require('pg');
 
 async function addSendgridApiKeyType() {
   const pool = new Pool({
