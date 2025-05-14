@@ -319,6 +319,71 @@ export default function AdminNavigation() {
           </li>
           <li className="space-y-1">
             <button
+              onClick={() => toggleSubMenu('security')}
+              className={cn(
+                "flex items-center justify-between w-full gap-3 px-3 py-2.5 rounded-lg transition-all",
+                isActive("/admin/security") || expandedSubMenus.security
+                  ? "bg-primary/15 text-primary shadow-sm"
+                  : "text-card-foreground hover:bg-primary/10 hover:text-primary"
+              )}
+            >
+              <div className="flex items-center gap-3">
+                <Shield size={18} className="text-primary opacity-80" />
+                <span>Security</span>
+              </div>
+              <span className={cn("transform transition-transform text-primary opacity-80", expandedSubMenus.security ? "rotate-180" : "")}>
+                ▼
+              </span>
+            </button>
+            {expandedSubMenus.security && (
+              <ul className="ml-6 space-y-1 border-l border-border pl-2 mt-1">
+                <li>
+                  <Link
+                    href="/admin/security/two-factor"
+                    className={cn(
+                      "flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all",
+                      location === "/admin/security/two-factor"
+                        ? "bg-primary/10 text-primary"
+                        : "text-card-foreground/80 hover:bg-primary/5 hover:text-primary/90"
+                    )}
+                  >
+                    <Shield size={16} className="text-primary opacity-80" />
+                    Two-Factor Auth
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    href="/admin/security/logs"
+                    className={cn(
+                      "flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all",
+                      location === "/admin/security/logs"
+                        ? "bg-primary/10 text-primary"
+                        : "text-card-foreground/80 hover:bg-primary/5 hover:text-primary/90"
+                    )}
+                  >
+                    <Clock size={16} className="text-primary opacity-80" />
+                    Security Logs
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    href="/admin/security/settings"
+                    className={cn(
+                      "flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all",
+                      location === "/admin/security/settings"
+                        ? "bg-primary/10 text-primary"
+                        : "text-card-foreground/80 hover:bg-primary/5 hover:text-primary/90"
+                    )}
+                  >
+                    <Settings size={16} className="text-primary opacity-80" />
+                    Security Settings
+                  </Link>
+                </li>
+              </ul>
+            )}
+          </li>
+          <li className="space-y-1">
+            <button
               onClick={() => toggleSubMenu('accounts')}
               className={cn(
                 "flex items-center justify-between w-full gap-3 px-3 py-2.5 rounded-lg transition-all",

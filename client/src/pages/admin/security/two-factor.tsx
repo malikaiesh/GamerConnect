@@ -1,253 +1,396 @@
-import { useState } from "react";
-import SecurityLayout from "@/components/admin/security/security-layout";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Switch } from "@/components/ui/switch";
-import { Label } from "@/components/ui/label";
-import { AlertTriangle, CheckCircle, Copy, KeyRound, Smartphone, Shield } from "lucide-react";
-import { useToast } from "@/hooks/use-toast";
-import { useAuth } from "@/hooks/use-auth";
+import React, { useState } from 'react';
+import SecurityLayout from '@/components/admin/security/security-layout';
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { useQuery } from '@tanstack/react-query';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { 
+  Shield, 
+  Smartphone, 
+  QrCode, 
+  KeySquare, 
+  Mail, 
+  Plus, 
+  Check, 
+  RefreshCw, 
+  Trash2,
+  AlertTriangle
+} from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { 
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { 
+  Alert,
+  AlertDescription,
+  AlertTitle,
+} from "@/components/ui/alert";
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 
-export default function TwoFactorPage() {
-  const { toast } = useToast();
-  const { user } = useAuth();
-  const [twoFactorEnabled, setTwoFactorEnabled] = useState(false);
-  const [showQRCode, setShowQRCode] = useState(false);
-  const [setupStep, setSetupStep] = useState(0);
-  const [verificationCode, setVerificationCode] = useState("");
+// Mock TwoFA data
+const mockTwoFactorData = {
+  enabled: true,
+  methods: [
+    {
+      id: 1,
+      type: 'app',
+      name: 'Google Authenticator',
+      addedOn: '2023-10-15T12:30:45Z',
+      lastUsed: '2023-11-10T08:15:30Z'
+    }
+  ],
+  recoveryKeys: {
+    generated: true,
+    lastGenerated: '2023-10-15T12:35:10Z',
+    keysRemaining: 8,
+    totalKeys: 10
+  }
+};
+
+// Mock QR code for setup
+const mockQrCodeUrl = 'https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=otpauth://totp/KBHGames:admin@example.com?secret=JBSWY3DPEHPK3PXP&issuer=KBHGames';
+
+export default function TwoFactorAuthPage() {
+  const [activeTab, setActiveTab] = useState('methods');
+  const [showSetupDialog, setShowSetupDialog] = useState(false);
+  const [setupStep, setSetupStep] = useState(1);
+  const [verificationCode, setVerificationCode] = useState('');
+  const [showRecoveryKeys, setShowRecoveryKeys] = useState(false);
+  const [recoveryKeys, setRecoveryKeys] = useState<string[]>([]);
   
-  // Mock QR code for demonstration
-  const mockQRCodeUrl = "data:image/png;base64,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";
+  const { data: twoFactorData, isLoading } = useQuery({
+    queryKey: ['/api/security/two-factor'],
+    // Fallback to mock data since this is a new feature
+    initialData: mockTwoFactorData
+  });
 
-  // Function to handle enabling two-factor authentication
-  const handleEnableTwoFactor = () => {
-    if (!twoFactorEnabled) {
-      setShowQRCode(true);
-      setSetupStep(1);
-      toast({
-        title: "Setting up Two-Factor Authentication",
-        description: "Scan the QR code with your authenticator app to continue.",
-      });
-    } else {
-      // Disabling two-factor auth
-      setTwoFactorEnabled(false);
-      setShowQRCode(false);
-      setSetupStep(0);
-      toast({
-        title: "Two-Factor Authentication Disabled",
-        description: "Your account is now secured with password only.",
-        variant: "destructive",
-      });
-    }
+  const handleStartSetup = () => {
+    setShowSetupDialog(true);
+    setSetupStep(1);
+    setVerificationCode('');
   };
 
-  // Function to validate verification code
-  const validateVerificationCode = () => {
-    // In a real implementation, this would validate against the server
+  const handleVerifyCode = () => {
+    // In a real app, would verify the code with the server
     if (verificationCode.length === 6) {
-      setTwoFactorEnabled(true);
-      setShowQRCode(false);
-      setSetupStep(2);
-      toast({
-        title: "Two-Factor Authentication Enabled",
-        description: "Your account is now secured with 2FA.",
-      });
-    } else {
-      toast({
-        title: "Invalid Code",
-        description: "Please enter a valid 6-digit code from your authenticator app.",
-        variant: "destructive",
-      });
+      setSetupStep(3);
+      // Generate mock recovery keys
+      setRecoveryKeys([
+        'ABCD-EFGH-IJKL-MNOP',
+        'QRST-UVWX-YZ12-3456',
+        'BCDE-FGHI-JKLM-NOPQ',
+        '5678-ABCD-EFGH-IJKL',
+        'MNOP-QRST-UVWX-YZ12',
+        '3456-789A-BCDE-FGHI',
+        'JKLM-NOPQ-RSTU-VWXY',
+        'Z123-4567-89AB-CDEF',
+        'GHIJ-KLMN-OPQR-STUV',
+        'WXYZ-1234-5678-9ABC'
+      ]);
     }
   };
 
-  // Function to copy recovery codes
-  const copyRecoveryCodes = () => {
-    // In a real implementation, these would be generated on the server
-    const recoveryCodes = "ABCD-EFGH-IJKL\nMNOP-QRST-UVWX\nYZAB-CDEF-GHIJ";
-    navigator.clipboard.writeText(recoveryCodes);
-    
-    toast({
-      title: "Recovery Codes Copied",
-      description: "Store these codes in a safe place. You'll need them if you lose access to your authenticator app.",
-    });
+  const handleFinishSetup = () => {
+    setShowSetupDialog(false);
+    // In a real app, would update the state with the new method
+  };
+
+  const generateRecoveryKeys = () => {
+    setShowRecoveryKeys(true);
+    // Generate new mock recovery keys
+    setRecoveryKeys([
+      'DEFG-HIJK-LMNO-PQRS',
+      'TUVW-XYZ1-2345-6789',
+      'ABCD-EFGH-IJKL-MNOP',
+      'QRST-UVWX-YZ12-3456',
+      'BCDE-FGHI-JKLM-NOPQ',
+      '5678-ABCD-EFGH-IJKL',
+      'MNOP-QRST-UVWX-YZ12',
+      '3456-789A-BCDE-FGHI',
+      'JKLM-NOPQ-RSTU-VWXY',
+      'Z123-4567-89AB-CDEF'
+    ]);
   };
 
   return (
-    <SecurityLayout 
-      title="Two-Factor Authentication" 
-      description="Add an extra layer of security to your admin account"
-    >
-      <div className="space-y-6">
-        {/* Current Status Card */}
-        <Card className="bg-background border-0">
-          <CardHeader className="bg-background border-0">
-            <div className="flex items-start justify-between">
-              <div>
-                <CardTitle className="text-foreground">Two-Factor Authentication Status</CardTitle>
-                <CardDescription className="text-muted-foreground mt-1">
-                  {twoFactorEnabled 
-                    ? "Your account is protected with two-factor authentication" 
-                    : "Your account is currently using password authentication only"}
-                </CardDescription>
-              </div>
-              <div className={`p-2 rounded-full ${twoFactorEnabled ? 'bg-primary/20' : 'bg-destructive/20'}`}>
-                {twoFactorEnabled 
-                  ? <CheckCircle className="h-5 w-5 text-primary" /> 
-                  : <AlertTriangle className="h-5 w-5 text-destructive" />}
-              </div>
-            </div>
-          </CardHeader>
-          <CardContent className="bg-background">
-            <div className="flex items-center space-x-2">
-              <Switch
-                id="two-factor-toggle"
-                checked={twoFactorEnabled}
-                onCheckedChange={handleEnableTwoFactor}
-              />
-              <Label htmlFor="two-factor-toggle" className="text-foreground">
-                {twoFactorEnabled ? "Disable" : "Enable"} Two-Factor Authentication
-              </Label>
-            </div>
-          </CardContent>
-        </Card>
+    <SecurityLayout>
+      <div className="flex items-center justify-between mb-6">
+        <div>
+          <h1 className="text-3xl font-bold tracking-tight text-foreground">Two-Factor Authentication</h1>
+          <p className="text-muted-foreground">
+            Add an extra layer of security to your account
+          </p>
+        </div>
+        <div>
+          {twoFactorData?.enabled ? (
+            <Badge className="bg-green-600">Enabled</Badge>
+          ) : (
+            <Badge variant="outline" className="text-amber-500 border-amber-500">Not Enabled</Badge>
+          )}
+        </div>
+      </div>
 
-        {/* Setup Process Cards */}
-        {showQRCode && (
-          <Card className="bg-background border-0">
-            <CardHeader className="bg-background border-0">
-              <CardTitle className="text-foreground">Setup Two-Factor Authentication</CardTitle>
-              <CardDescription className="text-muted-foreground">
-                Scan this QR code with your authenticator app (Google Authenticator, Authy, etc.)
+      {!twoFactorData?.enabled && (
+        <Alert className="mb-6">
+          <AlertTriangle className="h-4 w-4" />
+          <AlertTitle>Your account is not fully protected</AlertTitle>
+          <AlertDescription>
+            Enable two-factor authentication to add an extra layer of security to your account.
+          </AlertDescription>
+        </Alert>
+      )}
+
+      <Tabs defaultValue={activeTab} onValueChange={setActiveTab} className="space-y-4">
+        <TabsList>
+          <TabsTrigger value="methods">
+            <Smartphone className="h-4 w-4 mr-2" />
+            Authentication Methods
+          </TabsTrigger>
+          <TabsTrigger value="recovery">
+            <KeySquare className="h-4 w-4 mr-2" />
+            Recovery Keys
+          </TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="methods" className="space-y-4">
+          <Card>
+            <CardHeader className="pb-3">
+              <CardTitle>Authentication Methods</CardTitle>
+              <CardDescription>
+                Manage the methods you use for two-factor authentication
               </CardDescription>
             </CardHeader>
-            <CardContent className="bg-background">
-              <div className="flex flex-col items-center space-y-4">
-                <div className="bg-white p-4 rounded-lg">
-                  <img 
-                    src={mockQRCodeUrl} 
-                    alt="Two-Factor Authentication QR Code" 
-                    className="w-64 h-64" 
-                  />
+            <CardContent>
+              {twoFactorData?.methods && twoFactorData.methods.length > 0 ? (
+                <div className="space-y-4">
+                  {twoFactorData.methods.map(method => (
+                    <div key={method.id} className="flex items-center justify-between p-4 border rounded-lg">
+                      <div className="flex items-center space-x-4">
+                        {method.type === 'app' && <Smartphone className="h-5 w-5 text-primary" />}
+                        {method.type === 'email' && <Mail className="h-5 w-5 text-primary" />}
+                        <div>
+                          <h3 className="font-medium">{method.name}</h3>
+                          <p className="text-sm text-muted-foreground">
+                            Added on {new Date(method.addedOn).toLocaleDateString()}
+                          </p>
+                          <p className="text-xs text-muted-foreground">
+                            Last used: {new Date(method.lastUsed).toLocaleDateString()}
+                          </p>
+                        </div>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <Button variant="ghost" size="sm">
+                          <RefreshCw className="h-4 w-4 mr-2" />
+                          Reset
+                        </Button>
+                        <Button variant="ghost" size="sm" className="text-destructive">
+                          <Trash2 className="h-4 w-4 mr-2" />
+                          Remove
+                        </Button>
+                      </div>
+                    </div>
+                  ))}
                 </div>
-                <p className="text-muted-foreground text-center max-w-md">
-                  Can't scan the QR code? You can manually enter this setup key into your authenticator app:
-                </p>
-                <div className="flex items-center space-x-2 bg-accent/50 p-2 rounded-md">
-                  <code className="text-xs text-foreground">ABCD EFGH IJKL MNOP QRST UVWX</code>
-                  <Button size="sm" variant="ghost" onClick={() => {
-                    navigator.clipboard.writeText("ABCDEFGHIJKLMNOPQRSTUVWX");
-                    toast({
-                      title: "Copied to clipboard",
-                      description: "Setup key has been copied to clipboard",
-                    });
-                  }}>
-                    <Copy size={14} />
-                  </Button>
+              ) : (
+                <div className="flex flex-col items-center justify-center py-8 text-center">
+                  <Shield className="h-12 w-12 text-muted-foreground mb-4" />
+                  <h3 className="text-lg font-medium">No authentication methods</h3>
+                  <p className="text-muted-foreground mt-1 mb-4 max-w-md">
+                    You haven't set up any two-factor authentication methods yet. Add a method to increase the security of your account.
+                  </p>
                 </div>
-                
-                <div className="w-full max-w-xs space-y-2 mt-4">
-                  <Label htmlFor="verification-code" className="text-foreground">Enter Verification Code</Label>
-                  <div className="flex space-x-2">
-                    <input
-                      type="text"
-                      id="verification-code"
-                      maxLength={6}
-                      className="flex h-10 w-full rounded-md border border-border bg-transparent px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/20"
-                      placeholder="000000"
-                      value={verificationCode}
-                      onChange={(e) => setVerificationCode(e.target.value.replace(/[^0-9]/g, ''))}
-                    />
-                    <Button onClick={validateVerificationCode}>Verify</Button>
-                  </div>
-                </div>
-              </div>
+              )}
             </CardContent>
-          </Card>
-        )}
-        
-        {twoFactorEnabled && (
-          <Card className="bg-background border-0">
-            <CardHeader className="bg-background border-0">
-              <CardTitle className="text-foreground">Recovery Codes</CardTitle>
-              <CardDescription className="text-muted-foreground">
-                Store these recovery codes in a safe place to regain access to your account if you lose your authenticator device.
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="bg-background">
-              <div className="bg-accent/50 p-4 rounded-md font-mono text-sm text-foreground mb-4">
-                <p>ABCD-EFGH-IJKL</p>
-                <p>MNOP-QRST-UVWX</p>
-                <p>YZAB-CDEF-GHIJ</p>
-              </div>
-              <div className="text-sm text-muted-foreground mb-4">
-                <p>• Each code can only be used once.</p>
-                <p>• These codes were generated when you enabled two-factor authentication.</p>
-                <p>• If you lose your authenticator device and don't have these codes, you'll lose access to your account.</p>
-              </div>
-            </CardContent>
-            <CardFooter className="bg-background border-0">
-              <Button
-                variant="outline"
-                onClick={copyRecoveryCodes}
-                className="flex items-center gap-2"
-              >
-                <Copy size={16} />
-                Copy Recovery Codes
+            <CardFooter>
+              <Button onClick={handleStartSetup}>
+                <Plus className="h-4 w-4 mr-2" />
+                Add Authentication Method
               </Button>
             </CardFooter>
           </Card>
-        )}
-        
-        {/* Information Card */}
-        <Card className="bg-background border-0">
-          <CardHeader className="bg-background border-0">
-            <CardTitle className="text-foreground flex items-center gap-2">
-              <Shield className="h-5 w-5 text-primary" />
-              Why Use Two-Factor Authentication?
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="bg-background">
-            <div className="space-y-4">
-              <div className="flex gap-3">
-                <div className="min-w-[40px] flex-shrink-0 text-center">
-                  <Smartphone className="h-5 w-5 text-primary mx-auto" />
+        </TabsContent>
+
+        <TabsContent value="recovery" className="space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle>Recovery Keys</CardTitle>
+              <CardDescription>
+                Recovery keys allow you to access your account if you lose your authentication device
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              {twoFactorData?.recoveryKeys.generated ? (
+                <div className="space-y-4">
+                  <div className="p-4 border rounded-lg">
+                    <div className="flex justify-between items-center mb-2">
+                      <h3 className="font-medium">Recovery Keys</h3>
+                      <Badge variant="outline">
+                        {twoFactorData.recoveryKeys.keysRemaining} of {twoFactorData.recoveryKeys.totalKeys} remaining
+                      </Badge>
+                    </div>
+                    <p className="text-sm text-muted-foreground mb-4">
+                      Generated on {new Date(twoFactorData.recoveryKeys.lastGenerated).toLocaleDateString()}
+                    </p>
+                    
+                    {showRecoveryKeys ? (
+                      <div className="mb-4">
+                        <div className="grid grid-cols-2 gap-2 mb-3">
+                          {recoveryKeys.map((key, index) => (
+                            <div key={index} className="font-mono text-sm p-2 bg-muted rounded">
+                              {key}
+                            </div>
+                          ))}
+                        </div>
+                        <Alert variant="destructive" className="mb-3">
+                          <AlertTriangle className="h-4 w-4" />
+                          <AlertTitle>Save these keys in a secure location</AlertTitle>
+                          <AlertDescription>
+                            Each key can only be used once. Keep them safe and accessible in case you lose access to your authentication methods.
+                          </AlertDescription>
+                        </Alert>
+                        <div className="flex justify-end">
+                          <Button variant="outline" onClick={() => setShowRecoveryKeys(false)}>
+                            Done
+                          </Button>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="flex flex-col space-y-2">
+                        <p className="text-sm">
+                          Your recovery keys are stored securely. You can view them at any time or generate new ones.
+                        </p>
+                        <div className="flex flex-wrap gap-2">
+                          <Button variant="outline" onClick={() => setShowRecoveryKeys(true)}>
+                            View Recovery Keys
+                          </Button>
+                          <Button variant="outline" onClick={generateRecoveryKeys}>
+                            Generate New Keys
+                          </Button>
+                        </div>
+                      </div>
+                    )}
+                  </div>
                 </div>
-                <div>
-                  <h3 className="text-md font-medium text-foreground">Something You Have</h3>
-                  <p className="text-sm text-muted-foreground">
-                    Requires a physical device (like your phone) to generate unique codes that expire quickly.
+              ) : (
+                <div className="flex flex-col items-center justify-center py-8 text-center">
+                  <KeySquare className="h-12 w-12 text-muted-foreground mb-4" />
+                  <h3 className="text-lg font-medium">No recovery keys generated</h3>
+                  <p className="text-muted-foreground mt-1 mb-4 max-w-md">
+                    Recovery keys let you access your account if you lose your authentication device. Generate keys to prevent being locked out.
                   </p>
+                  <Button variant="outline" onClick={generateRecoveryKeys}>
+                    <Plus className="h-4 w-4 mr-2" />
+                    Generate Recovery Keys
+                  </Button>
                 </div>
+              )}
+            </CardContent>
+          </Card>
+        </TabsContent>
+      </Tabs>
+
+      {/* Two-Factor Authentication Setup Dialog */}
+      <Dialog open={showSetupDialog} onOpenChange={setShowSetupDialog}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>
+              {setupStep === 1 && "Set Up Authenticator App"}
+              {setupStep === 2 && "Verify Setup"}
+              {setupStep === 3 && "Save Recovery Keys"}
+            </DialogTitle>
+            <DialogDescription>
+              {setupStep === 1 && "Scan the QR code with your authenticator app."}
+              {setupStep === 2 && "Enter the verification code from your authenticator app."}
+              {setupStep === 3 && "Save these recovery keys in a secure location."}
+            </DialogDescription>
+          </DialogHeader>
+
+          {setupStep === 1 && (
+            <div className="space-y-4 py-4">
+              <div className="flex justify-center">
+                <img 
+                  src={mockQrCodeUrl} 
+                  alt="QR Code for authenticator app" 
+                  className="w-48 h-48 border rounded-md"
+                />
               </div>
-              
-              <div className="flex gap-3">
-                <div className="min-w-[40px] flex-shrink-0 text-center">
-                  <KeyRound className="h-5 w-5 text-primary mx-auto" />
-                </div>
-                <div>
-                  <h3 className="text-md font-medium text-foreground">Enhanced Security</h3>
-                  <p className="text-sm text-muted-foreground">
-                    Even if someone knows your password, they can't access your account without the second factor.
-                  </p>
-                </div>
+              <div className="text-center mt-4">
+                <p className="text-sm text-muted-foreground mb-2">Or enter this code manually:</p>
+                <p className="font-mono bg-muted p-2 rounded text-center">JBSWY3DPEHPK3PXP</p>
               </div>
-              
-              <div className="flex gap-3">
-                <div className="min-w-[40px] flex-shrink-0 text-center">
-                  <AlertTriangle className="h-5 w-5 text-primary mx-auto" />
-                </div>
-                <div>
-                  <h3 className="text-md font-medium text-foreground">Critical for Admin Access</h3>
-                  <p className="text-sm text-muted-foreground">
-                    Protects sensitive administrator functions from unauthorized access and potential security breaches.
-                  </p>
-                </div>
+              <div className="flex justify-end mt-4">
+                <Button onClick={() => setSetupStep(2)}>
+                  Next
+                </Button>
               </div>
             </div>
-          </CardContent>
-        </Card>
-      </div>
+          )}
+
+          {setupStep === 2 && (
+            <div className="space-y-4 py-4">
+              <div className="space-y-2">
+                <Label htmlFor="verification-code">Verification Code</Label>
+                <Input 
+                  id="verification-code" 
+                  placeholder="Enter 6-digit code" 
+                  value={verificationCode}
+                  onChange={(e) => setVerificationCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
+                  className="font-mono text-center text-lg tracking-widest"
+                  maxLength={6}
+                />
+                <p className="text-sm text-muted-foreground">
+                  Enter the 6-digit code from your authenticator app.
+                </p>
+              </div>
+              <div className="flex justify-end mt-4">
+                <Button 
+                  onClick={handleVerifyCode}
+                  disabled={verificationCode.length !== 6}
+                >
+                  Verify
+                </Button>
+              </div>
+            </div>
+          )}
+
+          {setupStep === 3 && (
+            <div className="space-y-4 py-4">
+              <div className="space-y-2">
+                <div className="grid grid-cols-2 gap-2 mb-3">
+                  {recoveryKeys.map((key, index) => (
+                    <div key={index} className="font-mono text-sm p-2 bg-muted rounded">
+                      {key}
+                    </div>
+                  ))}
+                </div>
+                <Alert variant="destructive">
+                  <AlertTriangle className="h-4 w-4" />
+                  <AlertTitle>Keep these keys safe</AlertTitle>
+                  <AlertDescription>
+                    Store these recovery keys in a secure location. They're the only way to regain access if you lose your device.
+                  </AlertDescription>
+                </Alert>
+              </div>
+              <DialogFooter className="flex flex-col sm:flex-row sm:justify-between sm:space-x-2">
+                <Button variant="outline" onClick={() => setSetupStep(1)}>
+                  Start Over
+                </Button>
+                <Button onClick={handleFinishSetup}>
+                  <Check className="h-4 w-4 mr-2" />
+                  Finish Setup
+                </Button>
+              </DialogFooter>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </SecurityLayout>
   );
 }
