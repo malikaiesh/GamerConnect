@@ -67,9 +67,24 @@ const roleFormSchema = z.object({
   name: z.string().min(3, "Role name must be at least 3 characters"),
   description: z.string().optional().nullable(),
   // User management fields
-  addUser: z.boolean().optional(),
-  email: z.string().email("Invalid email address").optional(),
-  password: z.string().min(8, "Password must be at least 8 characters").optional(),
+  addUser: z.boolean().optional().default(false),
+  email: z.string().email("Invalid email address").optional()
+    .refine(email => !email || email.length > 0, {
+      message: "Email is required when creating a user"
+    }),
+  password: z.string().optional()
+    .refine(password => !password || password.length >= 8, {
+      message: "Password must be at least 8 characters"
+    }),
+}).refine(data => {
+  // If addUser is true, both email and password must be provided
+  if (data.addUser) {
+    return !!data.email && !!data.password;
+  }
+  return true;
+}, {
+  message: "Email and password are required when creating a user",
+  path: ["addUser"],
 });
 
 type RoleForm = z.infer<typeof roleFormSchema>;
@@ -151,11 +166,17 @@ export default function RolesPage() {
           id: selectedRole.id,
           name: selectedRole.name,
           description: selectedRole.description,
+          addUser: false,
+          email: "",
+          password: "",
         });
       } else {
         form.reset({
           name: "",
           description: "",
+          addUser: false,
+          email: "",
+          password: "",
         });
       }
     }
@@ -195,12 +216,16 @@ export default function RolesPage() {
   // Create Role Mutation
   const createRoleMutation = useMutation({
     mutationFn: async (data: RoleForm) => {
+      // Extract user data if present
+      const { addUser, email, password, ...roleData } = data;
+      
+      // Create the role
       const response = await fetch('/api/roles', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(data),
+        body: JSON.stringify(roleData),
       });
       
       if (!response.ok) {
@@ -208,7 +233,42 @@ export default function RolesPage() {
         throw new Error(error.message || "Failed to create role");
       }
       
-      return await response.json();
+      const createdRole = await response.json();
+      
+      // If user creation is enabled, create the user with this role
+      if (addUser && email && password) {
+        const userResponse = await fetch('/api/admin/users', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            email,
+            password,
+            roleId: createdRole.id,
+            // Use email as username if not specified
+            username: email.split('@')[0],
+            status: 'active',
+          }),
+        });
+        
+        if (!userResponse.ok) {
+          // Role was created but user creation failed
+          const userError = await userResponse.json();
+          toast({
+            title: "Partial Success",
+            description: `Role created but user creation failed: ${userError.message || "Unknown error"}`,
+            variant: "destructive",
+          });
+        } else {
+          toast({
+            title: "Success",
+            description: "Role and user created successfully",
+          });
+        }
+      }
+      
+      return createdRole;
     },
     onSuccess: () => {
       toast({
@@ -217,6 +277,10 @@ export default function RolesPage() {
       });
       setIsRoleDialogOpen(false);
       queryClient.invalidateQueries({ queryKey: ['/api/roles'] });
+      // Also invalidate users query if a user was created
+      if (form.getValues("addUser")) {
+        queryClient.invalidateQueries({ queryKey: ['/api/admin/users'] });
+      }
     },
     onError: (error: Error) => {
       toast({
