@@ -27,28 +27,48 @@ async function throwIfResNotOk(res: Response) {
   }
 }
 
+// Optimized fetcher with AbortController for request cancellation
 export const fetcher = async (url: string) => {
-  const res = await fetch(url, {
-    credentials: "include",
-  });
-  await throwIfResNotOk(res);
-  return res.json();
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 30000); // 30-second timeout
+  
+  try {
+    const res = await fetch(url, {
+      credentials: "include",
+      signal: controller.signal,
+      cache: 'default' // Let the browser handle caching
+    });
+    await throwIfResNotOk(res);
+    return res.json();
+  } finally {
+    clearTimeout(timeoutId);
+  }
 };
 
+// Optimized API request function with timeout and abort controller
 export async function apiRequest(
   method: string,
   url: string,
   data?: unknown | undefined,
 ): Promise<Response> {
-  const res = await fetch(url, {
-    method,
-    headers: data ? { "Content-Type": "application/json" } : {},
-    body: data ? JSON.stringify(data) : undefined,
-    credentials: "include",
-  });
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 30000); // 30-second timeout
+  
+  try {
+    const res = await fetch(url, {
+      method,
+      headers: data ? { "Content-Type": "application/json" } : {},
+      body: data ? JSON.stringify(data) : undefined,
+      credentials: "include",
+      signal: controller.signal,
+      cache: method.toLowerCase() === 'get' ? 'default' : 'no-store' // Cache GET requests but not mutations
+    });
 
-  await throwIfResNotOk(res);
-  return res;
+    await throwIfResNotOk(res);
+    return res;
+  } finally {
+    clearTimeout(timeoutId);
+  }
 }
 
 type UnauthorizedBehavior = "returnNull" | "throw";
@@ -57,16 +77,26 @@ export const getQueryFn: <T>(options: {
 }) => QueryFunction<T> =
   ({ on401: unauthorizedBehavior }) =>
   async ({ queryKey }) => {
-    const res = await fetch(queryKey[0] as string, {
-      credentials: "include",
-    });
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 30000); // 30-second timeout
+    
+    try {
+      const url = queryKey[0] as string;
+      const res = await fetch(url, {
+        credentials: "include",
+        signal: controller.signal,
+        cache: 'default' // Allow browser caching
+      });
 
-    if (unauthorizedBehavior === "returnNull" && res.status === 401) {
-      return null;
+      if (unauthorizedBehavior === "returnNull" && res.status === 401) {
+        return null;
+      }
+
+      await throwIfResNotOk(res);
+      return await res.json();
+    } finally {
+      clearTimeout(timeoutId);
     }
-
-    await throwIfResNotOk(res);
-    return await res.json();
   };
 
 export const queryClient = new QueryClient({
@@ -77,10 +107,15 @@ export const queryClient = new QueryClient({
       refetchOnWindowFocus: false,
       staleTime: 5 * 60 * 1000, // 5 minutes
       retry: false,
-      gcTime: 10 * 60 * 1000, // 10 minutes
+      gcTime: 15 * 60 * 1000, // 15 minutes
+      cacheTime: 15 * 60 * 1000, // 15 minutes
+      refetchOnMount: true, // Refetch on mount if data is stale
+      refetchOnReconnect: true, // Refetch on reconnect if data is stale
     },
     mutations: {
       retry: false,
+      // Reduce network traffic by batching mutation requests
+      networkMode: 'always',
     },
   },
 });

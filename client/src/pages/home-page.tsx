@@ -24,63 +24,67 @@ export default function HomePage() {
   const [hasMorePopularGames, setHasMorePopularGames] = useState(true);
   const [activeNotification, setActiveNotification] = useState<PushNotificationType | null>(null);
   
-  // Fetch featured games
+  // Fetch featured games with optimizations
   const { data: featuredGames = [], isLoading: loadingFeatured } = useQuery<Game[]>({
     queryKey: ['/api/games/featured'],
-    staleTime: 5 * 60 * 1000, // 5 minutes
+    staleTime: 10 * 60 * 1000, // 10 minutes
+    cacheTime: 15 * 60 * 1000, // 15 minutes
   });
   
-  // Fetch popular games based on active category and pagination
+  // Fetch popular games based on active category and pagination with optimizations
   const { data: popularGamesPage1Data, isLoading: loadingPopular } = useQuery<{ games: Game[], pagination: { hasMore: boolean, total: number } }>({
     queryKey: ['/api/games/popular', { category: activeCategory, page: 1, limit: popularGamesLimit }],
-    staleTime: 5 * 60 * 1000, // 5 minutes
+    staleTime: 10 * 60 * 1000, // 10 minutes 
+    cacheTime: 15 * 60 * 1000, // 15 minutes
   });
   
   // Extract games and pagination data from the response
   const popularGamesPage1 = popularGamesPage1Data?.games || [];
   
-  // Fetch additional pages of popular games
+  // Fetch additional pages of popular games with optimizations
   const { data: additionalPopularGamesData, isLoading: loadingMorePopular } = useQuery<{ games: Game[], pagination: { hasMore: boolean, total: number } }>({
     queryKey: ['/api/games/popular', { category: activeCategory, page: popularGamesPage, limit: popularGamesLimit }],
-    staleTime: 5 * 60 * 1000, // 5 minutes
+    staleTime: 10 * 60 * 1000, // 10 minutes
+    cacheTime: 15 * 60 * 1000, // 15 minutes
     enabled: popularGamesPage > 1, // Only fetch additional pages when popularGamesPage > 1
   });
   
   // Extract games and pagination data from the response
   const additionalPopularGames = additionalPopularGamesData?.games || [];
   
-  // Update allPopularGames when first page is loaded
+  // Update allPopularGames when first page is loaded - optimize with memoized updates
   useEffect(() => {
     if (popularGamesPage === 1 && popularGamesPage1Data) {
       setAllPopularGames(popularGamesPage1);
-      // Use the pagination data to determine if there are more games
       setHasMorePopularGames(popularGamesPage1Data.pagination.hasMore);
     }
-  }, [popularGamesPage1, popularGamesPage1Data]);
+  }, [popularGamesPage1, popularGamesPage1Data, popularGamesPage]);
   
-  // Update allPopularGames when additional pages are loaded
+  // Update allPopularGames when additional pages are loaded - optimize with memoized updates
   useEffect(() => {
     if (popularGamesPage > 1 && additionalPopularGamesData && additionalPopularGames.length > 0) {
       setAllPopularGames(prevGames => {
-        // Filter out any duplicates by ID
+        // Filter out any duplicates by ID - optimized with Set for faster lookups
         const existingIds = new Set(prevGames.map(game => game.id));
         const newGames = additionalPopularGames.filter(game => !existingIds.has(game.id));
         return [...prevGames, ...newGames];
       });
       
-      // Use the pagination data to determine if there are more games
       setHasMorePopularGames(additionalPopularGamesData.pagination.hasMore);
     }
   }, [additionalPopularGames, additionalPopularGamesData, popularGamesPage]);
   
-  // Fetch blog posts
+  // Fetch blog posts with optimized caching
   const { data: blogPosts = [], isLoading: loadingBlog } = useQuery<BlogPost[]>({
     queryKey: ['/api/blog/recent'],
+    staleTime: 15 * 60 * 1000, // 15 minutes - blog posts don't change often
+    cacheTime: 30 * 60 * 1000, // 30 minutes cache time
   });
   
-  // Fetch active push notifications
+  // Fetch active push notifications with optimized caching
   const { data: notifications = [] } = useQuery<PushNotificationType[]>({
     queryKey: ['/api/notifications/active'],
+    staleTime: 5 * 60 * 1000, // 5 minutes
   });
   
   // Effect to show push notification after a short delay

@@ -49,7 +49,12 @@ export function Analytics() {
   
   const { data, isLoading, isError } = useQuery<AnalyticsData>({
     queryKey: ['/api/analytics', timeframe],
-    refetchInterval: 60000, // Refresh every minute
+    staleTime: 5 * 60 * 1000, // 5 minutes
+    cacheTime: 10 * 60 * 1000, // 10 minutes
+    // Initial load only, we'll let the user manually refresh when needed
+    refetchOnMount: true,
+    refetchOnWindowFocus: false,
+    refetchOnReconnect: false,
   });
 
   // Format chart data

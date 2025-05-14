@@ -6,17 +6,23 @@ import { Game, BlogPost } from "@shared/schema";
 import { Circle, ArrowUpRight, TrendingUp, BarChart, Users, Gamepad2, Newspaper } from "lucide-react";
 
 export default function AdminDashboard() {
-  // Fetch summary data
+  // Fetch summary data with optimized caching
   const { data: gameStats, isLoading: loadingGames } = useQuery({
     queryKey: ['/api/games/stats'],
+    staleTime: 5 * 60 * 1000, // 5 minutes
+    cacheTime: 10 * 60 * 1000, // 10 minutes
   });
 
   const { data: blogStats, isLoading: loadingBlog } = useQuery({
     queryKey: ['/api/blog/stats'],
+    staleTime: 5 * 60 * 1000, // 5 minutes
+    cacheTime: 10 * 60 * 1000, // 10 minutes
   });
 
   const { data: userStats, isLoading: loadingUsers } = useQuery({
     queryKey: ['/api/users/stats'],
+    staleTime: 5 * 60 * 1000, // 5 minutes
+    cacheTime: 10 * 60 * 1000, // 10 minutes
   });
 
   return (
