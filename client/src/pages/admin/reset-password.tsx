@@ -1,128 +1,91 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useLocation } from 'wouter';
 import { z } from 'zod';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useToast } from '@/hooks/use-toast';
-import { Button } from '@/components/ui/button';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
-import { Loader2, ArrowLeft, KeyRound, Check } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Loader2, KeyRound, ArrowLeft } from 'lucide-react';
 import { apiRequest } from '@/lib/queryClient';
 
-// Password reset schema
-const resetPasswordSchema = z.object({
+// Reset password schema for admins
+const adminResetPasswordSchema = z.object({
+  token: z.string().min(1, 'Token is required'),
   password: z.string()
-    .min(8, { message: 'Password must be at least 8 characters' })
-    .regex(/[A-Z]/, { message: 'Password must contain at least one uppercase letter' })
-    .regex(/[0-9]/, { message: 'Password must contain at least one number' }),
+    .min(8, { message: 'Password must be at least 8 characters long' })
+    .max(100)
+    .regex(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/, {
+      message: 'Password must contain at least one uppercase letter, one lowercase letter, and one number'
+    }),
   confirmPassword: z.string()
-}).refine(data => data.password === data.confirmPassword, {
+}).refine((data) => data.password === data.confirmPassword, {
   message: 'Passwords do not match',
   path: ['confirmPassword']
 });
 
-type ResetPasswordValues = z.infer<typeof resetPasswordSchema>;
+type AdminResetPasswordValues = z.infer<typeof adminResetPasswordSchema>;
 
 export default function AdminResetPasswordPage() {
-  const [location, setLocation] = useLocation();
+  const [, setLocation] = useLocation();
   const { toast } = useToast();
-  const [token, setToken] = useState<string | null>(null);
-  const [isValidating, setIsValidating] = useState(true);
-  const [isTokenValid, setIsTokenValid] = useState(false);
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  
+  const [isLoading, setIsLoading] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
 
-  // Initialize form
-  const form = useForm<ResetPasswordValues>({
-    resolver: zodResolver(resetPasswordSchema),
+  // Initialize form with token from URL
+  const form = useForm<AdminResetPasswordValues>({
+    resolver: zodResolver(adminResetPasswordSchema),
     defaultValues: {
+      token: new URLSearchParams(window.location.search).get('token') || '',
       password: '',
       confirmPassword: ''
     }
   });
 
-  // Extract token from URL query params
-  useEffect(() => {
-    const searchParams = new URLSearchParams(window.location.search);
-    const tokenParam = searchParams.get('token');
-    
-    if (!tokenParam) {
-      toast({
-        title: 'Missing reset token',
-        description: 'The password reset link is invalid or has expired.',
-        variant: 'destructive'
-      });
-      setIsValidating(false);
-      return;
-    }
-
-    setToken(tokenParam);
-    validateToken(tokenParam);
-  }, []);
-
-  // Validate token
-  const validateToken = async (token: string) => {
-    try {
-      const response = await apiRequest('POST', '/api/auth/reset/validate-token', {
-        token,
-        isAdmin: true
-      });
-      
-      const data = await response.json();
-      
-      if (data.success) {
-        setIsTokenValid(true);
-      } else {
-        toast({
-          title: 'Invalid token',
-          description: 'The password reset link is invalid or has expired.',
-          variant: 'destructive'
-        });
-      }
-    } catch (error) {
-      console.error('Error validating token:', error);
-      toast({
-        title: 'Error',
-        description: 'There was a problem validating your reset token. Please try again.',
-        variant: 'destructive'
-      });
-    } finally {
-      setIsValidating(false);
-    }
-  };
-
-  // Submit password reset
-  const onSubmit = async (values: ResetPasswordValues) => {
-    if (!token) return;
-    
-    setIsSubmitting(true);
+  const onSubmit = async (values: AdminResetPasswordValues) => {
+    setIsLoading(true);
     
     try {
       const response = await apiRequest('POST', '/api/auth/reset/reset-password', {
-        token,
+        token: values.token,
         password: values.password,
         isAdmin: true
       });
       
       const data = await response.json();
       
-      if (data.success) {
+      if (response.ok) {
         setIsSuccess(true);
         toast({
-          title: 'Password reset successful',
-          description: 'Your password has been reset successfully. You can now log in with your new password.',
+          title: 'Password Reset Successful',
+          description: 'Your password has been reset. You can now log in with your new password.',
           variant: 'default'
         });
         
-        // Redirect to admin login after 3 seconds
+        // Redirect to login page after 3 seconds
         setTimeout(() => {
-          setLocation('/admin/login');
+          setLocation('/auth');
         }, 3000);
       } else {
         toast({
-          title: 'Reset failed',
+          title: 'Password Reset Failed',
           description: data.message || 'Failed to reset password. Please try again.',
           variant: 'destructive'
         });
@@ -131,85 +94,69 @@ export default function AdminResetPasswordPage() {
       console.error('Error resetting password:', error);
       toast({
         title: 'Error',
-        description: 'There was a problem resetting your password. Please try again.',
+        description: 'An error occurred while resetting your password. Please try again.',
         variant: 'destructive'
       });
     } finally {
-      setIsSubmitting(false);
+      setIsLoading(false);
     }
   };
 
-  // Handle go back to login
-  const handleGoBack = () => {
-    setLocation('/admin/login');
-  };
-
-  if (isValidating) {
-    return (
-      <div className="flex justify-center items-center min-h-screen bg-background p-4">
-        <Card className="w-full max-w-md">
-          <CardHeader className="space-y-1">
-            <CardTitle className="text-2xl font-bold text-center">Admin Password Reset</CardTitle>
-            <CardDescription className="text-center">Validating your reset token...</CardDescription>
-          </CardHeader>
-          <CardContent className="flex justify-center py-6">
-            <Loader2 className="h-8 w-8 animate-spin text-primary" />
-          </CardContent>
-        </Card>
-      </div>
-    );
-  }
-
-  if (!isTokenValid && !isValidating) {
-    return (
-      <div className="flex justify-center items-center min-h-screen bg-background p-4">
-        <Card className="w-full max-w-md">
-          <CardHeader className="space-y-1">
-            <CardTitle className="text-2xl font-bold text-center">Invalid Token</CardTitle>
-            <CardDescription className="text-center">
-              The password reset link is invalid or has expired. Please request a new one.
-            </CardDescription>
-          </CardHeader>
-          <CardFooter>
-            <Button className="w-full" onClick={handleGoBack}>
-              <ArrowLeft className="mr-2 h-4 w-4" /> Back to Admin Login
-            </Button>
-          </CardFooter>
-        </Card>
-      </div>
-    );
-  }
-
+  // Success state
   if (isSuccess) {
     return (
-      <div className="flex justify-center items-center min-h-screen bg-background p-4">
+      <div className="flex items-center justify-center min-h-screen bg-slate-50 dark:bg-slate-900">
         <Card className="w-full max-w-md">
-          <CardHeader className="space-y-1">
-            <CardTitle className="text-2xl font-bold text-center">Password Reset Successful</CardTitle>
-            <CardDescription className="text-center">
-              Your admin password has been reset successfully. You will be redirected to the login page.
-            </CardDescription>
+          <CardHeader className="text-center">
+            <CardTitle>Admin Password Reset Successful</CardTitle>
+            <CardDescription>Your password has been reset successfully.</CardDescription>
           </CardHeader>
-          <CardContent className="flex justify-center py-6">
-            <Check className="h-16 w-16 text-green-500" />
+          <CardContent className="text-center">
+            <p>You will be redirected to the login page in a few seconds.</p>
           </CardContent>
-          <CardFooter>
-            <Button className="w-full" onClick={handleGoBack}>
-              <ArrowLeft className="mr-2 h-4 w-4" /> Go to Admin Login
-            </Button>
+          <CardFooter className="flex justify-center">
+            <Button onClick={() => setLocation('/auth')}>Go to Login</Button>
           </CardFooter>
         </Card>
       </div>
     );
   }
 
+  // Invalid or missing token
+  if (!form.getValues().token) {
+    return (
+      <div className="flex items-center justify-center min-h-screen bg-slate-50 dark:bg-slate-900">
+        <Card className="w-full max-w-md">
+          <CardHeader className="text-center">
+            <CardTitle className="text-red-600">Invalid Reset Link</CardTitle>
+            <CardDescription>
+              No reset token provided. Please use the link from your email.
+            </CardDescription>
+          </CardHeader>
+          <CardFooter className="flex justify-center">
+            <Button onClick={() => setLocation('/auth')}>Return to Login</Button>
+          </CardFooter>
+        </Card>
+      </div>
+    );
+  }
+
+  // Reset password form
   return (
-    <div className="flex justify-center items-center min-h-screen bg-background p-4">
-      <Card className="w-full max-w-md border border-border">
-        <CardHeader className="space-y-1">
-          <CardTitle className="text-2xl font-bold text-center">Reset Admin Password</CardTitle>
-          <CardDescription className="text-center">
-            Create a new password for your admin account
+    <div className="flex items-center justify-center min-h-screen bg-slate-50 dark:bg-slate-900">
+      <Card className="w-full max-w-md">
+        <CardHeader>
+          <Button 
+            variant="ghost" 
+            className="mb-4 p-0 h-auto" 
+            onClick={() => setLocation('/auth')}
+          >
+            <ArrowLeft className="h-4 w-4 mr-2" />
+            Back to Login
+          </Button>
+          <CardTitle>Reset Admin Password</CardTitle>
+          <CardDescription>
+            Enter a new password for your admin account
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -222,12 +169,13 @@ export default function AdminResetPasswordPage() {
                   <FormItem>
                     <FormLabel>New Password</FormLabel>
                     <FormControl>
-                      <Input type="password" placeholder="••••••••" {...field} />
+                      <Input type="password" placeholder="Enter your new password" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
               />
+              
               <FormField
                 control={form.control}
                 name="confirmPassword"
@@ -235,16 +183,17 @@ export default function AdminResetPasswordPage() {
                   <FormItem>
                     <FormLabel>Confirm Password</FormLabel>
                     <FormControl>
-                      <Input type="password" placeholder="••••••••" {...field} />
+                      <Input type="password" placeholder="Confirm your new password" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
               />
-              <Button type="submit" className="w-full" disabled={isSubmitting}>
-                {isSubmitting ? (
+              
+              <Button type="submit" className="w-full" disabled={isLoading}>
+                {isLoading ? (
                   <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Resetting Password
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Resetting Password...
                   </>
                 ) : (
                   <>
@@ -255,11 +204,6 @@ export default function AdminResetPasswordPage() {
             </form>
           </Form>
         </CardContent>
-        <CardFooter className="flex justify-center">
-          <Button variant="ghost" onClick={handleGoBack}>
-            <ArrowLeft className="mr-2 h-4 w-4" /> Back to Admin Login
-          </Button>
-        </CardFooter>
       </Card>
     </div>
   );

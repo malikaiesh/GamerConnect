@@ -108,7 +108,7 @@ export interface IStorage {
   updateUser(id: number, userData: Partial<InsertUser>): Promise<User | null>;
   updateUserLastLogin(id: number): Promise<void>;
   updateUserStatus(id: number, status: 'active' | 'blocked'): Promise<User | null>;
-  getUsersByStatus(status: 'active' | 'blocked', options?: { page?: number, limit?: number }): Promise<{ users: User[], total: number, totalPages: number }>;
+  getUsersByStatus(status: 'active' | 'blocked' | undefined, options?: { page?: number, limit?: number, search?: string }): Promise<{ users: User[], total: number, totalPages: number }>;
   getNewUsers(days?: number): Promise<User[]>;
   getUsersByCountry(): Promise<{ country: string, count: number }[]>;
   getUserStats(): Promise<{
