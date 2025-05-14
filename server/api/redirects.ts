@@ -15,15 +15,14 @@ export function registerUrlRedirectRoutes(app: Express) {
       const search = req.query.search as string | undefined;
       
       const result = await storage.getUrlRedirects({ page, limit, search });
-      const { redirects, total } = result;
       
       return res.status(200).json({
-        redirects,
+        redirects: result.redirects,
         pagination: {
-          total,
+          total: result.total,
           page,
           limit,
-          totalPages: Math.ceil(total / limit)
+          totalPages: result.totalPages
         }
       });
     } catch (error) {
@@ -59,7 +58,7 @@ export function registerUrlRedirectRoutes(app: Express) {
       const validatedData = urlRedirectInsertSchema.parse(req.body);
       
       // Create the redirect
-      const newRedirect = await storage.createRedirect(validatedData);
+      const newRedirect = await storage.createUrlRedirect(validatedData);
       
       return res.status(201).json(newRedirect);
     } catch (error) {
@@ -80,7 +79,7 @@ export function registerUrlRedirectRoutes(app: Express) {
       }
 
       // Check if redirect exists
-      const existingRedirect = await storage.getRedirect(id);
+      const existingRedirect = await storage.getUrlRedirectById(id);
       if (!existingRedirect) {
         return res.status(404).json({ error: 'Redirect not found' });
       }
@@ -89,7 +88,7 @@ export function registerUrlRedirectRoutes(app: Express) {
       const validatedData = urlRedirectUpdateSchema.parse(req.body);
       
       // Update the redirect
-      const updatedRedirect = await storage.updateRedirect(id, validatedData);
+      const updatedRedirect = await storage.updateUrlRedirect(id, validatedData);
       
       return res.status(200).json(updatedRedirect);
     } catch (error) {
@@ -110,13 +109,13 @@ export function registerUrlRedirectRoutes(app: Express) {
       }
 
       // Check if redirect exists
-      const existingRedirect = await storage.getRedirect(id);
+      const existingRedirect = await storage.getUrlRedirectById(id);
       if (!existingRedirect) {
         return res.status(404).json({ error: 'Redirect not found' });
       }
 
       // Delete the redirect
-      await storage.deleteRedirect(id);
+      await storage.deleteUrlRedirect(id);
       
       return res.status(200).json({ message: 'Redirect deleted successfully' });
     } catch (error) {
@@ -134,15 +133,13 @@ export function registerUrlRedirectRoutes(app: Express) {
       }
 
       // Check if redirect exists
-      const existingRedirect = await storage.getRedirect(id);
+      const existingRedirect = await storage.getUrlRedirectById(id);
       if (!existingRedirect) {
         return res.status(404).json({ error: 'Redirect not found' });
       }
 
       // Toggle the active status
-      const updatedRedirect = await storage.updateRedirect(id, {
-        isActive: !existingRedirect.isActive
-      });
+      const updatedRedirect = await storage.toggleUrlRedirectStatus(id);
       
       return res.status(200).json(updatedRedirect);
     } catch (error) {
