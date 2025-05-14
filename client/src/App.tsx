@@ -13,7 +13,8 @@ import { useAuth } from "@/hooks/use-auth";
 // Core components - eagerly loaded for best performance
 import HomePage from "@/pages/home-page";
 import NotFound from "@/pages/not-found";
-import AdminResetPasswordPage from "@/pages/admin/reset-password";
+// Admin pages
+const AdminResetPasswordPage = lazy(() => import("@/pages/admin/security/reset-password"));
 
 // Loading fallback for lazy-loaded components
 const LoadingFallback = () => (
@@ -268,6 +269,11 @@ function Router() {
       <Route path="/admin/security/settings">
         <ProtectedRoute adminOnly={true}>
           <Suspense fallback={<LoadingFallback />}><AdminSecuritySettingsPage /></Suspense>
+        </ProtectedRoute>
+      </Route>
+      <Route path="/admin/security/reset-password">
+        <ProtectedRoute adminOnly={true}>
+          <Suspense fallback={<LoadingFallback />}><AdminResetPasswordPage /></Suspense>
         </ProtectedRoute>
       </Route>
       
