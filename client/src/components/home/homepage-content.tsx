@@ -163,10 +163,10 @@ export function HomepageContent() {
             {renderContent(content.content, !!expanded[content.id])}
             <div className="flex justify-center mt-6">
               <Button 
-                variant="outline" 
+                variant="default" 
                 size="sm"
                 onClick={() => toggleExpanded(content.id)}
-                className="flex items-center gap-1"
+                className="flex items-center gap-1 bg-green-600 hover:bg-green-700"
               >
                 {expanded[content.id] ? (
                   <>
@@ -188,8 +188,8 @@ export function HomepageContent() {
       {hasMoreContent && (
         <div className="flex justify-center mt-4 mb-8">
           <Button 
-            variant="outline" 
-            className="px-6 flex items-center gap-2"
+            variant="default" 
+            className="px-6 flex items-center gap-2 bg-purple-600 hover:bg-purple-700"
             onClick={loadMoreContent}
             disabled={isLoading}
           >
@@ -201,7 +201,7 @@ export function HomepageContent() {
             ) : (
               <>
                 <Plus className="h-4 w-4" />
-                Load More Content
+                Load More Content ↓
               </>
             )}
           </Button>
