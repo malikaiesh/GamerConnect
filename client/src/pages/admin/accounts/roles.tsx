@@ -5,6 +5,7 @@ import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useToast } from "@/hooks/use-toast";
+import AdminNavigation from "@/components/admin/navigation";
 import { 
   Card, 
   CardContent, 
@@ -534,14 +535,16 @@ export default function RolesPage() {
   };
 
   return (
-    <div className="container mx-auto py-6">
-      <div className="flex justify-between items-center mb-6">
-        <div>
-          <h1 className="text-3xl font-bold">Roles & Permissions</h1>
-          <p className="text-gray-500 dark:text-gray-400">
-            Manage roles and assign permissions to control access to different parts of the system
-          </p>
-        </div>
+    <div className="flex min-h-screen bg-background">
+      <AdminNavigation />
+      <div className="flex-1 p-6 lg:p-10">
+        <div className="flex justify-between items-center mb-6">
+          <div>
+            <h1 className="text-3xl font-bold text-foreground">Roles & Permissions</h1>
+            <p className="text-muted-foreground">
+              Manage roles and assign permissions to control access to different parts of the system
+            </p>
+          </div>
         <Button onClick={openCreateRoleDialog} className="gap-2">
           <Plus size={16} /> Add Role
         </Button>
