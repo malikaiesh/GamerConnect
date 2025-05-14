@@ -274,6 +274,11 @@ export default function HomePage() {
             </div>
           </div>
           
+          {/* Game Categories Filter */}
+          <div className="mb-8">
+            <GameFilters onFilter={handleCategoryChange} activeCategory={activeCategory} />
+          </div>
+          
           {/* Show loading state separately for additional pages */}
           {popularGamesPage > 1 && loadingMorePopular && (
             <div className="flex justify-center my-4">

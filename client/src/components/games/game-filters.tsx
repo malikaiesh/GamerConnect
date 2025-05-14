@@ -48,18 +48,18 @@ export function GameFilters({ onFilter, activeCategory }: GameFiltersProps) {
   }
   
   return (
-    <div id="categories" className="bg-card/60 backdrop-blur-sm sticky top-16 md:top-20 z-30 shadow-md py-2">
-      <div className="container mx-auto px-4">
+    <div id="categories" className="bg-card/60 rounded-lg py-2">
+      <div className="container mx-auto">
         <div 
           id="category-container"
           className={`overflow-x-auto whitespace-nowrap py-2 ${scrollable ? 'scrollbar-hide' : ''}`}
         >
-          <div className="flex space-x-2 md:space-x-4">
+          <div className="flex space-x-3 md:space-x-4">
             <button 
               onClick={() => onFilter('all')}
               className={activeCategory === 'all' 
-                ? 'bg-primary text-white px-4 py-1.5 rounded-full text-sm font-medium' 
-                : 'bg-muted/70 hover:bg-muted text-foreground px-4 py-1.5 rounded-full text-sm font-medium'}
+                ? 'bg-primary text-white px-5 py-2 rounded-full text-sm font-medium transition-all duration-200 shadow-md' 
+                : 'bg-muted/70 hover:bg-muted/90 text-foreground px-5 py-2 rounded-full text-sm font-medium transition-all duration-200 hover:shadow-sm'}
             >
               All Games
             </button>
@@ -69,8 +69,8 @@ export function GameFilters({ onFilter, activeCategory }: GameFiltersProps) {
                 key={category}
                 onClick={() => onFilter(category)}
                 className={activeCategory === category 
-                  ? 'bg-primary text-white px-4 py-1.5 rounded-full text-sm font-medium' 
-                  : 'bg-muted/70 hover:bg-muted text-foreground px-4 py-1.5 rounded-full text-sm font-medium'}
+                  ? 'bg-primary text-white px-5 py-2 rounded-full text-sm font-medium transition-all duration-200 shadow-md' 
+                  : 'bg-muted/70 hover:bg-muted/90 text-foreground px-5 py-2 rounded-full text-sm font-medium transition-all duration-200 hover:shadow-sm'}
               >
                 {category}
               </button>
