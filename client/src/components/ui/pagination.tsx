@@ -1,19 +1,99 @@
 import { Button } from "@/components/ui/button";
 import { ChevronLeft, ChevronRight, MoreHorizontal } from "lucide-react";
+import * as React from "react";
 
-interface PaginationProps {
+// Shadcn-style named exports
+export interface PaginationProps extends React.ComponentProps<"nav"> {
+  className?: string;
+}
+
+export function Pagination({ className, ...props }: PaginationProps) {
+  return (
+    <nav
+      role="navigation"
+      aria-label="pagination"
+      className={className}
+      {...props}
+    />
+  )
+}
+
+export interface PaginationContentProps extends React.ComponentProps<"ul"> {
+  className?: string;
+}
+
+export function PaginationContent({
+  className,
+  ...props
+}: PaginationContentProps) {
+  return (
+    <ul className="flex flex-row items-center gap-1">
+      {props.children}
+    </ul>
+  )
+}
+
+export interface PaginationItemProps extends React.ComponentProps<"li"> {
+  className?: string;
+}
+
+export function PaginationItem({
+  className,
+  ...props
+}: PaginationItemProps) {
+  return (
+    <li className={className} {...props} />
+  )
+}
+
+export function PaginationPrevious({
+  className,
+  ...props
+}: React.ComponentProps<typeof Button>) {
+  return (
+    <Button
+      aria-label="Go to previous page"
+      size="icon"
+      variant="outline"
+      className={className}
+      {...props}
+    >
+      <ChevronLeft className="h-4 w-4" />
+    </Button>
+  )
+}
+
+export function PaginationNext({
+  className,
+  ...props
+}: React.ComponentProps<typeof Button>) {
+  return (
+    <Button
+      aria-label="Go to next page"
+      size="icon"
+      variant="outline"
+      className={className}
+      {...props}
+    >
+      <ChevronRight className="h-4 w-4" />
+    </Button>
+  )
+}
+
+// Keep our original pagination component as default export
+interface PaginationComponentProps {
   currentPage: number;
   totalPages: number;
   onPageChange: (page: number) => void;
   maxVisiblePages?: number;
 }
 
-export default function Pagination({
+export default function PaginationComponent({
   currentPage,
   totalPages,
   onPageChange,
   maxVisiblePages = 5,
-}: PaginationProps) {
+}: PaginationComponentProps) {
   if (totalPages <= 1) return null;
 
   // Logic to determine which page numbers to show
@@ -64,51 +144,55 @@ export default function Pagination({
   }
 
   return (
-    <nav className="flex justify-center items-center gap-1">
-      <Button
-        variant="outline"
-        size="icon"
-        onClick={() => onPageChange(currentPage - 1)}
-        disabled={currentPage === 1}
-        aria-label="Previous page"
-      >
-        <ChevronLeft className="h-4 w-4" />
-      </Button>
+    <Pagination className="flex justify-center items-center gap-1">
+      <PaginationItem>
+        <Button
+          variant="outline"
+          size="icon"
+          onClick={() => onPageChange(currentPage - 1)}
+          disabled={currentPage === 1}
+          aria-label="Previous page"
+        >
+          <ChevronLeft className="h-4 w-4" />
+        </Button>
+      </PaginationItem>
       
-      {pages.map((page, index) => 
-        page === 'ellipsis' ? (
-          <Button
-            key={`ellipsis-${index}`}
-            variant="outline"
-            size="icon"
-            disabled
-            className="cursor-default"
-          >
-            <MoreHorizontal className="h-4 w-4" />
-          </Button>
-        ) : (
-          <Button
-            key={page}
-            variant={currentPage === page ? "default" : "outline"}
-            size="icon"
-            onClick={() => onPageChange(page)}
-            aria-label={`Page ${page}`}
-            aria-current={currentPage === page ? "page" : undefined}
-          >
-            {page}
-          </Button>
-        )
-      )}
+      {pages.map((page, index) => (
+        <PaginationItem key={page === 'ellipsis' ? `ellipsis-${index}` : page}>
+          {page === 'ellipsis' ? (
+            <Button
+              variant="outline"
+              size="icon"
+              disabled
+              className="cursor-default"
+            >
+              <MoreHorizontal className="h-4 w-4" />
+            </Button>
+          ) : (
+            <Button
+              variant={currentPage === page ? "default" : "outline"}
+              size="icon"
+              onClick={() => onPageChange(page)}
+              aria-label={`Page ${page}`}
+              aria-current={currentPage === page ? "page" : undefined}
+            >
+              {page}
+            </Button>
+          )}
+        </PaginationItem>
+      ))}
       
-      <Button
-        variant="outline"
-        size="icon"
-        onClick={() => onPageChange(currentPage + 1)}
-        disabled={currentPage === totalPages}
-        aria-label="Next page"
-      >
-        <ChevronRight className="h-4 w-4" />
-      </Button>
-    </nav>
+      <PaginationItem>
+        <Button
+          variant="outline"
+          size="icon"
+          onClick={() => onPageChange(currentPage + 1)}
+          disabled={currentPage === totalPages}
+          aria-label="Next page"
+        >
+          <ChevronRight className="h-4 w-4" />
+        </Button>
+      </PaginationItem>
+    </Pagination>
   );
 }
