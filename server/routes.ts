@@ -14,6 +14,7 @@ import { registerApiKeyRoutes } from "./api/apiKeys";
 import { registerHomeAdsRoutes } from "./api/homeAds";
 import { registerSitemapRoutes } from "./api/sitemapRoutes";
 import { registerUserRoutes } from "./api/users";
+import { registerUrlRedirectRoutes } from "./api/redirects";
 import pushNotificationsRoutes from "./api/push-notifications";
 import { registerRoleRoutes } from "./api/roles";
 import { registerPermissionRoutes } from "./api/permissions";
@@ -26,6 +27,7 @@ import { eq } from "drizzle-orm";
 import fs from "fs/promises";
 import path from "path";
 import { initializeSendGrid } from "./services/email-service";
+import { handleUrlRedirects } from "./middleware/redirects";
 
 // Function to check if application is installed
 async function isInstalled(): Promise<boolean> {
@@ -97,6 +99,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // Add installation check middleware
   app.use(installationCheckMiddleware);
+  
+  // Add URL redirection middleware (must be after installation check but before other routes)
+  app.use(handleUrlRedirects);
   
   // Register installation routes - must be before other routes
   registerInstallRoutes(app);
