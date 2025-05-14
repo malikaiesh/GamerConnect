@@ -112,6 +112,7 @@ function Router() {
       <ProtectedRoute path="/admin/security/two-factor" component={SecurityTwoFactorPage} adminOnly={true} />
       <ProtectedRoute path="/admin/security/logs" component={SecurityLogsPage} adminOnly={true} />
       <ProtectedRoute path="/admin/security/settings" component={SecuritySettingsPage} adminOnly={true} />
+      <ProtectedRoute path="/admin/security/reset-password" component={SecurityResetPasswordPage} adminOnly={true} />
       
       {/* Fallback to 404 */}
       <Route component={NotFound} />

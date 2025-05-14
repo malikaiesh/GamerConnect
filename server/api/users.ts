@@ -240,4 +240,19 @@ export function registerUserRoutes(app: Express) {
       return res.status(500).json({ message: 'Failed to fetch map data' });
     }
   });
+  
+  // Get user emails for admin reset password functionality
+  app.get('/api/admin/users/emails', async (req: Request, res: Response) => {
+    if (!req.isAuthenticated() || !req.user.isAdmin) {
+      return res.status(403).json({ message: "Insufficient permissions" });
+    }
+    
+    try {
+      const userEmails = await storage.getUsersWithEmail();
+      return res.json(userEmails);
+    } catch (error) {
+      console.error('Error fetching user emails:', error);
+      return res.status(500).json({ message: 'Failed to fetch user emails' });
+    }
+  });
 }

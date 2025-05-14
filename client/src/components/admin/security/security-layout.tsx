@@ -6,7 +6,8 @@ import {
   Smartphone, 
   Clock, 
   Settings, 
-  ArrowLeft 
+  ArrowLeft,
+  KeyRound
 } from 'lucide-react';
 
 export interface SecurityLayoutProps {
@@ -61,6 +62,16 @@ export default function SecurityLayout({ children, title, description }: Securit
               >
                 <Settings className="h-4 w-4 mr-2" />
                 Security Settings
+              </Button>
+            </Link>
+            <Link href="/admin/security/reset-password">
+              <Button 
+                variant={location === "/admin/security/reset-password" ? "secondary" : "ghost"}
+                size="sm"
+                className="w-full justify-start"
+              >
+                <KeyRound className="h-4 w-4 mr-2" />
+                Password Reset
               </Button>
             </Link>
           </nav>
