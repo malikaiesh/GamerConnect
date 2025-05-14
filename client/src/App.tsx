@@ -55,8 +55,11 @@ const AdminSitemapsPage = lazy(() => import("@/pages/admin/sitemaps-page"));
 const AdminBlogAdsPage = lazy(() => import("@/pages/admin/blog-ads-page"));
 const AdminCustomCodePage = lazy(() => import("@/pages/admin/custom-code-page"));
 const AdsTxtPage = lazy(() => import("@/pages/admin/ads-txt-page"));
+// Admin accounts pages
 const AdminUsersPage = lazy(() => import("@/pages/admin/accounts/users"));
 const AdminRolesPage = lazy(() => import("@/pages/admin/accounts/roles"));
+const AdminSignupsPage = lazy(() => import("@/pages/admin/accounts/signups"));
+const AdminLocationsPage = lazy(() => import("@/pages/admin/accounts/locations"));
 
 // Admin Helper Navigation
 const AdminHelperNav = () => {
@@ -220,6 +223,16 @@ function Router() {
       <Route path="/admin/accounts/roles">
         <ProtectedRoute adminOnly={true}>
           <Suspense fallback={<LoadingFallback />}><AdminRolesPage /></Suspense>
+        </ProtectedRoute>
+      </Route>
+      <Route path="/admin/accounts/signups">
+        <ProtectedRoute adminOnly={true}>
+          <Suspense fallback={<LoadingFallback />}><AdminSignupsPage /></Suspense>
+        </ProtectedRoute>
+      </Route>
+      <Route path="/admin/accounts/locations">
+        <ProtectedRoute adminOnly={true}>
+          <Suspense fallback={<LoadingFallback />}><AdminLocationsPage /></Suspense>
         </ProtectedRoute>
       </Route>
       
