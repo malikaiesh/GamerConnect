@@ -32,21 +32,59 @@ import { z } from "zod";
 import { SiteSetting } from "@shared/schema";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 
+// Custom URL validator that allows empty strings or valid URLs
+const urlSchema = z.string()
+  .refine(
+    val => !val || val === "" || /^https?:\/\//.test(val),
+    { message: "Must be a valid URL starting with http:// or https://" }
+  )
+  .optional()
+  .nullable();
+
 const generalSettingsSchema = z.object({
-  siteTitle: z.string().min(2, "Site title must be at least 2 characters"),
-  metaDescription: z.string().max(160, "Meta description should be at most 160 characters"),
+  siteTitle: z.string().min(3, "Site title must be at least 3 characters"),
+  metaDescription: z.string().min(10, "Meta description must be at least 10 characters").max(160, "Meta description should be at most 160 characters"),
   keywords: z.string(),
-  siteLogo: z.string().optional().nullable(),
-  siteFavicon: z.string().optional().nullable(),
-  useTextLogo: z.boolean().default(false),
-  textLogoColor: z.string().optional(),
-  currentTheme: z.string().optional(),
+  siteLogo: urlSchema,
+  siteFavicon: urlSchema,
+  useTextLogo: z.boolean().default(true),
+  textLogoColor: z.string().optional().default('#4f46e5'),
+  currentTheme: z.string(),
+  adsTxt: z.string().optional(),
+  
+  // Footer settings
   footerCopyright: z.string().optional(),
-  socialFacebook: z.string().optional().nullable(),
-  socialTwitter: z.string().optional().nullable(),
-  socialInstagram: z.string().optional().nullable(),
-  socialYoutube: z.string().optional().nullable(),
-  socialDiscord: z.string().optional().nullable(),
+  footerAppStoreLink: urlSchema,
+  footerGooglePlayLink: urlSchema,
+  footerAmazonLink: urlSchema,
+  
+  // Social media links
+  socialFacebook: urlSchema,
+  socialTwitter: urlSchema,
+  socialInstagram: urlSchema,
+  socialYoutube: urlSchema,
+  socialDiscord: urlSchema,
+  socialWhatsapp: urlSchema,
+  socialTiktok: urlSchema,
+
+  // These fields might not be displayed in the form but are needed for validation
+  headerAds: z.string().optional(),
+  footerAds: z.string().optional(),
+  sidebarAds: z.string().optional(),
+  contentAds: z.string().optional(),
+  floatingHeaderAds: z.string().optional(),
+  floatingFooterAds: z.string().optional(),
+  paragraph2Ad: z.string().optional().nullable(),
+  paragraph4Ad: z.string().optional().nullable(),
+  paragraph6Ad: z.string().optional().nullable(),
+  paragraph8Ad: z.string().optional().nullable(),
+  afterContentAd: z.string().optional().nullable(),
+  enableGoogleAds: z.boolean().optional().default(false),
+  googleAdClient: z.string().optional().nullable(),
+  pushNotificationsEnabled: z.boolean().optional().default(true),
+  customHeaderCode: z.string().optional(),
+  customBodyCode: z.string().optional(),
+  customFooterCode: z.string().optional(),
 });
 
 type GeneralSettingsValues = z.infer<typeof generalSettingsSchema>;
@@ -70,15 +108,46 @@ export default function GeneralSettingsPage() {
       keywords: "",
       siteLogo: "",
       siteFavicon: "",
-      useTextLogo: false,
-      textLogoColor: "#ffffff",
+      useTextLogo: true,
+      textLogoColor: "#4f46e5",
       currentTheme: "modern",
+      adsTxt: "",
+      
+      // Footer settings
       footerCopyright: "",
+      footerAppStoreLink: "",
+      footerGooglePlayLink: "",
+      footerAmazonLink: "",
+      
+      // Social media links
       socialFacebook: "",
       socialTwitter: "",
       socialInstagram: "",
       socialYoutube: "",
       socialDiscord: "",
+      socialWhatsapp: "",
+      socialTiktok: "",
+      
+      // Ad placements
+      headerAds: "",
+      footerAds: "",
+      sidebarAds: "",
+      contentAds: "",
+      floatingHeaderAds: "",
+      floatingFooterAds: "",
+      paragraph2Ad: null,
+      paragraph4Ad: null,
+      paragraph6Ad: null,
+      paragraph8Ad: null,
+      afterContentAd: null,
+      
+      // Other settings
+      enableGoogleAds: false,
+      googleAdClient: null,
+      pushNotificationsEnabled: true,
+      customHeaderCode: "",
+      customBodyCode: "",
+      customFooterCode: "",
     }
   });
 
@@ -86,20 +155,52 @@ export default function GeneralSettingsPage() {
   useEffect(() => {
     if (settings) {
       form.reset({
+        // Basic site info
         siteTitle: settings.siteTitle || "",
         metaDescription: settings.metaDescription || "",
         keywords: settings.keywords || "",
         siteLogo: settings.siteLogo || "",
         siteFavicon: settings.siteFavicon || "",
-        useTextLogo: settings.useTextLogo || false,
-        textLogoColor: settings.textLogoColor || "#ffffff",
+        useTextLogo: settings.useTextLogo ?? true,
+        textLogoColor: settings.textLogoColor || "#4f46e5",
         currentTheme: settings.currentTheme || "modern",
+        adsTxt: settings.adsTxt || "",
+        
+        // Footer settings
         footerCopyright: settings.footerCopyright || "",
+        footerAppStoreLink: settings.footerAppStoreLink || "",
+        footerGooglePlayLink: settings.footerGooglePlayLink || "",
+        footerAmazonLink: settings.footerAmazonLink || "",
+        
+        // Social media links
         socialFacebook: settings.socialFacebook || "",
         socialTwitter: settings.socialTwitter || "",
         socialInstagram: settings.socialInstagram || "",
         socialYoutube: settings.socialYoutube || "",
         socialDiscord: settings.socialDiscord || "",
+        socialWhatsapp: settings.socialWhatsapp || "",
+        socialTiktok: settings.socialTiktok || "",
+        
+        // Ad placements
+        headerAds: settings.headerAds || "",
+        footerAds: settings.footerAds || "",
+        sidebarAds: settings.sidebarAds || "",
+        contentAds: settings.contentAds || "",
+        floatingHeaderAds: settings.floatingHeaderAds || "",
+        floatingFooterAds: settings.floatingFooterAds || "",
+        paragraph2Ad: settings.paragraph2Ad,
+        paragraph4Ad: settings.paragraph4Ad,
+        paragraph6Ad: settings.paragraph6Ad,
+        paragraph8Ad: settings.paragraph8Ad,
+        afterContentAd: settings.afterContentAd,
+        
+        // Other settings
+        enableGoogleAds: settings.enableGoogleAds ?? false,
+        googleAdClient: settings.googleAdClient,
+        pushNotificationsEnabled: settings.pushNotificationsEnabled ?? true,
+        customHeaderCode: settings.customHeaderCode || "",
+        customBodyCode: settings.customBodyCode || "",
+        customFooterCode: settings.customFooterCode || "",
       });
 
       // Update the preview images if they exist
@@ -214,9 +315,10 @@ export default function GeneralSettingsPage() {
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
             <Tabs defaultValue="general" className="w-full">
-              <TabsList className="grid w-full grid-cols-4">
+              <TabsList className="grid w-full grid-cols-5">
                 <TabsTrigger value="general">General</TabsTrigger>
                 <TabsTrigger value="branding">Branding</TabsTrigger>
+                <TabsTrigger value="social">Social Media</TabsTrigger>
                 <TabsTrigger value="homepage">Homepage</TabsTrigger>
                 <TabsTrigger value="footer">Footer</TabsTrigger>
               </TabsList>
@@ -483,6 +585,116 @@ export default function GeneralSettingsPage() {
                 </Card>
               </TabsContent>
               
+              <TabsContent value="social">
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Social Media Links</CardTitle>
+                    <CardDescription>Configure your website's social media links</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <FormField
+                        control={form.control}
+                        name="socialFacebook"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Facebook URL</FormLabel>
+                            <FormControl>
+                              <Input {...field} placeholder="https://facebook.com/your-page" />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      
+                      <FormField
+                        control={form.control}
+                        name="socialTwitter"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Twitter URL</FormLabel>
+                            <FormControl>
+                              <Input {...field} placeholder="https://twitter.com/your-handle" />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      
+                      <FormField
+                        control={form.control}
+                        name="socialInstagram"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Instagram URL</FormLabel>
+                            <FormControl>
+                              <Input {...field} placeholder="https://instagram.com/your-account" />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      
+                      <FormField
+                        control={form.control}
+                        name="socialYoutube"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>YouTube URL</FormLabel>
+                            <FormControl>
+                              <Input {...field} placeholder="https://youtube.com/c/your-channel" />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      
+                      <FormField
+                        control={form.control}
+                        name="socialDiscord"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Discord URL</FormLabel>
+                            <FormControl>
+                              <Input {...field} placeholder="https://discord.gg/your-invite" />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      
+                      <FormField
+                        control={form.control}
+                        name="socialWhatsapp"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>WhatsApp URL</FormLabel>
+                            <FormControl>
+                              <Input {...field} placeholder="https://wa.me/your-number" />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      
+                      <FormField
+                        control={form.control}
+                        name="socialTiktok"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>TikTok URL</FormLabel>
+                            <FormControl>
+                              <Input {...field} placeholder="https://tiktok.com/@your-account" />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    </div>
+                  </CardContent>
+                </Card>
+              </TabsContent>
+              
               <TabsContent value="footer">
                 <Card>
                   <CardHeader>
@@ -507,16 +719,20 @@ export default function GeneralSettingsPage() {
                       )}
                     />
                     
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {/* App Store Links */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-6">
                       <FormField
                         control={form.control}
-                        name="socialFacebook"
+                        name="footerAppStoreLink"
                         render={({ field }) => (
                           <FormItem>
-                            <FormLabel>Facebook URL</FormLabel>
+                            <FormLabel>App Store Link</FormLabel>
                             <FormControl>
-                              <Input {...field} />
+                              <Input {...field} placeholder="https://apps.apple.com/app/id123456789" />
                             </FormControl>
+                            <FormDescription>
+                              Link to your iOS app on the App Store
+                            </FormDescription>
                             <FormMessage />
                           </FormItem>
                         )}
@@ -524,13 +740,16 @@ export default function GeneralSettingsPage() {
                       
                       <FormField
                         control={form.control}
-                        name="socialTwitter"
+                        name="footerGooglePlayLink"
                         render={({ field }) => (
                           <FormItem>
-                            <FormLabel>Twitter URL</FormLabel>
+                            <FormLabel>Google Play Link</FormLabel>
                             <FormControl>
-                              <Input {...field} />
+                              <Input {...field} placeholder="https://play.google.com/store/apps/details?id=com.yourapp" />
                             </FormControl>
+                            <FormDescription>
+                              Link to your Android app on Google Play
+                            </FormDescription>
                             <FormMessage />
                           </FormItem>
                         )}
@@ -538,41 +757,16 @@ export default function GeneralSettingsPage() {
                       
                       <FormField
                         control={form.control}
-                        name="socialInstagram"
+                        name="footerAmazonLink"
                         render={({ field }) => (
                           <FormItem>
-                            <FormLabel>Instagram URL</FormLabel>
+                            <FormLabel>Amazon Link</FormLabel>
                             <FormControl>
-                              <Input {...field} />
+                              <Input {...field} placeholder="https://amazon.com/your-page" />
                             </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                      
-                      <FormField
-                        control={form.control}
-                        name="socialYoutube"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>YouTube URL</FormLabel>
-                            <FormControl>
-                              <Input {...field} />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                      
-                      <FormField
-                        control={form.control}
-                        name="socialDiscord"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Discord URL</FormLabel>
-                            <FormControl>
-                              <Input {...field} />
-                            </FormControl>
+                            <FormDescription>
+                              Link to your Amazon page or product
+                            </FormDescription>
                             <FormMessage />
                           </FormItem>
                         )}
