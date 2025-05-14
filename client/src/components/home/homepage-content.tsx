@@ -33,7 +33,7 @@ export function HomepageContent() {
       // Check for headings
       if (paragraph.startsWith('# ')) {
         return (
-          <h2 key={idx} className="text-2xl font-bold mt-6 mb-4">
+          <h2 key={idx} className="text-2xl font-bold mt-6 mb-4 text-foreground">
             {formatText(paragraph.substring(2))}
           </h2>
         );
@@ -42,7 +42,7 @@ export function HomepageContent() {
       // Check for subheadings
       if (paragraph.startsWith('## ')) {
         return (
-          <h3 key={idx} className="text-xl font-semibold mt-5 mb-3">
+          <h3 key={idx} className="text-xl font-semibold mt-5 mb-3 text-foreground">
             {formatText(paragraph.substring(3))}
           </h3>
         );
@@ -51,7 +51,7 @@ export function HomepageContent() {
       // Check for FAQ questions
       if (paragraph.startsWith('Q: ')) {
         return (
-          <div key={idx} className="font-medium text-lg mt-4 mb-2">
+          <div key={idx} className="font-medium text-lg mt-4 mb-2 text-foreground">
             {formatText(paragraph)}
           </div>
         );
@@ -113,8 +113,8 @@ export function HomepageContent() {
   if (isLoading) {
     return (
       <div className="container py-8">
-        <Card>
-          <CardContent className="pt-6">
+        <Card className="bg-background border-0">
+          <CardContent className="pt-6 bg-background">
             <Skeleton className="h-8 w-[350px] mb-6" />
             <Skeleton className="h-4 w-full mb-3" />
             <Skeleton className="h-4 w-full mb-3" />
@@ -135,9 +135,9 @@ export function HomepageContent() {
   return (
     <div className="container py-8">
       {contents.map((content) => (
-        <Card key={content.id} className="mb-8">
-          <CardContent className="pt-6">
-            <h2 className="text-2xl font-bold mb-4">{content.title}</h2>
+        <Card key={content.id} className="mb-8 bg-background border-0">
+          <CardContent className="pt-6 bg-background">
+            <h2 className="text-2xl font-bold mb-4 text-foreground">{content.title}</h2>
             {renderContent(content.content, !!expanded[content.id])}
             <div className="flex justify-center mt-6">
               <Button 
