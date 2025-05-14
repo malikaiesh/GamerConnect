@@ -21,6 +21,9 @@ export const userAccountTypeEnum = pgEnum('user_account_type', ['local', 'google
 // User Status Enum
 export const userStatusEnum = pgEnum('user_status', ['active', 'blocked']);
 
+// User Session Status Enum
+export const sessionStatusEnum = pgEnum('session_status', ['active', 'expired', 'revoked']);
+
 // Roles table
 export const roles = pgTable('roles', {
   id: serial('id').primaryKey(),
@@ -370,11 +373,46 @@ export const gamesRelations = relations(games, ({ many }) => ({
   ratings: many(ratings)
 }));
 
+// User Sessions Table
+export const userSessions = pgTable('user_sessions', {
+  id: serial('id').primaryKey(),
+  userId: integer('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
+  token: text('token').notNull(),
+  ipAddress: text('ip_address'),
+  userAgent: text('user_agent'),
+  deviceInfo: json('device_info').$type<{
+    browser?: string;
+    browserVersion?: string;
+    os?: string;
+    osVersion?: string;
+    device?: string;
+    isMobile?: boolean;
+  }>(),
+  lastActivity: timestamp('last_activity').defaultNow().notNull(),
+  expiresAt: timestamp('expires_at').notNull(),
+  status: sessionStatusEnum('status').default('active').notNull(),
+  location: json('location').$type<{
+    city?: string;
+    country?: string;
+    latitude?: number;
+    longitude?: number;
+  }>(),
+  createdAt: timestamp('created_at').defaultNow().notNull()
+});
+
 export const usersRelations = relations(users, ({ many, one }) => ({
   reviews: many(ratings),
   role: one(roles, {
     fields: [users.roleId],
     references: [roles.id]
+  }),
+  sessions: many(userSessions)
+}));
+
+export const userSessionsRelations = relations(userSessions, ({ one }) => ({
+  user: one(users, {
+    fields: [userSessions.userId],
+    references: [users.id]
   })
 }));
 
