@@ -24,28 +24,22 @@ export default function HomePage() {
   const [hasMorePopularGames, setHasMorePopularGames] = useState(true);
   const [activeNotification, setActiveNotification] = useState<PushNotificationType | null>(null);
   
-  // Fetch featured games with optimizations
+  // Fetch featured games
   const { data: featuredGames = [], isLoading: loadingFeatured } = useQuery<Game[]>({
     queryKey: ['/api/games/featured'],
-    staleTime: 10 * 60 * 1000, // 10 minutes
-    cacheTime: 15 * 60 * 1000, // 15 minutes
   });
   
-  // Fetch popular games based on active category and pagination with optimizations
+  // Fetch popular games based on active category and pagination
   const { data: popularGamesPage1Data, isLoading: loadingPopular } = useQuery<{ games: Game[], pagination: { hasMore: boolean, total: number } }>({
     queryKey: ['/api/games/popular', { category: activeCategory, page: 1, limit: popularGamesLimit }],
-    staleTime: 10 * 60 * 1000, // 10 minutes 
-    cacheTime: 15 * 60 * 1000, // 15 minutes
   });
   
   // Extract games and pagination data from the response
   const popularGamesPage1 = popularGamesPage1Data?.games || [];
   
-  // Fetch additional pages of popular games with optimizations
+  // Fetch additional pages of popular games
   const { data: additionalPopularGamesData, isLoading: loadingMorePopular } = useQuery<{ games: Game[], pagination: { hasMore: boolean, total: number } }>({
     queryKey: ['/api/games/popular', { category: activeCategory, page: popularGamesPage, limit: popularGamesLimit }],
-    staleTime: 10 * 60 * 1000, // 10 minutes
-    cacheTime: 15 * 60 * 1000, // 15 minutes
     enabled: popularGamesPage > 1, // Only fetch additional pages when popularGamesPage > 1
   });
   
@@ -74,17 +68,14 @@ export default function HomePage() {
     }
   }, [additionalPopularGames, additionalPopularGamesData, popularGamesPage]);
   
-  // Fetch blog posts with optimized caching
+  // Fetch blog posts
   const { data: blogPosts = [], isLoading: loadingBlog } = useQuery<BlogPost[]>({
     queryKey: ['/api/blog/recent'],
-    staleTime: 15 * 60 * 1000, // 15 minutes - blog posts don't change often
-    cacheTime: 30 * 60 * 1000, // 30 minutes cache time
   });
   
-  // Fetch active push notifications with optimized caching
+  // Fetch active push notifications
   const { data: notifications = [] } = useQuery<PushNotificationType[]>({
     queryKey: ['/api/notifications/active'],
-    staleTime: 5 * 60 * 1000, // 5 minutes
   });
   
   // Effect to show push notification after a short delay
