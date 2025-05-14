@@ -2,7 +2,7 @@ import { Link, useLocation } from "wouter";
 import { useAuth } from "@/hooks/use-auth";
 import { useQuery } from "@tanstack/react-query";
 import { cn } from "@/lib/utils";
-import { Gamepad2, Book, Settings, LayoutDashboard, FileText, LogOut, Home, FileSymlink, Key, ImageIcon, Map, Code, BarChart, Files, Bell, Users, Send, Activity, BarChart3, UserRound, UserPlus, MapPin, Shield, Lock, KeyRound, AlertTriangle, FileDigit } from "lucide-react";
+import { Gamepad2, Book, Settings, LayoutDashboard, FileText, LogOut, Home, FileSymlink, Key, ImageIcon, Map, Code, BarChart, Files, Bell, Users, Send, Activity, BarChart3, UserRound, UserPlus, MapPin, Shield, Lock, KeyRound, AlertTriangle, FileDigit, Clock } from "lucide-react";
 import { useState } from "react";
 import { SiteSetting } from "@shared/schema";
 
