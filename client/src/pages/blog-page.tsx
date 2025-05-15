@@ -82,25 +82,41 @@ export default function BlogPage() {
       <Header />
       
       {/* Blog Hero Section */}
-      <section className="bg-background bg-gradient-to-br from-background to-background/90 border-b border-border text-foreground py-10">
-        <div className="container mx-auto px-4">
+      <section className="relative py-16 overflow-hidden">
+        {/* Background gradient with blur effect */}
+        <div className="absolute inset-0 bg-gradient-to-br from-secondary/20 via-background to-background/90"></div>
+        {/* Decorative elements */}
+        <div className="absolute top-0 left-0 w-full h-full opacity-10">
+          <div className="absolute top-10 right-10 w-40 h-40 rounded-full bg-secondary blur-3xl"></div>
+          <div className="absolute bottom-10 left-20 w-60 h-60 rounded-full bg-primary blur-3xl"></div>
+        </div>
+        
+        <div className="container relative mx-auto px-4">
           <div className="max-w-2xl mx-auto text-center">
-            <h1 className="heading-xl mb-4 text-primary">Gaming Blog</h1>
-            <p className="text-lg mb-6 opacity-90">
+            <div className="inline-block mb-4 px-4 py-1 border border-secondary/30 rounded-full bg-secondary/10 text-secondary text-sm font-medium tracking-wide">
+              LATEST ARTICLES
+            </div>
+            <h1 className="heading-xl mb-6 text-transparent bg-clip-text bg-gradient-to-r from-secondary to-secondary-foreground font-extrabold">
+              Gaming Blog
+            </h1>
+            <p className="text-lg md:text-xl font-medium text-foreground/90 leading-relaxed mb-6">
               The latest news, reviews, and insights from the gaming world.
             </p>
             
             {/* Search Form */}
             <form onSubmit={handleSearch} className="max-w-md mx-auto">
-              <div className="relative">
+              <div className="relative group">
                 <input 
                   type="text" 
                   placeholder="Search blog posts..." 
-                  className="w-full py-3 px-4 pl-12 rounded-lg text-foreground bg-background/90 backdrop-blur-sm border-0 focus:ring-2 focus:ring-primary"
+                  className="w-full py-3 px-4 pl-12 rounded-full text-foreground bg-background/50 backdrop-blur-sm border border-border/50 shadow-lg shadow-secondary/5 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-secondary/50 focus:border-secondary/50 group-hover:border-secondary/30"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                 />
-                <i className="ri-search-line absolute left-4 top-1/2 transform -translate-y-1/2 text-muted-foreground"></i>
+                <i className="ri-search-line absolute left-4 top-1/2 transform -translate-y-1/2 text-secondary/70 group-hover:text-secondary transition-colors duration-300"></i>
+                <button type="submit" className="absolute right-2 top-1/2 transform -translate-y-1/2 bg-secondary/10 hover:bg-secondary/20 text-secondary px-3 py-1.5 rounded-full text-sm font-medium transition-all duration-300">
+                  Search
+                </button>
               </div>
             </form>
           </div>

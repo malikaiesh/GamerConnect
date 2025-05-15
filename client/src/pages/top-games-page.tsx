@@ -85,11 +85,24 @@ export default function TopGamesPage() {
           </div>
         </section>
       ) : (
-        <section className="bg-background bg-gradient-to-br from-background to-background/90 border-b border-border text-foreground py-12">
-          <div className="container mx-auto px-4">
+        <section className="relative py-16 overflow-hidden">
+          {/* Background gradient with blur effect */}
+          <div className="absolute inset-0 bg-gradient-to-br from-primary/20 via-background to-background/90"></div>
+          {/* Decorative elements */}
+          <div className="absolute top-0 left-0 w-full h-full opacity-10">
+            <div className="absolute top-10 left-10 w-40 h-40 rounded-full bg-primary blur-3xl"></div>
+            <div className="absolute bottom-10 right-20 w-60 h-60 rounded-full bg-secondary blur-3xl"></div>
+          </div>
+          
+          <div className="container relative mx-auto px-4">
             <div className="max-w-3xl mx-auto text-center">
-              <h1 className="heading-xl mb-4 text-primary">Top Rated Games</h1>
-              <p className="text-lg md:text-xl opacity-90">
+              <div className="inline-block mb-4 px-4 py-1 border border-primary/30 rounded-full bg-primary/10 text-primary text-sm font-medium tracking-wide">
+                PLAYER FAVORITES
+              </div>
+              <h1 className="heading-xl mb-6 text-transparent bg-clip-text bg-gradient-to-r from-primary to-primary-foreground font-extrabold">
+                Top Rated Games
+              </h1>
+              <p className="text-lg md:text-xl font-medium text-foreground/90 leading-relaxed">
                 Discover the most popular and highly-rated games on our platform.
               </p>
             </div>

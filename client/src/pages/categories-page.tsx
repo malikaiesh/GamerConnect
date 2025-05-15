@@ -36,11 +36,24 @@ export default function CategoriesPage() {
       <Header />
       
       {/* Hero Section */}
-      <section className="bg-background bg-gradient-to-br from-background to-background/90 border-b border-border text-foreground py-12">
-        <div className="container mx-auto px-4">
+      <section className="relative py-16 overflow-hidden">
+        {/* Background gradient with blur effect */}
+        <div className="absolute inset-0 bg-gradient-to-br from-primary/20 via-background to-background/90"></div>
+        {/* Decorative elements */}
+        <div className="absolute top-0 left-0 w-full h-full opacity-10">
+          <div className="absolute top-10 left-10 w-40 h-40 rounded-full bg-primary blur-3xl"></div>
+          <div className="absolute bottom-10 right-20 w-60 h-60 rounded-full bg-secondary blur-3xl"></div>
+        </div>
+        
+        <div className="container relative mx-auto px-4">
           <div className="max-w-3xl mx-auto text-center">
-            <h1 className="heading-xl mb-4 text-primary">Game Categories</h1>
-            <p className="text-lg md:text-xl opacity-90">
+            <div className="inline-block mb-4 px-4 py-1 border border-primary/30 rounded-full bg-primary/10 text-primary text-sm font-medium tracking-wide">
+              EXPLORE OUR COLLECTION
+            </div>
+            <h1 className="heading-xl mb-6 text-transparent bg-clip-text bg-gradient-to-r from-primary to-primary-foreground font-extrabold">
+              Game Categories
+            </h1>
+            <p className="text-lg md:text-xl font-medium text-foreground/90 leading-relaxed">
               Browse games by category and discover new favorites in your preferred genre.
             </p>
           </div>
@@ -67,27 +80,38 @@ export default function CategoriesPage() {
                 <button
                   key={category}
                   onClick={() => setActiveCategory(category)}
-                  className={`group ${activeCategory === category ? 'ring-2 ring-primary' : ''}`}
+                  className="group outline-none focus:outline-none"
                 >
-                  <div className="bg-card rounded-xl overflow-hidden shadow-md transition-all duration-300 hover:shadow-lg">
-                    <div className="aspect-square bg-gradient-to-br from-primary/10 to-primary/30 flex items-center justify-center">
-                      <div className="text-4xl text-primary">
-                        {/* Use different icons based on category */}
-                        {category === 'Sports' && <i className="ri-basketball-line"></i>}
-                        {category === 'Adventure' && <i className="ri-compass-3-line"></i>}
-                        {category === 'Strategy' && <i className="ri-chess-line"></i>}
-                        {category === 'Racing' && <i className="ri-steering-2-line"></i>}
-                        {category === 'Platformer' && <i className="ri-game-line"></i>}
-                        {category === 'Puzzle' && <i className="ri-puzzle-line"></i>}
-                        {category === 'Action' && <i className="ri-sword-line"></i>}
-                        {category === 'RPG' && <i className="ri-sword-line"></i>}
-                        {/* Default icon if category not matched */}
-                        {!['Sports', 'Adventure', 'Strategy', 'Racing', 'Platformer', 'Puzzle', 'Action', 'RPG'].includes(category) && 
-                          <i className="ri-gamepad-line"></i>}
+                  <div className={`relative bg-card/50 backdrop-blur-sm rounded-xl overflow-hidden shadow-md transition-all duration-500 hover:scale-105 hover:shadow-xl ${activeCategory === category ? 'ring-2 ring-primary shadow-lg shadow-primary/20' : 'hover:ring-1 hover:ring-primary/50'}`}>
+                    {/* Animated gradient background */}
+                    <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-primary/20 opacity-70 group-hover:opacity-100 transition-opacity duration-500"></div>
+                    
+                    {/* Border glow effect */}
+                    <div className="absolute inset-0 rounded-xl bg-gradient-to-br from-primary/0 via-primary/0 to-primary/30 opacity-0 group-hover:opacity-100 transition-opacity duration-500 blur-md"></div>
+                    
+                    <div className="aspect-square flex items-center justify-center relative z-10">
+                      <div className="relative">
+                        {/* Background circle */}
+                        <div className="absolute inset-0 -m-2 rounded-full bg-primary/10 group-hover:bg-primary/20 transition-colors duration-500 blur-sm"></div>
+                        <div className="text-5xl text-primary relative group-hover:scale-110 transition-all duration-500">
+                          {/* Use different icons based on category */}
+                          {category === 'Sports' && <i className="ri-basketball-line"></i>}
+                          {category === 'Adventure' && <i className="ri-compass-3-line"></i>}
+                          {category === 'Strategy' && <i className="ri-chess-line"></i>}
+                          {category === 'Racing' && <i className="ri-steering-2-line"></i>}
+                          {category === 'Platformer' && <i className="ri-game-line"></i>}
+                          {category === 'Puzzle' && <i className="ri-puzzle-line"></i>}
+                          {category === 'Action' && <i className="ri-sword-line"></i>}
+                          {category === 'RPG' && <i className="ri-sword-line"></i>}
+                          {/* Default icon if category not matched */}
+                          {!['Sports', 'Adventure', 'Strategy', 'Racing', 'Platformer', 'Puzzle', 'Action', 'RPG'].includes(category) && 
+                            <i className="ri-gamepad-line"></i>}
+                        </div>
                       </div>
                     </div>
-                    <div className="p-4 text-center">
-                      <h3 className="font-bold">{category}</h3>
+                    
+                    <div className="p-4 text-center relative z-10 border-t border-primary/10 bg-gradient-to-t from-background/80 to-background/30">
+                      <h3 className="font-bold text-foreground group-hover:text-primary transition-colors duration-300">{category}</h3>
                     </div>
                   </div>
                 </button>
@@ -141,21 +165,39 @@ export default function CategoriesPage() {
               ) : (
                 // Featured category cards
                 topCategories.slice(0, 3).map((category) => (
-                  <div key={category} className="bg-card rounded-xl overflow-hidden shadow-lg">
+                  <div key={category} className="relative group rounded-xl overflow-hidden shadow-xl transform transition-all duration-500 hover:scale-105 hover:-rotate-1">
+                    {/* Card background with gradient overlay */}
                     <div 
-                      className="h-48 bg-cover bg-center flex items-end p-6"
+                      className="h-56 bg-cover bg-center"
                       style={{ 
-                        backgroundImage: `linear-gradient(to bottom, rgba(0,0,0,0.1), rgba(0,0,0,0.7)), 
-                        url(https://source.unsplash.com/random/400x300/?${category.toLowerCase()},game)` 
+                        backgroundImage: `url(https://source.unsplash.com/random/400x300/?${category.toLowerCase()},game)` 
                       }}
                     >
-                      <div>
-                        <h3 className="text-white text-xl font-bold">{category}</h3>
+                      {/* Gradient overlay */}
+                      <div className="absolute inset-0 bg-gradient-to-b from-transparent via-background/40 to-background/90 group-hover:opacity-90 transition-opacity duration-500"></div>
+                      
+                      {/* Glowing border effect on hover */}
+                      <div className="absolute inset-0 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500">
+                        <div className="absolute inset-0 rounded-xl ring-1 ring-primary shadow-[0_0_20px_rgba(var(--primary-rgb),0.5)]"></div>
+                      </div>
+                      
+                      {/* Content */}
+                      <div className="absolute bottom-0 left-0 right-0 p-6 transform transition-transform duration-500 group-hover:translate-y-0 z-10">
+                        <span className="inline-block bg-primary/20 backdrop-blur-md border border-primary/30 rounded-full px-3 py-1 text-xs font-medium text-primary mb-3">
+                          POPULAR CATEGORY
+                        </span>
+                        <h3 className="text-foreground text-2xl font-extrabold mb-3 group-hover:text-primary transition-colors">{category}</h3>
+                        <p className="text-foreground/80 mb-4 max-h-0 overflow-hidden group-hover:max-h-20 transition-all duration-500">
+                          Explore the best {category} games in our collection.
+                        </p>
                         <button 
                           onClick={() => setActiveCategory(category)}
-                          className="mt-2 bg-primary/80 hover:bg-primary text-white text-sm py-1 px-3 rounded-full transition-colors"
+                          className="relative overflow-hidden bg-primary text-primary-foreground rounded-full py-2 px-5 font-medium inline-flex items-center gap-2 transition-all duration-300 
+                          before:absolute before:inset-0 before:bg-white/20 before:scale-x-0 before:opacity-50 before:origin-left
+                          hover:before:scale-x-100 before:transition-transform before:duration-300"
                         >
-                          Explore Games
+                          <span className="relative z-10">Explore Games</span>
+                          <i className="ri-arrow-right-line relative z-10"></i>
                         </button>
                       </div>
                     </div>
