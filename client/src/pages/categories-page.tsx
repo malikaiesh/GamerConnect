@@ -22,11 +22,14 @@ export default function CategoriesPage() {
   });
   
   // Fetch games based on selected category
-  const { data: games = [], isLoading: loadingGames } = useQuery<Game[]>({
+  const { data: gamesData, isLoading: loadingGames } = useQuery<{games: Game[], pagination: any}>({
     queryKey: ['/api/games/popular', { category: activeCategory }],
-    queryFn: () => activeCategory ? fetcher(`/api/games/popular?category=${encodeURIComponent(activeCategory)}`) : Promise.resolve([]),
+    queryFn: () => activeCategory ? fetcher(`/api/games/popular?category=${encodeURIComponent(activeCategory)}`) : Promise.resolve({games: [], pagination: {}}),
     enabled: !!activeCategory,
   });
+  
+  // Extract games array from response
+  const games = gamesData?.games || [];
   
   return (
     <div className="min-h-screen flex flex-col">
