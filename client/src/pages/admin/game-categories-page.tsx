@@ -151,23 +151,25 @@ export default function GameCategoriesPage() {
   };
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      <div className="flex justify-between items-center mb-6">
-        <PageHeader title="Game Categories" subtitle="Manage game categories for your platform" />
-        <Button 
-          onClick={() => setIsAddDialogOpen(true)}
-          className="bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700"
-        >
-          <Plus className="w-4 h-4 mr-2" />
-          Add Category
-        </Button>
-      </div>
+    <div className="flex min-h-screen">
+      <AdminNavigation />
+      <div className="flex-1 px-4 py-8">
+        <div className="flex justify-between items-center mb-6">
+          <PageHeader title="Game Categories" subtitle="Manage game categories for your platform" />
+          <Button 
+            onClick={() => setIsAddDialogOpen(true)}
+            className="bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700"
+          >
+            <Plus className="w-4 h-4 mr-2" />
+            Add Category
+          </Button>
+        </div>
 
-      <Card className="bg-card/60 backdrop-blur-sm border shadow-md">
-        <CardHeader>
-          <CardTitle>All Categories</CardTitle>
-        </CardHeader>
-        <CardContent>
+        <Card className="bg-card/60 backdrop-blur-sm border shadow-md">
+          <CardHeader>
+            <CardTitle>All Categories</CardTitle>
+          </CardHeader>
+          <CardContent>
           {isLoading ? (
             <div className="flex justify-center py-10">
               <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
@@ -279,6 +281,7 @@ export default function GameCategoriesPage() {
           isPending={deleteMutation.isPending}
         />
       )}
+      </div>
     </div>
   );
 }
