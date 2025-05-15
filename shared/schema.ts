@@ -88,6 +88,19 @@ export const users = pgTable('users', {
   updatedAt: timestamp('updated_at').defaultNow().notNull()
 });
 
+// Game Categories table
+export const gameCategories = pgTable('game_categories', {
+  id: serial('id').primaryKey(),
+  name: text('name').notNull().unique(),
+  slug: text('slug').notNull().unique(),
+  description: text('description'),
+  icon: text('icon').default('ri-gamepad-line'),
+  displayOrder: integer('display_order').default(0),
+  isActive: boolean('is_active').default(true),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+  updatedAt: timestamp('updated_at').defaultNow().notNull(),
+});
+
 // Games table
 export const games = pgTable('games', {
   id: serial('id').primaryKey(),
@@ -97,7 +110,8 @@ export const games = pgTable('games', {
   thumbnail: text('thumbnail').notNull(),
   url: text('url'), // For custom games, API games use the API URL
   apiId: text('api_id'), // For API games, refers to GameMonetize game ID
-  category: text('category').notNull(),
+  category: text('category').notNull(), // Legacy field kept for backward compatibility
+  categoryId: integer('category_id').references(() => gameCategories.id),
   tags: text('tags').array().notNull(),
   source: gameSourceEnum('source').notNull(),
   status: gameStatusEnum('status').default('active').notNull(),
@@ -372,8 +386,16 @@ export const homeAds = pgTable('home_ads', {
 });
 
 // Define relations
-export const gamesRelations = relations(games, ({ many }) => ({
-  ratings: many(ratings)
+export const gameCategoriesRelations = relations(gameCategories, ({ many }) => ({
+  games: many(games)
+}));
+
+export const gamesRelations = relations(games, ({ many, one }) => ({
+  ratings: many(ratings),
+  category: one(gameCategories, {
+    fields: [games.categoryId],
+    references: [gameCategories.id]
+  })
 }));
 
 // User Sessions Table
@@ -603,8 +625,22 @@ export type InsertUser = z.infer<typeof insertUserSchema>;
 export type UserSession = typeof userSessions.$inferSelect;
 export type InsertUserSession = typeof userSessions.$inferInsert;
 
+// Game Category validation schema
+export const insertGameCategorySchema = createInsertSchema(gameCategories, {
+  name: (schema) => schema.min(2, "Name must be at least 2 characters"),
+  slug: (schema) => schema.min(2, "Slug must be at least 2 characters"),
+  description: (schema) => schema.optional().nullable(),
+  icon: (schema) => schema.optional().nullable(),
+  displayOrder: (schema) => schema.optional().nullable(),
+  isActive: (schema) => schema.optional().default(true)
+});
+
+export const selectGameCategorySchema = createSelectSchema(gameCategories);
+
 export type Game = typeof games.$inferSelect;
 export type InsertGame = z.infer<typeof insertGameSchema>;
+export type GameCategory = typeof gameCategories.$inferSelect;
+export type InsertGameCategory = z.infer<typeof insertGameCategorySchema>;
 
 export type BlogCategory = typeof blogCategories.$inferSelect;
 export type InsertBlogCategory = z.infer<typeof insertBlogCategorySchema>;
