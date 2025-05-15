@@ -46,6 +46,7 @@ const FAQPage = lazy(() => import("@/pages/faq-page"));
 const AdminDashboard = lazy(() => import("@/pages/admin/dashboard"));
 const AdminGames = lazy(() => import("@/pages/admin/games"));
 const AdminBlog = lazy(() => import("@/pages/admin/blog"));
+const AdminGameCategories = lazy(() => import("@/pages/admin/game-categories-page"));
 const AdminSettings = lazy(() => import("@/pages/admin/settings"));
 const AdminHomepageContent = lazy(() => import("@/pages/admin/homepage-content"));
 const AdminPagesPage = lazy(() => import("@/pages/admin/pages-page"));
@@ -170,6 +171,11 @@ function Router() {
       <Route path="/admin/games">
         <ProtectedRoute adminOnly={true}>
           <Suspense fallback={<LoadingFallback />}><AdminGames /></Suspense>
+        </ProtectedRoute>
+      </Route>
+      <Route path="/admin/game-categories">
+        <ProtectedRoute adminOnly={true}>
+          <Suspense fallback={<LoadingFallback />}><AdminGameCategories /></Suspense>
         </ProtectedRoute>
       </Route>
       <Route path="/admin/blog">
