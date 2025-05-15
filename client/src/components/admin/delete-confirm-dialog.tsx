@@ -1,55 +1,70 @@
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
-import { Button } from "@/components/ui/button";
-import { Loader2 } from "lucide-react";
+import React from 'react';
+import { 
+  AlertDialog, 
+  AlertDialogAction, 
+  AlertDialogCancel, 
+  AlertDialogContent, 
+  AlertDialogDescription, 
+  AlertDialogFooter, 
+  AlertDialogHeader, 
+  AlertDialogTitle 
+} from '@/components/ui/alert-dialog';
+import { Loader2 } from 'lucide-react';
 
 interface DeleteConfirmDialogProps {
-  open: boolean;
-  onOpenChange: (open: boolean) => void;
+  isOpen: boolean;
+  onClose: () => void;
   onConfirm: () => void;
-  title: string;
-  description: string;
-  isPending: boolean;
+  title?: string;
+  description?: string;
+  isLoading?: boolean;
+  itemName?: string;
+  cancelText?: string;
+  confirmText?: string;
 }
 
-export default function DeleteConfirmDialog({
-  open,
-  onOpenChange,
+export function DeleteConfirmDialog({
+  isOpen,
+  onClose,
   onConfirm,
-  title,
-  description,
-  isPending,
+  title = 'Confirm Deletion',
+  description = 'This action cannot be undone. This will permanently delete this item from our servers.',
+  isLoading = false,
+  itemName,
+  cancelText = 'Cancel',
+  confirmText = 'Delete'
 }: DeleteConfirmDialogProps) {
+  
+  const handleConfirm = () => {
+    onConfirm();
+  };
+
   return (
-    <AlertDialog open={open} onOpenChange={onOpenChange}>
-      <AlertDialogContent className="bg-card/95 backdrop-blur-sm">
+    <AlertDialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
+      <AlertDialogContent>
         <AlertDialogHeader>
-          <AlertDialogTitle className="text-xl text-destructive font-semibold">{title}</AlertDialogTitle>
-          <AlertDialogDescription className="text-muted-foreground">
-            {description}
+          <AlertDialogTitle>{title}</AlertDialogTitle>
+          <AlertDialogDescription className="space-y-2">
+            <p>{description}</p>
+            {itemName && (
+              <p className="font-medium text-destructive">"{itemName}"</p>
+            )}
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
-          <AlertDialogCancel disabled={isPending}>Cancel</AlertDialogCancel>
-          <Button 
-            variant="destructive" 
-            onClick={onConfirm} 
-            disabled={isPending}
-            className="flex items-center gap-2"
+          <AlertDialogCancel disabled={isLoading}>{cancelText}</AlertDialogCancel>
+          <AlertDialogAction 
+            onClick={handleConfirm}
+            disabled={isLoading}
+            className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
           >
-            {isPending && <Loader2 className="h-4 w-4 animate-spin" />}
-            {isPending ? "Deleting..." : "Delete"}
-          </Button>
+            {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+            {confirmText}
+          </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>
     </AlertDialog>
   );
 }
+
+export default DeleteConfirmDialog;

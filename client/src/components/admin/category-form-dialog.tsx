@@ -1,38 +1,24 @@
-import { useEffect } from "react";
-import { useForm } from "react-hook-form";
-import { z } from "zod";
-import { zodResolver } from "@hookform/resolvers/zod";
-import {
-  Dialog,
-  DialogContent,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
-import {
-  Form,
-  FormControl,
-  FormDescription,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
-import { Switch } from "@/components/ui/switch";
-import { Textarea } from "@/components/ui/textarea";
-import { Loader2 } from "lucide-react";
-import type { GameCategory } from "@shared/schema";
+import React from 'react';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
+import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
+import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
+import { Textarea } from '@/components/ui/textarea';
+import { Switch } from '@/components/ui/switch';
+import { useForm } from 'react-hook-form';
+import { GameCategory } from '@shared/schema';
+import { z } from 'zod';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { Loader2 } from 'lucide-react';
 
 // Form validation schema
 const formSchema = z.object({
-  name: z.string().min(2, "Name must be at least 2 characters"),
-  slug: z.string().min(2, "Slug must be at least 2 characters").optional(),
+  name: z.string().min(2, 'Name must be at least 2 characters').max(50, 'Name cannot exceed 50 characters'),
+  slug: z.string().optional(),
   description: z.string().optional(),
   icon: z.string().optional(),
-  displayOrder: z.coerce.number().int().optional(),
-  isActive: z.boolean().default(true),
+  displayOrder: z.number().int().optional(),
+  isActive: z.boolean().default(true)
 });
 
 type FormValues = z.infer<typeof formSchema>;
@@ -41,183 +27,136 @@ interface CategoryFormDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onSubmit: (data: FormValues) => void;
-  title: string;
-  isPending: boolean;
   defaultValues?: Partial<GameCategory>;
+  isPending?: boolean;
+  title?: string;
 }
 
-export default function CategoryFormDialog({
-  open,
-  onOpenChange,
+export function CategoryFormDialog({
+  isOpen,
+  onClose,
   onSubmit,
-  title,
-  isPending,
-  defaultValues = {
-    name: "",
-    slug: "",
-    description: "",
-    icon: "ri-gamepad-line",
-    displayOrder: 0,
-    isActive: true,
-  },
+  category,
+  isLoading = false,
+  title = 'Add Category'
 }: CategoryFormDialogProps) {
+  // Initialize form with default values or existing category data
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
-    defaultValues,
+    defaultValues: {
+      name: '',
+      slug: '',
+      description: '',
+      icon: 'ri-gamepad-line',
+      displayOrder: 0,
+      isActive: true,
+      ...category
+    }
   });
 
-  useEffect(() => {
-    if (open) {
-      // Reset the form with default values when the dialog opens
-      form.reset(defaultValues);
-    }
-  }, [open, form, defaultValues]);
-
-  // Auto-generate slug from name
-  useEffect(() => {
-    const subscription = form.watch((value, { name }) => {
-      if (name === "name" && value.name && (!form.getValues("slug") || form.getValues("slug") === "")) {
-        const slug = value.name
-          .toLowerCase()
-          .trim()
-          .replace(/[^\w\s-]/g, "")
-          .replace(/[\s_-]+/g, "-")
-          .replace(/^-+|-+$/g, "");
-        form.setValue("slug", slug);
-      }
-    });
-    return () => subscription.unsubscribe();
-  }, [form]);
-
+  // Handle form submission
   const handleSubmit = (data: FormValues) => {
     onSubmit(data);
   };
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[525px] bg-card/95 backdrop-blur-sm">
+    <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
+      <DialogContent className="sm:max-w-[500px]">
         <DialogHeader>
-          <DialogTitle className="text-xl font-semibold">{title}</DialogTitle>
+          <DialogTitle>{title}</DialogTitle>
         </DialogHeader>
+        
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
+          <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
             <FormField
               control={form.control}
               name="name"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Name</FormLabel>
+                  <FormLabel>Category Name</FormLabel>
                   <FormControl>
-                    <Input
-                      placeholder="e.g. Action Games"
-                      className="bg-background/50"
-                      {...field}
-                    />
+                    <Input placeholder="e.g. Adventure Games" {...field} />
                   </FormControl>
-                  <FormDescription>
-                    The display name of the category
-                  </FormDescription>
                   <FormMessage />
                 </FormItem>
               )}
             />
-
+            
             <FormField
               control={form.control}
               name="slug"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Slug</FormLabel>
+                  <FormLabel>Slug (Optional)</FormLabel>
                   <FormControl>
-                    <Input
-                      placeholder="e.g. action-games"
-                      className="bg-background/50"
-                      {...field}
-                      value={field.value || ""}
-                    />
+                    <Input placeholder="e.g. adventure-games" {...field} />
                   </FormControl>
                   <FormDescription>
-                    The URL-friendly version of the name (auto-generated if left blank)
+                    URL-friendly version of the name. Leave blank to auto-generate.
                   </FormDescription>
                   <FormMessage />
                 </FormItem>
               )}
             />
-
+            
             <FormField
               control={form.control}
               name="description"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Description</FormLabel>
+                  <FormLabel>Description (Optional)</FormLabel>
                   <FormControl>
-                    <Textarea
-                      placeholder="Brief description of the category"
-                      className="bg-background/50"
-                      {...field}
-                      value={field.value || ""}
+                    <Textarea 
+                      placeholder="Brief description of this category..." 
+                      className="resize-none" 
+                      {...field} 
+                      value={field.value || ''}
                     />
                   </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            
+            <FormField
+              control={form.control}
+              name="icon"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Icon Class (Optional)</FormLabel>
+                  <FormControl>
+                    <Input placeholder="e.g. ri-gamepad-line" {...field} value={field.value || ''} />
+                  </FormControl>
                   <FormDescription>
-                    Optional description for the category
+                    Remix Icon class name. Leave blank to use default icon.
                   </FormDescription>
                   <FormMessage />
                 </FormItem>
               )}
             />
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <FormField
-                control={form.control}
-                name="icon"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Icon</FormLabel>
-                    <FormControl>
-                      <Input
-                        placeholder="e.g. ri-gamepad-line"
-                        className="bg-background/50"
-                        {...field}
-                        value={field.value || ""}
-                      />
-                    </FormControl>
-                    <FormDescription>
-                      Remix Icon class name
-                    </FormDescription>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="displayOrder"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Display Order</FormLabel>
-                    <FormControl>
-                      <Input
-                        type="number"
-                        min="0"
-                        placeholder="0"
-                        className="bg-background/50"
-                        {...field}
-                        value={field.value?.toString() || "0"}
-                        onChange={(e) => {
-                          const value = e.target.value === "" ? "0" : e.target.value;
-                          field.onChange(parseInt(value, 10));
-                        }}
-                      />
-                    </FormControl>
-                    <FormDescription>
-                      Order in which the category appears (lower first)
-                    </FormDescription>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </div>
-
+            
+            <FormField
+              control={form.control}
+              name="displayOrder"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Display Order (Optional)</FormLabel>
+                  <FormControl>
+                    <Input 
+                      type="number" 
+                      {...field} 
+                      value={field.value?.toString() || '0'} 
+                      onChange={(e) => field.onChange(e.target.value === '' ? 0 : parseInt(e.target.value, 10))}
+                    />
+                  </FormControl>
+                  <FormDescription>
+                    Lower numbers appear first in the list.
+                  </FormDescription>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            
             <FormField
               control={form.control}
               name="isActive"
@@ -226,7 +165,7 @@ export default function CategoryFormDialog({
                   <div className="space-y-0.5">
                     <FormLabel className="text-base">Active Status</FormLabel>
                     <FormDescription>
-                      Whether this category is active and visible on the site
+                      Inactive categories will not be displayed to users.
                     </FormDescription>
                   </div>
                   <FormControl>
@@ -238,19 +177,14 @@ export default function CategoryFormDialog({
                 </FormItem>
               )}
             />
-
+            
             <DialogFooter>
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => onOpenChange(false)}
-                disabled={isPending}
-              >
+              <Button type="button" variant="outline" onClick={onClose}>
                 Cancel
               </Button>
-              <Button type="submit" disabled={isPending}>
-                {isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                {isPending ? "Saving..." : "Save Category"}
+              <Button type="submit" disabled={isLoading}>
+                {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                {category?.id ? 'Update' : 'Create'} Category
               </Button>
             </DialogFooter>
           </form>
@@ -259,3 +193,5 @@ export default function CategoryFormDialog({
     </Dialog>
   );
 }
+
+export default CategoryFormDialog;

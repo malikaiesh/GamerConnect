@@ -17,7 +17,7 @@ router.get('/', async (req: Request, res: Response) => {
     
     // Filter out inactive categories unless specifically requested
     if (!includeInactive) {
-      query = query.where(eq(gameCategories.isActive, true));
+      query = db.select().from(gameCategories).where(eq(gameCategories.isActive, true));
     }
     
     // Order by displayOrder and then name
@@ -27,6 +27,23 @@ router.get('/', async (req: Request, res: Response) => {
   } catch (error) {
     console.error('Error fetching categories:', error);
     res.status(500).json({ message: 'Failed to fetch categories' });
+  }
+});
+
+// Get featured categories
+router.get('/featured', async (req: Request, res: Response) => {
+  try {
+    // Get active categories with lowest display order (top categories)
+    const categories = await db.select()
+      .from(gameCategories)
+      .where(eq(gameCategories.isActive, true))
+      .orderBy(asc(gameCategories.displayOrder), asc(gameCategories.name))
+      .limit(6);
+    
+    res.json(categories);
+  } catch (error) {
+    console.error('Error fetching featured categories:', error);
+    res.status(500).json({ message: 'Failed to fetch featured categories' });
   }
 });
 
