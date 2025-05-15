@@ -6,10 +6,10 @@ interface PageHeaderProps {
 
 export function PageHeader({ title, subtitle, className = "" }: PageHeaderProps) {
   return (
-    <div className={`mb-6 ${className}`}>
+    <div className={`flex flex-col space-y-2 ${className}`}>
       <h1 className="text-3xl font-bold tracking-tight">{title}</h1>
       {subtitle && (
-        <p className="mt-2 text-muted-foreground">{subtitle}</p>
+        <p className="text-muted-foreground">{subtitle}</p>
       )}
     </div>
   );

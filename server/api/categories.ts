@@ -1,5 +1,5 @@
 import { Request, Response, Router } from 'express';
-import { isAdmin, isAuthenticated } from '../middleware/auth';
+import { isAdmin, isAuthenticated } from '../middleware';
 import { db } from '../../db';
 import { gameCategories, insertGameCategorySchema } from '@shared/schema';
 import { eq, desc, asc } from 'drizzle-orm';
