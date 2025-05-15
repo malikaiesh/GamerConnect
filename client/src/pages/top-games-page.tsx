@@ -85,10 +85,10 @@ export default function TopGamesPage() {
           </div>
         </section>
       ) : (
-        <section className="bg-primary text-primary-foreground py-12">
+        <section className="bg-background bg-gradient-to-br from-background to-background/90 border-b border-border text-foreground py-12">
           <div className="container mx-auto px-4">
             <div className="max-w-3xl mx-auto text-center">
-              <h1 className="heading-xl mb-4">Top Rated Games</h1>
+              <h1 className="heading-xl mb-4 text-primary">Top Rated Games</h1>
               <p className="text-lg md:text-xl opacity-90">
                 Discover the most popular and highly-rated games on our platform.
               </p>

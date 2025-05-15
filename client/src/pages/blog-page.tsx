@@ -82,10 +82,10 @@ export default function BlogPage() {
       <Header />
       
       {/* Blog Hero Section */}
-      <section className="bg-primary text-primary-foreground py-10">
+      <section className="bg-background bg-gradient-to-br from-background to-background/90 border-b border-border text-foreground py-10">
         <div className="container mx-auto px-4">
           <div className="max-w-2xl mx-auto text-center">
-            <h1 className="heading-xl mb-4">Gaming Blog</h1>
+            <h1 className="heading-xl mb-4 text-primary">Gaming Blog</h1>
             <p className="text-lg mb-6 opacity-90">
               The latest news, reviews, and insights from the gaming world.
             </p>
