@@ -164,27 +164,51 @@ export default function BlogPage() {
       </section>
       
       {/* Newsletter Section */}
-      <section className="py-12 bg-muted/30">
-        <div className="container mx-auto px-4">
-          <div className="max-w-2xl mx-auto text-center">
-            <h2 className="heading-md mb-4">Subscribe to Our Newsletter</h2>
-            <p className="text-muted-foreground mb-6">
-              Get the latest gaming news and updates delivered directly to your inbox.
-            </p>
-            <form className="flex flex-col sm:flex-row gap-2 max-w-lg mx-auto">
-              <input 
-                type="email" 
-                placeholder="Your email address" 
-                className="flex-1 py-3 px-4 rounded-lg border border-border focus:ring-2 focus:ring-primary"
-                required
-              />
-              <button 
-                type="submit"
-                className="btn-primary py-3 px-6"
-              >
-                Subscribe
-              </button>
-            </form>
+      <section className="relative py-16 overflow-hidden">
+        {/* Background gradient */}
+        <div className="absolute inset-0 bg-gradient-to-br from-secondary/5 via-background to-background/90"></div>
+        
+        {/* Decorative elements */}
+        <div className="absolute top-0 left-0 w-full h-full opacity-10">
+          <div className="absolute bottom-10 left-10 w-40 h-40 rounded-full bg-secondary blur-3xl"></div>
+          <div className="absolute top-10 right-20 w-60 h-60 rounded-full bg-primary blur-3xl"></div>
+        </div>
+        
+        <div className="container relative mx-auto px-4">
+          <div className="max-w-3xl mx-auto p-8 rounded-2xl bg-card/50 backdrop-blur-sm border border-border/40 shadow-xl">
+            <div className="text-center">
+              <div className="inline-block mb-4 px-4 py-1 border border-secondary/30 rounded-full bg-secondary/10 text-secondary text-sm font-medium tracking-wide">
+                STAY UPDATED
+              </div>
+              <h2 className="heading-lg mb-4 text-transparent bg-clip-text bg-gradient-to-r from-secondary to-primary font-extrabold">Subscribe to Our Newsletter</h2>
+              <p className="text-foreground/80 mb-8 max-w-lg mx-auto">
+                Get the latest gaming news, exclusive offers, and updates delivered directly to your inbox.
+              </p>
+              
+              <form className="group flex flex-col sm:flex-row gap-3 max-w-lg mx-auto">
+                <div className="relative flex-1">
+                  <input 
+                    type="email" 
+                    placeholder="Your email address" 
+                    className="w-full h-12 pl-4 pr-12 rounded-full border border-border bg-card/50 focus:outline-none focus:ring-2 focus:ring-secondary/50 focus:border-secondary/50 transition-all duration-300"
+                    required
+                  />
+                  <div className="absolute right-4 top-1/2 -translate-y-1/2 text-secondary/70">
+                    <i className="ri-mail-line"></i>
+                  </div>
+                </div>
+                <button 
+                  type="submit"
+                  className="h-12 px-6 rounded-full font-medium bg-gradient-to-r from-secondary to-primary text-white shadow-lg shadow-secondary/20 hover:shadow-secondary/40 transition-all duration-300 hover:scale-105"
+                >
+                  Subscribe
+                </button>
+              </form>
+              
+              <p className="mt-4 text-xs text-foreground/60">
+                By subscribing, you agree to our Privacy Policy. You can unsubscribe at any time.
+              </p>
+            </div>
           </div>
         </div>
       </section>
