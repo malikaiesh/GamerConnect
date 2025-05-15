@@ -170,82 +170,82 @@ export default function GameCategoriesPage() {
             <CardTitle>All Categories</CardTitle>
           </CardHeader>
           <CardContent>
-          {isLoading ? (
-            <div className="flex justify-center py-10">
-              <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
-            </div>
-          ) : categories && categories.length > 0 ? (
-            <div className="overflow-x-auto">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Name</TableHead>
-                    <TableHead>Slug</TableHead>
-                    <TableHead>Icon</TableHead>
-                    <TableHead>Display Order</TableHead>
-                    <TableHead>Status</TableHead>
-                    <TableHead>Created</TableHead>
-                    <TableHead className="text-right">Actions</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {categories.map((category: GameCategory) => (
-                    <TableRow key={category.id} className="hover:bg-muted/50">
-                      <TableCell className="font-medium">{category.name}</TableCell>
-                      <TableCell>{category.slug}</TableCell>
-                      <TableCell>
-                        <span className="flex items-center">
-                          <i className={`${category.icon || 'ri-gamepad-line'} mr-2 text-lg`}></i>
-                          {category.icon || 'ri-gamepad-line'}
-                        </span>
-                      </TableCell>
-                      <TableCell>{category.displayOrder}</TableCell>
-                      <TableCell>
-                        {category.isActive ? (
-                          <Badge variant="success" className="flex items-center gap-1">
-                            <CheckCircle2 className="w-3 h-3" />
-                            Active
-                          </Badge>
-                        ) : (
-                          <Badge variant="destructive" className="flex items-center gap-1">
-                            <AlertCircle className="w-3 h-3" />
-                            Inactive
-                          </Badge>
-                        )}
-                      </TableCell>
-                      <TableCell>{formatDate(category.createdAt)}</TableCell>
-                      <TableCell className="text-right space-x-2">
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          onClick={() => handleEdit(category)}
-                          title="Edit"
-                        >
-                          <Edit className="w-4 h-4" />
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          onClick={() => handleDelete(category)}
-                          title="Delete"
-                          className="text-destructive hover:text-destructive/90 hover:bg-destructive/10"
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </Button>
-                      </TableCell>
+            {isLoading ? (
+              <div className="flex justify-center py-10">
+                <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
+              </div>
+            ) : categories && categories.length > 0 ? (
+              <div className="overflow-x-auto">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Name</TableHead>
+                      <TableHead>Slug</TableHead>
+                      <TableHead>Icon</TableHead>
+                      <TableHead>Display Order</TableHead>
+                      <TableHead>Status</TableHead>
+                      <TableHead>Created</TableHead>
+                      <TableHead className="text-right">Actions</TableHead>
                     </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </div>
-          ) : (
-            <div className="text-center py-8">
-              <p className="text-muted-foreground mb-4">No categories found</p>
-              <Button onClick={() => setIsAddDialogOpen(true)} variant="outline">
-                Create your first category
-              </Button>
-            </div>
-          )}
+                  </TableHeader>
+                  <TableBody>
+                    {categories.map((category: GameCategory) => (
+                      <TableRow key={category.id} className="hover:bg-muted/50">
+                        <TableCell className="font-medium">{category.name}</TableCell>
+                        <TableCell>{category.slug}</TableCell>
+                        <TableCell>
+                          <span className="flex items-center">
+                            <i className={`${category.icon || 'ri-gamepad-line'} mr-2 text-lg`}></i>
+                            {category.icon || 'ri-gamepad-line'}
+                          </span>
+                        </TableCell>
+                        <TableCell>{category.displayOrder}</TableCell>
+                        <TableCell>
+                          {category.isActive ? (
+                            <Badge variant="success" className="flex items-center gap-1">
+                              <CheckCircle2 className="w-3 h-3" />
+                              Active
+                            </Badge>
+                          ) : (
+                            <Badge variant="destructive" className="flex items-center gap-1">
+                              <AlertCircle className="w-3 h-3" />
+                              Inactive
+                            </Badge>
+                          )}
+                        </TableCell>
+                        <TableCell>{formatDate(category.createdAt)}</TableCell>
+                        <TableCell className="text-right space-x-2">
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => handleEdit(category)}
+                            title="Edit"
+                          >
+                            <Edit className="w-4 h-4" />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => handleDelete(category)}
+                            title="Delete"
+                            className="text-destructive hover:text-destructive/90 hover:bg-destructive/10"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </Button>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
+            ) : (
+              <div className="text-center py-8">
+                <p className="text-muted-foreground mb-4">No categories found</p>
+                <Button onClick={() => setIsAddDialogOpen(true)} variant="outline">
+                  Create your first category
+                </Button>
+              </div>
+            )}
         </CardContent>
       </Card>
 

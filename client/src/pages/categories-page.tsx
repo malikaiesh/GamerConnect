@@ -3,28 +3,28 @@ import { useQuery } from '@tanstack/react-query';
 import { Header } from '@/components/layout/header';
 import { Footer } from '@/components/layout/footer';
 import { GameGrid } from '@/components/games/game-grid';
-import { Game } from '@shared/schema';
+import { Game, GameCategory } from '@shared/schema';
 import { fetcher } from '@/lib/queryClient';
 
 export default function CategoriesPage() {
-  const [activeCategory, setActiveCategory] = useState<string | null>(null);
+  const [activeCategory, setActiveCategory] = useState<GameCategory | null>(null);
   
   // Fetch all categories
-  const { data: categories = [], isLoading: loadingCategories } = useQuery<string[]>({
-    queryKey: ['/api/games/categories'],
-    queryFn: () => fetcher('/api/games/categories'),
+  const { data: categories = [], isLoading: loadingCategories } = useQuery<GameCategory[]>({
+    queryKey: ['/api/categories?includeActive=true'],
+    queryFn: () => fetcher('/api/categories?includeActive=true'),
   });
   
   // Fetch top categories for featured section
-  const { data: topCategories = [], isLoading: loadingTopCategories } = useQuery<string[]>({
-    queryKey: ['/api/games/categories/top'],
-    queryFn: () => fetcher('/api/games/categories/top'),
+  const { data: topCategories = [], isLoading: loadingTopCategories } = useQuery<GameCategory[]>({
+    queryKey: ['/api/categories/featured'],
+    queryFn: () => fetcher('/api/categories/featured'),
   });
   
   // Fetch games based on selected category
   const { data: gamesData, isLoading: loadingGames } = useQuery<{games: Game[], pagination: any}>({
-    queryKey: ['/api/games/popular', { category: activeCategory }],
-    queryFn: () => activeCategory ? fetcher(`/api/games/popular?category=${encodeURIComponent(activeCategory)}`) : Promise.resolve({games: [], pagination: {}}),
+    queryKey: ['/api/games/popular', { category: activeCategory?.name }],
+    queryFn: () => activeCategory ? fetcher(`/api/games/popular?category=${encodeURIComponent(activeCategory.name)}`) : Promise.resolve({games: [], pagination: {}}),
     enabled: !!activeCategory,
   });
   
@@ -78,11 +78,11 @@ export default function CategoriesPage() {
               // Category cards
               categories.map((category) => (
                 <button
-                  key={category}
+                  key={category.id}
                   onClick={() => setActiveCategory(category)}
                   className="group outline-none focus:outline-none"
                 >
-                  <div className={`relative bg-card/50 backdrop-blur-sm rounded-xl overflow-hidden shadow-md transition-all duration-500 hover:scale-105 hover:shadow-xl ${activeCategory === category ? 'ring-2 ring-primary shadow-lg shadow-primary/20' : 'hover:ring-1 hover:ring-primary/50'}`}>
+                  <div className={`relative bg-card/50 backdrop-blur-sm rounded-xl overflow-hidden shadow-md transition-all duration-500 hover:scale-105 hover:shadow-xl ${activeCategory?.id === category.id ? 'ring-2 ring-primary shadow-lg shadow-primary/20' : 'hover:ring-1 hover:ring-primary/50'}`}>
                     {/* Animated gradient background */}
                     <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-primary/20 opacity-70 group-hover:opacity-100 transition-opacity duration-500"></div>
                     
@@ -94,24 +94,14 @@ export default function CategoriesPage() {
                         {/* Background circle */}
                         <div className="absolute inset-0 -m-2 rounded-full bg-primary/10 group-hover:bg-primary/20 transition-colors duration-500 blur-sm"></div>
                         <div className="text-5xl text-primary relative group-hover:scale-110 transition-all duration-500">
-                          {/* Use different icons based on category */}
-                          {category === 'Sports' && <i className="ri-basketball-line"></i>}
-                          {category === 'Adventure' && <i className="ri-compass-3-line"></i>}
-                          {category === 'Strategy' && <i className="ri-chess-line"></i>}
-                          {category === 'Racing' && <i className="ri-steering-2-line"></i>}
-                          {category === 'Platformer' && <i className="ri-game-line"></i>}
-                          {category === 'Puzzle' && <i className="ri-puzzle-line"></i>}
-                          {category === 'Action' && <i className="ri-sword-line"></i>}
-                          {category === 'RPG' && <i className="ri-sword-line"></i>}
-                          {/* Default icon if category not matched */}
-                          {!['Sports', 'Adventure', 'Strategy', 'Racing', 'Platformer', 'Puzzle', 'Action', 'RPG'].includes(category) && 
-                            <i className="ri-gamepad-line"></i>}
+                          {/* Use category icon from database if available */}
+                          <i className={category.icon || 'ri-gamepad-line'}></i>
                         </div>
                       </div>
                     </div>
                     
                     <div className="p-4 text-center relative z-10 border-t border-primary/10 bg-gradient-to-t from-background/80 to-background/30">
-                      <h3 className="font-bold text-foreground group-hover:text-primary transition-colors duration-300">{category}</h3>
+                      <h3 className="font-bold text-foreground group-hover:text-primary transition-colors duration-300">{category.name}</h3>
                     </div>
                   </div>
                 </button>
@@ -126,7 +116,7 @@ export default function CategoriesPage() {
         <section className="py-8 bg-muted/30">
           <div className="container mx-auto px-4">
             <div className="flex justify-between items-center mb-6">
-              <h2 className="heading-md">{activeCategory} Games</h2>
+              <h2 className="heading-md">{activeCategory.name} Games</h2>
               <button 
                 onClick={() => setActiveCategory(null)}
                 className="text-primary hover:underline flex items-center"
@@ -165,12 +155,12 @@ export default function CategoriesPage() {
               ) : (
                 // Featured category cards
                 topCategories.slice(0, 3).map((category) => (
-                  <div key={category} className="relative group rounded-xl overflow-hidden shadow-xl transform transition-all duration-500 hover:scale-105 hover:-rotate-1">
+                  <div key={category.id} className="relative group rounded-xl overflow-hidden shadow-xl transform transition-all duration-500 hover:scale-105 hover:-rotate-1">
                     {/* Card background with gradient overlay */}
                     <div 
                       className="h-56 bg-cover bg-center"
                       style={{ 
-                        backgroundImage: `url(https://source.unsplash.com/random/400x300/?${category.toLowerCase()},game)` 
+                        backgroundImage: `url(https://source.unsplash.com/random/400x300/?${category.name.toLowerCase()},game)` 
                       }}
                     >
                       {/* Gradient overlay */}
@@ -186,9 +176,9 @@ export default function CategoriesPage() {
                         <span className="inline-block bg-primary/20 backdrop-blur-md border border-primary/30 rounded-full px-3 py-1 text-xs font-medium text-primary mb-3">
                           POPULAR CATEGORY
                         </span>
-                        <h3 className="text-foreground text-2xl font-extrabold mb-3 group-hover:text-primary transition-colors">{category}</h3>
+                        <h3 className="text-foreground text-2xl font-extrabold mb-3 group-hover:text-primary transition-colors">{category.name}</h3>
                         <p className="text-foreground/80 mb-4 max-h-0 overflow-hidden group-hover:max-h-20 transition-all duration-500">
-                          Explore the best {category} games in our collection.
+                          {category.description || `Explore the best ${category.name} games in our collection.`}
                         </p>
                         <button 
                           onClick={() => setActiveCategory(category)}
