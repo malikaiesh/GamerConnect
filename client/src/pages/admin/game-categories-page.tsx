@@ -20,6 +20,7 @@ import CategoryFormDialog from "@/components/admin/category-form-dialog";
 import DeleteConfirmDialog from "@/components/admin/delete-confirm-dialog";
 import { queryClient, apiRequest } from "@/lib/queryClient";
 import type { GameCategory } from "@shared/schema";
+import AdminNavigation from "@/components/admin/navigation";
 
 export default function GameCategoriesPage() {
   const [, setLocation] = useLocation();
