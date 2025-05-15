@@ -16,6 +16,7 @@ import { registerHomeAdsRoutes } from "./api/homeAds";
 import { registerSitemapRoutes } from "./api/sitemapRoutes";
 import { registerUserRoutes } from "./api/users";
 import { registerUrlRedirectRoutes } from "./api/redirects";
+import { registerCategoryRoutes } from "./api/categories";
 import pushNotificationsRoutes from "./api/push-notifications";
 import { registerRoleRoutes } from "./api/roles";
 import { registerPermissionRoutes } from "./api/permissions";
@@ -141,6 +142,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   registerHomeAdsRoutes(app);
   registerSitemapRoutes(app);
   registerUserRoutes(app);
+  registerCategoryRoutes(app);
   
   // Register push-notifications API routes
   app.use('/api/push-notifications', pushNotificationsRoutes);

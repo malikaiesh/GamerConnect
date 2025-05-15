@@ -21,9 +21,7 @@ router.get('/', async (req: Request, res: Response) => {
     }
     
     // Order by displayOrder and then name
-    query = query.orderBy(asc(gameCategories.displayOrder), asc(gameCategories.name));
-    
-    const categories = await query;
+    const categories = await query.orderBy(asc(gameCategories.displayOrder), asc(gameCategories.name));
     
     res.json(categories);
   } catch (error) {
@@ -41,13 +39,13 @@ router.get('/:id', async (req: Request, res: Response) => {
       return res.status(400).json({ message: 'Invalid category ID' });
     }
     
-    const category = await db.select().from(gameCategories).where(eq(gameCategories.id, id)).limit(1);
+    const results = await db.select().from(gameCategories).where(eq(gameCategories.id, id)).limit(1);
     
-    if (!category || category.length === 0) {
+    if (!results || results.length === 0) {
       return res.status(404).json({ message: 'Category not found' });
     }
     
-    res.json(category[0]);
+    res.json(results[0]);
   } catch (error) {
     console.error('Error fetching category:', error);
     res.status(500).json({ message: 'Failed to fetch category' });
