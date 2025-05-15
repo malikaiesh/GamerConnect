@@ -154,16 +154,16 @@ export default function GameCategoriesPage() {
     <div className="flex min-h-screen">
       <AdminNavigation />
       <div className="flex-1 px-4 py-8">
-        <div className="flex justify-between items-center mb-6">
-          <PageHeader title="Game Categories" subtitle="Manage game categories for your platform" />
-          <Button 
-            onClick={() => setIsAddDialogOpen(true)}
-            className="bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700"
-          >
-            <Plus className="w-4 h-4 mr-2" />
-            Add Category
-          </Button>
-        </div>
+        <PageHeader 
+          title="Game Categories" 
+          description="Manage game categories for your platform"
+          actionButton={{
+            label: "Add Category",
+            onClick: () => setIsAddDialogOpen(true),
+            icon: <Plus className="w-4 h-4" />,
+            variant: "default"
+          }}
+        />
 
         <Card className="bg-card/60 backdrop-blur-sm border shadow-md">
           <CardHeader>
@@ -279,6 +279,7 @@ export default function GameCategoriesPage() {
           title="Delete Category"
           description={`Are you sure you want to delete "${selectedCategory.name}"? This action cannot be undone.`}
           isPending={deleteMutation.isPending}
+          itemName={selectedCategory.name}
         />
       )}
       </div>

@@ -12,24 +12,24 @@ import {
 import { Loader2 } from 'lucide-react';
 
 interface DeleteConfirmDialogProps {
-  isOpen: boolean;
-  onClose: () => void;
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
   onConfirm: () => void;
   title?: string;
   description?: string;
-  isLoading?: boolean;
+  isPending?: boolean;
   itemName?: string;
   cancelText?: string;
   confirmText?: string;
 }
 
 export function DeleteConfirmDialog({
-  isOpen,
-  onClose,
+  open,
+  onOpenChange,
   onConfirm,
   title = 'Confirm Deletion',
   description = 'This action cannot be undone. This will permanently delete this item from our servers.',
-  isLoading = false,
+  isPending = false,
   itemName,
   cancelText = 'Cancel',
   confirmText = 'Delete'
@@ -40,7 +40,7 @@ export function DeleteConfirmDialog({
   };
 
   return (
-    <AlertDialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
+    <AlertDialog open={open} onOpenChange={onOpenChange}>
       <AlertDialogContent>
         <AlertDialogHeader>
           <AlertDialogTitle>{title}</AlertDialogTitle>
@@ -52,13 +52,13 @@ export function DeleteConfirmDialog({
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
-          <AlertDialogCancel disabled={isLoading}>{cancelText}</AlertDialogCancel>
+          <AlertDialogCancel disabled={isPending}>{cancelText}</AlertDialogCancel>
           <AlertDialogAction 
             onClick={handleConfirm}
-            disabled={isLoading}
+            disabled={isPending}
             className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
           >
-            {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+            {isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
             {confirmText}
           </AlertDialogAction>
         </AlertDialogFooter>

@@ -33,11 +33,11 @@ interface CategoryFormDialogProps {
 }
 
 export function CategoryFormDialog({
-  isOpen,
-  onClose,
+  open,
+  onOpenChange,
   onSubmit,
-  category,
-  isLoading = false,
+  defaultValues,
+  isPending = false,
   title = 'Add Category'
 }: CategoryFormDialogProps) {
   // Initialize form with default values or existing category data
@@ -50,7 +50,14 @@ export function CategoryFormDialog({
       icon: 'ri-gamepad-line',
       displayOrder: 0,
       isActive: true,
-      ...category
+      ...(defaultValues && {
+        name: defaultValues.name || '',
+        slug: defaultValues.slug || '',
+        description: defaultValues.description || '',
+        icon: defaultValues.icon || 'ri-gamepad-line',
+        displayOrder: defaultValues.displayOrder || 0,
+        isActive: defaultValues.isActive === false ? false : true
+      })
     }
   });
 
@@ -60,7 +67,7 @@ export function CategoryFormDialog({
   };
 
   return (
-    <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
+    <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[500px]">
         <DialogHeader>
           <DialogTitle>{title}</DialogTitle>
@@ -179,12 +186,12 @@ export function CategoryFormDialog({
             />
             
             <DialogFooter>
-              <Button type="button" variant="outline" onClick={onClose}>
+              <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
                 Cancel
               </Button>
-              <Button type="submit" disabled={isLoading}>
-                {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                {category?.id ? 'Update' : 'Create'} Category
+              <Button type="submit" disabled={isPending}>
+                {isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                {defaultValues?.id ? 'Update' : 'Create'} Category
               </Button>
             </DialogFooter>
           </form>
