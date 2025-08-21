@@ -8,10 +8,23 @@ import { URL } from 'url';
  * before they go to other routes
  */
 export async function handleUrlRedirects(req: Request, res: Response, next: NextFunction) {
-  // Skip handling for API requests and static files
+  // Skip handling for API requests, static files, and development resources
   if (req.path.startsWith('/api/') || 
       req.path.startsWith('/assets/') || 
+      req.path.startsWith('/uploads/') ||
       req.path.startsWith('/_vite/') || 
+      req.path.startsWith('/@') ||
+      req.path.startsWith('/src/') ||
+      req.path.startsWith('/node_modules/') ||
+      req.path.includes('.js') ||
+      req.path.includes('.css') ||
+      req.path.includes('.tsx') ||
+      req.path.includes('.ts') ||
+      req.path.includes('.ico') ||
+      req.path.includes('.svg') ||
+      req.path.includes('.png') ||
+      req.path.includes('.jpg') ||
+      req.path.includes('.jpeg') ||
       req.path === '/favicon.ico') {
     return next();
   }

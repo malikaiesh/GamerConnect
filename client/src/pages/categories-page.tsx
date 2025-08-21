@@ -11,8 +11,8 @@ export default function CategoriesPage() {
   
   // Fetch all categories
   const { data: categories = [], isLoading: loadingCategories } = useQuery<GameCategory[]>({
-    queryKey: ['/api/categories?includeActive=true'],
-    queryFn: () => fetcher('/api/categories?includeActive=true'),
+    queryKey: ['/api/categories'],
+    queryFn: () => fetcher('/api/categories'),
   });
   
   // Fetch top categories for featured section
