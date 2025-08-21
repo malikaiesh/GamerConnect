@@ -129,6 +129,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Setup authentication routes
   setupAuth(app);
   
+  // Serve uploaded files statically
+  app.use('/uploads', express.static(path.join(process.cwd(), 'uploads')));
+  
   // Development admin bypass route
   app.post('/api/admin-bypass', (req, res) => {
     if (process.env.NODE_ENV === 'development') {
@@ -189,6 +192,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
   registerSitemapRoutes(app);
   registerUserRoutes(app);
   registerCategoryRoutes(app);
+  
+  // Register image upload API routes
+  const imageUploadRoutes = await import('./api/image-upload');
+  app.use('/api/images', imageUploadRoutes.default);
   
   // Register push-notifications API routes
   app.use('/api/push-notifications', pushNotificationsRoutes);

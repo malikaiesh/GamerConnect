@@ -72,6 +72,9 @@ const AdminRolesPage = lazy(() => import("@/pages/admin/accounts/roles"));
 const AdminSignupsPage = lazy(() => import("@/pages/admin/accounts/signups"));
 const AdminLocationsPage = lazy(() => import("@/pages/admin/accounts/locations"));
 
+// Admin image upload demo
+const AdminImageUploadDemo = lazy(() => import("@/pages/admin/image-upload-demo"));
+
 // Admin security pages
 const AdminTwoFactorPage = lazy(() => import("@/pages/admin/security/two-factor"));
 const AdminSecurityLogsPage = lazy(() => import("@/pages/admin/security/logs"));
@@ -289,6 +292,13 @@ function Router() {
       <Route path="/admin/security/reset-password">
         <ProtectedRoute adminOnly={true}>
           <Suspense fallback={<LoadingFallback />}><AdminResetPasswordPage /></Suspense>
+        </ProtectedRoute>
+      </Route>
+      
+      {/* Image Upload Demo Route */}
+      <Route path="/admin/image-upload">
+        <ProtectedRoute adminOnly={true}>
+          <Suspense fallback={<LoadingFallback />}><AdminImageUploadDemo /></Suspense>
         </ProtectedRoute>
       </Route>
       
