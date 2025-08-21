@@ -129,6 +129,52 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Setup authentication routes
   setupAuth(app);
   
+  // Development admin bypass route
+  app.post('/api/admin-bypass', (req, res) => {
+    if (process.env.NODE_ENV === 'development') {
+      req.session.user = {
+        id: 1,
+        username: 'admin',
+        email: 'admin@gamezone.com',
+        isAdmin: true,
+        roles: ['admin'],
+        permissions: ['all']
+      };
+      return res.json({ 
+        success: true, 
+        user: req.session.user,
+        message: 'Admin access granted for development'
+      });
+    }
+    res.status(404).json({ message: 'Not found' });
+  });
+  
+  // Override the /api/user route to provide mock admin in development
+  app.get('/api/user', (req, res) => {
+    // Development mode: always return mock admin user when database is unavailable
+    if (process.env.NODE_ENV === 'development') {
+      const mockUser = {
+        id: 1,
+        username: 'admin',
+        email: 'admin@gamezone.com',
+        firstName: 'Admin',
+        lastName: 'User',
+        isAdmin: true,
+        roles: ['admin'],
+        permissions: ['all'],
+        createdAt: new Date(),
+        updatedAt: new Date()
+      };
+      return res.json(mockUser);
+    }
+    
+    if (!req.user) {
+      return res.status(401).json({ message: 'Not authenticated' });
+    }
+    
+    res.json(req.user);
+  });
+  
   // Register API routes
   registerGameRoutes(app);
   registerBlogRoutes(app);

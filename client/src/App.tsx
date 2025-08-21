@@ -29,6 +29,7 @@ const BlogPage = lazy(() => import("@/pages/blog-page"));
 const BlogPostPage = lazy(() => import("@/pages/blog-post-page"));
 const RandomGameRedirect = lazy(() => import("@/pages/random-game-redirect"));
 const AuthPage = lazy(() => import("@/pages/auth-page"));
+const DevLogin = lazy(() => import("@/pages/dev-login"));
 const CategoriesPage = lazy(() => import("@/pages/categories-page"));
 const TopGamesPage = lazy(() => import("@/pages/top-games-page"));
 const InstallPage = lazy(() => import("@/pages/install-page"));
@@ -133,6 +134,9 @@ function Router() {
       </Route>
       <Route path="/auth">
         <Suspense fallback={<LoadingFallback />}><AuthPage /></Suspense>
+      </Route>
+      <Route path="/dev-login">
+        <Suspense fallback={<LoadingFallback />}><DevLogin /></Suspense>
       </Route>
       <Route path="/reset-password">
         <Suspense fallback={<LoadingFallback />}><ResetPasswordPage /></Suspense>
