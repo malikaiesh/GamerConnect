@@ -1,6 +1,7 @@
 import { db } from "./index";
 import * as schema from "@shared/schema";
 import { eq } from "drizzle-orm";
+import slugify from "../server/utils/slugify";
 
 async function seed() {
   try {
@@ -416,6 +417,7 @@ async function seed() {
       try {
         await db.insert(schema.games).values({
           title: game.title,
+          slug: slugify(game.title),
           description: game.description,
           thumbnail: game.thumbnail,
           url: game.url,

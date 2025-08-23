@@ -4,9 +4,13 @@ import fs from 'fs/promises';
 import path from 'path';
 import { randomUUID } from 'crypto';
 
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
-});
+let openai: OpenAI | null = null;
+
+if (process.env.OPENAI_API_KEY) {
+  openai = new OpenAI({
+    apiKey: process.env.OPENAI_API_KEY,
+  });
+}
 
 export interface ProcessedImage {
   originalPath: string;
@@ -97,7 +101,7 @@ export class ImageProcessingService {
       const finalMetadata = await sharp(webpPath).metadata();
 
       let altText = '';
-      if (generateAltText && process.env.OPENAI_API_KEY) {
+      if (generateAltText && openai) {
         try {
           altText = await this.generateAltText(webpPath);
         } catch (error) {
@@ -126,6 +130,10 @@ export class ImageProcessingService {
    * Generate SEO-optimized alt text using OpenAI vision model
    */
   async generateAltText(imagePath: string): Promise<string> {
+    if (!openai) {
+      throw new Error('OpenAI API key not configured');
+    }
+    
     try {
       // Read image file and convert to base64
       const imageBuffer = await fs.readFile(imagePath);
