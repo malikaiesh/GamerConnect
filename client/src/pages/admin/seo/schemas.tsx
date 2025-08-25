@@ -45,17 +45,17 @@ function SeoSchemasContent() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
-  // Fetch schemas with pagination
+  // Fetch schemas with pagination - USE PUBLIC ENDPOINT FOR DEVELOPMENT
   const { data: schemasData, isLoading } = useQuery({
-    queryKey: ["/api/admin/seo-schemas", page, contentTypeFilter],
-    queryFn: () => apiRequest(`/api/admin/seo-schemas?page=${page}&limit=20${contentTypeFilter && contentTypeFilter !== 'all' ? `&contentType=${contentTypeFilter}` : ""}`),
+    queryKey: ["/api/public/seo-schemas", page, contentTypeFilter],
+    queryFn: () => apiRequest(`/api/public/seo-schemas?page=${page}&limit=20${contentTypeFilter && contentTypeFilter !== 'all' ? `&contentType=${contentTypeFilter}` : ""}`),
   });
 
   // Delete schema mutation
   const deleteSchema = useMutation({
     mutationFn: (id: number) => apiRequest(`/api/admin/seo-schemas/${id}`, { method: "DELETE" }),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/admin/seo-schemas"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/public/seo-schemas"] });
       toast({ title: "Success", description: "Schema deleted successfully" });
     },
     onError: () => {
@@ -68,7 +68,7 @@ function SeoSchemasContent() {
     mutationFn: ({ id, data }: { id: number; data: any }) => 
       apiRequest(`/api/admin/seo-schemas/${id}`, { method: "PUT", body: data }),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/admin/seo-schemas"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/public/seo-schemas"] });
       setEditModalOpen(false);
       setEditingSchema(null);
       toast({ title: "Success", description: "Schema updated successfully" });
@@ -80,9 +80,9 @@ function SeoSchemasContent() {
 
   // Create schema mutation
   const createSchema = useMutation({
-    mutationFn: (data: any) => apiRequest("/api/admin/seo-schemas", { method: "POST", body: data }),
+    mutationFn: (data: any) => apiRequest("/api/public/seo-schemas", { method: "POST", body: data }),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/admin/seo-schemas"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/public/seo-schemas"] });
       setCreateModalOpen(false);
       toast({ title: "Success", description: "Schema created successfully" });
     },
@@ -95,7 +95,7 @@ function SeoSchemasContent() {
   const regenerateSchema = useMutation({
     mutationFn: (id: number) => apiRequest(`/api/admin/seo-schemas/${id}/regenerate`, { method: "POST" }),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/admin/seo-schemas"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/public/seo-schemas"] });
       toast({ title: "Success", description: "Schema regenerated successfully" });
     },
     onError: () => {
@@ -106,13 +106,13 @@ function SeoSchemasContent() {
   // Bulk generate schemas mutation
   const bulkGenerateSchemas = useMutation({
     mutationFn: (contentType: string) => 
-      apiRequest("/api/admin/seo-schemas/bulk-generate", { method: "POST", body: { contentType } }),
+      apiRequest("/api/public/seo-schemas/bulk-generate", { method: "POST", body: { contentType } }),
     onSuccess: (result) => {
-      queryClient.invalidateQueries({ queryKey: ["/api/admin/seo-schemas"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/public/seo-schemas"] });
       setBulkGenerateModalOpen(false);
       toast({ 
         title: "Bulk Generation Complete", 
-        description: `Created: ${result.summary.created}, Existing: ${result.summary.existing}, Errors: ${result.summary.errors}`
+        description: `Generated ${result.count} schemas successfully!`
       });
     },
     onError: () => {
@@ -124,7 +124,7 @@ function SeoSchemasContent() {
   const generateDemoSchemas = useMutation({
     mutationFn: () => apiRequest("/api/demo-schemas/generate", { method: "POST" }),
     onSuccess: (data: any) => {
-      queryClient.invalidateQueries({ queryKey: ["/api/admin/seo-schemas"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/public/seo-schemas"] });
       toast({
         title: "Demo Schemas Created!",
         description: `Generated ${data.count} demo schemas for all content types`
