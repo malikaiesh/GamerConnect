@@ -2,6 +2,41 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Mobile-optimized game cards */
+@layer utilities {
+  .line-clamp-2 {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+  
+  /* Enhanced mobile button styling */
+  .mobile-game-button {
+    @apply bg-gradient-to-r from-purple-600 via-pink-600 to-purple-700;
+    @apply hover:from-purple-700 hover:via-pink-700 hover:to-purple-800;
+    @apply active:from-purple-800 active:via-pink-800 active:to-purple-900;
+    @apply text-white font-bold rounded-lg shadow-lg;
+    @apply transition-all duration-300 transform;
+    @apply hover:shadow-xl hover:scale-[1.02] active:scale-[0.98];
+    @apply flex items-center justify-center gap-2;
+    @apply py-3 px-4;
+    @apply text-sm font-bold;
+  }
+  
+  @media (min-width: 640px) {
+    .mobile-game-button {
+      @apply py-3 px-6 text-base rounded-xl gap-3;
+    }
+  }
+  
+  @media (min-width: 768px) {
+    .mobile-game-button {
+      @apply text-lg;
+    }
+  }
+}
+
 @layer base {
   :root {
     --background: 0 0% 98%;
