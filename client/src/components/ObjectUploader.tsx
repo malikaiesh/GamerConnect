@@ -84,7 +84,7 @@ export function ObjectUploader({
         {children}
       </Button>
 
-      <style jsx global>{`
+      <style>{`
         .uppy-Dashboard {
           border-radius: 12px !important;
           border: 2px dashed #6366f1 !important;
@@ -186,8 +186,6 @@ export function ObjectUploader({
         onRequestClose={() => setShowModal(false)}
         proudlyDisplayPoweredByUppy={false}
         theme="light"
-        height={450}
-        width={600}
         note="Upload your profile picture (max 5MB)"
         closeAfterFinish={true}
         showProgressDetails={true}
