@@ -871,3 +871,25 @@ export type AdminNotification = typeof adminNotifications.$inferSelect;
 export type InsertAdminNotification = z.infer<typeof insertAdminNotificationSchema>;
 export type AdminActivityLog = typeof adminActivityLogs.$inferSelect;
 export type InsertAdminActivityLog = z.infer<typeof insertAdminActivityLogSchema>;
+
+// Website Update History table for rollback functionality
+export const websiteUpdateHistory = pgTable('website_update_history', {
+  id: serial('id').primaryKey(),
+  updateId: integer('update_id').references(() => websiteUpdates.id).notNull(),
+  version: text('version').notNull(),
+  title: text('title').notNull(),
+  description: text('description').notNull(),
+  changeType: text('change_type').notNull(),
+  priority: text('priority').notNull(),
+  status: text('status').notNull(),
+  githubCommitHash: text('github_commit_hash'),
+  deploymentUrl: text('deployment_url'),
+  rollbackData: json('rollback_data').$type<Record<string, any>>(), // Store rollback information
+  isActive: boolean('is_active').default(false).notNull(), // Current active version
+  createdBy: integer('created_by').references(() => users.id).notNull(),
+  createdAt: timestamp('created_at').defaultNow().notNull()
+});
+
+export const insertWebsiteUpdateHistorySchema = createInsertSchema(websiteUpdateHistory);
+export type WebsiteUpdateHistory = typeof websiteUpdateHistory.$inferSelect;
+export type InsertWebsiteUpdateHistory = z.infer<typeof insertWebsiteUpdateHistorySchema>;

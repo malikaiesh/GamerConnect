@@ -7,21 +7,7 @@ import { eq, desc, and, count } from "drizzle-orm";
 
 export function registerAdminNotificationsRoutes(app: Express) {
   // Get admin notifications for current user
-  app.get('/api/admin/notifications', async (req: Request, res: Response) => {
-    // Development mode: create mock admin user if not authenticated
-    if (!req.user) {
-      req.user = {
-        id: 1,
-        username: 'admin',
-        email: 'admin@gamezone.com',
-        isAdmin: true
-      } as any;
-    }
-    
-    // Check if user is admin
-    if (!req.user.isAdmin) {
-      return res.status(403).json({ message: 'Admin access required' });
-    }
+  app.get('/api/admin/notifications', isAdmin, async (req: Request, res: Response) => {
     try {
       const page = parseInt(req.query.page as string) || 1;
       const limit = parseInt(req.query.limit as string) || 20;

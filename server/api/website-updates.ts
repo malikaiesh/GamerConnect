@@ -2,8 +2,8 @@ import { Express, Request, Response } from "express";
 import { isAdmin } from "../middleware/auth";
 import { z } from "zod";
 import { db } from "../../db";
-import { websiteUpdates, adminNotifications, adminActivityLogs } from "@shared/schema";
-import { eq, desc, and } from "drizzle-orm";
+import { websiteUpdates, adminNotifications, adminActivityLogs, websiteUpdateHistory } from "@shared/schema";
+import { eq, desc, and, count } from "drizzle-orm";
 
 export function registerWebsiteUpdatesRoutes(app: Express) {
   // Get all website updates
@@ -25,9 +25,9 @@ export function registerWebsiteUpdatesRoutes(app: Express) {
         .limit(limit)
         .offset(offset);
 
-      const totalQuery = db.select({ count: websiteUpdates.id }).from(websiteUpdates);
+      let totalQuery = db.select({ count: count() }).from(websiteUpdates);
       if (status && status !== 'all') {
-        totalQuery.where(eq(websiteUpdates.status, status));
+        totalQuery = totalQuery.where(eq(websiteUpdates.status, status));
       }
       const [{ count: total }] = await totalQuery;
 
@@ -292,6 +292,179 @@ export function registerWebsiteUpdatesRoutes(app: Express) {
     } catch (error) {
       console.error('Error triggering deployment:', error);
       res.status(500).json({ message: 'Failed to trigger deployment' });
+    }
+  });
+
+  // Get update history for rollback
+  app.get('/api/website-updates/:id/history', isAdmin, async (req: Request, res: Response) => {
+    try {
+      const { id } = req.params;
+      
+      const history = await db
+        .select()
+        .from(websiteUpdateHistory)
+        .where(eq(websiteUpdateHistory.updateId, parseInt(id)))
+        .orderBy(desc(websiteUpdateHistory.createdAt));
+
+      res.json(history);
+    } catch (error) {
+      console.error('Error fetching update history:', error);
+      res.status(500).json({ message: 'Failed to fetch update history' });
+    }
+  });
+
+  // Rollback to previous version
+  app.post('/api/website-updates/:id/rollback', isAdmin, async (req: Request, res: Response) => {
+    try {
+      const { id } = req.params;
+      const { historyId } = req.body;
+      
+      // Get the history record to rollback to
+      const [historyRecord] = await db
+        .select()
+        .from(websiteUpdateHistory)
+        .where(eq(websiteUpdateHistory.id, historyId));
+
+      if (!historyRecord) {
+        return res.status(404).json({ message: 'History record not found' });
+      }
+
+      // Create a new history record for current state before rollback
+      const [currentUpdate] = await db
+        .select()
+        .from(websiteUpdates)
+        .where(eq(websiteUpdates.id, parseInt(id)));
+
+      if (currentUpdate) {
+        await db.insert(websiteUpdateHistory).values({
+          updateId: currentUpdate.id,
+          version: currentUpdate.version + '-backup',
+          title: currentUpdate.title,
+          description: currentUpdate.description,
+          changeType: currentUpdate.changeType,
+          priority: currentUpdate.priority,
+          status: currentUpdate.status,
+          githubCommitHash: currentUpdate.githubCommitHash,
+          deploymentUrl: currentUpdate.deploymentUrl,
+          rollbackData: { rollbackFrom: currentUpdate.version, rollbackTo: historyRecord.version },
+          isActive: false,
+          createdBy: req.user!.id
+        });
+      }
+
+      // Rollback to the selected version
+      const [rolledBackUpdate] = await db
+        .update(websiteUpdates)
+        .set({
+          title: historyRecord.title,
+          description: historyRecord.description,
+          changeType: historyRecord.changeType,
+          priority: historyRecord.priority,
+          status: 'published', // Set to published to allow re-deployment
+          version: historyRecord.version + '-restored',
+          githubCommitHash: historyRecord.githubCommitHash,
+          deploymentUrl: historyRecord.deploymentUrl,
+          updatedAt: new Date()
+        })
+        .where(eq(websiteUpdates.id, parseInt(id)))
+        .returning();
+
+      // Mark this history record as active
+      await db
+        .update(websiteUpdateHistory)
+        .set({ isActive: false })
+        .where(eq(websiteUpdateHistory.updateId, parseInt(id)));
+      
+      await db
+        .update(websiteUpdateHistory)
+        .set({ isActive: true })
+        .where(eq(websiteUpdateHistory.id, historyId));
+
+      // Log activity
+      await db.insert(adminActivityLogs).values({
+        userId: req.user!.id,
+        action: 'update_rollback',
+        entityType: 'update',
+        entityId: parseInt(id),
+        description: `Rolled back update "${currentUpdate?.title}" to version ${historyRecord.version}`,
+        ipAddress: req.ip,
+        userAgent: req.get('user-agent'),
+        metadata: { 
+          fromVersion: currentUpdate?.version,
+          toVersion: historyRecord.version,
+          historyId 
+        }
+      });
+
+      // Create notification
+      await db.insert(adminNotifications).values({
+        type: 'update',
+        title: 'Update Rolled Back',
+        message: `Update "${currentUpdate?.title}" has been rolled back to version ${historyRecord.version}`,
+        icon: 'ri-arrow-go-back-line',
+        priority: 'high',
+        userId: req.user!.id,
+        relatedEntityType: 'update',
+        relatedEntityId: parseInt(id),
+        actionUrl: `/admin/website-updates/${id}`
+      });
+
+      res.json({ 
+        message: 'Update rolled back successfully',
+        update: rolledBackUpdate 
+      });
+    } catch (error) {
+      console.error('Error rolling back update:', error);
+      res.status(500).json({ message: 'Failed to rollback update' });
+    }
+  });
+
+  // Save current version to history before updates
+  app.post('/api/website-updates/:id/save-version', isAdmin, async (req: Request, res: Response) => {
+    try {
+      const { id } = req.params;
+      
+      const [currentUpdate] = await db
+        .select()
+        .from(websiteUpdates)
+        .where(eq(websiteUpdates.id, parseInt(id)));
+
+      if (!currentUpdate) {
+        return res.status(404).json({ message: 'Update not found' });
+      }
+
+      // Deactivate all previous versions
+      await db
+        .update(websiteUpdateHistory)
+        .set({ isActive: false })
+        .where(eq(websiteUpdateHistory.updateId, parseInt(id)));
+
+      // Save current version to history
+      const [historyRecord] = await db
+        .insert(websiteUpdateHistory)
+        .values({
+          updateId: currentUpdate.id,
+          version: currentUpdate.version,
+          title: currentUpdate.title,
+          description: currentUpdate.description,
+          changeType: currentUpdate.changeType,
+          priority: currentUpdate.priority,
+          status: currentUpdate.status,
+          githubCommitHash: currentUpdate.githubCommitHash,
+          deploymentUrl: currentUpdate.deploymentUrl,
+          rollbackData: { savedAt: new Date().toISOString() },
+          isActive: true,
+          createdBy: req.user!.id
+        })
+        .returning();
+
+      res.json({
+        message: 'Version saved to history',
+        historyRecord
+      });
+    } catch (error) {
+      console.error('Error saving version to history:', error);
+      res.status(500).json({ message: 'Failed to save version to history' });
     }
   });
 }

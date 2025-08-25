@@ -17,7 +17,9 @@ import {
   Clock,
   CheckCircle,
   AlertTriangle,
-  Info
+  Info,
+  RotateCcw,
+  History
 } from "lucide-react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { 
@@ -78,7 +80,7 @@ export default function WebsiteUpdatesPage() {
     queryFn: () => apiRequest('GET', `/api/website-updates?status=${statusFilter}`),
   });
 
-  const updates = updatesData?.updates || [];
+  const updates = (updatesData as any)?.updates || [];
 
   // Create update mutation
   const createUpdateMutation = useMutation({
@@ -144,6 +146,41 @@ export default function WebsiteUpdatesPage() {
       });
     },
   });
+
+  // Rollback mutation
+  const rollbackMutation = useMutation({
+    mutationFn: async ({ updateId, historyId }: { updateId: number; historyId: number }) => {
+      return apiRequest('POST', `/api/website-updates/${updateId}/rollback`, { historyId });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/website-updates'] });
+      toast({
+        title: "Rollback Successful",
+        description: "Update has been rolled back to the previous version.",
+      });
+      setHistoryDialogOpen(false);
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to rollback update.",
+        variant: "destructive",
+      });
+    },
+  });
+
+  // State for history dialog
+  const [historyDialogOpen, setHistoryDialogOpen] = useState(false);
+  const [selectedUpdateId, setSelectedUpdateId] = useState<number | null>(null);
+
+  // Fetch update history when needed
+  const { data: historyData } = useQuery({
+    queryKey: ['/api/website-updates', selectedUpdateId, 'history'],
+    queryFn: () => apiRequest('GET', `/api/website-updates/${selectedUpdateId}/history`),
+    enabled: !!selectedUpdateId && historyDialogOpen,
+  });
+
+  const history = (historyData as any) || [];
 
   const resetForm = () => {
     setFormData({
@@ -487,6 +524,19 @@ export default function WebsiteUpdatesPage() {
                               Publish
                             </Button>
                           )}
+
+                          {/* History button for all updates */}
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            onClick={() => {
+                              setSelectedUpdateId(update.id);
+                              setHistoryDialogOpen(true);
+                            }}
+                            data-testid={`button-history-${update.id}`}
+                          >
+                            <History className="w-3 h-3" />
+                          </Button>
                           
                           {update.deploymentUrl && (
                             <Button size="sm" variant="ghost" asChild>
@@ -504,6 +554,93 @@ export default function WebsiteUpdatesPage() {
             )}
           </CardContent>
         </Card>
+
+        {/* History & Rollback Dialog */}
+        <Dialog open={historyDialogOpen} onOpenChange={setHistoryDialogOpen}>
+          <DialogContent className="max-w-4xl">
+            <DialogHeader>
+              <DialogTitle>Update History & Rollback</DialogTitle>
+              <DialogDescription>
+                View version history and rollback to previous versions if needed
+              </DialogDescription>
+            </DialogHeader>
+            
+            <div className="space-y-4">
+              {history.length === 0 ? (
+                <div className="text-center py-8">
+                  <History className="w-12 h-12 mx-auto mb-4 text-muted-foreground" />
+                  <h3 className="text-lg font-medium mb-2">No version history</h3>
+                  <p className="text-muted-foreground">
+                    This update doesn't have any saved versions yet
+                  </p>
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  <h4 className="font-medium">Available Versions</h4>
+                  {history.map((historyItem: any) => (
+                    <div 
+                      key={historyItem.id} 
+                      className="border rounded-lg p-4 space-y-3"
+                    >
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-3">
+                          <Badge variant={historyItem.isActive ? "default" : "secondary"}>
+                            {historyItem.isActive ? "Current" : "Previous"}
+                          </Badge>
+                          <span className="font-medium">{historyItem.version}</span>
+                          <Badge variant="outline">{historyItem.changeType}</Badge>
+                        </div>
+                        
+                        <div className="flex items-center gap-2">
+                          <span className="text-sm text-muted-foreground">
+                            {new Date(historyItem.createdAt).toLocaleDateString()}
+                          </span>
+                          {!historyItem.isActive && (
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => rollbackMutation.mutate({ 
+                                updateId: selectedUpdateId!, 
+                                historyId: historyItem.id 
+                              })}
+                              disabled={rollbackMutation.isPending}
+                              data-testid={`button-rollback-${historyItem.id}`}
+                            >
+                              <RotateCcw className="w-3 h-3 mr-1" />
+                              Rollback
+                            </Button>
+                          )}
+                        </div>
+                      </div>
+                      
+                      <div>
+                        <h5 className="font-medium text-sm mb-1">{historyItem.title}</h5>
+                        <p className="text-sm text-muted-foreground">{historyItem.description}</p>
+                      </div>
+                      
+                      {historyItem.rollbackData && (
+                        <div className="text-xs text-muted-foreground bg-muted p-2 rounded">
+                          {historyItem.rollbackData.rollbackFrom && (
+                            <span>Rolled back from {historyItem.rollbackData.rollbackFrom} to {historyItem.rollbackData.rollbackTo}</span>
+                          )}
+                          {historyItem.rollbackData.savedAt && (
+                            <span>Saved at {new Date(historyItem.rollbackData.savedAt).toLocaleString()}</span>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            <div className="flex justify-end pt-4">
+              <Button variant="outline" onClick={() => setHistoryDialogOpen(false)}>
+                Close
+              </Button>
+            </div>
+          </DialogContent>
+        </Dialog>
       </div>
     </AdminLayout>
   );

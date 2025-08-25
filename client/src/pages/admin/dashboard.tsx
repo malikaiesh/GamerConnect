@@ -6,6 +6,7 @@ import { useQuery } from "@tanstack/react-query";
 import { Game, BlogPost } from "@shared/schema";
 import { Circle, ArrowUpRight, TrendingUp, BarChart, Users, Gamepad2, Newspaper, Bell } from "lucide-react";
 import NotificationBell from "@/components/admin/notification-bell";
+import AdminProfile from "@/components/admin/admin-profile";
 import { Skeleton } from "@/components/ui/skeleton";
 
 // Memoized summary card component for better performance
@@ -170,6 +171,7 @@ export default function AdminDashboard() {
             </div>
             <div className="flex items-center gap-3">
               <NotificationBell />
+              <AdminProfile />
             </div>
           </div>
         </div>
