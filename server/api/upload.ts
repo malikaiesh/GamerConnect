@@ -3,6 +3,7 @@ import multer from "multer";
 import path from "path";
 import fs from "fs";
 import { nanoid } from "nanoid";
+import { imageProcessingService } from '../services/image-processing';
 
 // Configure multer storage
 const storage = multer.diskStorage({
@@ -60,7 +61,7 @@ export function registerUploadRoutes(app: Express) {
     }
     
     // Use multer middleware for single file upload
-    upload.single('file')(req, res, (err) => {
+    upload.single('file')(req, res, async (err) => {
       if (err) {
         if (err instanceof multer.MulterError) {
           // A Multer error occurred
@@ -87,12 +88,44 @@ export function registerUploadRoutes(app: Express) {
         });
       }
       
-      // File uploaded successfully, return location to TinyMCE
-      const fileUrl = `/uploads/${req.file.filename}`;
-      
-      return res.status(200).json({
-        location: fileUrl,
-      });
+      // Process the uploaded image automatically
+      try {
+        console.log(`Processing uploaded image: ${req.file.filename}`);
+        
+        const processed = await imageProcessingService.processImage(req.file.path, {
+          quality: 85,
+          maxWidth: 1920,
+          maxHeight: 1080,
+          generateAltText: true,
+        });
+        
+        // Clean up original file
+        await imageProcessingService.cleanupOriginalFile(req.file.path);
+        
+        // Return the processed WebP image URL and alt text
+        const webpUrl = imageProcessingService.getImageUrl(processed.webpPath);
+        
+        console.log(`✓ Image processed: ${processed.compressionRatio}% compression, alt text: "${processed.altText}"`);
+        
+        return res.status(200).json({
+          location: webpUrl,
+          altText: processed.altText,
+          originalSize: processed.originalSize,
+          compressedSize: processed.compressedSize,
+          compressionRatio: processed.compressionRatio,
+          width: processed.width,
+          height: processed.height
+        });
+      } catch (error) {
+        console.error('Error processing image:', error);
+        // Fallback to original file if processing fails
+        const fileUrl = `/uploads/${req.file.filename}`;
+        return res.status(200).json({
+          location: fileUrl,
+          altText: 'Image',
+          error: 'Image processing failed, using original file'
+        });
+      }
     });
   });
 
@@ -106,7 +139,7 @@ export function registerUploadRoutes(app: Express) {
     }
     
     // Use multer middleware for single file upload
-    upload.single('file')(req, res, (err) => {
+    upload.single('file')(req, res, async (err) => {
       if (err) {
         if (err instanceof multer.MulterError) {
           // A Multer error occurred
@@ -133,12 +166,44 @@ export function registerUploadRoutes(app: Express) {
         });
       }
       
-      // File uploaded successfully, return the URL
-      const fileUrl = `/uploads/${req.file.filename}`;
-      
-      return res.status(200).json({
-        location: fileUrl,
-      });
+      // Process the uploaded image automatically
+      try {
+        console.log(`Processing uploaded image: ${req.file.filename}`);
+        
+        const processed = await imageProcessingService.processImage(req.file.path, {
+          quality: 85,
+          maxWidth: 1920,
+          maxHeight: 1080,
+          generateAltText: true,
+        });
+        
+        // Clean up original file
+        await imageProcessingService.cleanupOriginalFile(req.file.path);
+        
+        // Return the processed WebP image URL and metadata
+        const webpUrl = imageProcessingService.getImageUrl(processed.webpPath);
+        
+        console.log(`✓ Image processed: ${processed.compressionRatio}% compression, alt text: "${processed.altText}"`);
+        
+        return res.status(200).json({
+          location: webpUrl,
+          altText: processed.altText,
+          originalSize: processed.originalSize,
+          compressedSize: processed.compressedSize,
+          compressionRatio: processed.compressionRatio,
+          width: processed.width,
+          height: processed.height
+        });
+      } catch (error) {
+        console.error('Error processing image:', error);
+        // Fallback to original file if processing fails
+        const fileUrl = `/uploads/${req.file.filename}`;
+        return res.status(200).json({
+          location: fileUrl,
+          altText: 'Image',
+          error: 'Image processing failed, using original file'
+        });
+      }
     });
   });
 }

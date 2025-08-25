@@ -3,6 +3,10 @@ import { storage } from "../storage";
 import { z } from "zod";
 import { insertGameSchema } from "@shared/schema";
 import fetch from "node-fetch";
+import { imageProcessingService } from '../services/image-processing';
+import slugify from '../utils/slugify';
+import fs from 'fs/promises';
+import path from 'path';
 
 // Interface for GameMonetize API response
 interface GameMonetizeResponse {
@@ -56,10 +60,59 @@ async function fetchGameMonetizeGames(apiKey: string, options: any = {}): Promis
   }
 }
 
+// Download and process thumbnail from URL
+async function downloadAndProcessThumbnail(thumbnailUrl: string, gameTitle: string): Promise<{url: string, altText: string} | null> {
+  try {
+    console.log(`Downloading thumbnail for "${gameTitle}" from: ${thumbnailUrl}`);
+    
+    // Download the image
+    const response = await fetch(thumbnailUrl);
+    if (!response.ok) {
+      throw new Error(`Failed to download thumbnail: ${response.status}`);
+    }
+    
+    // Create temp file path
+    const tempDir = path.join(process.cwd(), 'uploads', 'temp');
+    await fs.mkdir(tempDir, { recursive: true });
+    
+    const fileExt = path.extname(new URL(thumbnailUrl).pathname) || '.jpg';
+    const tempFileName = `game-thumb-${Date.now()}${fileExt}`;
+    const tempFilePath = path.join(tempDir, tempFileName);
+    
+    // Save the downloaded image
+    const buffer = await response.buffer();
+    await fs.writeFile(tempFilePath, buffer);
+    
+    // Process the image (convert to WebP, compress, generate alt text)
+    const processed = await imageProcessingService.processImage(tempFilePath, {
+      quality: 85,
+      maxWidth: 800,  // Smaller size for game thumbnails
+      maxHeight: 600,
+      generateAltText: true,
+    });
+    
+    // Clean up temp file
+    await fs.unlink(tempFilePath);
+    
+    const webpUrl = imageProcessingService.getImageUrl(processed.webpPath);
+    
+    console.log(`✓ Processed thumbnail for "${gameTitle}": ${processed.compressionRatio}% compression, alt text: "${processed.altText}"`);
+    
+    return {
+      url: webpUrl,
+      altText: processed.altText
+    };
+  } catch (error) {
+    console.error(`Failed to process thumbnail for "${gameTitle}":`, error);
+    return null;
+  }
+}
+
 // Transform GameMonetize game data to our schema format
 function transformGameMonetizeData(apiGame: any) {
   return {
     title: apiGame.gametitle,
+    slug: slugify(apiGame.gametitle),
     description: apiGame.description || 'No description available',
     thumbnail: apiGame.gamethumb,
     url: apiGame.gamelink,
@@ -469,12 +522,27 @@ export function registerGameRoutes(app: Express) {
         return res.status(500).json({ message: 'Failed to fetch games from GameMonetize API', error: result.message });
       }
       
-      // Transform and save games
+      // Transform and save games with automatic thumbnail processing
       const games = result.data;
       const savedGames = [];
       
+      console.log(`Processing ${games.length} games with automatic thumbnail optimization...`);
+      
       for (const game of games) {
         const transformedGame = transformGameMonetizeData(game);
+        
+        // Download and process the thumbnail automatically
+        if (transformedGame.thumbnail) {
+          const processedThumbnail = await downloadAndProcessThumbnail(transformedGame.thumbnail, transformedGame.title);
+          if (processedThumbnail) {
+            transformedGame.thumbnail = processedThumbnail.url;
+            // Store the alt text in the description if it was empty or generic
+            if (!transformedGame.description || transformedGame.description === 'No description available') {
+              transformedGame.description = processedThumbnail.altText;
+            }
+          }
+        }
+        
         try {
           const savedGame = await storage.createGame(transformedGame);
           savedGames.push(savedGame);
