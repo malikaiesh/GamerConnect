@@ -47,7 +47,7 @@ export default function AdminProfile() {
               </AvatarFallback>
             </Avatar>
             <div className="hidden sm:flex flex-col items-start text-left">
-              <span className="text-sm font-medium text-foreground">{user.username}</span>
+              <span className="text-sm font-medium text-foreground">{user.displayName || user.username}</span>
               <div className="flex items-center gap-1">
                 <Badge variant="secondary" className="text-xs px-1.5 py-0.5">
                   <Shield className="w-3 h-3 mr-1" />
@@ -73,7 +73,7 @@ export default function AdminProfile() {
               </AvatarFallback>
             </Avatar>
             <div className="flex flex-col">
-              <span className="font-medium">{user.username}</span>
+              <span className="font-medium">{user.displayName || user.username}</span>
               <span className="text-sm text-muted-foreground">{user.email}</span>
               <div className="flex items-center gap-1 mt-1">
                 <Badge variant="secondary" className="text-xs">

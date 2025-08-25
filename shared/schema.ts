@@ -70,6 +70,7 @@ export const users = pgTable('users', {
   password: text('password'),
   isAdmin: boolean('is_admin').default(false).notNull(),
   roleId: integer('role_id').references(() => roles.id, { onDelete: 'set null' }),
+  displayName: text('display_name'),
   profilePicture: text('profile_picture'),
   bio: text('bio'),
   country: text('country'),

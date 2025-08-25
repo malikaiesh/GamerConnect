@@ -23,7 +23,7 @@ export default function ProfilePage() {
     username: user?.username || '',
     email: user?.email || '',
     bio: user?.bio || '',
-    displayName: ''
+    displayName: user?.displayName || ''
   });
 
   const updateProfileMutation = useMutation({
@@ -146,7 +146,7 @@ export default function ProfilePage() {
                 </div>
                 <div className="space-y-1">
                   <h3 className="font-medium text-lg" data-testid="text-username">
-                    {user.username}
+                    {user.displayName || user.username}
                   </h3>
                   <div className="flex items-center gap-2">
                     <Mail className="w-4 h-4 text-muted-foreground" />
