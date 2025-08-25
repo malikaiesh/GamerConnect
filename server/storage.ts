@@ -302,6 +302,18 @@ export interface IStorage {
   deleteUrlRedirect(id: number): Promise<boolean>;
   getRedirectForSourceUrl(sourceUrl: string): Promise<UrlRedirect | null>;
   toggleUrlRedirectStatus(id: number): Promise<UrlRedirect | null>;
+
+  // SEO Schema methods
+  getAllSeoSchemas(options?: { page?: number, limit?: number, contentType?: string }): Promise<{ schemas: SeoSchema[], total: number, totalPages: number }>;
+  getSeoSchemaById(id: number): Promise<SeoSchema | null>;
+  getSeoSchemasByContent(contentType: string, contentId: number | null): Promise<SeoSchema[]>;
+  createSeoSchema(schemaData: Omit<InsertSeoSchema, "createdAt" | "updatedAt">): Promise<SeoSchema>;
+  updateSeoSchema(id: number, schemaData: Partial<InsertSeoSchema>): Promise<SeoSchema | null>;
+  deleteSeoSchema(id: number): Promise<boolean>;
+
+  // SEO Schema Template methods
+  getSeoSchemaTemplates(): Promise<SeoSchemaTemplate[]>;
+  createSeoSchemaTemplate(templateData: Omit<InsertSeoSchemaTemplate, "createdAt" | "updatedAt">): Promise<SeoSchemaTemplate>;
 }
 
 class DatabaseStorage implements IStorage {
