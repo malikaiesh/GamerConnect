@@ -202,6 +202,298 @@ export function registerSeoSchemaRoutes(app: express.Express) {
     }
   });
 
+  // Generate demo schemas for all content types
+  app.post("/api/admin/seo-schemas/generate-demo", isAuthenticated, isAdmin, async (req, res) => {
+    try {
+      const generator = createSeoSchemaGenerator();
+      const demos = [];
+
+      // Demo Game Schema
+      const demoGameSchema = {
+        "@context": "https://schema.org",
+        "@type": "VideoGame",
+        "name": "Demo Adventure Quest",
+        "description": "An exciting adventure game where players explore mystical realms and solve challenging puzzles to save the kingdom.",
+        "url": "https://gamezone.com/games/demo-adventure-quest",
+        "image": "https://gamezone.com/images/demo-game.jpg",
+        "genre": ["Adventure", "Puzzle", "Fantasy"],
+        "gamePlatform": ["Web Browser"],
+        "applicationCategory": "Game",
+        "operatingSystem": "Any",
+        "author": {
+          "@type": "Organization",
+          "name": "GameZone",
+          "url": "https://gamezone.com"
+        },
+        "publisher": {
+          "@type": "Organization",
+          "name": "GameZone",
+          "url": "https://gamezone.com",
+          "logo": {
+            "@type": "ImageObject",
+            "url": "https://gamezone.com/logo.png"
+          }
+        },
+        "interactionStatistic": {
+          "@type": "InteractionCounter",
+          "interactionType": "https://schema.org/PlayAction",
+          "userInteractionCount": 15847
+        },
+        "aggregateRating": {
+          "@type": "AggregateRating",
+          "ratingValue": 4.6,
+          "ratingCount": 342,
+          "bestRating": 5,
+          "worstRating": 1
+        },
+        "offers": {
+          "@type": "Offer",
+          "price": "0",
+          "priceCurrency": "USD",
+          "availability": "https://schema.org/InStock"
+        },
+        "datePublished": "2024-01-15T10:00:00Z",
+        "dateModified": "2024-12-20T14:30:00Z"
+      };
+
+      // Demo Blog Post Schema
+      const demoBlogSchema = {
+        "@context": "https://schema.org",
+        "@type": "BlogPosting",
+        "headline": "Ultimate Gaming Guide: Top 10 Strategy Tips for Victory",
+        "description": "Master your gaming skills with these proven strategy tips and techniques used by professional gamers worldwide.",
+        "url": "https://gamezone.com/blog/gaming-strategy-guide",
+        "image": "https://gamezone.com/images/gaming-guide.jpg",
+        "author": {
+          "@type": "Person",
+          "name": "Alex Chen",
+          "url": "https://gamezone.com/authors/alex-chen"
+        },
+        "publisher": {
+          "@type": "Organization",
+          "name": "GameZone",
+          "url": "https://gamezone.com",
+          "logo": {
+            "@type": "ImageObject",
+            "url": "https://gamezone.com/logo.png"
+          }
+        },
+        "datePublished": "2024-12-15T09:00:00Z",
+        "dateModified": "2024-12-20T11:15:00Z",
+        "mainEntityOfPage": {
+          "@type": "WebPage",
+          "@id": "https://gamezone.com/blog/gaming-strategy-guide"
+        },
+        "keywords": ["gaming", "strategy", "tips", "gaming guide", "professional gaming"],
+        "wordCount": 2500,
+        "articleSection": "Gaming Guides"
+      };
+
+      // Demo Category Schema
+      const demoCategorySchema = {
+        "@context": "https://schema.org",
+        "@type": "CollectionPage",
+        "name": "Action Games",
+        "description": "Discover the best action games featuring intense gameplay, epic battles, and thrilling adventures.",
+        "url": "https://gamezone.com/categories/action",
+        "mainEntity": {
+          "@type": "ItemList",
+          "numberOfItems": 45,
+          "itemListElement": [
+            {
+              "@type": "ListItem",
+              "position": 1,
+              "item": {
+                "@type": "VideoGame",
+                "name": "Shadow Warrior",
+                "url": "https://gamezone.com/games/shadow-warrior"
+              }
+            },
+            {
+              "@type": "ListItem",
+              "position": 2,
+              "item": {
+                "@type": "VideoGame",
+                "name": "Combat Arena",
+                "url": "https://gamezone.com/games/combat-arena"
+              }
+            }
+          ]
+        },
+        "breadcrumb": {
+          "@type": "BreadcrumbList",
+          "itemListElement": [
+            {
+              "@type": "ListItem",
+              "position": 1,
+              "name": "Home",
+              "item": "https://gamezone.com"
+            },
+            {
+              "@type": "ListItem",
+              "position": 2,
+              "name": "Categories",
+              "item": "https://gamezone.com/categories"
+            },
+            {
+              "@type": "ListItem",
+              "position": 3,
+              "name": "Action Games"
+            }
+          ]
+        }
+      };
+
+      // Demo Page Schema
+      const demoPageSchema = {
+        "@context": "https://schema.org",
+        "@type": "WebPage",
+        "name": "About GameZone - Your Ultimate Gaming Destination",
+        "description": "Learn about GameZone's mission to provide the best free online games and gaming community for players worldwide.",
+        "url": "https://gamezone.com/about",
+        "mainEntity": {
+          "@type": "Organization",
+          "name": "GameZone",
+          "url": "https://gamezone.com",
+          "logo": "https://gamezone.com/logo.png",
+          "description": "Leading online gaming platform offering thousands of free games across all genres.",
+          "foundingDate": "2020-01-15",
+          "numberOfEmployees": 25,
+          "slogan": "Play. Compete. Conquer."
+        },
+        "breadcrumb": {
+          "@type": "BreadcrumbList",
+          "itemListElement": [
+            {
+              "@type": "ListItem",
+              "position": 1,
+              "name": "Home",
+              "item": "https://gamezone.com"
+            },
+            {
+              "@type": "ListItem",
+              "position": 2,
+              "name": "About"
+            }
+          ]
+        },
+        "lastReviewed": "2024-12-20T10:00:00Z",
+        "isPartOf": {
+          "@type": "WebSite",
+          "@id": "https://gamezone.com#website"
+        }
+      };
+
+      // Demo Organization Schema
+      const demoOrganizationSchema = {
+        "@context": "https://schema.org",
+        "@type": "Organization",
+        "@id": "https://gamezone.com#organization",
+        "name": "GameZone",
+        "url": "https://gamezone.com",
+        "logo": {
+          "@type": "ImageObject",
+          "url": "https://gamezone.com/logo.png",
+          "width": 600,
+          "height": 200
+        },
+        "description": "GameZone is the ultimate destination for free online games, featuring thousands of games across all genres with a thriving gaming community.",
+        "foundingDate": "2020-01-15",
+        "slogan": "Play. Compete. Conquer.",
+        "numberOfEmployees": 25,
+        "address": {
+          "@type": "PostalAddress",
+          "addressCountry": "US",
+          "addressRegion": "CA",
+          "addressLocality": "San Francisco"
+        },
+        "contactPoint": {
+          "@type": "ContactPoint",
+          "contactType": "customer service",
+          "email": "support@gamezone.com",
+          "url": "https://gamezone.com/contact"
+        },
+        "sameAs": [
+          "https://twitter.com/gamezone",
+          "https://facebook.com/gamezone",
+          "https://instagram.com/gamezone",
+          "https://youtube.com/gamezone"
+        ],
+        "knowsAbout": ["Gaming", "Video Games", "Online Entertainment", "Game Development"],
+        "areaServed": "Worldwide"
+      };
+
+      // Create demo schemas in database
+      const demoSchemas = [
+        {
+          schemaType: 'VideoGame',
+          contentType: 'game',
+          contentId: null,
+          name: '🎮 Demo: Adventure Game Schema',
+          schemaData: demoGameSchema,
+          isActive: true,
+          isAutoGenerated: false,
+          priority: 1
+        },
+        {
+          schemaType: 'BlogPosting',
+          contentType: 'blog_post',
+          contentId: null,
+          name: '📝 Demo: Blog Post Schema',
+          schemaData: demoBlogSchema,
+          isActive: true,
+          isAutoGenerated: false,
+          priority: 1
+        },
+        {
+          schemaType: 'CollectionPage',
+          contentType: 'category',
+          contentId: null,
+          name: '📂 Demo: Game Category Schema',
+          schemaData: demoCategorySchema,
+          isActive: true,
+          isAutoGenerated: false,
+          priority: 1
+        },
+        {
+          schemaType: 'WebPage',
+          contentType: 'page',
+          contentId: null,
+          name: '📄 Demo: Static Page Schema',
+          schemaData: demoPageSchema,
+          isActive: true,
+          isAutoGenerated: false,
+          priority: 1
+        },
+        {
+          schemaType: 'Organization',
+          contentType: 'organization',
+          contentId: null,
+          name: '🏢 Demo: Organization Schema',
+          schemaData: demoOrganizationSchema,
+          isActive: true,
+          isAutoGenerated: false,
+          priority: 1
+        }
+      ];
+
+      // Save all demo schemas
+      for (const schemaData of demoSchemas) {
+        const schema = await storage.createSeoSchema(schemaData);
+        demos.push(schema);
+      }
+
+      res.json({ 
+        message: "Demo schemas generated successfully", 
+        schemas: demos,
+        count: demos.length 
+      });
+    } catch (error) {
+      console.error("Error generating demo schemas:", error);
+      res.status(500).json({ error: "Failed to generate demo schemas" });
+    }
+  });
+
   // Bulk auto-generate schemas for all content of a type
   app.post("/api/admin/seo-schemas/bulk-generate", isAuthenticated, isAdmin, async (req, res) => {
     try {

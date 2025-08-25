@@ -120,6 +120,25 @@ function SeoSchemasContent() {
     }
   });
 
+  // Generate demo schemas
+  const generateDemoSchemas = useMutation({
+    mutationFn: () => apiRequest("/api/admin/seo-schemas/generate-demo", { method: "POST" }),
+    onSuccess: (data: any) => {
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/seo-schemas"] });
+      toast({
+        title: "Demo Schemas Created!",
+        description: `Generated ${data.count} demo schemas for all content types`
+      });
+    },
+    onError: () => {
+      toast({
+        title: "Error",
+        description: "Failed to generate demo schemas",
+        variant: "destructive"
+      });
+    }
+  });
+
   const handleEdit = (schema: SeoSchema) => {
     setEditingSchema(schema);
     setEditModalOpen(true);
@@ -194,6 +213,15 @@ function SeoSchemasContent() {
           </p>
         </div>
         <div className="flex gap-2">
+          <Button
+            variant="outline"
+            onClick={() => generateDemoSchemas.mutate()}
+            disabled={generateDemoSchemas.isPending}
+            data-testid="button-demo-schemas"
+          >
+            <Code className="h-4 w-4 mr-2" />
+            {generateDemoSchemas.isPending ? "Generating..." : "Demo Schemas"}
+          </Button>
           <Button
             variant="outline"
             onClick={() => setBulkGenerateModalOpen(true)}
