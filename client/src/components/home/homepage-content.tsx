@@ -95,32 +95,28 @@ export function HomepageContent() {
     // Split content into paragraphs
     const paragraphs = content.split("\n\n");
     
-    // If not expanded, just show first 2-3 paragraphs (approximately 500 characters)
+    // If not expanded, show exactly 3 paragraphs
     if (!isExpanded) {
-      // Get first 2-3 paragraphs or approximately 500 characters
-      let displayParagraphs: string[] = [];
-      let contentLength = 0;
-      
-      for (const paragraph of paragraphs) {
-        if (contentLength > 500 || displayParagraphs.length >= 3) break;
-        displayParagraphs.push(paragraph);
-        contentLength += paragraph.length;
-      }
+      const displayParagraphs = paragraphs.slice(0, 3);
       
       return (
         <div className="space-y-2">
           {processParagraphs(displayParagraphs)}
-          {paragraphs.length > displayParagraphs.length && (
+          {paragraphs.length > 3 && (
             <p className="text-base text-muted-foreground">...</p>
           )}
         </div>
       );
     }
     
-    // If expanded, show all content with proper formatting
+    // If expanded, show first 7 paragraphs (3 initial + 4 more)
+    const expandedParagraphs = paragraphs.slice(0, 7);
     return (
       <div className="space-y-2">
-        {processParagraphs(paragraphs)}
+        {processParagraphs(expandedParagraphs)}
+        {paragraphs.length > 7 && (
+          <p className="text-base text-muted-foreground">... and more</p>
+        )}
       </div>
     );
   };
@@ -161,26 +157,29 @@ export function HomepageContent() {
           <CardContent className="pt-6 bg-background">
             <h2 className="text-2xl font-bold mb-4 text-foreground">{content.title}</h2>
             {renderContent(content.content, !!expanded[content.id])}
-            <div className="flex justify-center mt-6">
-              <Button 
-                variant="default" 
-                size="sm"
-                onClick={() => toggleExpanded(content.id)}
-                className="flex items-center gap-1 bg-green-600 hover:bg-green-700 text-white font-medium px-4 py-2 rounded-md shadow-md"
-              >
-                {expanded[content.id] ? (
-                  <>
-                    <ChevronUp className="h-4 w-4" />
-                    Show Less
-                  </>
-                ) : (
-                  <>
-                    <ChevronDown className="h-4 w-4" />
-                    Read More
-                  </>
-                )}
-              </Button>
-            </div>
+            {/* Only show Read More button if there are more than 3 paragraphs */}
+            {content.content.split("\n\n").length > 3 && (
+              <div className="flex justify-center mt-6">
+                <Button 
+                  variant="default" 
+                  size="sm"
+                  onClick={() => toggleExpanded(content.id)}
+                  className="flex items-center gap-1 bg-primary hover:bg-primary/90 text-primary-foreground font-medium px-4 py-2 rounded-lg transition-colors"
+                >
+                  {expanded[content.id] ? (
+                    <>
+                      <ChevronUp className="h-4 w-4" />
+                      Show Less
+                    </>
+                  ) : (
+                    <>
+                      <ChevronDown className="h-4 w-4" />
+                      Read More
+                    </>
+                  )}
+                </Button>
+              </div>
+            )}
           </CardContent>
         </Card>
       ))}
