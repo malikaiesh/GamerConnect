@@ -10,7 +10,9 @@ import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { useMutation } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
-import { User, Settings, Shield, Mail, Calendar, MapPin } from "lucide-react";
+import { ObjectUploader } from "@/components/ObjectUploader";
+import type { UploadResult } from "@uppy/core";
+import { User, Settings, Shield, Mail, Calendar, MapPin, Camera } from "lucide-react";
 
 export default function ProfilePage() {
   const { user } = useAuth();
@@ -39,6 +41,26 @@ export default function ProfilePage() {
       toast({
         title: "Error",
         description: error.message || "Failed to update profile.",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const uploadProfilePictureMutation = useMutation({
+    mutationFn: async (profilePictureURL: string) => {
+      return apiRequest('PUT', '/api/user/profile-picture', { profilePictureURL });
+    },
+    onSuccess: () => {
+      toast({
+        title: "Profile Picture Updated",
+        description: "Your profile picture has been updated successfully.",
+      });
+      window.location.reload(); // Refresh to show new profile picture
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to update profile picture.",
         variant: "destructive",
       });
     },
@@ -90,12 +112,38 @@ export default function ProfilePage() {
             </CardHeader>
             <CardContent className="space-y-6">
               <div className="flex items-center gap-4">
-                <Avatar className="h-16 w-16">
-                  <AvatarImage src={user.profilePicture || undefined} alt={user.username} />
-                  <AvatarFallback className="bg-primary text-primary-foreground text-lg">
-                    {getInitials(user.username)}
-                  </AvatarFallback>
-                </Avatar>
+                <div className="relative">
+                  <Avatar className="h-16 w-16">
+                    <AvatarImage src={user.profilePicture || undefined} alt={user.username} />
+                    <AvatarFallback className="bg-primary text-primary-foreground text-lg">
+                      {getInitials(user.username)}
+                    </AvatarFallback>
+                  </Avatar>
+                  <div className="absolute -bottom-1 -right-1">
+                    <ObjectUploader
+                      maxNumberOfFiles={1}
+                      maxFileSize={5 * 1024 * 1024} // 5MB
+                      onGetUploadParameters={async () => {
+                        const response: any = await apiRequest('POST', '/api/objects/upload');
+                        return {
+                          method: 'PUT' as const,
+                          url: response.uploadURL,
+                        };
+                      }}
+                      onComplete={(result: UploadResult<Record<string, unknown>, Record<string, unknown>>) => {
+                        if (result.successful && result.successful.length > 0) {
+                          const uploadURL = result.successful[0].uploadURL as string;
+                          if (uploadURL) {
+                            uploadProfilePictureMutation.mutate(uploadURL);
+                          }
+                        }
+                      }}
+                      buttonClassName="h-8 w-8 rounded-full p-0 bg-primary hover:bg-primary/90"
+                    >
+                      <Camera className="h-4 w-4" />
+                    </ObjectUploader>
+                  </div>
+                </div>
                 <div className="space-y-1">
                   <h3 className="font-medium text-lg" data-testid="text-username">
                     {user.username}

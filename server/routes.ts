@@ -26,6 +26,9 @@ import { registerWebsiteUpdatesRoutes } from "./api/website-updates";
 import { registerAdminNotificationsRoutes } from "./api/admin-notifications";
 import { storage } from "./storage";
 import { db } from "../db";
+import { ObjectStorageService, ObjectNotFoundError } from "./objectStorage";
+import { ObjectPermission } from "./objectAcl";
+import { users } from "@shared/schema";
 import { games, blogPosts, staticPages, pushSubscribers, pushCampaigns } from "@shared/schema";
 import { eq, count, gte, sql } from "drizzle-orm";
 import fs from "fs/promises";
@@ -378,6 +381,75 @@ Sitemap: ${req.protocol}://${req.get('host')}/sitemap.xml`);
   });
   
   // Sitemap endpoints
+  // Object Storage Routes
+  app.get("/objects/:objectPath(*)", isAuthenticated, async (req, res) => {
+    const userId = req.user?.id?.toString();
+    if (!userId) {
+      return res.sendStatus(401);
+    }
+    const objectStorageService = new ObjectStorageService();
+    try {
+      const objectFile = await objectStorageService.getObjectEntityFile(
+        req.path,
+      );
+      const canAccess = await objectStorageService.canAccessObjectEntity({
+        objectFile,
+        userId: userId,
+        requestedPermission: ObjectPermission.READ,
+      });
+      if (!canAccess) {
+        return res.sendStatus(401);
+      }
+      objectStorageService.downloadObject(objectFile, res);
+    } catch (error) {
+      console.error("Error checking object access:", error);
+      if (error instanceof ObjectNotFoundError) {
+        return res.sendStatus(404);
+      }
+      return res.sendStatus(500);
+    }
+  });
+
+  app.post("/api/objects/upload", isAuthenticated, async (req, res) => {
+    const objectStorageService = new ObjectStorageService();
+    const uploadURL = await objectStorageService.getObjectEntityUploadURL();
+    res.json({ uploadURL });
+  });
+
+  app.put("/api/user/profile-picture", isAuthenticated, async (req, res) => {
+    if (!req.body.profilePictureURL) {
+      return res.status(400).json({ error: "profilePictureURL is required" });
+    }
+
+    const userId = req.user?.id;
+    if (!userId) {
+      return res.status(401).json({ error: "User not authenticated" });
+    }
+
+    try {
+      const objectStorageService = new ObjectStorageService();
+      const objectPath = await objectStorageService.trySetObjectEntityAclPolicy(
+        req.body.profilePictureURL,
+        {
+          owner: userId.toString(),
+          visibility: "public",
+        },
+      );
+
+      // Update user profile picture in database
+      await db.update(users)
+        .set({ profilePicture: objectPath })
+        .where(eq(users.id, userId));
+
+      res.status(200).json({
+        objectPath: objectPath,
+      });
+    } catch (error) {
+      console.error("Error setting profile picture:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
   app.get('/sitemap.xml', async (req, res) => {
     try {
       const sitemap = await storage.getSitemapByType('main');

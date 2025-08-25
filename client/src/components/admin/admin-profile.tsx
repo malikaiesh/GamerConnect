@@ -41,7 +41,7 @@ export default function AdminProfile() {
         >
           <div className="flex items-center gap-3">
             <Avatar className="h-8 w-8">
-              <AvatarImage src={user.avatar} alt={user.username} />
+              <AvatarImage src={user.profilePicture || undefined} alt={user.username} />
               <AvatarFallback className="bg-primary text-primary-foreground text-sm">
                 {getInitials(user.username)}
               </AvatarFallback>
@@ -67,7 +67,7 @@ export default function AdminProfile() {
         <DropdownMenuLabel>
           <div className="flex items-center gap-3 py-2">
             <Avatar className="h-10 w-10">
-              <AvatarImage src={user.avatar} alt={user.username} />
+              <AvatarImage src={user.profilePicture || undefined} alt={user.username} />
               <AvatarFallback className="bg-primary text-primary-foreground">
                 {getInitials(user.username)}
               </AvatarFallback>
