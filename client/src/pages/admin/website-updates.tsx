@@ -376,7 +376,13 @@ export default function WebsiteUpdatesPage() {
                 <li>Set up webhook URL: <code className="bg-muted px-1 rounded">/api/webhooks/github</code></li>
                 <li>Enable deployment status updates</li>
               </ol>
-              <Button variant="outline" size="sm" className="mt-3">
+              <Button 
+                variant="outline" 
+                size="sm" 
+                className="mt-3"
+                onClick={() => window.open('https://docs.github.com/en/actions/quickstart', '_blank')}
+                data-testid="button-setup-guide"
+              >
                 <ExternalLink className="w-4 h-4 mr-2" />
                 View Setup Guide
               </Button>

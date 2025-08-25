@@ -4,7 +4,8 @@ import { Analytics } from "@/components/admin/dashboard/analytics";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useQuery } from "@tanstack/react-query";
 import { Game, BlogPost } from "@shared/schema";
-import { Circle, ArrowUpRight, TrendingUp, BarChart, Users, Gamepad2, Newspaper } from "lucide-react";
+import { Circle, ArrowUpRight, TrendingUp, BarChart, Users, Gamepad2, Newspaper, Bell } from "lucide-react";
+import NotificationBell from "@/components/admin/notification-bell";
 import { Skeleton } from "@/components/ui/skeleton";
 
 // Memoized summary card component for better performance
@@ -159,8 +160,23 @@ export default function AdminDashboard() {
   return (
     <div className="flex min-h-screen bg-background">
       <AdminNavigation />
-      <div className="flex-1 p-6 lg:p-10">
-        <DashboardContent />
+      <div className="flex-1">
+        {/* Dashboard Header with Notification Bell */}
+        <div className="border-b border-border bg-card px-6 py-4">
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-2xl font-bold text-foreground">Admin Dashboard</h1>
+              <p className="text-muted-foreground">Monitor your website's performance and manage content</p>
+            </div>
+            <div className="flex items-center gap-3">
+              <NotificationBell />
+            </div>
+          </div>
+        </div>
+        
+        <div className="p-6 lg:p-10">
+          <DashboardContent />
+        </div>
       </div>
     </div>
   );
