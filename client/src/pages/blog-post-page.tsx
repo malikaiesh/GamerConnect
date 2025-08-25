@@ -11,6 +11,11 @@ import { BlogPost, PushNotification as PushNotificationType, SiteSetting } from 
 import { PushNotification } from '@/components/push-notification';
 import { BlogAd } from '@/components/ads/blog-ad';
 import { BlogGame } from '@/components/games/blog-game';
+
+// BlogGameWrapper component to conditionally render games
+function BlogGameWrapper({ gameIndex }: { gameIndex: number }) {
+  return <BlogGame type={`game${gameIndex}`} gameIndex={gameIndex} />;
+}
 import { apiRequest } from '@/lib/queryClient';
 import { Loader2 } from 'lucide-react';
 
@@ -90,7 +95,7 @@ export default function BlogPostPage() {
     }
   }, [activeNotification]);
   
-  // Process the content HTML to insert ads at specific paragraph positions
+  // Process the content HTML to insert games at strategic positions within heading sections
   const processedContent = useMemo(() => {
     if (!post?.content) {
       return '';
@@ -100,39 +105,59 @@ export default function BlogPostPage() {
     const tempDiv = document.createElement('div');
     tempDiv.innerHTML = post.content;
     
-    // Find all paragraphs
-    const paragraphs = tempDiv.querySelectorAll('p');
+    // Find all headings and paragraphs
+    const allElements = Array.from(tempDiv.children);
+    const headings = ['H1', 'H2', 'H3', 'H4', 'H5', 'H6'];
     
-    if (paragraphs.length <= 2) {
-      // If there are 2 or fewer paragraphs, don't insert paragraph ads
-      return post.content;
+    let currentHeadingSection = 0;
+    let paragraphsInSection = 0;
+    let gameIndex = 1;
+    
+    // Process each element and identify heading sections
+    for (let i = 0; i < allElements.length; i++) {
+      const element = allElements[i];
+      
+      // If we encounter a heading, start a new section
+      if (headings.includes(element.tagName)) {
+        currentHeadingSection++;
+        paragraphsInSection = 0;
+        continue;
+      }
+      
+      // If it's a paragraph, count it within the current section
+      if (element.tagName === 'P') {
+        paragraphsInSection++;
+        
+        // Calculate target paragraph position for this heading section
+        // First section: after 2 paragraphs, Second: after 4, Third: after 6, etc.
+        const targetParagraph = currentHeadingSection === 0 ? 2 : (currentHeadingSection * 2);
+        
+        // Insert game marker if we've reached the target paragraph in this section
+        if (paragraphsInSection === targetParagraph && gameIndex <= 5) {
+          const gameMarker = document.createElement('div');
+          gameMarker.setAttribute('data-game-position', `section${currentHeadingSection}-game${gameIndex}`);
+          gameMarker.setAttribute('data-game-index', gameIndex.toString());
+          element.after(gameMarker);
+          gameIndex++;
+        }
+      }
     }
     
-    // Insert ad and game markers after specific paragraphs
-    const contentPositions = [
-      { index: 2, type: 'paragraph2', content: 'game' },
-      { index: 4, type: 'paragraph4', content: 'ad' },
-      { index: 6, type: 'paragraph6', content: 'game' },
-      { index: 8, type: 'paragraph8', content: 'ad' },
-      { index: 10, type: 'paragraph10', content: 'game' }
-    ];
-    
-    // Insert markers from the bottom up to avoid index shifting
-    contentPositions
-      .filter(pos => pos.index < paragraphs.length) // Only process valid positions
-      .sort((a, b) => b.index - a.index) // Sort in descending order
-      .forEach(({ index, type, content }) => {
-        const paragraph = paragraphs[index];
-        if (paragraph) {
-          const marker = document.createElement('div');
-          if (content === 'ad') {
-            marker.setAttribute('data-ad-position', type);
-          } else if (content === 'game') {
-            marker.setAttribute('data-game-position', type);
+    // If no headings found, use simple paragraph-based insertion (fallback)
+    if (currentHeadingSection === 0) {
+      const paragraphs = tempDiv.querySelectorAll('p');
+      if (paragraphs.length > 2) {
+        const positions = [2, 5, 8, 11, 14]; // Spread games more throughout content
+        positions.forEach((pos, index) => {
+          if (pos < paragraphs.length) {
+            const gameMarker = document.createElement('div');
+            gameMarker.setAttribute('data-game-position', `fallback-game${index + 1}`);
+            gameMarker.setAttribute('data-game-index', (index + 1).toString());
+            paragraphs[pos].after(gameMarker);
           }
-          paragraph.after(marker);
-        }
-      });
+        });
+      }
+    }
     
     return tempDiv.innerHTML;
   }, [post?.content]);
@@ -310,14 +335,12 @@ export default function BlogPostPage() {
                 />
               </div>
               
-              {/* Render BlogGame components if enabled */}
-              {settings?.blogGamesEnabled && (
-                <div className="space-y-8 my-8">
-                  <BlogGame type="paragraph2" />
-                  <BlogGame type="paragraph4" />
-                  <BlogGame type="paragraph6" />
-                  <BlogGame type="paragraph8" />
-                  <BlogGame type="paragraph10" />
+              {/* Render BlogGame components dynamically based on content structure */}
+              {settings?.blogGamesEnabled && processedContent && (
+                <div className="space-y-0">
+                  {[1, 2, 3, 4, 5].map((gameIndex) => (
+                    <BlogGameWrapper key={gameIndex} gameIndex={gameIndex} />
+                  ))}
                 </div>
               )}
               

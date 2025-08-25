@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import AdminLayout from "@/components/layout/admin-layout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -61,7 +61,7 @@ export default function GamesIntegrationPage() {
   });
 
   // Update form values when settings are loaded
-  useState(() => {
+  useEffect(() => {
     if (settings) {
       form.reset({
         blogGamesEnabled: settings.blogGamesEnabled ?? true,
