@@ -157,6 +157,20 @@ export default function AdminNavigation() {
           </li>
           <li>
             <Link
+              href="/admin/seo/schemas"
+              className={cn(
+                "flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all",
+                isActive("/admin/seo/schemas")
+                  ? "bg-primary/15 text-primary shadow-sm"
+                  : "text-card-foreground hover:bg-primary/10 hover:text-primary"
+              )}
+            >
+              <Code size={18} className="text-primary opacity-80" />
+              SEO Schemas
+            </Link>
+          </li>
+          <li>
+            <Link
               href="/admin/homepage-content"
               className={cn(
                 "flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all",
@@ -553,20 +567,6 @@ export default function AdminNavigation() {
                   >
                     <Settings size={16} className="text-primary opacity-80" />
                     General Settings
-                  </Link>
-                </li>
-                <li>
-                  <Link
-                    href="/admin/seo/schemas"
-                    className={cn(
-                      "flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all",
-                      location === "/admin/seo/schemas"
-                        ? "bg-primary/10 text-primary"
-                        : "text-card-foreground/80 hover:bg-primary/5 hover:text-primary/90"
-                    )}
-                  >
-                    <Code size={16} className="text-primary opacity-80" />
-                    SEO Schemas
                   </Link>
                 </li>
                 <li>
