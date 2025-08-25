@@ -32,7 +32,7 @@ interface SeoSchema {
 
 export default function SeoSchemasPage() {
   const [page, setPage] = useState(1);
-  const [contentTypeFilter, setContentTypeFilter] = useState<string>("");
+  const [contentTypeFilter, setContentTypeFilter] = useState<string>("all");
   const [selectedSchema, setSelectedSchema] = useState<SeoSchema | null>(null);
   const [editingSchema, setEditingSchema] = useState<SeoSchema | null>(null);
   const [viewModalOpen, setViewModalOpen] = useState(false);
@@ -45,7 +45,7 @@ export default function SeoSchemasPage() {
   // Fetch schemas with pagination
   const { data: schemasData, isLoading } = useQuery({
     queryKey: ["/api/admin/seo-schemas", page, contentTypeFilter],
-    queryFn: () => apiRequest(`/api/admin/seo-schemas?page=${page}&limit=20${contentTypeFilter ? `&contentType=${contentTypeFilter}` : ""}`),
+    queryFn: () => apiRequest(`/api/admin/seo-schemas?page=${page}&limit=20${contentTypeFilter && contentTypeFilter !== 'all' ? `&contentType=${contentTypeFilter}` : ""}`),
   });
 
   // Delete schema mutation
@@ -259,7 +259,7 @@ export default function SeoSchemasPage() {
             <SelectValue placeholder="Filter by content type" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="">All Content Types</SelectItem>
+            <SelectItem value="all">All Content Types</SelectItem>
             <SelectItem value="game">Games</SelectItem>
             <SelectItem value="blog_post">Blog Posts</SelectItem>
             <SelectItem value="page">Pages</SelectItem>
