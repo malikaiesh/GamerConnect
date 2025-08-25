@@ -224,6 +224,7 @@ export const siteSettings = pgTable('site_settings', {
   
   // Other site settings
   pushNotificationsEnabled: boolean('push_notifications_enabled').default(true).notNull(),
+  blogGamesEnabled: boolean('blog_games_enabled').default(true).notNull(),
   customHeaderCode: text('custom_header_code'),
   customBodyCode: text('custom_body_code'),
   customFooterCode: text('custom_footer_code'),

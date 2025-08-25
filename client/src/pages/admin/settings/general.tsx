@@ -83,6 +83,7 @@ const generalSettingsSchema = z.object({
   enableGoogleAds: z.boolean().optional().default(false),
   googleAdClient: z.string().optional().nullable(),
   pushNotificationsEnabled: z.boolean().optional().default(true),
+  blogGamesEnabled: z.boolean().optional().default(true),
   customHeaderCode: z.string().optional(),
   customBodyCode: z.string().optional(),
   customFooterCode: z.string().optional(),
@@ -146,6 +147,7 @@ export default function GeneralSettingsPage() {
       enableGoogleAds: false,
       googleAdClient: null,
       pushNotificationsEnabled: true,
+      blogGamesEnabled: true,
       customHeaderCode: "",
       customBodyCode: "",
       customFooterCode: "",
@@ -199,6 +201,7 @@ export default function GeneralSettingsPage() {
         enableGoogleAds: settings.enableGoogleAds ?? false,
         googleAdClient: settings.googleAdClient,
         pushNotificationsEnabled: settings.pushNotificationsEnabled ?? true,
+        blogGamesEnabled: settings.blogGamesEnabled ?? true,
         customHeaderCode: settings.customHeaderCode || "",
         customBodyCode: settings.customBodyCode || "",
         customFooterCode: settings.customFooterCode || "",
@@ -433,6 +436,50 @@ export default function GeneralSettingsPage() {
                         </FormItem>
                       )}
                     />
+                    
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <FormField
+                        control={form.control}
+                        name="pushNotificationsEnabled"
+                        render={({ field }) => (
+                          <FormItem className="flex flex-row items-center justify-between p-4 border rounded-md">
+                            <div className="space-y-0.5">
+                              <FormLabel>Push Notifications</FormLabel>
+                              <FormDescription>
+                                Enable push notifications for your website visitors
+                              </FormDescription>
+                            </div>
+                            <FormControl>
+                              <Switch 
+                                checked={field.value} 
+                                onCheckedChange={field.onChange}
+                              />
+                            </FormControl>
+                          </FormItem>
+                        )}
+                      />
+                      
+                      <FormField
+                        control={form.control}
+                        name="blogGamesEnabled"
+                        render={({ field }) => (
+                          <FormItem className="flex flex-row items-center justify-between p-4 border rounded-md">
+                            <div className="space-y-0.5">
+                              <FormLabel>Blog Games Integration</FormLabel>
+                              <FormDescription>
+                                Show featured games within blog articles at specific paragraphs
+                              </FormDescription>
+                            </div>
+                            <FormControl>
+                              <Switch 
+                                checked={field.value} 
+                                onCheckedChange={field.onChange}
+                              />
+                            </FormControl>
+                          </FormItem>
+                        )}
+                      />
+                    </div>
                   </CardContent>
                 </Card>
               </TabsContent>
