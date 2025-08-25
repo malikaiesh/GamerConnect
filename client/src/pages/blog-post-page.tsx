@@ -295,12 +295,12 @@ export default function BlogPostPage() {
               {/* Header Ad */}
               <BlogAd type="header" className="mb-6" />
               
-              <div className="prose prose-base sm:prose-lg dark:prose-invert max-w-none">
-                {/* Render post content with ad markers */}
+              <div className="prose prose-base sm:prose-lg dark:prose-invert max-w-none text-foreground">
+                {/* Render post content with enhanced visibility */}
                 <EnhancedBlogContent 
                   content={post.content} 
                   settings={settings} 
-                  className="blog-content-with-ads"
+                  className="blog-content-with-ads text-foreground"
                 />
               </div>
               

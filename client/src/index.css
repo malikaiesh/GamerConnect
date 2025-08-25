@@ -374,4 +374,137 @@
       max-width: 100%;
     }
   }
+
+  /* Enhanced Blog Content Styling for Better Visibility */
+  .blog-content-with-ads {
+    @apply text-foreground;
+  }
+
+  .blog-content-with-ads h1,
+  .blog-content-with-ads h2, 
+  .blog-content-with-ads h3,
+  .blog-content-with-ads h4,
+  .blog-content-with-ads h5,
+  .blog-content-with-ads h6 {
+    @apply text-foreground font-bold leading-tight mb-4 mt-6;
+    color: hsl(var(--foreground)) !important;
+  }
+
+  .blog-content-with-ads h1 {
+    @apply text-3xl md:text-4xl;
+  }
+
+  .blog-content-with-ads h2 {
+    @apply text-2xl md:text-3xl;
+  }
+
+  .blog-content-with-ads h3 {
+    @apply text-xl md:text-2xl;
+  }
+
+  .blog-content-with-ads h4 {
+    @apply text-lg md:text-xl;
+  }
+
+  .blog-content-with-ads h5,
+  .blog-content-with-ads h6 {
+    @apply text-base md:text-lg;
+  }
+
+  .blog-content-with-ads p {
+    @apply text-foreground leading-relaxed mb-4;
+    color: hsl(var(--foreground)) !important;
+    line-height: 1.7;
+  }
+
+  .blog-content-with-ads ul,
+  .blog-content-with-ads ol {
+    @apply text-foreground mb-4 pl-6;
+    color: hsl(var(--foreground)) !important;
+  }
+
+  .blog-content-with-ads li {
+    @apply text-foreground mb-2;
+    color: hsl(var(--foreground)) !important;
+  }
+
+  .blog-content-with-ads blockquote {
+    @apply border-l-4 border-primary pl-4 italic text-foreground bg-muted/30 py-2 my-4;
+    color: hsl(var(--foreground)) !important;
+  }
+
+  .blog-content-with-ads a {
+    @apply text-primary hover:text-primary/80 underline;
+    color: hsl(var(--primary)) !important;
+  }
+
+  .blog-content-with-ads strong,
+  .blog-content-with-ads b {
+    @apply font-bold text-foreground;
+    color: hsl(var(--foreground)) !important;
+  }
+
+  .blog-content-with-ads em,
+  .blog-content-with-ads i {
+    @apply italic text-foreground;
+    color: hsl(var(--foreground)) !important;
+  }
+
+  .blog-content-with-ads code {
+    @apply bg-muted text-foreground px-1 py-0.5 rounded text-sm;
+    color: hsl(var(--foreground)) !important;
+  }
+
+  .blog-content-with-ads pre {
+    @apply bg-muted text-foreground p-4 rounded-lg overflow-x-auto my-4;
+    color: hsl(var(--foreground)) !important;
+  }
+
+  .blog-content-with-ads img {
+    @apply rounded-lg my-4 w-full h-auto;
+  }
+
+  /* Theme-specific overrides for better visibility */
+  .lunexa-theme .blog-content-with-ads h1,
+  .lunexa-theme .blog-content-with-ads h2,
+  .lunexa-theme .blog-content-with-ads h3,
+  .lunexa-theme .blog-content-with-ads h4,
+  .lunexa-theme .blog-content-with-ads h5,
+  .lunexa-theme .blog-content-with-ads h6 {
+    color: hsl(var(--foreground)) !important;
+    font-weight: 700;
+  }
+
+  .lunexa-theme .blog-content-with-ads p,
+  .lunexa-theme .blog-content-with-ads li {
+    color: hsl(var(--foreground)) !important;
+    opacity: 0.9;
+  }
+
+  /* Enhanced readability for all themes */
+  .prose .blog-content-with-ads h1,
+  .prose .blog-content-with-ads h2,
+  .prose .blog-content-with-ads h3,
+  .prose .blog-content-with-ads h4,
+  .prose .blog-content-with-ads h5,
+  .prose .blog-content-with-ads h6 {
+    color: hsl(var(--foreground)) !important;
+  }
+
+  .prose .blog-content-with-ads p,
+  .prose .blog-content-with-ads li {
+    color: hsl(var(--foreground)) !important;
+  }
+
+  /* Dark theme specific improvements */
+  .dark .blog-content-with-ads h1,
+  .dark .blog-content-with-ads h2,
+  .dark .blog-content-with-ads h3,
+  .dark .blog-content-with-ads h4,
+  .dark .blog-content-with-ads h5,
+  .dark .blog-content-with-ads h6,
+  .dark .blog-content-with-ads p,
+  .dark .blog-content-with-ads li {
+    color: hsl(var(--foreground)) !important;
+  }
 }
