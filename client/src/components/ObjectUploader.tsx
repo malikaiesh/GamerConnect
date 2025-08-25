@@ -84,11 +84,114 @@ export function ObjectUploader({
         {children}
       </Button>
 
+      <style jsx global>{`
+        .uppy-Dashboard {
+          border-radius: 12px !important;
+          border: 2px dashed #6366f1 !important;
+          background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+        }
+        
+        .uppy-Dashboard-inner {
+          border-radius: 10px !important;
+          background: rgba(255, 255, 255, 0.95) !important;
+          backdrop-filter: blur(10px) !important;
+        }
+        
+        .uppy-Dashboard-dropFilesHereHint {
+          font-size: 18px !important;
+          font-weight: 600 !important;
+          color: #374151 !important;
+          margin-bottom: 8px !important;
+        }
+        
+        .uppy-Dashboard-browse {
+          color: #6366f1 !important;
+          font-weight: 600 !important;
+          text-decoration: none !important;
+          border-bottom: 2px solid #6366f1 !important;
+          transition: all 0.2s ease !important;
+        }
+        
+        .uppy-Dashboard-browse:hover {
+          color: #4f46e5 !important;
+          border-bottom-color: #4f46e5 !important;
+        }
+        
+        .uppy-Dashboard-AddFiles {
+          border-radius: 8px !important;
+          background: rgba(255, 255, 255, 0.8) !important;
+          backdrop-filter: blur(5px) !important;
+          border: 2px dashed #d1d5db !important;
+          transition: all 0.3s ease !important;
+        }
+        
+        .uppy-Dashboard-AddFiles:hover {
+          border-color: #6366f1 !important;
+          background: rgba(255, 255, 255, 0.9) !important;
+        }
+        
+        .uppy-Dashboard-AddFiles-info {
+          padding: 20px !important;
+        }
+        
+        .uppy-Dashboard-note {
+          font-size: 14px !important;
+          color: #6b7280 !important;
+          font-weight: 500 !important;
+        }
+        
+        .uppy-Dashboard-AddFiles-title {
+          font-size: 16px !important;
+          font-weight: 600 !important;
+          color: #374151 !important;
+          margin-bottom: 10px !important;
+        }
+        
+        .uppy-DashboardItem {
+          border-radius: 8px !important;
+          background: rgba(255, 255, 255, 0.9) !important;
+          backdrop-filter: blur(10px) !important;
+          border: 1px solid #e5e7eb !important;
+        }
+        
+        .uppy-Dashboard-progressindicators {
+          background: rgba(255, 255, 255, 0.95) !important;
+          backdrop-filter: blur(10px) !important;
+          border-radius: 0 0 10px 10px !important;
+        }
+        
+        .uppy-ProgressBar {
+          background: linear-gradient(90deg, #6366f1, #8b5cf6) !important;
+          border-radius: 4px !important;
+        }
+        
+        .uppy-Dashboard-close {
+          background: rgba(255, 255, 255, 0.9) !important;
+          border-radius: 50% !important;
+          border: 1px solid #e5e7eb !important;
+          width: 32px !important;
+          height: 32px !important;
+          transition: all 0.2s ease !important;
+        }
+        
+        .uppy-Dashboard-close:hover {
+          background: #f3f4f6 !important;
+          border-color: #d1d5db !important;
+        }
+      `}</style>
+
       <DashboardModal
         uppy={uppy}
         open={showModal}
         onRequestClose={() => setShowModal(false)}
         proudlyDisplayPoweredByUppy={false}
+        theme="light"
+        height={450}
+        width={600}
+        note="Upload your profile picture (max 5MB)"
+        closeAfterFinish={true}
+        showProgressDetails={true}
+        doneButtonHandler={() => setShowModal(false)}
       />
     </div>
   );

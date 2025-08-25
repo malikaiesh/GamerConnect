@@ -434,15 +434,21 @@ export function setupAuth(app: Express) {
     }
     
     try {
-      const { bio, country, profilePicture } = req.body;
+      const { bio, country, profilePicture, displayName, username, email } = req.body;
       const userId = req.user.id;
       
-      const updatedUser = await storage.updateUser(userId, {
-        bio,
-        country,
-        profilePicture,
+      const updateData: any = {
         updatedAt: new Date()
-      });
+      };
+      
+      if (bio !== undefined) updateData.bio = bio;
+      if (country !== undefined) updateData.country = country;
+      if (profilePicture !== undefined) updateData.profilePicture = profilePicture;
+      if (displayName !== undefined) updateData.displayName = displayName;
+      if (username !== undefined) updateData.username = username;
+      if (email !== undefined) updateData.email = email;
+      
+      const updatedUser = await storage.updateUser(userId, updateData);
       
       return res.json(updatedUser);
     } catch (error) {
