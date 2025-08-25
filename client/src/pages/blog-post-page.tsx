@@ -12,9 +12,64 @@ import { PushNotification } from '@/components/push-notification';
 import { BlogAd } from '@/components/ads/blog-ad';
 import { BlogGame } from '@/components/games/blog-game';
 
-// BlogGameWrapper component to conditionally render games
-function BlogGameWrapper({ gameIndex }: { gameIndex: number }) {
-  return <BlogGame type={`game${gameIndex}`} gameIndex={gameIndex} />;
+// Enhanced Blog Content component that integrates games within content
+function EnhancedBlogContent({ content, settings, className }: { 
+  content: string; 
+  settings: SiteSetting | undefined; 
+  className: string;
+}) {
+  if (!settings?.blogGamesEnabled) {
+    return <div className={className} dangerouslySetInnerHTML={{ __html: content }} />;
+  }
+
+  // Parse content and inject games at strategic positions
+  const parser = new DOMParser();
+  const doc = parser.parseFromString(content, 'text/html');
+  const elements = Array.from(doc.body.children);
+  
+  let currentSection = 0;
+  let paragraphsInSection = 0;
+  let gameIndex = 1;
+  
+  const result: (JSX.Element | string)[] = [];
+  
+  elements.forEach((element, index) => {
+    // Add the current element
+    const elementHtml = element.outerHTML;
+    result.push(<div key={`content-${index}`} dangerouslySetInnerHTML={{ __html: elementHtml }} />);
+    
+    // Check if this is a heading
+    if (['H1', 'H2', 'H3', 'H4', 'H5', 'H6'].includes(element.tagName)) {
+      currentSection++;
+      paragraphsInSection = 0;
+    }
+    
+    // If it's a paragraph, count it and potentially add a game
+    if (element.tagName === 'P') {
+      paragraphsInSection++;
+      
+      // Add game after specific paragraph counts in each section
+      const shouldAddGame = 
+        (currentSection === 1 && paragraphsInSection === 2) || // First section: after 2 paragraphs
+        (currentSection === 2 && paragraphsInSection === 3) || // Second section: after 3 paragraphs  
+        (currentSection === 3 && paragraphsInSection === 2) || // Third section: after 2 paragraphs
+        (currentSection === 4 && paragraphsInSection === 3) || // Fourth section: after 3 paragraphs
+        (currentSection === 5 && paragraphsInSection === 2);   // Fifth section: after 2 paragraphs
+      
+      if (shouldAddGame && gameIndex <= 5) {
+        result.push(
+          <BlogGame 
+            key={`game-${gameIndex}`} 
+            type={`section${currentSection}-game${gameIndex}`} 
+            gameIndex={gameIndex} 
+          />
+        );
+        gameIndex++;
+      }
+    }
+  });
+  
+  return <div className={className}>{result}</div>;
 }
 import { apiRequest } from '@/lib/queryClient';
 import { Loader2 } from 'lucide-react';
@@ -242,107 +297,13 @@ export default function BlogPostPage() {
               
               <div className="prose prose-lg dark:prose-invert max-w-none">
                 {/* Render post content with ad markers */}
-                <div 
+                <EnhancedBlogContent 
+                  content={post.content} 
+                  settings={settings} 
                   className="blog-content-with-ads"
-                  dangerouslySetInnerHTML={{ __html: processedContent }}
-                  ref={(element) => {
-                    // After rendering, we need to find and replace the ad and game markers
-                    if (element) {
-                      // Find all ad position markers
-                      const adMarkers = element.querySelectorAll('[data-ad-position]');
-                      
-                      // Find all game position markers
-                      const gameMarkers = element.querySelectorAll('[data-game-position]');
-                      
-                      // Replace each marker with the actual ad component
-                      adMarkers.forEach(marker => {
-                        const position = marker.getAttribute('data-ad-position');
-                        if (position) {
-                          // Create a wrapper div for the ad that matches content flow
-                          const adWrapper = document.createElement('div');
-                          adWrapper.className = 'ad-wrapper my-6 w-full block';
-                          adWrapper.style.maxWidth = '100%';
-                          adWrapper.style.margin = '1.5rem 0';
-                          
-                          // Create a placeholder that React can fill later
-                          const adPlaceholder = document.createElement('div');
-                          adPlaceholder.className = 'ad-placeholder';
-                          adPlaceholder.setAttribute('data-ad-type', position);
-                          adPlaceholder.style.textAlign = 'left';
-                          
-                          // Add the placeholder to the wrapper
-                          adWrapper.appendChild(adPlaceholder);
-                          
-                          // Replace the marker with our wrapper
-                          marker.parentNode?.replaceChild(adWrapper, marker);
-                        }
-                      });
-                      
-                      // Now find all placeholders and render ads into them
-                      element.querySelectorAll('.ad-placeholder').forEach(placeholder => {
-                        const adType = placeholder.getAttribute('data-ad-type') as 'paragraph2' | 'paragraph4' | 'paragraph6' | 'paragraph8';
-                        if (adType) {
-                          // Create an ad element
-                          const adElement = document.createElement('div');
-                          adElement.className = 'blog-ad-container';
-                          placeholder.appendChild(adElement);
-                          
-                          // Render the ad content directly for better performance
-                          if (settings?.[`${adType}Ad` as keyof SiteSetting]) {
-                            const adContent = settings[`${adType}Ad` as keyof SiteSetting] as string;
-                            if (adContent && adContent.trim()) {
-                              // Create a styled container for the ad
-                              const adContainer = document.createElement('div');
-                              adContainer.className = 'blog-ad-container';
-                              adContainer.style.width = '100%';
-                              adContainer.style.textAlign = 'left';
-                              adContainer.style.margin = '0';
-                              
-                              // Add the ad content
-                              adContainer.innerHTML = adContent;
-                              adElement.appendChild(adContainer);
-                            }
-                          }
-                        }
-                      });
-                      
-                      // Replace game markers with game components
-                      gameMarkers.forEach(marker => {
-                        const position = marker.getAttribute('data-game-position');
-                        if (position) {
-                          // Create a wrapper div for the game that matches content flow
-                          const gameWrapper = document.createElement('div');
-                          gameWrapper.className = 'game-wrapper my-6 w-full block';
-                          gameWrapper.style.maxWidth = '100%';
-                          gameWrapper.style.margin = '1.5rem 0';
-                          
-                          // Create a placeholder that React can fill later
-                          const gamePlaceholder = document.createElement('div');
-                          gamePlaceholder.className = 'game-placeholder';
-                          gamePlaceholder.setAttribute('data-game-type', position);
-                          gamePlaceholder.style.textAlign = 'center';
-                          
-                          // Add the placeholder to the wrapper
-                          gameWrapper.appendChild(gamePlaceholder);
-                          
-                          // Replace the marker with our wrapper
-                          marker.parentNode?.replaceChild(gameWrapper, marker);
-                        }
-                      });
-                      
-                    }
-                  }}
                 />
               </div>
               
-              {/* Render BlogGame components dynamically based on content structure */}
-              {settings?.blogGamesEnabled && processedContent && (
-                <div className="space-y-0">
-                  {[1, 2, 3, 4, 5].map((gameIndex) => (
-                    <BlogGameWrapper key={gameIndex} gameIndex={gameIndex} />
-                  ))}
-                </div>
-              )}
               
               {/* After Content Ad */}
               <BlogAd type="afterContent" className="my-6" />
