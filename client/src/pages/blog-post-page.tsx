@@ -305,34 +305,21 @@ export default function BlogPostPage() {
                         }
                       });
                       
-                      // Now find all game placeholders and render games into them
-                      element.querySelectorAll('.game-placeholder').forEach(placeholder => {
-                        const gameType = placeholder.getAttribute('data-game-type') as 'paragraph2' | 'paragraph4' | 'paragraph6' | 'paragraph8' | 'paragraph10';
-                        if (gameType) {
-                          // Create a game element container
-                          const gameElement = document.createElement('div');
-                          gameElement.className = 'blog-game-container';
-                          gameElement.innerHTML = `
-                            <div class="bg-gradient-to-r from-primary/10 via-primary/5 to-transparent p-4 rounded-lg border border-primary/20">
-                              <div class="text-center mb-4">
-                                <h3 class="text-lg font-bold text-primary mb-1">🎮 Featured Game</h3>
-                                <p class="text-sm text-muted-foreground">Take a break and try this amazing game!</p>
-                              </div>
-                              <div class="game-component-placeholder" data-game-position="${gameType}"></div>
-                              <div class="text-center mt-3">
-                                <a href="/games" class="text-primary hover:text-primary/80 text-sm font-medium underline decoration-primary/30 hover:decoration-primary transition-colors">
-                                  Browse more games →
-                                </a>
-                              </div>
-                            </div>
-                          `;
-                          placeholder.appendChild(gameElement);
-                        }
-                      });
                     }
                   }}
                 />
               </div>
+              
+              {/* Render BlogGame components if enabled */}
+              {settings?.blogGamesEnabled && (
+                <div className="space-y-8 my-8">
+                  <BlogGame type="paragraph2" />
+                  <BlogGame type="paragraph4" />
+                  <BlogGame type="paragraph6" />
+                  <BlogGame type="paragraph8" />
+                  <BlogGame type="paragraph10" />
+                </div>
+              )}
               
               {/* After Content Ad */}
               <BlogAd type="afterContent" className="my-6" />
