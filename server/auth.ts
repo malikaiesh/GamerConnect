@@ -9,6 +9,7 @@ import { promisify } from "util";
 import { storage } from "./storage";
 import { User as SelectUser } from "@shared/schema";
 import { InsertUser } from "@shared/schema";
+import { setupSecurity, authRateLimit, sessionSecurity, validatePasswordStrength } from "./middleware/security";
 
 declare global {
   namespace Express {
@@ -150,6 +151,9 @@ async function findOrCreateSocialUser(
 }
 
 export function setupAuth(app: Express) {
+  // Setup security middleware first
+  setupSecurity(app);
+  
   if (!process.env.SESSION_SECRET) {
     console.warn("No SESSION_SECRET environment variable set, using a default insecure secret");
   }
@@ -163,6 +167,7 @@ export function setupAuth(app: Express) {
       maxAge: 1000 * 60 * 60 * 24 * 7, // 1 week
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
+      sameSite: 'strict' // CSRF protection
     }
   };
 
@@ -192,16 +197,8 @@ export function setupAuth(app: Express) {
           return done(null, false, { message: 'Account is blocked. Please contact support.' });
         }
         
-        // Special case for admin user with plaintext password (temporary for demo)
-        if (username === 'admin' && password === user.password) {
-          await storage.updateUserLastLogin(user.id);
-          return done(null, user);
-        } else if (username !== 'admin') {
-          // For regular users, check hashed passwords
-          if (!user.password || !(await comparePasswords(password, user.password))) {
-            return done(null, false, { message: "Invalid username or password" });
-          }
-        } else {
+        // Verify password using proper hashing for all users (including admin)
+        if (!user.password || !(await comparePasswords(password, user.password))) {
           return done(null, false, { message: "Invalid username or password" });
         }
         
@@ -283,7 +280,7 @@ export function setupAuth(app: Express) {
     }
   });
 
-  app.post("/api/register", async (req, res, next) => {
+  app.post("/api/register", authRateLimit, async (req, res, next) => {
     try {
       const { username, password, email, profilePicture, bio, country } = req.body;
       
@@ -337,7 +334,7 @@ export function setupAuth(app: Express) {
     }
   });
 
-  app.post("/api/login", (req, res, next) => {
+  app.post("/api/login", authRateLimit, sessionSecurity, (req, res, next) => {
     passport.authenticate("local", (err, user, info) => {
       if (err) {
         return next(err);
@@ -362,24 +359,6 @@ export function setupAuth(app: Express) {
   });
 
   app.get("/api/user", (req, res) => {
-    // Development mode: provide mock admin user when database is unavailable
-    if (process.env.NODE_ENV === 'development' && !req.isAuthenticated()) {
-      const mockUser = {
-        id: 1,
-        username: 'admin',
-        email: 'admin@gamezone.com',
-        firstName: 'Admin',
-        lastName: 'User',
-        isAdmin: true,
-        accountType: 'local',
-        status: 'active',
-        createdAt: new Date(),
-        updatedAt: new Date(),
-        lastLogin: new Date()
-      };
-      return res.json(mockUser);
-    }
-    
     if (!req.isAuthenticated()) {
       return res.status(401).json({ message: "Not authenticated" });
     }
@@ -429,31 +408,12 @@ export function setupAuth(app: Express) {
   
   // Update user profile
   app.put('/api/user/profile', async (req, res) => {
-    console.log('Profile update request - isAuthenticated:', req.isAuthenticated(), 'user:', req.user);
-    
-    // Development mode: provide mock admin user when database is unavailable
-    if (process.env.NODE_ENV === 'development' && !req.isAuthenticated()) {
-      req.user = {
-        id: 1,
-        username: 'admin',
-        email: 'admin@gamezone.com',
-        firstName: 'Admin',
-        lastName: 'User',
-        isAdmin: true,
-        accountType: 'local',
-        status: 'active',
-        createdAt: new Date(),
-        updatedAt: new Date(),
-        lastLogin: new Date()
-      } as any;
-    }
-    
-    if (!req.isAuthenticated() && process.env.NODE_ENV !== 'development') {
-      return res.status(401).json({ message: "Not authenticated" });
+    if (!req.isAuthenticated()) {
+      return res.status(401).json({ message: "Authentication required" });
     }
     
     if (!req.user) {
-      return res.status(401).json({ message: "Not authenticated" });
+      return res.status(401).json({ message: "User session invalid" });
     }
     
     try {
