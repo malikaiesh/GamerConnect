@@ -74,6 +74,7 @@ const AdminUsersPage = lazy(() => import("@/pages/admin/accounts/users"));
 const AdminRolesPage = lazy(() => import("@/pages/admin/accounts/roles"));
 const AdminSignupsPage = lazy(() => import("@/pages/admin/accounts/signups"));
 const AdminLocationsPage = lazy(() => import("@/pages/admin/accounts/locations"));
+const AdminProfilePage = lazy(() => import("@/pages/admin/accounts/profile"));
 
 // Admin image upload demo
 const AdminImageUploadDemo = lazy(() => import("@/pages/admin/image-upload-demo"));
@@ -288,6 +289,11 @@ function Router() {
       <Route path="/admin/accounts/locations">
         <ProtectedRoute adminOnly={true}>
           <Suspense fallback={<LoadingFallback />}><AdminLocationsPage /></Suspense>
+        </ProtectedRoute>
+      </Route>
+      <Route path="/admin/accounts/profile">
+        <ProtectedRoute adminOnly={true}>
+          <Suspense fallback={<LoadingFallback />}><AdminProfilePage /></Suspense>
         </ProtectedRoute>
       </Route>
       
