@@ -10,6 +10,7 @@ import { SocialShareButtons } from '@/components/shared/social-share-buttons';
 import { BlogPost, PushNotification as PushNotificationType, SiteSetting } from '@shared/schema';
 import { PushNotification } from '@/components/push-notification';
 import { BlogAd } from '@/components/ads/blog-ad';
+import { BlogGame } from '@/components/games/blog-game';
 import { apiRequest } from '@/lib/queryClient';
 import { Loader2 } from 'lucide-react';
 
@@ -107,23 +108,28 @@ export default function BlogPostPage() {
       return post.content;
     }
     
-    // Insert ad markers after specific paragraphs
-    const adPositions = [
-      { index: 2, type: 'paragraph2' },
-      { index: 4, type: 'paragraph4' },
-      { index: 6, type: 'paragraph6' },
-      { index: 8, type: 'paragraph8' }
+    // Insert ad and game markers after specific paragraphs
+    const contentPositions = [
+      { index: 2, type: 'paragraph2', content: 'game' },
+      { index: 4, type: 'paragraph4', content: 'ad' },
+      { index: 6, type: 'paragraph6', content: 'game' },
+      { index: 8, type: 'paragraph8', content: 'ad' },
+      { index: 10, type: 'paragraph10', content: 'game' }
     ];
     
     // Insert markers from the bottom up to avoid index shifting
-    adPositions
+    contentPositions
       .filter(pos => pos.index < paragraphs.length) // Only process valid positions
       .sort((a, b) => b.index - a.index) // Sort in descending order
-      .forEach(({ index, type }) => {
+      .forEach(({ index, type, content }) => {
         const paragraph = paragraphs[index];
         if (paragraph) {
           const marker = document.createElement('div');
-          marker.setAttribute('data-ad-position', type);
+          if (content === 'ad') {
+            marker.setAttribute('data-ad-position', type);
+          } else if (content === 'game') {
+            marker.setAttribute('data-game-position', type);
+          }
           paragraph.after(marker);
         }
       });
@@ -215,10 +221,13 @@ export default function BlogPostPage() {
                   className="blog-content-with-ads"
                   dangerouslySetInnerHTML={{ __html: processedContent }}
                   ref={(element) => {
-                    // After rendering, we need to find and replace the ad markers
+                    // After rendering, we need to find and replace the ad and game markers
                     if (element) {
                       // Find all ad position markers
                       const adMarkers = element.querySelectorAll('[data-ad-position]');
+                      
+                      // Find all game position markers
+                      const gameMarkers = element.querySelectorAll('[data-game-position]');
                       
                       // Replace each marker with the actual ad component
                       adMarkers.forEach(marker => {
@@ -269,6 +278,55 @@ export default function BlogPostPage() {
                               adElement.appendChild(adContainer);
                             }
                           }
+                        }
+                      });
+                      
+                      // Replace game markers with game components
+                      gameMarkers.forEach(marker => {
+                        const position = marker.getAttribute('data-game-position');
+                        if (position) {
+                          // Create a wrapper div for the game that matches content flow
+                          const gameWrapper = document.createElement('div');
+                          gameWrapper.className = 'game-wrapper my-6 w-full block';
+                          gameWrapper.style.maxWidth = '100%';
+                          gameWrapper.style.margin = '1.5rem 0';
+                          
+                          // Create a placeholder that React can fill later
+                          const gamePlaceholder = document.createElement('div');
+                          gamePlaceholder.className = 'game-placeholder';
+                          gamePlaceholder.setAttribute('data-game-type', position);
+                          gamePlaceholder.style.textAlign = 'center';
+                          
+                          // Add the placeholder to the wrapper
+                          gameWrapper.appendChild(gamePlaceholder);
+                          
+                          // Replace the marker with our wrapper
+                          marker.parentNode?.replaceChild(gameWrapper, marker);
+                        }
+                      });
+                      
+                      // Now find all game placeholders and render games into them
+                      element.querySelectorAll('.game-placeholder').forEach(placeholder => {
+                        const gameType = placeholder.getAttribute('data-game-type') as 'paragraph2' | 'paragraph4' | 'paragraph6' | 'paragraph8' | 'paragraph10';
+                        if (gameType) {
+                          // Create a game element container
+                          const gameElement = document.createElement('div');
+                          gameElement.className = 'blog-game-container';
+                          gameElement.innerHTML = `
+                            <div class="bg-gradient-to-r from-primary/10 via-primary/5 to-transparent p-4 rounded-lg border border-primary/20">
+                              <div class="text-center mb-4">
+                                <h3 class="text-lg font-bold text-primary mb-1">🎮 Featured Game</h3>
+                                <p class="text-sm text-muted-foreground">Take a break and try this amazing game!</p>
+                              </div>
+                              <div class="game-component-placeholder" data-game-position="${gameType}"></div>
+                              <div class="text-center mt-3">
+                                <a href="/games" class="text-primary hover:text-primary/80 text-sm font-medium underline decoration-primary/30 hover:decoration-primary transition-colors">
+                                  Browse more games →
+                                </a>
+                              </div>
+                            </div>
+                          `;
+                          placeholder.appendChild(gameElement);
                         }
                       });
                     }
