@@ -70,7 +70,8 @@ export function registerSettingsRoutes(app: Express) {
           .nullable(),
         useTextLogo: z.boolean().optional(),
         textLogoColor: z.string().optional(),
-        adsTxt: z.string().optional()
+        adsTxt: z.string().optional(),
+        robotsTxt: z.string().optional()
       });
       
       const settingsData = schema.parse(req.body);

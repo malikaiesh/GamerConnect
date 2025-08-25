@@ -232,6 +232,7 @@ export const siteSettings = pgTable('site_settings', {
   customHeaderCode: text('custom_header_code'),
   customBodyCode: text('custom_body_code'),
   customFooterCode: text('custom_footer_code'),
+  robotsTxt: text('robots_txt'),
   updatedAt: timestamp('updated_at').defaultNow().notNull()
 });
 

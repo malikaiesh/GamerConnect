@@ -131,6 +131,51 @@ export async function registerRoutes(app: Express): Promise<Server> {
   
   // Serve uploaded files statically
   app.use('/uploads', express.static(path.join(process.cwd(), 'uploads')));
+
+  // Serve robots.txt dynamically from database
+  app.get('/robots.txt', async (req, res) => {
+    try {
+      const settings = await storage.getSiteSettings();
+      const robotsContent = settings?.robotsTxt || `User-agent: *
+Allow: /
+
+# Allow crawling of games
+Allow: /games/
+Allow: /game/
+
+# Allow crawling of blog content
+Allow: /blog/
+Allow: /api/sitemap/
+
+# Block admin areas
+Disallow: /admin/
+Disallow: /api/
+
+# Block sensitive files
+Disallow: /*.json$
+Disallow: /uploads/private/
+
+# Common SEO optimizations
+Crawl-delay: 1
+
+# Sitemap location
+Sitemap: ${req.protocol}://${req.get('host')}/sitemap.xml
+Sitemap: ${req.protocol}://${req.get('host')}/sitemap-games.xml
+Sitemap: ${req.protocol}://${req.get('host')}/sitemap-blog.xml`;
+
+      res.set('Content-Type', 'text/plain');
+      res.send(robotsContent);
+    } catch (error) {
+      console.error('Error serving robots.txt:', error);
+      // Fallback to default robots.txt
+      res.set('Content-Type', 'text/plain');
+      res.send(`User-agent: *
+Allow: /
+
+# Sitemap location
+Sitemap: ${req.protocol}://${req.get('host')}/sitemap.xml`);
+    }
+  });
   
   // Development admin bypass route
   app.post('/api/admin-bypass', (req, res) => {
