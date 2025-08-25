@@ -90,9 +90,43 @@ export function HomepageContent() {
     });
   };
 
+  // Function to count content elements (paragraphs and divs)
+  const countContentElements = (content: string) => {
+    // Count <p> tags and <div> tags that contain meaningful content
+    const pTagCount = (content.match(/<p[^>]*>/g) || []).length;
+    const divWithContentCount = (content.match(/<div[^>]*>[\s\S]*?<\/div>/g) || []).filter(div => 
+      div.includes('<p>') || div.includes('<h') || (div.length > 50 && !div.includes('data-replit-metadata'))
+    ).length;
+    return Math.max(pTagCount, divWithContentCount);
+  };
+
   // Function to render content with proper formatting
   const renderContent = (content: string, isExpanded: boolean) => {
-    // Split content into paragraphs
+    // For HTML content, work with the raw HTML
+    if (content.includes('<div>') || content.includes('<p>')) {
+      if (!isExpanded) {
+        // Show truncated content - we'll use CSS to limit height instead of parsing HTML
+        return (
+          <div className="space-y-2">
+            <div 
+              className="overflow-hidden" 
+              style={{ maxHeight: '300px' }}
+              dangerouslySetInnerHTML={{ __html: content }} 
+            />
+            <p className="text-base text-muted-foreground">...</p>
+          </div>
+        );
+      } else {
+        // Show full content
+        return (
+          <div className="space-y-2">
+            <div dangerouslySetInnerHTML={{ __html: content }} />
+          </div>
+        );
+      }
+    }
+    
+    // Fallback: Split content into paragraphs for plain text
     const paragraphs = content.split("\n\n");
     
     // If not expanded, show exactly 3 paragraphs
@@ -157,8 +191,8 @@ export function HomepageContent() {
           <CardContent className="pt-6 bg-background">
             <h2 className="text-2xl font-bold mb-4 text-foreground">{content.title}</h2>
             {renderContent(content.content, !!expanded[content.id])}
-            {/* Only show Read More button if there are more than 3 paragraphs */}
-            {content.content.split("\n\n").length > 3 && (
+            {/* Always show Read More button for HTML content or content with multiple paragraphs */}
+            {(content.content.includes('<div>') || content.content.includes('<p>') || countContentElements(content.content) > 3 || content.content.split("\n\n").length > 3) && (
               <div className="flex justify-center mt-6">
                 <Button 
                   variant="default" 
