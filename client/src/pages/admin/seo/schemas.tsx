@@ -13,6 +13,9 @@ import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { Eye, Edit, Trash2, RefreshCw, Plus, Code, Download, Upload, Zap, Check, X, AlertTriangle } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
+import AdminNavigation from "@/components/admin/navigation";
+import NotificationBell from "@/components/admin/notification-bell";
+import AdminProfile from "@/components/admin/admin-profile";
 
 interface SeoSchema {
   id: number;
@@ -30,7 +33,7 @@ interface SeoSchema {
   updatedAt: Date;
 }
 
-export default function SeoSchemasPage() {
+function SeoSchemasContent() {
   const [page, setPage] = useState(1);
   const [contentTypeFilter, setContentTypeFilter] = useState<string>("all");
   const [selectedSchema, setSelectedSchema] = useState<SeoSchema | null>(null);
@@ -502,6 +505,33 @@ export default function SeoSchemasPage() {
           </div>
         </DialogContent>
       </Dialog>
+    </div>
+  );
+}
+
+export default function SeoSchemasPage() {
+  return (
+    <div className="flex min-h-screen bg-background">
+      <AdminNavigation />
+      <div className="flex-1">
+        {/* Page Header */}
+        <div className="border-b border-border bg-card px-6 py-4">
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-2xl font-bold text-foreground">SEO Schema Management</h1>
+              <p className="text-muted-foreground">Manage automatic SEO schema generation for games, blog posts, pages, and categories</p>
+            </div>
+            <div className="flex items-center gap-3">
+              <NotificationBell />
+              <AdminProfile />
+            </div>
+          </div>
+        </div>
+        
+        <div className="p-6 lg:p-10">
+          <SeoSchemasContent />
+        </div>
+      </div>
     </div>
   );
 }
