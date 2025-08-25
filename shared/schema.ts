@@ -811,3 +811,63 @@ export const urlRedirectUpdateSchema = urlRedirectInsertSchema.partial();
 export type UrlRedirect = typeof urlRedirects.$inferSelect;
 export type UrlRedirectInsert = z.infer<typeof urlRedirectInsertSchema>;
 export type UrlRedirectUpdate = z.infer<typeof urlRedirectUpdateSchema>;
+
+// Website Updates table
+export const websiteUpdates = pgTable('website_updates', {
+  id: serial('id').primaryKey(),
+  title: text('title').notNull(),
+  description: text('description').notNull(),
+  version: text('version').notNull(),
+  changeType: text('change_type').notNull(), // 'feature', 'bugfix', 'security', 'improvement'
+  priority: text('priority').default('medium').notNull(), // 'low', 'medium', 'high', 'critical'
+  status: text('status').default('draft').notNull(), // 'draft', 'published', 'deploying', 'deployed', 'failed'
+  deploymentUrl: text('deployment_url'), // GitHub deployment URL
+  githubCommitHash: text('github_commit_hash'),
+  scheduledAt: timestamp('scheduled_at'),
+  deployedAt: timestamp('deployed_at'),
+  createdBy: integer('created_by').references(() => users.id).notNull(),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+  updatedAt: timestamp('updated_at').defaultNow().notNull()
+});
+
+// Admin Notifications table
+export const adminNotifications = pgTable('admin_notifications', {
+  id: serial('id').primaryKey(),
+  type: text('type').notNull(), // 'update', 'activity', 'system', 'deployment', 'analytics'
+  title: text('title').notNull(),
+  message: text('message').notNull(),
+  icon: text('icon').default('ri-notification-line'),
+  priority: text('priority').default('medium').notNull(), // 'low', 'medium', 'high'
+  isRead: boolean('is_read').default(false).notNull(),
+  actionUrl: text('action_url'), // Optional URL to navigate to
+  relatedEntityType: text('related_entity_type'), // 'update', 'user', 'game', 'blog'
+  relatedEntityId: integer('related_entity_id'),
+  userId: integer('user_id').references(() => users.id).notNull(), // Admin user
+  createdAt: timestamp('created_at').defaultNow().notNull()
+});
+
+// Admin Activity Logs table
+export const adminActivityLogs = pgTable('admin_activity_logs', {
+  id: serial('id').primaryKey(),
+  userId: integer('user_id').references(() => users.id).notNull(),
+  action: text('action').notNull(), // 'login', 'update_published', 'game_added', 'settings_changed'
+  entityType: text('entity_type'), // 'game', 'blog', 'user', 'settings', 'update'
+  entityId: integer('entity_id'),
+  description: text('description').notNull(),
+  ipAddress: text('ip_address'),
+  userAgent: text('user_agent'),
+  metadata: json('metadata').$type<Record<string, any>>(), // Additional context data
+  createdAt: timestamp('created_at').defaultNow().notNull()
+});
+
+// Create schemas for the new tables
+export const insertWebsiteUpdateSchema = createInsertSchema(websiteUpdates);
+export const insertAdminNotificationSchema = createInsertSchema(adminNotifications);
+export const insertAdminActivityLogSchema = createInsertSchema(adminActivityLogs);
+
+export type WebsiteUpdate = typeof websiteUpdates.$inferSelect;
+export type InsertWebsiteUpdate = z.infer<typeof insertWebsiteUpdateSchema>;
+export type AdminNotification = typeof adminNotifications.$inferSelect;
+export type InsertAdminNotification = z.infer<typeof insertAdminNotificationSchema>;
+export type AdminActivityLog = typeof adminActivityLogs.$inferSelect;
+export type InsertAdminActivityLog = z.infer<typeof insertAdminActivityLogSchema>;

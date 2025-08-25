@@ -2,6 +2,7 @@ import { Link, useLocation } from "wouter";
 import { useAuth } from "@/hooks/use-auth";
 import { cn } from "@/lib/utils";
 import { LayoutDashboard, Gamepad2, BookOpen, FileText, LayoutList, Home, Settings, ImageIcon, Key, BarChart, Code, Map } from "lucide-react";
+import NotificationBell from "@/components/admin/notification-bell";
 
 export default function AdminHeader() {
   const [location] = useLocation();
@@ -109,6 +110,10 @@ export default function AdminHeader() {
             label="Settings" 
           />
         </nav>
+        
+        <div className="flex items-center gap-3 ml-4">
+          <NotificationBell />
+        </div>
       </div>
     </div>
   );

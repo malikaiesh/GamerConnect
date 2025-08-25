@@ -59,6 +59,7 @@ const AdminBlogAdsPage = lazy(() => import("@/pages/admin/blog-ads-page"));
 const AdminCustomCodePage = lazy(() => import("@/pages/admin/custom-code-page"));
 const AdsTxtPage = lazy(() => import("@/pages/admin/ads-txt-page"));
 const RobotsTxtPage = lazy(() => import("@/pages/admin/robots-txt"));
+const WebsiteUpdatesPage = lazy(() => import("@/pages/admin/website-updates"));
 const AdminGamesIntegrationPage = lazy(() => import("@/pages/admin/games-integration"));
 // Push Notifications pages
 const AdminPushNotificationsPage = lazy(() => import("@/pages/admin/push-notifications"));
@@ -235,6 +236,11 @@ function Router() {
       <Route path="/admin/robots-txt">
         <ProtectedRoute adminOnly={true}>
           <Suspense fallback={<LoadingFallback />}><RobotsTxtPage /></Suspense>
+        </ProtectedRoute>
+      </Route>
+      <Route path="/admin/website-updates">
+        <ProtectedRoute adminOnly={true}>
+          <Suspense fallback={<LoadingFallback />}><WebsiteUpdatesPage /></Suspense>
         </ProtectedRoute>
       </Route>
       <Route path="/admin/pages">

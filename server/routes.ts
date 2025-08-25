@@ -22,6 +22,8 @@ import { registerRoleRoutes } from "./api/roles";
 import { registerPermissionRoutes } from "./api/permissions";
 import { registerSecurityRoutes } from "./routes/security";
 import authResetRoutes from "./routes/auth-reset";
+import { registerWebsiteUpdatesRoutes } from "./api/website-updates";
+import { registerAdminNotificationsRoutes } from "./api/admin-notifications";
 import { storage } from "./storage";
 import { db } from "../db";
 import { games, blogPosts, staticPages, pushSubscribers, pushCampaigns } from "@shared/schema";
@@ -355,6 +357,8 @@ Sitemap: ${req.protocol}://${req.get('host')}/sitemap.xml`);
   // Register role and permission API routes
   registerRoleRoutes(app);
   registerPermissionRoutes(app);
+  registerWebsiteUpdatesRoutes(app);
+  registerAdminNotificationsRoutes(app);
   
   // Register URL redirects API routes
   registerUrlRedirectRoutes(app);
