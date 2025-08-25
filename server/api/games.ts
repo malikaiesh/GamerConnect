@@ -4,6 +4,7 @@ import { z } from "zod";
 import { insertGameSchema } from "@shared/schema";
 import fetch from "node-fetch";
 import { imageProcessingService } from '../services/image-processing';
+import { createSeoSchemaGenerator } from '../services/seoSchemaGenerator';
 import slugify from '../utils/slugify';
 import fs from 'fs/promises';
 import path from 'path';
@@ -413,6 +414,17 @@ export function registerGameRoutes(app: Express) {
     try {
       const gameData = insertGameSchema.parse(req.body);
       const game = await storage.createGame(gameData);
+      
+      // Auto-generate SEO schema for the new game
+      try {
+        const schemaGenerator = await createSeoSchemaGenerator();
+        await schemaGenerator.autoGenerateAndSave('game', game.id, 1); // Default user ID 1
+        console.log(`SEO schema generated for game: ${game.title}`);
+      } catch (schemaError) {
+        console.error('Error generating SEO schema for game:', schemaError);
+        // Don't fail the game creation if schema generation fails
+      }
+      
       res.status(201).json(game);
     } catch (error) {
       if (error instanceof z.ZodError) {

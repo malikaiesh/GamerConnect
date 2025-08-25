@@ -3,6 +3,7 @@ import { isAdmin, isAuthenticated } from '../middleware';
 import { db } from '../../db';
 import { gameCategories, insertGameCategorySchema } from '@shared/schema';
 import { eq, desc, asc } from 'drizzle-orm';
+import { createSeoSchemaGenerator } from '../services/seoSchemaGenerator';
 import slugify from '../utils/slugify';
 import { z } from 'zod';
 
@@ -194,6 +195,16 @@ router.post('/', isAuthenticated, isAdmin, async (req: Request, res: Response) =
       createdAt: new Date(),
       updatedAt: new Date()
     }).returning();
+    
+    // Auto-generate SEO schema for the new category
+    try {
+      const schemaGenerator = await createSeoSchemaGenerator();
+      await schemaGenerator.autoGenerateAndSave('category', newCategory[0].id, req.user?.id || 1);
+      console.log(`SEO schema generated for category: ${newCategory[0].name}`);
+    } catch (schemaError) {
+      console.error('Error generating SEO schema for category:', schemaError);
+      // Don't fail the category creation if schema generation fails
+    }
     
     res.status(201).json(newCategory[0]);
   } catch (error) {

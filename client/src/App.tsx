@@ -4,6 +4,7 @@ import { QueryClientProvider } from "@tanstack/react-query";
 import { ThemeProvider } from "./lib/theme-provider";
 import { Toaster } from "@/components/ui/toaster";
 import { AppHead } from "@/components/app-head";
+import { GlobalSeoSchemaInjector } from "@/components/seo-schema-injector";
 import { Suspense, lazy } from "react";
 import { Loader2 } from "lucide-react";
 import { Providers } from "./lib/providers";
@@ -69,6 +70,8 @@ const AdminPushNotificationsSubscribersPage = lazy(() => import("@/pages/admin/p
 // Admin settings pages
 const AdminRedirectsPage = lazy(() => import("@/pages/admin/settings/redirects"));
 const AdminGeneralSettingsPage = lazy(() => import("@/pages/admin/settings/general"));
+// Admin SEO pages
+const AdminSeoSchemasPage = lazy(() => import("@/pages/admin/seo/schemas"));
 // Admin accounts pages
 const AdminUsersPage = lazy(() => import("@/pages/admin/accounts/users"));
 const AdminRolesPage = lazy(() => import("@/pages/admin/accounts/roles"));
@@ -269,6 +272,11 @@ function Router() {
           <Suspense fallback={<LoadingFallback />}><AdminGeneralSettingsPage /></Suspense>
         </ProtectedRoute>
       </Route>
+      <Route path="/admin/seo/schemas">
+        <ProtectedRoute adminOnly={true}>
+          <Suspense fallback={<LoadingFallback />}><AdminSeoSchemasPage /></Suspense>
+        </ProtectedRoute>
+      </Route>
       
       {/* Admin Accounts Routes */}
       <Route path="/admin/accounts/users">
@@ -360,6 +368,7 @@ function App() {
       <ThemeProvider>
         <Providers>
           <AppHead />
+          <GlobalSeoSchemaInjector />
           <Router />
           <AdminHelperNav />
           <Toaster />

@@ -24,6 +24,7 @@ import { registerSecurityRoutes } from "./routes/security";
 import authResetRoutes from "./routes/auth-reset";
 import { registerWebsiteUpdatesRoutes } from "./api/website-updates";
 import { registerAdminNotificationsRoutes } from "./api/admin-notifications";
+import { registerSeoSchemaRoutes } from "./api/seo-schemas";
 import { storage } from "./storage";
 import { db } from "../db";
 import { ObjectStorageService, ObjectNotFoundError } from "./objectStorage";
@@ -362,6 +363,7 @@ Sitemap: ${req.protocol}://${req.get('host')}/sitemap.xml`);
   registerPermissionRoutes(app);
   registerWebsiteUpdatesRoutes(app);
   registerAdminNotificationsRoutes(app);
+  registerSeoSchemaRoutes(app);
   
   // Register URL redirects API routes
   registerUrlRedirectRoutes(app);

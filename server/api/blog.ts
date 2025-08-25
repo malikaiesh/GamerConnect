@@ -3,6 +3,7 @@ import { storage } from "../storage";
 import { z } from "zod";
 import { insertBlogPostSchema, insertBlogCategorySchema } from "@shared/schema";
 import { updateAllBlogPostsWithInternalLinks } from "../utils/update-all-blog-internal-links";
+import { createSeoSchemaGenerator } from '../services/seoSchemaGenerator';
 import { isAdmin } from "../middleware";
 
 export function registerBlogRoutes(app: Express) {
@@ -139,6 +140,17 @@ export function registerBlogRoutes(app: Express) {
     try {
       const postData = insertBlogPostSchema.parse(req.body);
       const post = await storage.createBlogPost(postData);
+      
+      // Auto-generate SEO schema for the new blog post
+      try {
+        const schemaGenerator = await createSeoSchemaGenerator();
+        await schemaGenerator.autoGenerateAndSave('blog_post', post.id, 1); // Default user ID 1
+        console.log(`SEO schema generated for blog post: ${post.title}`);
+      } catch (schemaError) {
+        console.error('Error generating SEO schema for blog post:', schemaError);
+        // Don't fail the post creation if schema generation fails
+      }
+      
       res.status(201).json(post);
     } catch (error) {
       if (error instanceof z.ZodError) {

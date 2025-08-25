@@ -557,6 +557,20 @@ export default function AdminNavigation() {
                 </li>
                 <li>
                   <Link
+                    href="/admin/seo/schemas"
+                    className={cn(
+                      "flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all",
+                      location === "/admin/seo/schemas"
+                        ? "bg-primary/10 text-primary"
+                        : "text-card-foreground/80 hover:bg-primary/5 hover:text-primary/90"
+                    )}
+                  >
+                    <Code size={16} className="text-primary opacity-80" />
+                    SEO Schemas
+                  </Link>
+                </li>
+                <li>
+                  <Link
                     href="/admin/settings/redirects"
                     className={cn(
                       "flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all",

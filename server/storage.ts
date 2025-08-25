@@ -37,6 +37,12 @@ import {
   InsertPermission,
   RolePermission,
   InsertRolePermission,
+  SeoSchema,
+  InsertSeoSchema,
+  SeoSchemaTemplate,
+  InsertSeoSchemaTemplate,
+  SeoSchemaAnalytics,
+  InsertSeoSchemaAnalytics,
   users,
   games,
   blogCategories,
@@ -53,6 +59,9 @@ import {
   roles,
   permissions,
   rolePermissions,
+  seoSchemas,
+  seoSchemaTemplates,
+  seoSchemaAnalytics,
   PushSubscriber,
   InsertPushSubscriber,
   PushCampaign,
@@ -2338,6 +2347,135 @@ class DatabaseStorage implements IStorage {
     } catch (error) {
       console.error(`Error toggling URL redirect status with ID ${id}:`, error);
       return null;
+    }
+  }
+
+  // SEO Schema Management Methods
+  async createSeoSchema(schemaData: InsertSeoSchema): Promise<SeoSchema> {
+    try {
+      const [schema] = await db.insert(seoSchemas).values(schemaData).returning();
+      return schema;
+    } catch (error) {
+      console.error('Error creating SEO schema:', error);
+      throw error;
+    }
+  }
+
+  async getSeoSchemaById(id: number): Promise<SeoSchema | null> {
+    try {
+      const [schema] = await db.select().from(seoSchemas).where(eq(seoSchemas.id, id));
+      return schema || null;
+    } catch (error) {
+      console.error('Error fetching SEO schema:', error);
+      return null;
+    }
+  }
+
+  async getSeoSchemasByContent(contentType: string, contentId: number): Promise<SeoSchema[]> {
+    try {
+      return await db.select()
+        .from(seoSchemas)
+        .where(and(
+          eq(seoSchemas.contentType, contentType as any),
+          eq(seoSchemas.contentId, contentId),
+          eq(seoSchemas.isActive, true)
+        ))
+        .orderBy(desc(seoSchemas.priority), desc(seoSchemas.createdAt));
+    } catch (error) {
+      console.error('Error fetching SEO schemas by content:', error);
+      return [];
+    }
+  }
+
+  async getAllSeoSchemas(options?: { page?: number; limit?: number; contentType?: string }): Promise<{ schemas: SeoSchema[]; total: number }> {
+    try {
+      const { page = 1, limit = 20, contentType } = options || {};
+      const offset = (page - 1) * limit;
+
+      let whereConditions = [];
+      if (contentType) {
+        whereConditions.push(eq(seoSchemas.contentType, contentType as any));
+      }
+
+      const whereClause = whereConditions.length > 0 ? and(...whereConditions) : undefined;
+
+      const [schemas, totalResult] = await Promise.all([
+        db.select()
+          .from(seoSchemas)
+          .where(whereClause)
+          .orderBy(desc(seoSchemas.createdAt))
+          .limit(limit)
+          .offset(offset),
+        db.select({ count: count() })
+          .from(seoSchemas)
+          .where(whereClause)
+      ]);
+
+      return {
+        schemas,
+        total: totalResult[0]?.count || 0
+      };
+    } catch (error) {
+      console.error('Error fetching SEO schemas:', error);
+      return { schemas: [], total: 0 };
+    }
+  }
+
+  async updateSeoSchema(id: number, updateData: Partial<InsertSeoSchema>): Promise<SeoSchema | null> {
+    try {
+      const [updated] = await db.update(seoSchemas)
+        .set({
+          ...updateData,
+          updatedAt: new Date()
+        })
+        .where(eq(seoSchemas.id, id))
+        .returning();
+      return updated || null;
+    } catch (error) {
+      console.error('Error updating SEO schema:', error);
+      return null;
+    }
+  }
+
+  async deleteSeoSchema(id: number): Promise<boolean> {
+    try {
+      await db.delete(seoSchemas).where(eq(seoSchemas.id, id));
+      return true;
+    } catch (error) {
+      console.error('Error deleting SEO schema:', error);
+      return false;
+    }
+  }
+
+  async createSeoSchemaTemplate(templateData: InsertSeoSchemaTemplate): Promise<SeoSchemaTemplate> {
+    try {
+      const [template] = await db.insert(seoSchemaTemplates).values(templateData).returning();
+      return template;
+    } catch (error) {
+      console.error('Error creating SEO schema template:', error);
+      throw error;
+    }
+  }
+
+  async getSeoSchemaTemplates(): Promise<SeoSchemaTemplate[]> {
+    try {
+      return await db.select()
+        .from(seoSchemaTemplates)
+        .where(eq(seoSchemaTemplates.isActive, true))
+        .orderBy(asc(seoSchemaTemplates.name));
+    } catch (error) {
+      console.error('Error fetching SEO schema templates:', error);
+      return [];
+    }
+  }
+
+  async recordSeoSchemaAnalytics(analyticsData: InsertSeoSchemaAnalytics): Promise<SeoSchemaAnalytics> {
+    try {
+      const [analytics] = await db.insert(seoSchemaAnalytics).values(analyticsData).returning();
+      return analytics;
+    } catch (error) {
+      console.error('Error recording SEO schema analytics:', error);
+      throw error;
     }
   }
 }

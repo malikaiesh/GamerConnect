@@ -2,6 +2,7 @@ import { Request, Response } from "express";
 import { Express } from "express";
 import { storage } from "../storage";
 import { insertStaticPageSchema } from "@shared/schema";
+import { createSeoSchemaGenerator } from '../services/seoSchemaGenerator';
 import { z } from "zod";
 
 export function registerPagesRoutes(app: Express) {
@@ -119,6 +120,16 @@ export function registerPagesRoutes(app: Express) {
       }
       
       const newPage = await storage.createStaticPage(validatedData);
+      
+      // Auto-generate SEO schema for the new page
+      try {
+        const schemaGenerator = await createSeoSchemaGenerator();
+        await schemaGenerator.autoGenerateAndSave('page', newPage.id, req.user?.id || 1);
+        console.log(`SEO schema generated for page: ${newPage.title}`);
+      } catch (schemaError) {
+        console.error('Error generating SEO schema for page:', schemaError);
+        // Don't fail the page creation if schema generation fails
+      }
       
       res.status(201).json(newPage);
     } catch (error) {
