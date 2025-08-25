@@ -225,6 +225,10 @@ export const siteSettings = pgTable('site_settings', {
   // Other site settings
   pushNotificationsEnabled: boolean('push_notifications_enabled').default(true).notNull(),
   blogGamesEnabled: boolean('blog_games_enabled').default(true).notNull(),
+  paragraph2GamesEnabled: boolean('paragraph2_games_enabled').default(true).notNull(),
+  paragraph6GamesEnabled: boolean('paragraph6_games_enabled').default(true).notNull(),
+  paragraph8GamesEnabled: boolean('paragraph8_games_enabled').default(true).notNull(),
+  paragraph10GamesEnabled: boolean('paragraph10_games_enabled').default(true).notNull(),
   customHeaderCode: text('custom_header_code'),
   customBodyCode: text('custom_body_code'),
   customFooterCode: text('custom_footer_code'),

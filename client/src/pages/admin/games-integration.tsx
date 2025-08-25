@@ -36,6 +36,11 @@ const gamesIntegrationSchema = z.object({
   showGameRatings: z.boolean().default(true),
   showPlayCounts: z.boolean().default(true),
   autoRotateGames: z.boolean().default(true),
+  // Individual paragraph position controls
+  paragraph2GamesEnabled: z.boolean().default(true),
+  paragraph6GamesEnabled: z.boolean().default(true), 
+  paragraph8GamesEnabled: z.boolean().default(true),
+  paragraph10GamesEnabled: z.boolean().default(true),
 });
 
 type GamesIntegrationValues = z.infer<typeof gamesIntegrationSchema>;
@@ -57,6 +62,10 @@ export default function GamesIntegrationPage() {
       showGameRatings: true,
       showPlayCounts: true,
       autoRotateGames: true,
+      paragraph2GamesEnabled: true,
+      paragraph6GamesEnabled: true,
+      paragraph8GamesEnabled: true,
+      paragraph10GamesEnabled: true,
     }
   });
 
@@ -70,17 +79,22 @@ export default function GamesIntegrationPage() {
         showGameRatings: true,
         showPlayCounts: true,
         autoRotateGames: true,
+        paragraph2GamesEnabled: (settings as any).paragraph2GamesEnabled ?? true,
+        paragraph6GamesEnabled: (settings as any).paragraph6GamesEnabled ?? true,
+        paragraph8GamesEnabled: (settings as any).paragraph8GamesEnabled ?? true,
+        paragraph10GamesEnabled: (settings as any).paragraph10GamesEnabled ?? true,
       });
     }
   }, [settings, form]);
 
   const updateSettingsMutation = useMutation({
     mutationFn: async (data: GamesIntegrationValues) => {
-      return apiRequest('/api/settings', {
-        method: 'PUT',
-        body: JSON.stringify({
-          blogGamesEnabled: data.blogGamesEnabled,
-        }),
+      return apiRequest('PUT', '/api/settings', {
+        blogGamesEnabled: data.blogGamesEnabled,
+        paragraph2GamesEnabled: data.paragraph2GamesEnabled,
+        paragraph6GamesEnabled: data.paragraph6GamesEnabled,
+        paragraph8GamesEnabled: data.paragraph8GamesEnabled,
+        paragraph10GamesEnabled: data.paragraph10GamesEnabled,
       });
     },
     onSuccess: () => {
@@ -269,30 +283,109 @@ export default function GamesIntegrationPage() {
               </CardContent>
             </Card>
 
-            {/* Game Positions Info */}
+            {/* Individual Paragraph Controls */}
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <BarChart3 className="w-5 h-5" />
-                  Game Positions
+                  Paragraph Position Controls
                 </CardTitle>
                 <CardDescription>
-                  Games are automatically inserted at these paragraph positions
+                  Enable or disable games at specific paragraph positions in blog articles
                 </CardDescription>
               </CardHeader>
-              <CardContent>
-                <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
-                  {['Paragraph 2', 'Paragraph 4', 'Paragraph 6', 'Paragraph 8', 'Paragraph 10'].map((position, index) => (
-                    <div key={position} className="text-center p-3 bg-muted rounded-lg">
-                      <div className="font-semibold text-primary">{position}</div>
-                      <div className="text-sm text-muted-foreground">Game #{index + 1}</div>
-                    </div>
-                  ))}
+              <CardContent className="space-y-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <FormField
+                    control={form.control}
+                    name="paragraph2GamesEnabled"
+                    render={({ field }) => (
+                      <FormItem className="flex flex-row items-center justify-between p-4 border rounded-md bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-950/20 dark:to-indigo-950/20">
+                        <div className="space-y-0.5">
+                          <FormLabel className="text-blue-700 dark:text-blue-300 font-semibold">Paragraph 2 Games</FormLabel>
+                          <FormDescription>
+                            Show games after the 2nd paragraph in each section
+                          </FormDescription>
+                        </div>
+                        <FormControl>
+                          <Switch 
+                            checked={field.value} 
+                            onCheckedChange={field.onChange}
+                          />
+                        </FormControl>
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="paragraph6GamesEnabled"
+                    render={({ field }) => (
+                      <FormItem className="flex flex-row items-center justify-between p-4 border rounded-md bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-950/20 dark:to-emerald-950/20">
+                        <div className="space-y-0.5">
+                          <FormLabel className="text-green-700 dark:text-green-300 font-semibold">Paragraph 6 Games</FormLabel>
+                          <FormDescription>
+                            Show games after the 6th paragraph in articles
+                          </FormDescription>
+                        </div>
+                        <FormControl>
+                          <Switch 
+                            checked={field.value} 
+                            onCheckedChange={field.onChange}
+                          />
+                        </FormControl>
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="paragraph8GamesEnabled"
+                    render={({ field }) => (
+                      <FormItem className="flex flex-row items-center justify-between p-4 border rounded-md bg-gradient-to-r from-purple-50 to-violet-50 dark:from-purple-950/20 dark:to-violet-950/20">
+                        <div className="space-y-0.5">
+                          <FormLabel className="text-purple-700 dark:text-purple-300 font-semibold">Paragraph 8 Games</FormLabel>
+                          <FormDescription>
+                            Show games after the 8th paragraph in articles
+                          </FormDescription>
+                        </div>
+                        <FormControl>
+                          <Switch 
+                            checked={field.value} 
+                            onCheckedChange={field.onChange}
+                          />
+                        </FormControl>
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="paragraph10GamesEnabled"
+                    render={({ field }) => (
+                      <FormItem className="flex flex-row items-center justify-between p-4 border rounded-md bg-gradient-to-r from-orange-50 to-red-50 dark:from-orange-950/20 dark:to-red-950/20">
+                        <div className="space-y-0.5">
+                          <FormLabel className="text-orange-700 dark:text-orange-300 font-semibold">Paragraph 10 Games</FormLabel>
+                          <FormDescription>
+                            Show games after the 10th paragraph in articles
+                          </FormDescription>
+                        </div>
+                        <FormControl>
+                          <Switch 
+                            checked={field.value} 
+                            onCheckedChange={field.onChange}
+                          />
+                        </FormControl>
+                      </FormItem>
+                    )}
+                  />
                 </div>
-                <p className="text-sm text-muted-foreground mt-4">
-                  Games rotate automatically to provide variety across different blog articles.
-                  Each position shows a different featured game to keep content fresh.
-                </p>
+                <div className="mt-6 p-4 bg-muted/50 rounded-lg">
+                  <p className="text-sm text-muted-foreground">
+                    💡 <strong>Pro Tip:</strong> Games rotate automatically to provide variety across different blog articles.
+                    Each enabled position shows a different featured game to keep content fresh and engaging for your readers.
+                  </p>
+                </div>
               </CardContent>
             </Card>
 

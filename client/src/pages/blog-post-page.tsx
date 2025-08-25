@@ -12,7 +12,7 @@ import { PushNotification } from '@/components/push-notification';
 import { BlogAd } from '@/components/ads/blog-ad';
 import { BlogGame } from '@/components/games/blog-game';
 
-// Enhanced Blog Content component that integrates games within content
+// Enhanced Blog Content component that integrates games within content with individual paragraph controls
 function EnhancedBlogContent({ content, settings, className }: { 
   content: string; 
   settings: SiteSetting | undefined; 
@@ -48,13 +48,13 @@ function EnhancedBlogContent({ content, settings, className }: {
     if (element.tagName === 'P') {
       paragraphsInSection++;
       
-      // Add game after specific paragraph counts in each section
+      // Add game after specific paragraph counts in each section based on individual controls
       const shouldAddGame = 
-        (currentSection === 1 && paragraphsInSection === 2) || // First section: after 2 paragraphs
-        (currentSection === 2 && paragraphsInSection === 3) || // Second section: after 3 paragraphs  
-        (currentSection === 3 && paragraphsInSection === 2) || // Third section: after 2 paragraphs
-        (currentSection === 4 && paragraphsInSection === 3) || // Fourth section: after 3 paragraphs
-        (currentSection === 5 && paragraphsInSection === 2);   // Fifth section: after 2 paragraphs
+        (currentSection === 1 && paragraphsInSection === 2 && (settings as any).paragraph2GamesEnabled) || // First section: after 2 paragraphs
+        (currentSection === 2 && paragraphsInSection === 3 && (settings as any).paragraph6GamesEnabled) || // Second section: after 3 paragraphs  
+        (currentSection === 3 && paragraphsInSection === 2 && (settings as any).paragraph8GamesEnabled) || // Third section: after 2 paragraphs
+        (currentSection === 4 && paragraphsInSection === 3 && (settings as any).paragraph10GamesEnabled) || // Fourth section: after 3 paragraphs
+        (currentSection === 5 && paragraphsInSection === 2 && (settings as any).paragraph2GamesEnabled);   // Fifth section: after 2 paragraphs
       
       if (shouldAddGame && gameIndex <= 5) {
         result.push(
