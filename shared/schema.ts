@@ -398,6 +398,23 @@ export const homeAds = pgTable('home_ads', {
   updatedAt: timestamp('updated_at').defaultNow().notNull()
 });
 
+// Team Members table
+export const teamMembers = pgTable('team_members', {
+  id: serial('id').primaryKey(),
+  name: text('name').notNull(),
+  designation: text('designation').notNull(),
+  profilePicture: text('profile_picture'),
+  bio: text('bio'),
+  socialLinkedin: text('social_linkedin'),
+  socialTwitter: text('social_twitter'),
+  socialGithub: text('social_github'),
+  socialInstagram: text('social_instagram'),
+  displayOrder: integer('display_order').default(0).notNull(),
+  status: contentStatusEnum('status').default('active').notNull(),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+  updatedAt: timestamp('updated_at').defaultNow().notNull()
+});
+
 // Define relations
 export const gameCategoriesRelations = relations(gameCategories, ({ many }) => ({
   games: many(games)
@@ -620,6 +637,19 @@ export const insertStaticPageSchema = createInsertSchema(staticPages, {
   slug: (schema) => schema.min(2, "Slug must be at least 2 characters"),
   metaTitle: (schema) => schema.optional().nullable(),
   metaDescription: (schema) => schema.optional().nullable()
+});
+
+export const insertTeamMemberSchema = createInsertSchema(teamMembers, {
+  name: (schema) => schema.min(2, "Name must be at least 2 characters"),
+  designation: (schema) => schema.min(2, "Designation must be at least 2 characters"),
+  profilePicture: (schema) => schema.url("Profile picture must be a valid URL").optional().nullable(),
+  bio: (schema) => schema.max(500, "Bio must not exceed 500 characters").optional().nullable(),
+  socialLinkedin: (schema) => schema.url("LinkedIn must be a valid URL").optional().nullable(),
+  socialTwitter: (schema) => schema.url("Twitter must be a valid URL").optional().nullable(),
+  socialGithub: (schema) => schema.url("GitHub must be a valid URL").optional().nullable(),
+  socialInstagram: (schema) => schema.url("Instagram must be a valid URL").optional().nullable(),
+  displayOrder: (schema) => schema.optional(),
+  status: (schema) => schema.optional().default('active')
 });
 
 // Types for TypeScript
@@ -960,3 +990,7 @@ export type SeoSchemaTemplate = typeof seoSchemaTemplates.$inferSelect;
 export type InsertSeoSchemaTemplate = z.infer<typeof insertSeoSchemaTemplateSchema>;
 export type SeoSchemaAnalytics = typeof seoSchemaAnalytics.$inferSelect;
 export type InsertSeoSchemaAnalytics = z.infer<typeof insertSeoSchemaAnalyticsSchema>;
+
+// Team Members types
+export type TeamMember = typeof teamMembers.$inferSelect;
+export type InsertTeamMember = z.infer<typeof insertTeamMemberSchema>;

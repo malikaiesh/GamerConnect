@@ -6,6 +6,7 @@ import { Footer } from '@/components/layout/footer';
 import { GameFilters } from '@/components/games/game-filters';
 import { GameGrid } from '@/components/games/game-grid';
 import { BlogList } from '@/components/blog/blog-list';
+import { TeamSection } from '@/components/team-section';
 import { Rating } from '@/components/ui/rating';
 import { PushNotification } from '@/components/push-notification';
 import { HomepageContent } from '@/components/home/homepage-content';
@@ -331,61 +332,8 @@ export default function HomePage() {
       {/* Ad Below About */}
       <HomeAd position="below_about" />
       
-      {/* App Download Section */}
-      <section className="py-16 relative overflow-hidden" style={{
-        background: "linear-gradient(135deg, hsl(260 40% 12%) 0%, hsl(270 45% 15%) 100%)",
-      }}>
-        {/* Decorative elements */}
-        <div className="absolute -top-24 right-24 w-64 h-64 rounded-full bg-primary/10 blur-3xl"></div>
-        <div className="absolute -bottom-20 left-10 w-80 h-80 rounded-full bg-secondary/10 blur-3xl"></div>
-        
-        <div className="container mx-auto px-4 relative z-10">
-          <div className="flex flex-col md:flex-row items-center justify-between">
-            <div className="md:w-1/2 mb-8 md:mb-0">
-              <h2 className="heading-lg mb-4 text-white">
-                <span className="bg-clip-text text-transparent bg-gradient-to-r from-secondary to-primary">Take Gaming</span> With You Anywhere
-              </h2>
-              <p className="text-lg md:text-xl mb-6 text-white/80">
-                Download our mobile app and play your favorite games on the go. Available on iOS, Android, and Amazon devices.
-              </p>
-              <div className="flex flex-wrap gap-4">
-                <a href="#" className="flex items-center backdrop-blur-sm bg-white/10 border border-white/10 text-white hover:bg-white/20 px-5 py-3 rounded-lg transition-colors">
-                  <i className="ri-app-store-fill text-3xl mr-3 text-secondary"></i>
-                  <div>
-                    <div className="text-xs text-white/70">Download on the</div>
-                    <div className="text-lg font-semibold">App Store</div>
-                  </div>
-                </a>
-                <a href="#" className="flex items-center backdrop-blur-sm bg-white/10 border border-white/10 text-white hover:bg-white/20 px-5 py-3 rounded-lg transition-colors">
-                  <i className="ri-google-play-fill text-3xl mr-3 text-secondary"></i>
-                  <div>
-                    <div className="text-xs text-white/70">Get it on</div>
-                    <div className="text-lg font-semibold">Google Play</div>
-                  </div>
-                </a>
-                <a href="#" className="flex items-center backdrop-blur-sm bg-white/10 border border-white/10 text-white hover:bg-white/20 px-5 py-3 rounded-lg transition-colors">
-                  <i className="ri-amazon-fill text-3xl mr-3 text-secondary"></i>
-                  <div>
-                    <div className="text-xs text-white/70">Available at</div>
-                    <div className="text-lg font-semibold">Amazon</div>
-                  </div>
-                </a>
-              </div>
-            </div>
-            <div className="md:w-1/2 flex justify-center">
-              <div className="relative">
-                <img 
-                  src="https://images.unsplash.com/photo-1609067958753-3a695f5cdb13?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&h=600&q=80" 
-                  alt="Mobile gaming experience" 
-                  className="max-w-xs md:max-w-sm rounded-3xl border border-white/10 shadow-[0_0_25px_rgba(124,58,237,0.15)] transform -rotate-6 relative z-10"
-                />
-                <div className="absolute -bottom-10 -right-10 w-24 h-24 rounded-full bg-secondary shadow-[0_0_20px_rgba(56,189,248,0.3)] z-0 animate-pulse"></div>
-                <div className="absolute -top-6 -left-6 w-16 h-16 rounded-full bg-primary shadow-[0_0_20px_rgba(124,58,237,0.3)] z-0 animate-pulse" style={{animationDelay: '1s'}}></div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
+      {/* Team Section */}
+      <TeamSection />
       
       {/* Footer */}
       <Footer />

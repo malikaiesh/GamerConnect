@@ -157,6 +157,20 @@ export default function AdminNavigation() {
           </li>
           <li>
             <Link
+              href="/admin/team"
+              className={cn(
+                "flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all",
+                isActive("/admin/team")
+                  ? "bg-primary/15 text-primary shadow-sm"
+                  : "text-card-foreground hover:bg-primary/10 hover:text-primary"
+              )}
+            >
+              <Users size={18} className="text-primary opacity-80" />
+              Team
+            </Link>
+          </li>
+          <li>
+            <Link
               href="/admin/seo/schemas"
               className={cn(
                 "flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all",
