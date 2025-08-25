@@ -2,6 +2,7 @@ import { Express, Request, Response } from "express";
 import { storage } from "../storage";
 import { insertHomePageContentSchema } from "@shared/schema";
 import { z } from "zod";
+import { isAuthenticated } from "../middleware/auth";
 
 export function registerHomePageContentRoutes(app: Express) {
   // Get all homepage content
@@ -58,28 +59,11 @@ export function registerHomePageContentRoutes(app: Express) {
     }
   });
 
-  // PUBLIC endpoint for development - Create homepage content
-  app.post('/api/public/homepage-content', async (req: Request, res: Response) => {
-    try {
-      const validatedData = insertHomePageContentSchema.parse({
-        ...req.body,
-        createdBy: 1 // Default admin user for development
-      });
-      const newContent = await storage.createHomePageContent(validatedData);
-      res.status(201).json(newContent);
-    } catch (error) {
-      if (error instanceof z.ZodError) {
-        return res.status(400).json({ errors: error.errors });
-      }
-      console.error('Error creating homepage content:', error);
-      res.status(500).json({ message: 'Internal server error' });
-    }
-  });
 
   // Create a new homepage content (admin only)
-  app.post('/api/homepage-content', async (req: Request, res: Response) => {
-    if (!req.isAuthenticated() || !req.user.isAdmin) {
-      return res.status(401).json({ message: 'Unauthorized' });
+  app.post('/api/homepage-content', isAuthenticated, async (req: Request, res: Response) => {
+    if (!req.user?.isAdmin) {
+      return res.status(403).json({ message: 'Admin access required' });
     }
 
     try {
@@ -95,43 +79,11 @@ export function registerHomePageContentRoutes(app: Express) {
     }
   });
 
-  // PUBLIC endpoint for development - Update homepage content
-  app.put('/api/public/homepage-content/:id', async (req: Request, res: Response) => {
-    try {
-      const id = parseInt(req.params.id);
-      if (isNaN(id)) {
-        return res.status(400).json({ message: 'Invalid ID format' });
-      }
-
-      // Check if content exists
-      const existingContent = await storage.getHomePageContentById(id);
-      if (!existingContent) {
-        return res.status(404).json({ message: 'Content not found' });
-      }
-
-      // Validate the data (partial validation)
-      const partialSchema = insertHomePageContentSchema.partial();
-      const validatedData = partialSchema.parse({
-        ...req.body,
-        updatedBy: 1 // Default admin user for development
-      });
-
-      // Update content
-      const updatedContent = await storage.updateHomePageContent(id, validatedData);
-      res.json(updatedContent);
-    } catch (error) {
-      if (error instanceof z.ZodError) {
-        return res.status(400).json({ errors: error.errors });
-      }
-      console.error('Error updating homepage content:', error);
-      res.status(500).json({ message: 'Internal server error' });
-    }
-  });
 
   // Update existing homepage content (admin only)
-  app.put('/api/homepage-content/:id', async (req: Request, res: Response) => {
-    if (!req.isAuthenticated() || !req.user.isAdmin) {
-      return res.status(401).json({ message: 'Unauthorized' });
+  app.put('/api/homepage-content/:id', isAuthenticated, async (req: Request, res: Response) => {
+    if (!req.user?.isAdmin) {
+      return res.status(403).json({ message: 'Admin access required' });
     }
 
     try {
@@ -163,9 +115,9 @@ export function registerHomePageContentRoutes(app: Express) {
   });
 
   // Delete homepage content (admin only)
-  app.delete('/api/homepage-content/:id', async (req: Request, res: Response) => {
-    if (!req.isAuthenticated() || !req.user.isAdmin) {
-      return res.status(401).json({ message: 'Unauthorized' });
+  app.delete('/api/homepage-content/:id', isAuthenticated, async (req: Request, res: Response) => {
+    if (!req.user?.isAdmin) {
+      return res.status(403).json({ message: 'Admin access required' });
     }
 
     try {

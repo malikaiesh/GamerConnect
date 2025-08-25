@@ -29,7 +29,7 @@ export default function AdminHomepageContent() {
   // Create homepage content mutation
   const createContentMutation = useMutation({
     mutationFn: async (newContent: Partial<HomePageContent>) => {
-      const res = await apiRequest('POST', '/api/public/homepage-content', newContent);
+      const res = await apiRequest('POST', '/api/homepage-content', newContent);
       return await res.json();
     },
     onSuccess: () => {
@@ -42,7 +42,7 @@ export default function AdminHomepageContent() {
   // Update homepage content mutation
   const updateContentMutation = useMutation({
     mutationFn: async ({ id, content }: { id: number; content: Partial<HomePageContent> }) => {
-      const res = await apiRequest('PUT', `/api/public/homepage-content/${id}`, content);
+      const res = await apiRequest('PUT', `/api/homepage-content/${id}`, content);
       return await res.json();
     },
     onSuccess: () => {
