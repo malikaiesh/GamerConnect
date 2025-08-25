@@ -153,6 +153,26 @@ export function registerSettingsRoutes(app: Express) {
       res.status(500).json({ message: 'Failed to update ads.txt content' });
     }
   });
+
+  // Update robots.txt content
+  app.patch('/api/settings/robots-txt', async (req: Request, res: Response) => {
+    try {
+      const schema = z.object({
+        robotsTxt: z.string()
+      });
+      
+      const settingsData = schema.parse(req.body);
+      const updatedSettings = await storage.updateSiteSettings(settingsData);
+      
+      res.json(updatedSettings);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ message: 'Invalid robots.txt content', errors: error.errors });
+      }
+      console.error('Error updating robots.txt content:', error);
+      res.status(500).json({ message: 'Failed to update robots.txt content' });
+    }
+  });
   
   // Update footer and social media settings
   app.patch('/api/settings/footer', async (req: Request, res: Response) => {

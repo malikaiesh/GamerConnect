@@ -67,7 +67,7 @@ export default function RobotsTxtPage() {
 
   const updateRobotsMutation = useMutation({
     mutationFn: async (content: string) => {
-      return apiRequest('PUT', '/api/settings', {
+      return apiRequest('PATCH', '/api/settings/robots-txt', {
         robotsTxt: content,
       });
     },
