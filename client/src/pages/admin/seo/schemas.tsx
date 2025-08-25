@@ -122,7 +122,7 @@ function SeoSchemasContent() {
 
   // Generate demo schemas
   const generateDemoSchemas = useMutation({
-    mutationFn: () => apiRequest("/api/admin/seo-schemas/generate-demo", { method: "POST" }),
+    mutationFn: () => apiRequest("/api/demo-schemas/generate", { method: "POST" }),
     onSuccess: (data: any) => {
       queryClient.invalidateQueries({ queryKey: ["/api/admin/seo-schemas"] });
       toast({

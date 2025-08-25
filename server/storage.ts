@@ -197,6 +197,7 @@ export interface IStorage {
   
   // Site Settings methods
   getSiteSettings(): Promise<SiteSetting | null>;
+  getSettings(): Promise<SiteSetting | null>; // Alias for getSiteSettings
   updateSiteSettings(settingsData: Partial<InsertSiteSetting>): Promise<SiteSetting | null>;
   
   // Analytics methods
@@ -1228,6 +1229,10 @@ class DatabaseStorage implements IStorage {
       console.error('Error fetching site settings:', error);
       return null;
     }
+  }
+
+  async getSettings(): Promise<SiteSetting | null> {
+    return this.getSiteSettings();
   }
   
   async updateSiteSettings(settingsData: Partial<InsertSiteSetting>): Promise<SiteSetting | null> {

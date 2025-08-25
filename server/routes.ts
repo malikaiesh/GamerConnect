@@ -365,6 +365,11 @@ Sitemap: ${req.protocol}://${req.get('host')}/sitemap.xml`);
   registerAdminNotificationsRoutes(app);
   registerSeoSchemaRoutes(app);
   
+  // Quick test route to verify our demo endpoint
+  app.post('/api/demo-schemas/test', (req, res) => {
+    res.json({ message: "Demo test route working!" });
+  });
+  
   // Register URL redirects API routes
   registerUrlRedirectRoutes(app);
 
