@@ -41,8 +41,37 @@ const gameAdPositions = [
   { value: 'sidebar_bottom', label: 'Sidebar Bottom' }
 ];
 
-// Use the server schema for consistency
-type GameAdFormData = z.infer<typeof insertGameAdSchema>;
+// Custom form schema that handles string dates for HTML inputs
+const gameAdFormSchema = z.object({
+  name: z.string().min(3, "Name must be at least 3 characters"),
+  position: z.enum(['above_game', 'below_game', 'above_related', 'below_related', 'sidebar_top', 'sidebar_bottom']),
+  isGoogleAd: z.boolean().default(false),
+  adCode: z.string().optional(),
+  imageUrl: z.string().optional().nullable(),
+  targetUrl: z.string().optional().nullable(),
+  startDate: z.string().optional().nullable(),
+  endDate: z.string().optional().nullable(),
+  status: z.enum(['active', 'inactive']).default('active'),
+  adEnabled: z.boolean().default(true)
+}).refine(
+  (data) => {
+    // If it's Google Ad, adCode is required
+    if (data.isGoogleAd) {
+      return !!(data.adCode && data.adCode.trim().length > 0);
+    }
+    // If not Google Ad, either imageUrl+targetUrl or adCode must be provided
+    return (
+      (!!data.imageUrl && !!data.targetUrl) || 
+      (!!data.adCode && data.adCode.trim().length > 0)
+    );
+  },
+  {
+    message: "For Google Ads provide Ad Code. For custom ads provide either Ad Code or both Image URL and Target URL",
+    path: ["adCode"]
+  }
+);
+
+type GameAdFormData = z.infer<typeof gameAdFormSchema>;
 
 export default function GameAdsPage() {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -51,7 +80,7 @@ export default function GameAdsPage() {
   const { toast } = useToast();
 
   const form = useForm<GameAdFormData>({
-    resolver: zodResolver(insertGameAdSchema),
+    resolver: zodResolver(gameAdFormSchema),
     defaultValues: {
       name: "",
       position: "above_game",
@@ -179,8 +208,8 @@ export default function GameAdsPage() {
       adCode: ad.adCode || "",
       imageUrl: ad.imageUrl || "",
       targetUrl: ad.targetUrl || "",
-      startDate: ad.startDate ? new Date(ad.startDate).toISOString().split('T')[0] : "",
-      endDate: ad.endDate ? new Date(ad.endDate).toISOString().split('T')[0] : "",
+      startDate: ad.startDate ? new Date(ad.startDate).toISOString().split('T')[0] : null,
+      endDate: ad.endDate ? new Date(ad.endDate).toISOString().split('T')[0] : null,
       status: ad.status,
       adEnabled: ad.adEnabled
     });
@@ -201,12 +230,19 @@ export default function GameAdsPage() {
   };
 
   const onSubmit = (data: GameAdFormData) => {
+    // Transform data for backend API - convert string dates to Date objects or null
+    const transformedData = {
+      ...data,
+      startDate: data.startDate ? new Date(data.startDate) : null,
+      endDate: data.endDate ? new Date(data.endDate) : null
+    };
+
     if (isCreateMode) {
-      createGameAdMutation.mutate(data);
+      createGameAdMutation.mutate(transformedData);
     } else if (editingAd) {
       updateGameAdMutation.mutate({
         id: editingAd.id,
-        data
+        data: transformedData
       });
     }
   };
@@ -714,7 +750,6 @@ export default function GameAdsPage() {
                       <FormControl>
                         <Input 
                           type="date" 
-                          {...field}
                           value={field.value || ""}
                           onChange={(e) => field.onChange(e.target.value || null)}
                           data-testid="input-start-date" 
@@ -734,7 +769,6 @@ export default function GameAdsPage() {
                       <FormControl>
                         <Input 
                           type="date" 
-                          {...field}
                           value={field.value || ""}
                           onChange={(e) => field.onChange(e.target.value || null)}
                           data-testid="input-end-date" 
