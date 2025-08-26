@@ -33,9 +33,11 @@ import { storage } from "./storage";
 import { db } from "../db";
 import { ObjectStorageService, ObjectNotFoundError } from "./objectStorage";
 import { ObjectPermission } from "./objectAcl";
-import { users } from "@shared/schema";
+import { users, events, eventRegistrations, eventCategories } from "@shared/schema";
 import { games, blogPosts, staticPages, pushSubscribers, pushCampaigns } from "@shared/schema";
-import { eq, count, gte, sql } from "drizzle-orm";
+import { insertEventSchema, insertEventRegistrationSchema } from "@shared/schema";
+import { eq, count, gte, sql, desc } from "drizzle-orm";
+import { z } from "zod";
 import fs from "fs/promises";
 import path from "path";
 import { initializeSendGrid } from "./services/email-service";
@@ -607,6 +609,206 @@ Sitemap: ${req.protocol}://${req.get('host')}/sitemap.xml`);
     } catch (error) {
       console.error(`Error serving sitemap-${req.params.type}.xml:`, error);
       res.status(500).send('Error generating sitemap');
+    }
+  });
+
+  // Events API routes
+  // Get all events with filtering
+  app.get('/api/events', async (req, res) => {
+    try {
+      const { status, type, featured, limit = '10', offset = '0' } = req.query;
+      
+      let query = db.select().from(events);
+      
+      if (status) {
+        query = query.where(eq(events.status, status as string));
+      }
+      if (type) {
+        query = query.where(eq(events.eventType, type as string));
+      }
+      if (featured === 'true') {
+        query = query.where(eq(events.featured, true));
+      }
+      
+      const allEvents = await query
+        .orderBy(desc(events.startDate))
+        .limit(parseInt(limit as string))
+        .offset(parseInt(offset as string));
+      
+      res.json(allEvents);
+    } catch (error) {
+      console.error('Error fetching events:', error);
+      res.status(500).json({ error: 'Failed to fetch events' });
+    }
+  });
+
+  // Get single event by ID or slug
+  app.get('/api/events/:identifier', async (req, res) => {
+    try {
+      const { identifier } = req.params;
+      
+      // Check if identifier is numeric (ID) or string (slug)
+      const isId = /^\d+$/.test(identifier);
+      
+      const event = await db.select().from(events)
+        .where(isId ? eq(events.id, parseInt(identifier)) : eq(events.slug, identifier))
+        .limit(1);
+      
+      if (event.length === 0) {
+        return res.status(404).json({ error: 'Event not found' });
+      }
+      
+      res.json(event[0]);
+    } catch (error) {
+      console.error('Error fetching event:', error);
+      res.status(500).json({ error: 'Failed to fetch event' });
+    }
+  });
+
+  // Create new event (admin only)
+  app.post('/api/events', isAdmin, async (req, res) => {
+    try {
+      const eventData = insertEventSchema.parse({
+        ...req.body,
+        createdBy: req.user.id
+      });
+      
+      const [newEvent] = await db.insert(events).values(eventData).returning();
+      res.status(201).json(newEvent);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ error: 'Validation error', details: error.errors });
+      }
+      console.error('Error creating event:', error);
+      res.status(500).json({ error: 'Failed to create event' });
+    }
+  });
+
+  // Update event (admin only)
+  app.put('/api/events/:id', isAdmin, async (req, res) => {
+    try {
+      const eventId = parseInt(req.params.id);
+      const updateData = insertEventSchema.partial().parse(req.body);
+      
+      const [updatedEvent] = await db.update(events)
+        .set({ ...updateData, updatedAt: new Date() })
+        .where(eq(events.id, eventId))
+        .returning();
+      
+      if (!updatedEvent) {
+        return res.status(404).json({ error: 'Event not found' });
+      }
+      
+      res.json(updatedEvent);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ error: 'Validation error', details: error.errors });
+      }
+      console.error('Error updating event:', error);
+      res.status(500).json({ error: 'Failed to update event' });
+    }
+  });
+
+  // Delete event (admin only)
+  app.delete('/api/events/:id', isAdmin, async (req, res) => {
+    try {
+      const eventId = parseInt(req.params.id);
+      
+      const [deletedEvent] = await db.delete(events)
+        .where(eq(events.id, eventId))
+        .returning();
+      
+      if (!deletedEvent) {
+        return res.status(404).json({ error: 'Event not found' });
+      }
+      
+      res.json({ message: 'Event deleted successfully' });
+    } catch (error) {
+      console.error('Error deleting event:', error);
+      res.status(500).json({ error: 'Failed to delete event' });
+    }
+  });
+
+  // Event registration routes
+  app.post('/api/events/:id/register', async (req, res) => {
+    try {
+      const eventId = parseInt(req.params.id);
+      const userId = req.user?.id;
+      
+      // Check if event exists and registration is enabled
+      const [event] = await db.select().from(events)
+        .where(eq(events.id, eventId))
+        .limit(1);
+      
+      if (!event) {
+        return res.status(404).json({ error: 'Event not found' });
+      }
+      
+      if (!event.registrationEnabled) {
+        return res.status(400).json({ error: 'Registration is not enabled for this event' });
+      }
+      
+      // Check registration limits
+      if (event.maxParticipants && event.currentParticipants >= event.maxParticipants) {
+        return res.status(400).json({ error: 'Event is full' });
+      }
+      
+      // Register user
+      const registrationData = insertEventRegistrationSchema.parse({
+        eventId,
+        userId: userId || null,
+        guestName: req.body.guestName,
+        guestEmail: req.body.guestEmail,
+        guestPhone: req.body.guestPhone,
+        notes: req.body.notes
+      });
+      
+      const [registration] = await db.insert(eventRegistrations)
+        .values(registrationData)
+        .returning();
+      
+      // Update participant count
+      await db.update(events)
+        .set({ currentParticipants: event.currentParticipants + 1 })
+        .where(eq(events.id, eventId));
+      
+      res.status(201).json(registration);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ error: 'Validation error', details: error.errors });
+      }
+      console.error('Error registering for event:', error);
+      res.status(500).json({ error: 'Failed to register for event' });
+    }
+  });
+
+  // Get event registrations (admin only)
+  app.get('/api/events/:id/registrations', isAdmin, async (req, res) => {
+    try {
+      const eventId = parseInt(req.params.id);
+      
+      const registrations = await db.select().from(eventRegistrations)
+        .where(eq(eventRegistrations.eventId, eventId))
+        .orderBy(desc(eventRegistrations.registeredAt));
+      
+      res.json(registrations);
+    } catch (error) {
+      console.error('Error fetching registrations:', error);
+      res.status(500).json({ error: 'Failed to fetch registrations' });
+    }
+  });
+
+  // Event categories routes
+  app.get('/api/event-categories', async (req, res) => {
+    try {
+      const categories = await db.select().from(eventCategories)
+        .where(eq(eventCategories.isActive, true))
+        .orderBy(eventCategories.name);
+      
+      res.json(categories);
+    } catch (error) {
+      console.error('Error fetching event categories:', error);
+      res.status(500).json({ error: 'Failed to fetch event categories' });
     }
   });
 

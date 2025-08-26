@@ -37,6 +37,18 @@ export const schemaTypeEnum = pgEnum('schema_type', ['VideoGame', 'Article', 'Bl
 // SEO Schema Content Type Enum
 export const schemaContentTypeEnum = pgEnum('schema_content_type', ['game', 'blog_post', 'page', 'category', 'organization', 'global']);
 
+// Event Status Enum
+export const eventStatusEnum = pgEnum('event_status', ['draft', 'published', 'ongoing', 'completed', 'cancelled']);
+
+// Event Type Enum  
+export const eventTypeEnum = pgEnum('event_type', ['tournament', 'game_release', 'community', 'maintenance', 'seasonal', 'streaming', 'meetup', 'competition', 'other']);
+
+// Event Location Type Enum
+export const eventLocationTypeEnum = pgEnum('event_location_type', ['online', 'physical', 'hybrid']);
+
+// Registration Status Enum
+export const registrationStatusEnum = pgEnum('registration_status', ['registered', 'cancelled', 'attended', 'no_show']);
+
 // Roles table
 export const roles = pgTable('roles', {
   id: serial('id').primaryKey(),
@@ -923,6 +935,214 @@ export const urlRedirectUpdateSchema = urlRedirectInsertSchema.partial();
 
 export type UrlRedirect = typeof urlRedirects.$inferSelect;
 export type UrlRedirectInsert = z.infer<typeof urlRedirectInsertSchema>;
+
+// Events table
+export const events = pgTable('events', {
+  id: serial('id').primaryKey(),
+  title: text('title').notNull(),
+  slug: text('slug').notNull().unique(),
+  description: text('description').notNull(),
+  eventType: eventTypeEnum('event_type').notNull(),
+  status: eventStatusEnum('status').default('draft').notNull(),
+  
+  // Date and time fields
+  startDate: timestamp('start_date').notNull(),
+  endDate: timestamp('end_date'),
+  timezone: text('timezone').default('UTC').notNull(),
+  
+  // Location fields
+  locationType: eventLocationTypeEnum('location_type').notNull(),
+  locationName: text('location_name'),
+  locationAddress: text('location_address'),
+  onlineUrl: text('online_url'),
+  
+  // Registration fields
+  registrationEnabled: boolean('registration_enabled').default(false).notNull(),
+  registrationStartDate: timestamp('registration_start_date'),
+  registrationEndDate: timestamp('registration_end_date'),
+  maxParticipants: integer('max_participants'),
+  currentParticipants: integer('current_participants').default(0).notNull(),
+  registrationFee: integer('registration_fee').default(0).notNull(), // in cents
+  
+  // Media fields
+  bannerImage: text('banner_image'),
+  gallery: json('gallery').$type<string[]>().default([]),
+  
+  // Content fields
+  rules: text('rules'),
+  prizes: text('prizes'),
+  requirements: text('requirements'),
+  contactInfo: text('contact_info'),
+  
+  // SEO fields
+  metaTitle: text('meta_title'),
+  metaDescription: text('meta_description'),
+  
+  // System fields
+  featured: boolean('featured').default(false).notNull(),
+  createdBy: integer('created_by').notNull().references(() => users.id),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+  updatedAt: timestamp('updated_at').defaultNow().notNull()
+});
+
+// Event Registrations table
+export const eventRegistrations = pgTable('event_registrations', {
+  id: serial('id').primaryKey(),
+  eventId: integer('event_id').notNull().references(() => events.id, { onDelete: 'cascade' }),
+  userId: integer('user_id').references(() => users.id, { onDelete: 'cascade' }),
+  
+  // Guest registration fields (for non-users)
+  guestName: text('guest_name'),
+  guestEmail: text('guest_email'),
+  guestPhone: text('guest_phone'),
+  
+  status: registrationStatusEnum('status').default('registered').notNull(),
+  notes: text('notes'),
+  paymentStatus: text('payment_status').default('pending'),
+  
+  registeredAt: timestamp('registered_at').defaultNow().notNull(),
+  updatedAt: timestamp('updated_at').defaultNow().notNull()
+}, (table) => {
+  return {
+    eventUserIdx: uniqueIndex('event_user_idx').on(table.eventId, table.userId),
+    eventGuestEmailIdx: uniqueIndex('event_guest_email_idx').on(table.eventId, table.guestEmail)
+  };
+});
+
+// Event Categories table (optional, for organizing events)
+export const eventCategories = pgTable('event_categories', {
+  id: serial('id').primaryKey(),
+  name: text('name').notNull().unique(),
+  slug: text('slug').notNull().unique(),
+  description: text('description'),
+  color: text('color').default('#6366f1'),
+  icon: text('icon'),
+  isActive: boolean('is_active').default(true).notNull(),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+  updatedAt: timestamp('updated_at').defaultNow().notNull()
+});
+
+// Event-Category relationship table
+export const eventCategoryRelations = pgTable('event_category_relations', {
+  id: serial('id').primaryKey(),
+  eventId: integer('event_id').notNull().references(() => events.id, { onDelete: 'cascade' }),
+  categoryId: integer('category_id').notNull().references(() => eventCategories.id, { onDelete: 'cascade' }),
+  createdAt: timestamp('created_at').defaultNow().notNull()
+}, (table) => {
+  return {
+    eventCategoryIdx: uniqueIndex('event_category_idx').on(table.eventId, table.categoryId)
+  };
+});
+
+// Events relations
+export const eventsRelations = relations(events, ({ one, many }) => ({
+  creator: one(users, {
+    fields: [events.createdBy],
+    references: [users.id]
+  }),
+  registrations: many(eventRegistrations),
+  categories: many(eventCategoryRelations)
+}));
+
+// Event Registrations relations
+export const eventRegistrationsRelations = relations(eventRegistrations, ({ one }) => ({
+  event: one(events, {
+    fields: [eventRegistrations.eventId],
+    references: [events.id]
+  }),
+  user: one(users, {
+    fields: [eventRegistrations.userId],
+    references: [users.id]
+  })
+}));
+
+// Event Categories relations
+export const eventCategoriesRelations = relations(eventCategories, ({ many }) => ({
+  events: many(eventCategoryRelations)
+}));
+
+// Event Category Relations relations
+export const eventCategoryRelationsRelations = relations(eventCategoryRelations, ({ one }) => ({
+  event: one(events, {
+    fields: [eventCategoryRelations.eventId],
+    references: [events.id]
+  }),
+  category: one(eventCategories, {
+    fields: [eventCategoryRelations.categoryId],
+    references: [eventCategories.id]
+  })
+}));
+
+// Event validation schemas
+export const insertEventSchema = createInsertSchema(events, {
+  title: (schema) => schema.min(3, "Title must be at least 3 characters"),
+  slug: (schema) => schema.min(2, "Slug must be at least 2 characters")
+    .regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/, "Slug must contain only lowercase letters, numbers, and hyphens"),
+  description: (schema) => schema.min(10, "Description must be at least 10 characters"),
+  startDate: (schema) => schema.refine(date => date > new Date(), { message: "Start date must be in the future" }),
+  endDate: (schema) => schema.optional().nullable(),
+  timezone: (schema) => schema.optional().default('UTC'),
+  locationType: (schema) => schema.refine(val => ['online', 'physical', 'hybrid'].includes(val)),
+  registrationEnabled: (schema) => schema.optional().default(false),
+  maxParticipants: (schema) => schema.optional().nullable(),
+  registrationFee: (schema) => schema.optional().default(0),
+  featured: (schema) => schema.optional().default(false),
+  metaTitle: (schema) => schema.optional().nullable(),
+  metaDescription: (schema) => schema.optional().nullable()
+})
+.refine(
+  (data) => {
+    // If end date is provided, it must be after start date
+    if (data.endDate) {
+      return data.endDate > data.startDate;
+    }
+    return true;
+  },
+  {
+    message: "End date must be after start date",
+    path: ["endDate"]
+  }
+)
+.refine(
+  (data) => {
+    // If registration is enabled, registration end date should be before or equal to event start date
+    if (data.registrationEnabled && data.registrationEndDate) {
+      return data.registrationEndDate <= data.startDate;
+    }
+    return true;
+  },
+  {
+    message: "Registration end date must be before or equal to event start date",
+    path: ["registrationEndDate"]
+  }
+);
+
+export const insertEventRegistrationSchema = createInsertSchema(eventRegistrations, {
+  eventId: (schema) => schema.positive().int("Event ID must be a positive integer"),
+  userId: (schema) => schema.optional().nullable(),
+  guestName: (schema) => schema.optional().nullable(),
+  guestEmail: (schema) => schema.optional().nullable(),
+  guestPhone: (schema) => schema.optional().nullable(),
+  notes: (schema) => schema.optional().nullable()
+});
+
+export const insertEventCategorySchema = createInsertSchema(eventCategories, {
+  name: (schema) => schema.min(2, "Name must be at least 2 characters"),
+  slug: (schema) => schema.min(2, "Slug must be at least 2 characters")
+    .regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/, "Slug must contain only lowercase letters, numbers, and hyphens"),
+  description: (schema) => schema.optional().nullable(),
+  color: (schema) => schema.optional().default('#6366f1'),
+  icon: (schema) => schema.optional().nullable(),
+  isActive: (schema) => schema.optional().default(true)
+});
+
+// Type exports for events
+export type Event = typeof events.$inferSelect;
+export type InsertEvent = z.infer<typeof insertEventSchema>;
+export type EventRegistration = typeof eventRegistrations.$inferSelect;
+export type InsertEventRegistration = z.infer<typeof insertEventRegistrationSchema>;
+export type EventCategory = typeof eventCategories.$inferSelect;
+export type InsertEventCategory = z.infer<typeof insertEventCategorySchema>;
 export type UrlRedirectUpdate = z.infer<typeof urlRedirectUpdateSchema>;
 
 // Website Updates table
