@@ -53,8 +53,29 @@ export function TeamSection({ className }: TeamSectionProps) {
     );
   }
 
-  if (isError || !teamMembers || teamMembers.length === 0) {
-    return null; // Don't show the section if there's an error or no team members
+  if (isError) {
+    return null; // Don't show the section if there's an error
+  }
+
+  // Show empty state if no team members
+  if (!teamMembers || teamMembers.length === 0) {
+    return (
+      <section className={`py-16 bg-gradient-to-br from-background to-muted/50 ${className}`} data-testid="section-team">
+        <div className="container mx-auto px-4">
+          <div className="text-center mb-12">
+            <div className="flex items-center justify-center gap-2 mb-4">
+              <Users className="h-8 w-8 text-primary" />
+              <h2 className="text-3xl md:text-4xl font-bold text-foreground" data-testid="heading-team">
+                Meet Our Team
+              </h2>
+            </div>
+            <p className="text-lg text-muted-foreground max-w-2xl mx-auto" data-testid="text-team-description">
+              Our team section is coming soon. Stay tuned to meet the passionate minds behind our gaming platform!
+            </p>
+          </div>
+        </div>
+      </section>
+    );
   }
 
   return (
