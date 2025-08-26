@@ -172,10 +172,10 @@ export default function AuthPage() {
 
       {/* Form Section */}
       <div className="w-full md:w-1/2 p-6 md:p-10 flex items-center justify-center bg-white">
-        <Card className="w-full max-w-md shadow-lg border border-gray-200">
+        <Card className="w-full max-w-md shadow-lg border border-gray-200 bg-gray-800 text-white">
           <CardHeader>
-            <CardTitle className="text-2xl text-center text-black dark:text-white">Welcome to GameZone</CardTitle>
-            <CardDescription className="text-center text-gray-600 dark:text-gray-300">
+            <CardTitle className="text-2xl text-center text-white">Welcome to GameZone</CardTitle>
+            <CardDescription className="text-center text-gray-300">
               Sign in to your account or create a new one
             </CardDescription>
           </CardHeader>
@@ -204,7 +204,7 @@ export default function AuthPage() {
                         name="username"
                         render={({ field }) => (
                           <FormItem>
-                            <FormLabel className="text-black font-medium">Username</FormLabel>
+                            <FormLabel className="text-white font-medium">Username</FormLabel>
                             <FormControl>
                               <Input 
                                 className="bg-white border-gray-300 text-black placeholder:text-gray-500" 
@@ -223,7 +223,7 @@ export default function AuthPage() {
                         name="password"
                         render={({ field }) => (
                           <FormItem>
-                            <FormLabel className="text-black font-medium">Password</FormLabel>
+                            <FormLabel className="text-white font-medium">Password</FormLabel>
                             <FormControl>
                               <Input 
                                 className="bg-white border-gray-300 text-black placeholder:text-gray-500" 
@@ -237,7 +237,7 @@ export default function AuthPage() {
                             <div className="text-right">
                               <Button
                                 variant="link"
-                                className="text-sm text-blue-600 p-0 h-auto font-normal"
+                                className="text-sm text-blue-400 p-0 h-auto font-normal hover:text-blue-300"
                                 onClick={(e) => {
                                   e.preventDefault();
                                   setShowForgotPassword(true);
@@ -266,7 +266,7 @@ export default function AuthPage() {
                           <span className="w-full border-t border-gray-300"></span>
                         </div>
                         <div className="relative flex justify-center text-sm">
-                          <span className="bg-white px-2 text-gray-500">Or continue with</span>
+                          <span className="bg-gray-800 px-2 text-gray-300">Or continue with</span>
                         </div>
                       </div>
                       
@@ -274,7 +274,7 @@ export default function AuthPage() {
                         <Button 
                           type="button" 
                           variant="outline" 
-                          className="bg-white text-black border border-gray-300 hover:bg-gray-100"
+                          className="bg-gray-700 text-white border border-gray-600 hover:bg-gray-600"
                           onClick={() => handleSocialLogin('google')}
                         >
                           <FaGoogle className="mr-2 h-4 w-4 text-red-500" />
@@ -283,7 +283,7 @@ export default function AuthPage() {
                         <Button 
                           type="button" 
                           variant="outline" 
-                          className="bg-white text-black border border-gray-300 hover:bg-gray-100"
+                          className="bg-gray-700 text-white border border-gray-600 hover:bg-gray-600"
                           onClick={() => handleSocialLogin('facebook')}
                         >
                           <FaFacebook className="mr-2 h-4 w-4 text-blue-600" />
@@ -304,7 +304,7 @@ export default function AuthPage() {
                       name="username"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel className="text-black font-medium">Username</FormLabel>
+                          <FormLabel className="text-white font-medium">Username</FormLabel>
                           <FormControl>
                             <Input 
                               className="bg-white border-gray-300 text-black placeholder:text-gray-500" 
@@ -323,7 +323,7 @@ export default function AuthPage() {
                       name="email"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel className="text-black font-medium">Email</FormLabel>
+                          <FormLabel className="text-white font-medium">Email</FormLabel>
                           <FormControl>
                             <Input 
                               className="bg-white border-gray-300 text-black placeholder:text-gray-500" 
@@ -343,7 +343,7 @@ export default function AuthPage() {
                       name="password"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel className="text-black font-medium">Password</FormLabel>
+                          <FormLabel className="text-white font-medium">Password</FormLabel>
                           <FormControl>
                             <Input 
                               className="bg-white border-gray-300 text-black placeholder:text-gray-500" 
@@ -363,7 +363,7 @@ export default function AuthPage() {
                       name="confirmPassword"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel className="text-black font-medium">Confirm Password</FormLabel>
+                          <FormLabel className="text-white font-medium">Confirm Password</FormLabel>
                           <FormControl>
                             <Input 
                               className="bg-white border-gray-300 text-black placeholder:text-gray-500" 
@@ -383,7 +383,7 @@ export default function AuthPage() {
                       name="profilePicture"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel className="text-black font-medium">Profile Picture URL (Optional)</FormLabel>
+                          <FormLabel className="text-white font-medium">Profile Picture URL (Optional)</FormLabel>
                           <FormControl>
                             <Input 
                               className="bg-white border-gray-300 text-black placeholder:text-gray-500" 
@@ -402,7 +402,7 @@ export default function AuthPage() {
                       name="country"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel className="text-black font-medium">Country</FormLabel>
+                          <FormLabel className="text-white font-medium">Country</FormLabel>
                           <Select onValueChange={field.onChange} defaultValue={field.value}>
                             <FormControl>
                               <SelectTrigger className="bg-white border-gray-300 text-black">
@@ -509,7 +509,7 @@ export default function AuthPage() {
                       name="bio"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel className="text-black font-medium">Bio</FormLabel>
+                          <FormLabel className="text-white font-medium">Bio</FormLabel>
                           <FormControl>
                             <Textarea 
                               className="bg-white border-gray-300 text-black placeholder:text-gray-500 resize-none" 
@@ -539,7 +539,7 @@ export default function AuthPage() {
                         <span className="w-full border-t border-gray-300"></span>
                       </div>
                       <div className="relative flex justify-center text-sm">
-                        <span className="bg-white px-2 text-gray-500">Or continue with</span>
+                        <span className="bg-gray-800 px-2 text-gray-300">Or continue with</span>
                       </div>
                     </div>
                     
@@ -547,7 +547,7 @@ export default function AuthPage() {
                       <Button 
                         type="button" 
                         variant="outline" 
-                        className="bg-white text-black border border-gray-300 hover:bg-gray-100"
+                        className="bg-gray-700 text-white border border-gray-600 hover:bg-gray-600"
                         onClick={() => handleSocialLogin('google')}
                       >
                         <FaGoogle className="mr-2 h-4 w-4 text-red-500" />
@@ -556,7 +556,7 @@ export default function AuthPage() {
                       <Button 
                         type="button" 
                         variant="outline" 
-                        className="bg-white text-black border border-gray-300 hover:bg-gray-100"
+                        className="bg-gray-700 text-white border border-gray-600 hover:bg-gray-600"
                         onClick={() => handleSocialLogin('facebook')}
                       >
                         <FaFacebook className="mr-2 h-4 w-4 text-blue-600" />
@@ -569,13 +569,13 @@ export default function AuthPage() {
             </Tabs>
           </CardContent>
           <CardFooter className="flex flex-col items-center">
-            <p className="text-sm text-muted-foreground">
+            <p className="text-sm text-gray-400">
               By continuing, you agree to our{" "}
-              <a href="/terms" className="text-primary hover:underline">
+              <a href="/terms" className="text-blue-400 hover:text-blue-300 hover:underline">
                 Terms of Service
               </a>{" "}
               and{" "}
-              <a href="/privacy" className="text-primary hover:underline">
+              <a href="/privacy" className="text-blue-400 hover:text-blue-300 hover:underline">
                 Privacy Policy
               </a>
             </p>
