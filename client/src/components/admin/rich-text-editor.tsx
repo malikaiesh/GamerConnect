@@ -48,16 +48,16 @@ export function RichTextEditor({
   });
   
   useEffect(() => {
-    // Set API key when data is loaded
+    // Set API key when data is loaded or use fallback immediately
     if (tinyMceApiKey && tinyMceApiKey.key) {
       setApiKey(tinyMceApiKey.key);
       console.log('TinyMCE API key loaded from database:', tinyMceApiKey.key.substring(0, 10) + '...');
-    } else {
+    } else if (!isKeyLoading) {
       console.log('Using fallback TinyMCE API key');
-      // Use fallback key immediately if API key fetch fails
+      // Use fallback key immediately if API key fetch fails or is not loading
       setApiKey('7m14cqmqt0orpe024qq0jh600cbltgk2kxavr07f92sihixj');
     }
-  }, [tinyMceApiKey]);
+  }, [tinyMceApiKey, isKeyLoading]);
   
   useEffect(() => {
     // Cleanup TinyMCE on component unmount
@@ -72,7 +72,7 @@ export function RichTextEditor({
     <div className="space-y-2 w-full">
       {label && <Label htmlFor={id}>{label}</Label>}
       
-      {isLoading && (
+      {isLoading && apiKey === null && (
         <div className="space-y-2">
           <Skeleton className="h-10 w-full" />
           <Skeleton className="h-24 w-full" />
@@ -80,7 +80,7 @@ export function RichTextEditor({
         </div>
       )}
       
-      <div className={isLoading ? 'hidden' : ''}>
+      <div className={isLoading && apiKey === null ? 'hidden' : ''}>
         <Editor
           id={id}
           apiKey={apiKey || import.meta.env.VITE_TINYMCE_API_KEY || '7m14cqmqt0orpe024qq0jh600cbltgk2kxavr07f92sihixj'} // Try: DB, environment variable, then fallback
@@ -91,10 +91,6 @@ export function RichTextEditor({
           }}
           onLoadContent={() => {
             console.log('TinyMCE content loaded');
-          }}
-          onError={(error) => {
-            console.error('TinyMCE Error:', error);
-            setIsLoading(false);
           }}
           initialValue={value}
           value={value}
@@ -232,6 +228,12 @@ export function RichTextEditor({
             setup: (editor: any) => {
               editor.on('LoadContent', () => {
                 console.log('TinyMCE setup complete');
+                setIsLoading(false);
+              });
+              
+              editor.on('init', () => {
+                console.log('TinyMCE editor init event fired');
+                setIsLoading(false);
               });
             }
           }}

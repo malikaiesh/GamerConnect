@@ -13,7 +13,7 @@ import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, For
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { Loader2 } from "lucide-react";
-import { RichTextEditor } from "@/components/admin/rich-text-editor";
+import { SimpleRichTextEditor } from "@/components/admin/simple-rich-text-editor";
 
 // Define the form schema using zod
 const formSchema = z.object({
@@ -252,13 +252,13 @@ export function BlogForm({ post, onSuccess }: BlogFormProps) {
                 <FormItem className="col-span-2">
                   <FormLabel className="text-foreground">Content</FormLabel>
                   <FormControl>
-                    <div className="border rounded-md">
-                      <RichTextEditor
-                        id="blog-content-editor"
-                        value={field.value}
-                        onChange={field.onChange}
-                      />
-                    </div>
+                    <SimpleRichTextEditor
+                      id="blog-content-editor"
+                      value={field.value}
+                      onChange={field.onChange}
+                      height={400}
+                      placeholder="Write your blog post content here..."
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
