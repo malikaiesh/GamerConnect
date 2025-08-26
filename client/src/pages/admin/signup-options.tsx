@@ -416,8 +416,8 @@ export default function SignupOptionsPage() {
                       Configure
                     </Button>
                   </DialogTrigger>
-                  <DialogContent className="max-w-2xl">
-                    <DialogHeader>
+                  <DialogContent className="max-w-2xl max-h-[90vh] flex flex-col">
+                    <DialogHeader className="flex-shrink-0">
                       <DialogTitle className="flex items-center gap-2">
                         <span className="text-xl">{getProviderIcon(option.provider, option.icon)}</span>
                         Configure {option.displayName}
@@ -426,7 +426,7 @@ export default function SignupOptionsPage() {
                         Configure settings and credentials for the {option.displayName} authentication provider.
                       </DialogDescription>
                     </DialogHeader>
-                    <div className="space-y-6">
+                    <div className="space-y-6 overflow-y-auto flex-1 pr-2">
                       <div className="grid grid-cols-2 gap-4">
                         <div>
                           <Label htmlFor="displayName">Display Name</Label>
@@ -471,7 +471,7 @@ export default function SignupOptionsPage() {
                         </div>
                       </div>
                     </div>
-                    <DialogFooter>
+                    <DialogFooter className="flex-shrink-0 mt-4 pt-4 border-t">
                       <Button
                         onClick={handleSaveConfiguration}
                         disabled={updateMutation.isPending}
