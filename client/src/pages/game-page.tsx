@@ -9,6 +9,7 @@ import { PushNotification } from '@/components/push-notification';
 import { PostGameModal } from '@/components/games/post-game-modal';
 import { SocialShare } from '@/components/shared/social-share';
 import { SocialShareButtons } from '@/components/shared/social-share-buttons';
+import { GameAdDisplay } from '@/components/games/game-ad-display';
 import { Game, PushNotification as PushNotificationType } from '@shared/schema';
 import { apiRequest, queryClient } from '@/lib/queryClient';
 import { useToast } from '@/hooks/use-toast';
@@ -267,6 +268,9 @@ export default function GamePage() {
                   />
                 </div>
                 
+                {/* Sidebar Top Ad */}
+                <GameAdDisplay position="sidebar_top" className="mb-6" />
+                
                 <div>
                   <h3 className="text-lg font-semibold mb-2">Download Game App</h3>
                   <div className="space-y-3">
@@ -316,12 +320,18 @@ export default function GamePage() {
                     )}
                   </div>
                 </div>
+                
+                {/* Sidebar Bottom Ad */}
+                <GameAdDisplay position="sidebar_bottom" className="mt-6" />
               </div>
             </div>
           </div>
           
           {/* Game Frame Column */}
           <div className="lg:col-span-2">
+            {/* Ad Above Game */}
+            <GameAdDisplay position="above_game" className="mb-6" />
+            
             <div className="bg-card rounded-xl shadow-lg overflow-hidden mb-6">
               <div className="aspect-video w-full">
                 {game.url ? (
@@ -374,12 +384,21 @@ export default function GamePage() {
               </div>
             </div>
             
+            {/* Ad Below Game */}
+            <GameAdDisplay position="below_game" className="mb-6" />
+            
+            {/* Ad Before Related Games */}
+            <GameAdDisplay position="before_related_games" className="mb-6" />
+            
             {/* Related Games Section */}
             <RelatedGames 
               gameId={game.id} 
               category={game.category}
               tags={game.tags}
             />
+            
+            {/* Ad After Related Games */}
+            <GameAdDisplay position="after_related_games" className="mt-6" />
           </div>
         </div>
       </div>
