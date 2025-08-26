@@ -29,16 +29,24 @@ const eventFormSchema = z.object({
   description: z.string().min(10, "Description must be at least 10 characters"),
   eventType: z.enum(['tournament', 'game_release', 'community', 'maintenance', 'seasonal', 'streaming', 'meetup', 'competition', 'other']),
   status: z.enum(['draft', 'published', 'ongoing', 'completed', 'cancelled']),
-  startDate: z.string().min(1, "Start date is required"),
-  endDate: z.string().optional(),
+  startDate: z.string().min(1, "Start date is required").refine((val) => {
+    return !isNaN(Date.parse(val));
+  }, "Please enter a valid date"),
+  endDate: z.string().optional().refine((val) => {
+    return !val || !isNaN(Date.parse(val));
+  }, "Please enter a valid date"),
   timezone: z.string().default('UTC'),
   locationType: z.enum(['online', 'physical', 'hybrid']),
   locationName: z.string().optional(),
   locationAddress: z.string().optional(),
   onlineUrl: z.string().optional(),
   registrationEnabled: z.boolean().default(false),
-  registrationStartDate: z.string().optional(),
-  registrationEndDate: z.string().optional(),
+  registrationStartDate: z.string().optional().refine((val) => {
+    return !val || !isNaN(Date.parse(val));
+  }, "Please enter a valid date"),
+  registrationEndDate: z.string().optional().refine((val) => {
+    return !val || !isNaN(Date.parse(val));
+  }, "Please enter a valid date"),
   maxParticipants: z.string().optional(),
   registrationFee: z.string().optional(),
   bannerImage: z.string().optional(),

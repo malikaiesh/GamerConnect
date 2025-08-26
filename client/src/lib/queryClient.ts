@@ -43,10 +43,14 @@ export const fetcher = async (url: string) => {
 };
 
 export async function apiRequest(
-  method: "GET" | "POST" | "PUT" | "PATCH" | "DELETE",
   url: string,
-  body?: unknown,
+  options?: {
+    method?: "GET" | "POST" | "PUT" | "PATCH" | "DELETE";
+    body?: string;
+    headers?: Record<string, string>;
+  }
 ) {
+  const method = options?.method || "GET";
   const controller = new AbortController();
   const timeoutId = setTimeout(() => controller.abort(), 30000); // 30-second timeout
   
@@ -56,8 +60,9 @@ export async function apiRequest(
       credentials: "include",
       headers: {
         "Content-Type": "application/json",
+        ...options?.headers,
       },
-      body: body ? JSON.stringify(body) : undefined,
+      body: options?.body,
       signal: controller.signal
     });
     
@@ -67,7 +72,7 @@ export async function apiRequest(
       return res;
     }
     
-    return res;
+    return res.json();
   } finally {
     clearTimeout(timeoutId);
   }
