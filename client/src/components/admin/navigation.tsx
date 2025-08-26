@@ -2,7 +2,7 @@ import { Link, useLocation } from "wouter";
 import { useAuth } from "@/hooks/use-auth";
 import { useQuery } from "@tanstack/react-query";
 import { cn } from "@/lib/utils";
-import { Gamepad2, Book, Settings, LayoutDashboard, FileText, LogOut, Home, FileSymlink, Key, ImageIcon, Map, Code, BarChart, Files, Bell, Users, Send, Activity, BarChart3, UserRound, UserPlus, MapPin, Shield, Lock, KeyRound, AlertTriangle, FileDigit, Clock, ExternalLink, Bot, Rocket } from "lucide-react";
+import { Gamepad2, Book, Settings, LayoutDashboard, FileText, LogOut, Home, FileSymlink, Key, ImageIcon, Map, Code, BarChart, Files, Bell, Users, Send, Activity, BarChart3, UserRound, UserPlus, MapPin, Shield, Lock, KeyRound, AlertTriangle, FileDigit, Clock, ExternalLink, Bot, Rocket, ChevronDown, ChevronRight, Target, Ban as Advertisement } from "lucide-react";
 import { useState } from "react";
 import { SiteSetting } from "@shared/schema";
 
@@ -11,7 +11,8 @@ export default function AdminNavigation() {
     pushNotifications: false,
     accounts: false,
     adminUsers: false,
-    settings: false
+    settings: false,
+    adManager: true
   });
   const [location] = useLocation();
   const { logoutMutation, user } = useAuth();
@@ -225,19 +226,71 @@ export default function AdminNavigation() {
               View Site
             </a>
           </li>
-          <li>
-            <Link
-              href="/admin/home-ads"
+          <li className="space-y-1">
+            <button
+              onClick={() => toggleSubMenu('adManager')}
               className={cn(
-                "flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all",
-                isActive("/admin/home-ads")
+                "flex items-center justify-between w-full gap-3 px-3 py-2.5 rounded-lg transition-all",
+                (isActive("/admin/home-ads") || isActive("/admin/blog-ads") || isActive("/admin/games-ads")) || expandedSubMenus.adManager
                   ? "bg-primary/15 text-primary shadow-sm"
                   : "text-card-foreground hover:bg-primary/10 hover:text-primary"
               )}
             >
-              <ImageIcon size={18} className="text-primary opacity-80" />
-              Home Ads
-            </Link>
+              <div className="flex items-center gap-3">
+                <Advertisement size={18} className="text-primary opacity-80" />
+                <span>Ad Manager</span>
+              </div>
+              <span className={cn("transform transition-transform text-primary opacity-80", expandedSubMenus.adManager ? "rotate-180" : "")}>
+                ▼
+              </span>
+            </button>
+            {expandedSubMenus.adManager && (
+              <ul className="ml-6 space-y-1 border-l border-border pl-2 mt-1">
+                <li>
+                  <Link
+                    href="/admin/home-ads"
+                    className={cn(
+                      "flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all",
+                      location === "/admin/home-ads"
+                        ? "bg-primary/10 text-primary"
+                        : "text-card-foreground/80 hover:bg-primary/5 hover:text-primary/90"
+                    )}
+                  >
+                    <Advertisement size={16} className="text-primary opacity-60" />
+                    Home Ads
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    href="/admin/games-ads"
+                    className={cn(
+                      "flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all",
+                      location === "/admin/games-ads"
+                        ? "bg-primary/10 text-primary"
+                        : "text-card-foreground/80 hover:bg-primary/5 hover:text-primary/90"
+                    )}
+                  >
+                    <Target size={16} className="text-primary opacity-60" />
+                    Games Ads
+                    <span className="ml-auto px-1.5 py-0.5 text-xs bg-green-100 text-green-700 rounded">New</span>
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    href="/admin/blog-ads"
+                    className={cn(
+                      "flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all",
+                      location === "/admin/blog-ads"
+                        ? "bg-primary/10 text-primary"
+                        : "text-card-foreground/80 hover:bg-primary/5 hover:text-primary/90"
+                    )}
+                  >
+                    <Book size={16} className="text-primary opacity-60" />
+                    Blog Ads
+                  </Link>
+                </li>
+              </ul>
+            )}
           </li>
           <li>
             <Link
@@ -281,20 +334,7 @@ export default function AdminNavigation() {
               Sitemaps
             </Link>
           </li>
-          <li>
-            <Link
-              href="/admin/blog-ads"
-              className={cn(
-                "flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all",
-                isActive("/admin/blog-ads")
-                  ? "bg-primary/15 text-primary shadow-sm"
-                  : "text-card-foreground hover:bg-primary/10 hover:text-primary"
-              )}
-            >
-              <BarChart size={18} className="text-primary opacity-80" />
-              Blog Ads
-            </Link>
-          </li>
+
           <li className="space-y-1">
             <button
               onClick={() => toggleSubMenu('pushNotifications')}
