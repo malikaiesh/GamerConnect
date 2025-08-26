@@ -48,13 +48,16 @@ function SeoSchemasContent() {
   // Fetch schemas with pagination - USE PUBLIC ENDPOINT FOR DEVELOPMENT
   const { data: schemasData, isLoading, error } = useQuery({
     queryKey: ["/api/public/seo-schemas", page, contentTypeFilter],
-    queryFn: () => apiRequest(`/api/public/seo-schemas?page=${page}&limit=20${contentTypeFilter && contentTypeFilter !== 'all' ? `&contentType=${contentTypeFilter}` : ""}`),
+    queryFn: () => {
+      const url = `/api/public/seo-schemas?page=${page}&limit=20${contentTypeFilter && contentTypeFilter !== 'all' ? `&contentType=${contentTypeFilter}` : ""}`;
+      return fetch(url).then(res => res.json());
+    },
     retry: 1,
   });
 
   // Delete schema mutation
   const deleteSchema = useMutation({
-    mutationFn: (id: number) => apiRequest(`/api/public/seo-schemas/${id}`, { method: "DELETE" }),
+    mutationFn: (id: number) => fetch(`/api/public/seo-schemas/${id}`, { method: "DELETE" }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/public/seo-schemas"] });
       toast({ title: "Success", description: "Schema deleted successfully" });
@@ -67,7 +70,11 @@ function SeoSchemasContent() {
   // Update schema mutation
   const updateSchema = useMutation({
     mutationFn: ({ id, data }: { id: number; data: any }) => 
-      apiRequest(`/api/public/seo-schemas/${id}`, { method: "PUT", body: data }),
+      fetch(`/api/public/seo-schemas/${id}`, { 
+        method: "PUT", 
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data) 
+      }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/public/seo-schemas"] });
       setEditModalOpen(false);
@@ -81,7 +88,12 @@ function SeoSchemasContent() {
 
   // Create schema mutation
   const createSchema = useMutation({
-    mutationFn: (data: any) => apiRequest("/api/public/seo-schemas", { method: "POST", body: data }),
+    mutationFn: (data: any) => 
+      fetch("/api/public/seo-schemas", { 
+        method: "POST", 
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data) 
+      }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/public/seo-schemas"] });
       setCreateModalOpen(false);
@@ -107,7 +119,11 @@ function SeoSchemasContent() {
   // Bulk generate schemas mutation
   const bulkGenerateSchemas = useMutation({
     mutationFn: (contentType: string) => 
-      apiRequest("/api/public/seo-schemas/bulk-generate", { method: "POST", body: { contentType } }),
+      fetch("/api/public/seo-schemas/bulk-generate", { 
+        method: "POST", 
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ contentType }) 
+      }).then(res => res.json()),
     onSuccess: (result) => {
       queryClient.invalidateQueries({ queryKey: ["/api/public/seo-schemas"] });
       setBulkGenerateModalOpen(false);
@@ -116,7 +132,8 @@ function SeoSchemasContent() {
         description: `Generated ${result.count} schemas successfully!`
       });
     },
-    onError: () => {
+    onError: (error) => {
+      console.error("Bulk generate error:", error);
       toast({ title: "Error", description: "Failed to bulk generate schemas", variant: "destructive" });
     }
   });
