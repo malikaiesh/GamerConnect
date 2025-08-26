@@ -288,6 +288,9 @@ export function setupAuth(app: Express) {
         return res.status(400).json({ message: "Username and password are required" });
       }
       
+      // Profile picture is optional - use empty string if not provided
+      const finalProfilePicture = profilePicture || null;
+      
       // Check if username exists
       const existingUser = await storage.getUserByUsername(username);
       if (existingUser) {
@@ -313,7 +316,7 @@ export function setupAuth(app: Express) {
         username,
         password: hashedPassword,
         email,
-        profilePicture,
+        profilePicture: finalProfilePicture,
         bio,
         country,
         accountType: 'local',
