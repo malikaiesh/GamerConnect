@@ -61,10 +61,10 @@ export function HeroSlider() {
   if (isLoading) {
     return (
       <div className="relative rounded-2xl overflow-hidden border border-white/10 shadow-[0_0_25px_rgba(124,58,237,0.15)]">
-        <div className="h-[400px] bg-gradient-to-br from-purple-600 via-blue-600 to-teal-600 animate-pulse rounded-xl flex items-center justify-center">
+        <div className="h-[250px] sm:h-[350px] lg:h-[400px] bg-gradient-to-br from-purple-600 via-blue-600 to-teal-600 animate-pulse rounded-xl flex items-center justify-center">
           <div className="text-white text-center">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-white mx-auto mb-4"></div>
-            <p>Loading hero content...</p>
+            <p className="text-sm sm:text-base">Loading hero content...</p>
           </div>
         </div>
       </div>
@@ -78,7 +78,7 @@ export function HeroSlider() {
         <img 
           src="https://images.unsplash.com/photo-1542751371-adc38448a05e?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&h=400&q=80" 
           alt="Gaming setup with neon lighting" 
-          className="rounded-xl shadow-2xl w-full object-cover h-[400px]" 
+          className="rounded-xl shadow-2xl w-full object-cover h-[250px] sm:h-[350px] lg:h-[400px]" 
         />
         <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
       </div>
@@ -88,7 +88,7 @@ export function HeroSlider() {
   return (
     <div className="relative rounded-2xl overflow-hidden border border-white/10 shadow-[0_0_25px_rgba(124,58,237,0.15)] group" data-testid="hero-slider">
       {/* Main Image */}
-      <div className="relative h-[400px]">
+      <div className="relative h-[250px] sm:h-[350px] lg:h-[400px]">
         <img
           src={currentImage.imagePath}
           alt={currentImage.title}
@@ -99,12 +99,12 @@ export function HeroSlider() {
       </div>
 
       {/* Small overlay for image info - positioned at bottom left */}
-      <div className="absolute bottom-4 left-4">
+      <div className="absolute bottom-2 sm:bottom-4 left-2 sm:left-4">
         <div className="text-white">
           {currentImage.linkUrl && currentImage.linkText && (
             <Button
               size="sm"
-              className="bg-primary/80 hover:bg-primary text-white shadow-lg backdrop-blur-sm"
+              className="bg-primary/80 hover:bg-primary text-white shadow-lg backdrop-blur-sm text-xs sm:text-sm px-3 py-1.5 sm:px-4 sm:py-2"
               onClick={() => window.location.href = currentImage.linkUrl || ''}
               data-testid="hero-cta-button"
             >
@@ -120,26 +120,26 @@ export function HeroSlider() {
           {/* Previous/Next Buttons */}
           <button
             onClick={prevSlide}
-            className="absolute left-4 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white p-2 rounded-full transition-all opacity-0 group-hover:opacity-100"
+            className="absolute left-2 sm:left-4 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white p-1.5 sm:p-2 rounded-full transition-all opacity-70 sm:opacity-0 sm:group-hover:opacity-100"
             data-testid="hero-prev-button"
           >
-            <ChevronLeft className="h-6 w-6" />
+            <ChevronLeft className="h-4 w-4 sm:h-6 sm:w-6" />
           </button>
           <button
             onClick={nextSlide}
-            className="absolute right-4 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white p-2 rounded-full transition-all opacity-0 group-hover:opacity-100"
+            className="absolute right-2 sm:right-4 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white p-1.5 sm:p-2 rounded-full transition-all opacity-70 sm:opacity-0 sm:group-hover:opacity-100"
             data-testid="hero-next-button"
           >
-            <ChevronRight className="h-6 w-6" />
+            <ChevronRight className="h-4 w-4 sm:h-6 sm:w-6" />
           </button>
 
           {/* Slide Indicators - positioned at bottom center */}
-          <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex space-x-2">
+          <div className="absolute bottom-1 sm:bottom-2 left-1/2 -translate-x-1/2 flex space-x-1 sm:space-x-2">
             {activeImages.map((_, index) => (
               <button
                 key={index}
                 onClick={() => goToSlide(index)}
-                className={`relative w-8 h-2 rounded-full transition-all ${
+                className={`relative w-6 h-1.5 sm:w-8 sm:h-2 rounded-full transition-all ${
                   index === currentIndex ? 'bg-white' : 'bg-white/50 hover:bg-white/70'
                 }`}
                 data-testid={`hero-indicator-${index}`}

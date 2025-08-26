@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Plus, Upload, Edit, Trash2, Eye, EyeOff, GripVertical, Link as LinkIcon, Clock } from "lucide-react";
+import AdminNavigation from "@/components/admin/navigation";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
@@ -268,27 +269,33 @@ export default function AdminHeroImages() {
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center min-h-[400px]">
-        <div className="text-center space-y-2">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
-          <p className="text-muted-foreground">Loading hero images...</p>
+      <div className="flex min-h-screen bg-background">
+        <AdminNavigation />
+        <div className="flex-1 flex items-center justify-center">
+          <div className="text-center space-y-2">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
+            <p className="text-muted-foreground">Loading hero images...</p>
+          </div>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="space-y-6" data-testid="admin-hero-images">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight">Hero Images</h1>
-          <p className="text-muted-foreground mt-2">
-            Manage slider images for the hero section to create an engaging homepage experience.
-          </p>
-        </div>
-        <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-          <DialogTrigger asChild>
-            <Button onClick={openDialog} data-testid="button-add-hero-image">
+    <div className="flex min-h-screen bg-background">
+      <AdminNavigation />
+      <div className="flex-1 p-8">
+        <div className="space-y-6" data-testid="admin-hero-images">
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-3xl font-bold tracking-tight">Hero Images</h1>
+              <p className="text-muted-foreground mt-2">
+                Manage slider images for the hero section to create an engaging homepage experience.
+              </p>
+            </div>
+            <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+              <DialogTrigger asChild>
+                <Button onClick={openDialog} data-testid="button-add-hero-image">
               <Plus className="mr-2 h-4 w-4" />
               Add Hero Image
             </Button>
@@ -581,6 +588,7 @@ export default function AdminHeroImages() {
             </Card>
           ))
         )}
+        </div>
       </div>
     </div>
   );
