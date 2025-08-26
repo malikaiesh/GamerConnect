@@ -247,7 +247,7 @@ export default function EventDetailPage() {
                 {event.title}
               </h1>
 
-              <div className="flex flex-wrap items-center gap-6 text-muted-foreground mb-6">
+              <div className="flex flex-wrap items-center gap-6 text-foreground dark:text-white mb-6">
                 <div className="flex items-center gap-2">
                   <Calendar className="h-4 w-4" />
                   <span data-testid="event-date">{formatDate(event.startDate)}</span>
@@ -290,7 +290,7 @@ export default function EventDetailPage() {
               </CardHeader>
               <CardContent>
                 <div 
-                  className="prose prose-sm max-w-none dark:prose-invert"
+                  className="prose prose-sm max-w-none dark:prose-invert prose-headings:text-foreground prose-p:text-foreground dark:prose-headings:text-white dark:prose-p:text-white"
                   dangerouslySetInnerHTML={{ __html: event.description }}
                   data-testid="event-description"
                 />
@@ -307,7 +307,7 @@ export default function EventDetailPage() {
                     </CardHeader>
                     <CardContent>
                       <div 
-                        className="prose prose-sm max-w-none dark:prose-invert"
+                        className="prose prose-sm max-w-none dark:prose-invert prose-headings:text-foreground prose-p:text-foreground dark:prose-headings:text-white dark:prose-p:text-white"
                         dangerouslySetInnerHTML={{ __html: event.rules }}
                         data-testid="event-rules"
                       />
@@ -325,7 +325,7 @@ export default function EventDetailPage() {
                     </CardHeader>
                     <CardContent>
                       <div 
-                        className="prose prose-sm max-w-none dark:prose-invert"
+                        className="prose prose-sm max-w-none dark:prose-invert prose-headings:text-foreground prose-p:text-foreground dark:prose-headings:text-white dark:prose-p:text-white"
                         dangerouslySetInnerHTML={{ __html: event.prizes }}
                         data-testid="event-prizes"
                       />
@@ -340,7 +340,7 @@ export default function EventDetailPage() {
                     </CardHeader>
                     <CardContent>
                       <div 
-                        className="prose prose-sm max-w-none dark:prose-invert"
+                        className="prose prose-sm max-w-none dark:prose-invert prose-headings:text-foreground prose-p:text-foreground dark:prose-headings:text-white dark:prose-p:text-white"
                         dangerouslySetInnerHTML={{ __html: event.requirements }}
                         data-testid="event-requirements"
                       />
@@ -554,7 +554,7 @@ export default function EventDetailPage() {
                 </CardHeader>
                 <CardContent>
                   <div 
-                    className="prose prose-sm max-w-none dark:prose-invert"
+                    className="prose prose-sm max-w-none dark:prose-invert prose-headings:text-foreground prose-p:text-foreground dark:prose-headings:text-white dark:prose-p:text-white"
                     dangerouslySetInnerHTML={{ __html: event.contactInfo }}
                     data-testid="contact-info"
                   />

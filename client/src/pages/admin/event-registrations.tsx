@@ -7,6 +7,8 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
 import { Calendar, Clock, User, Mail, Phone, MapPin, Users } from "lucide-react";
+import AdminNavigation from "@/components/admin/navigation";
+import { AppHead } from "@/components/app-head";
 // Using basic date formatting without date-fns
 function formatDateBasic(date: string | Date): string {
   const dateObj = typeof date === 'string' ? new Date(date) : date;
@@ -135,7 +137,11 @@ export default function EventRegistrationsPage() {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="flex h-screen bg-background">
+      <AppHead title="Event Registrations - Admin" description="Manage and view all event registrations" />
+      <AdminNavigation />
+      <div className="flex-1 overflow-auto">
+        <div className="p-6 space-y-6">
       <div>
         <h1 className="text-3xl font-bold" data-testid="page-title">Event Registrations</h1>
         <p className="text-muted-foreground" data-testid="page-description">
@@ -360,6 +366,8 @@ export default function EventRegistrationsPage() {
           )}
         </CardContent>
       </Card>
+        </div>
+      </div>
     </div>
   );
 }
