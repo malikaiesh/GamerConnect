@@ -629,6 +629,26 @@ Sitemap: ${req.protocol}://${req.get('host')}/sitemap.xml`);
     }
   });
 
+  // Get single public event by slug
+  app.get('/api/events/public/:slug', async (req, res) => {
+    try {
+      const slug = req.params.slug;
+      
+      const [event] = await db.select().from(events)
+        .where(and(eq(events.slug, slug), eq(events.status, 'published')))
+        .limit(1);
+      
+      if (!event) {
+        return res.status(404).json({ error: 'Event not found' });
+      }
+      
+      res.json(event);
+    } catch (error) {
+      console.error('Error fetching event:', error);
+      res.status(500).json({ error: 'Failed to fetch event' });
+    }
+  });
+
   // Get all events with filtering
   app.get('/api/events', async (req, res) => {
     try {
@@ -785,6 +805,81 @@ Sitemap: ${req.protocol}://${req.get('host')}/sitemap.xml`);
     } catch (error) {
       console.error('Error fetching event registrations:', error);
       res.status(500).json({ error: 'Failed to fetch registrations' });
+    }
+  });
+
+  // Register for an event (public endpoint)
+  app.post('/api/events/:id/register', async (req, res) => {
+    try {
+      const eventId = parseInt(req.params.id);
+      const { guestName, guestEmail, guestPhone, notes } = req.body;
+      
+      // Validate required fields
+      if (!guestName || !guestEmail) {
+        return res.status(400).json({ error: 'Name and email are required' });
+      }
+      
+      // Check if event exists and is published
+      const [event] = await db.select().from(events)
+        .where(and(eq(events.id, eventId), eq(events.status, 'published')))
+        .limit(1);
+      
+      if (!event) {
+        return res.status(404).json({ error: 'Event not found' });
+      }
+      
+      // Check if registration is enabled
+      if (!event.registrationEnabled) {
+        return res.status(400).json({ error: 'Registration is not enabled for this event' });
+      }
+      
+      // Check registration deadline
+      if (event.registrationEndDate && new Date() > new Date(event.registrationEndDate)) {
+        return res.status(400).json({ error: 'Registration deadline has passed' });
+      }
+      
+      // Check if event is full
+      if (event.maxParticipants && event.currentParticipants >= event.maxParticipants) {
+        return res.status(400).json({ error: 'Event is fully booked' });
+      }
+      
+      // Check for duplicate email registration
+      const existingRegistration = await db.select().from(eventRegistrations)
+        .where(and(eq(eventRegistrations.eventId, eventId), eq(eventRegistrations.guestEmail, guestEmail)))
+        .limit(1);
+      
+      if (existingRegistration.length > 0) {
+        return res.status(400).json({ error: 'Email already registered for this event' });
+      }
+      
+      // Create registration
+      const [registration] = await db.insert(eventRegistrations).values({
+        eventId,
+        guestName,
+        guestEmail,
+        guestPhone: guestPhone || null,
+        notes: notes || null,
+        status: 'registered',
+        paymentStatus: event.registrationFee && event.registrationFee > 0 ? 'pending' : 'not_required'
+      }).returning();
+      
+      // Update participant count
+      await db.update(events)
+        .set({ currentParticipants: event.currentParticipants + 1 })
+        .where(eq(events.id, eventId));
+      
+      res.status(201).json({ 
+        message: 'Registration successful',
+        registration: {
+          id: registration.id,
+          eventId: registration.eventId,
+          status: registration.status,
+          registeredAt: registration.registeredAt
+        }
+      });
+    } catch (error) {
+      console.error('Error registering for event:', error);
+      res.status(500).json({ error: 'Failed to register for event' });
     }
   });
 

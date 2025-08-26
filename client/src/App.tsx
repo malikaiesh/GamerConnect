@@ -46,6 +46,7 @@ const TermsPage = lazy(() => import("@/pages/terms-page"));
 const CookiePolicyPage = lazy(() => import("@/pages/cookie-policy-page"));
 const FAQPage = lazy(() => import("@/pages/faq-page"));
 const EventsPage = lazy(() => import("@/pages/events-page"));
+const EventDetailPage = lazy(() => import("@/pages/event-detail-page"));
 
 // Admin pages
 const AdminDashboard = lazy(() => import("@/pages/admin/dashboard"));
@@ -190,6 +191,9 @@ function Router() {
       </Route>
       <Route path="/events">
         <Suspense fallback={<LoadingFallback />}><EventsPage /></Suspense>
+      </Route>
+      <Route path="/events/:slug">
+        <Suspense fallback={<LoadingFallback />}><EventDetailPage /></Suspense>
       </Route>
 
       {/* Admin Routes - using path + component pattern for route-based protected routes */}
