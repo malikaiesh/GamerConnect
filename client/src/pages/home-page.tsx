@@ -163,6 +163,9 @@ export default function HomePage() {
                 <Link href="/categories" className="bg-secondary hover:bg-secondary/90 text-secondary-foreground font-bold py-3 px-6 rounded-lg transition-colors shadow-lg">
                   Browse Categories
                 </Link>
+                <Link href="/events" className="bg-accent hover:bg-accent/90 text-accent-foreground font-bold py-3 px-6 rounded-lg transition-colors shadow-lg" data-testid="hero-events-button">
+                  Gaming Events
+                </Link>
                 <RandomGameButton 
                   variant="outline" 
                   size="lg"

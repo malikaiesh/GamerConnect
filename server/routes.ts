@@ -36,7 +36,7 @@ import { ObjectPermission } from "./objectAcl";
 import { users, events, eventRegistrations, eventCategories } from "@shared/schema";
 import { games, blogPosts, staticPages, pushSubscribers, pushCampaigns } from "@shared/schema";
 import { insertEventSchema, insertEventRegistrationSchema } from "@shared/schema";
-import { eq, count, gte, sql, desc } from "drizzle-orm";
+import { eq, count, gte, sql, desc, and } from "drizzle-orm";
 import { z } from "zod";
 import fs from "fs/promises";
 import path from "path";
@@ -613,21 +613,43 @@ Sitemap: ${req.protocol}://${req.get('host')}/sitemap.xml`);
   });
 
   // Events API routes
+  // Get public events (published events for public display)
+  app.get('/api/events/public', async (req, res) => {
+    try {
+      const publicEvents = await db
+        .select()
+        .from(events)
+        .where(eq(events.status, 'published'))
+        .orderBy(desc(events.featured), events.startDate);
+      
+      res.json(publicEvents);
+    } catch (error) {
+      console.error('Error fetching public events:', error);
+      res.status(500).json({ error: 'Failed to fetch events' });
+    }
+  });
+
   // Get all events with filtering
   app.get('/api/events', async (req, res) => {
     try {
       const { status, type, featured, limit = '10', offset = '0' } = req.query;
       
-      let query = db.select().from(events);
+      let queryConditions = [];
       
       if (status) {
-        query = query.where(eq(events.status, status as string));
+        queryConditions.push(eq(events.status, status as string));
       }
       if (type) {
-        query = query.where(eq(events.eventType, type as string));
+        queryConditions.push(eq(events.eventType, type as string));
       }
       if (featured === 'true') {
-        query = query.where(eq(events.featured, true));
+        queryConditions.push(eq(events.featured, true));
+      }
+      
+      let query = db.select().from(events);
+      
+      if (queryConditions.length > 0) {
+        query = query.where(and(...queryConditions));
       }
       
       const allEvents = await query
@@ -670,10 +692,10 @@ Sitemap: ${req.protocol}://${req.get('host')}/sitemap.xml`);
     try {
       const eventData = insertEventSchema.parse({
         ...req.body,
-        createdBy: req.user.id
+        createdBy: req.user?.id
       });
       
-      const [newEvent] = await db.insert(events).values(eventData).returning();
+      const [newEvent] = await db.insert(events).values([eventData]).returning();
       res.status(201).json(newEvent);
     } catch (error) {
       if (error instanceof z.ZodError) {
@@ -688,7 +710,7 @@ Sitemap: ${req.protocol}://${req.get('host')}/sitemap.xml`);
   app.put('/api/events/:id', isAdmin, async (req, res) => {
     try {
       const eventId = parseInt(req.params.id);
-      const updateData = insertEventSchema.partial().parse(req.body);
+      const updateData = insertEventSchema.omit({ id: true }).partial().parse(req.body);
       
       const [updatedEvent] = await db.update(events)
         .set({ ...updateData, updatedAt: new Date() })
