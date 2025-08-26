@@ -4,10 +4,6 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 
-# Production builds
-dist/
-build/
-
 # Environment variables
 .env
 .env.local
@@ -15,11 +11,19 @@ build/
 .env.test.local
 .env.production.local
 
+# Build outputs
+dist/
+build/
+.output/
+.vercel/
+
+# Database
+*.sqlite
+*.db
+
 # Logs
 logs
 *.log
-pm2.log
-pm2-error.log
 
 # Runtime data
 pids
@@ -31,52 +35,9 @@ pids
 coverage/
 *.lcov
 
-# Database
-*.sqlite
-*.db
-
-# Uploads and user-generated content
-uploads/
-public/uploads/
-
-# OS generated files
-.DS_Store
-.DS_Store?
-._*
-.Spotlight-V100
-.Trashes
-ehthumbs.db
-Thumbs.db
-
-# Editor directories and files
-.vscode/
-.idea/
-*.suo
-*.ntvs*
-*.njsproj
-*.sln
-*.sw?
-
-# Temporary files
-tmp/
-temp/
-
-# SSL certificates
-*.pem
-*.key
-*.crt
-
-# Backup files
-*.bak
-*.backup
-backup_*
-
-# Cache
-.cache/
-.parcel-cache/
-
-# TypeScript
-*.tsbuildinfo
+# Dependency directories
+node_modules/
+jspm_packages/
 
 # Optional npm cache directory
 .npm
@@ -93,33 +54,60 @@ backup_*
 # dotenv environment variables file
 .env
 
-# Stores VSCode versions used for testing VSCode extensions
-.vscode-test
+# parcel-bundler cache (https://parceljs.org/)
+.cache
+.parcel-cache
+
+# next.js build output
+.next
+
+# nuxt.js build output
+.nuxt
+
+# vuepress build output
+.vuepress/dist
 
 # Serverless directories
 .serverless
 
-# Webpack bundle analyzer
-bundle-analyzer-report.html
+# FuseBox cache
+.fusebox/
 
-# Local development database
-dev.db
+# DynamoDB Local files
+.dynamodb/
 
-# PM2 files
-.pm2/
-ecosystem.config.json
+# TernJS port file
+.tern-port
 
-# Drizzle
-drizzle/
-.drizzle/
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
 
-# Migration files (if auto-generated)
-migrations/
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
 
-# Test files
-coverage/
-.nyc_output/
+# Temporary files
+tmp/
+temp/
+*.tmp
 
-# Storybook build outputs
-.out
-.storybook-out
+# Upload directories
+uploads/
+attached_assets/
+
+# Development files
+cookies.txt
+*.cjs
+migration-*.js
+migration-*.cjs
+seed-*.js
+update-*.js
