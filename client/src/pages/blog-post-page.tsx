@@ -11,6 +11,9 @@ import { BlogPost, PushNotification as PushNotificationType, SiteSetting } from 
 import { PushNotification } from '@/components/push-notification';
 import { BlogAd } from '@/components/ads/blog-ad';
 import { BlogGame } from '@/components/games/blog-game';
+import { MarkdownRenderer } from '@/components/blog/markdown-renderer';
+import { marked } from 'marked';
+import DOMPurify from 'dompurify';
 
 // Enhanced Blog Content component that integrates games within content with individual paragraph controls
 function EnhancedBlogContent({ content, settings, className }: { 
@@ -18,13 +21,36 @@ function EnhancedBlogContent({ content, settings, className }: {
   settings: SiteSetting | undefined; 
   className: string;
 }) {
+  // Convert content to HTML if it's markdown
+  const getHtmlContent = (content: string) => {
+    // Check if content looks like markdown (contains markdown syntax)
+    const hasMarkdownSyntax = /(\*\*|\*|#|\[|\]|\n-|\n\d+\.)/.test(content);
+    
+    if (hasMarkdownSyntax) {
+      // Configure marked for better rendering
+      marked.setOptions({
+        breaks: true,
+        gfm: true,
+      });
+      
+      // Convert markdown to HTML and sanitize
+      const htmlContent = marked(content, { async: false }) as string;
+      return DOMPurify.sanitize(htmlContent);
+    }
+    
+    // Return content as-is if it's already HTML
+    return content;
+  };
+
+  const htmlContent = getHtmlContent(content);
+
   if (!settings?.blogGamesEnabled) {
-    return <div className={className} dangerouslySetInnerHTML={{ __html: content }} />;
+    return <div className={className} dangerouslySetInnerHTML={{ __html: htmlContent }} />;
   }
 
   // Parse content and inject games at strategic positions
   const parser = new DOMParser();
-  const doc = parser.parseFromString(content, 'text/html');
+  const doc = parser.parseFromString(htmlContent, 'text/html');
   const elements = Array.from(doc.body.children);
   
   let currentSection = 0;

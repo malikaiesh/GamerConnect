@@ -590,6 +590,7 @@ export default function AdminHeroImages() {
         )}
         </div>
       </div>
+        </div>
     </div>
   );
 }
