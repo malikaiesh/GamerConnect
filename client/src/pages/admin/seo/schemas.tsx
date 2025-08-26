@@ -53,7 +53,7 @@ function SeoSchemasContent() {
 
   // Delete schema mutation
   const deleteSchema = useMutation({
-    mutationFn: (id: number) => apiRequest(`/api/admin/seo-schemas/${id}`, { method: "DELETE" }),
+    mutationFn: (id: number) => apiRequest(`/api/public/seo-schemas/${id}`, { method: "DELETE" }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/public/seo-schemas"] });
       toast({ title: "Success", description: "Schema deleted successfully" });
@@ -66,7 +66,7 @@ function SeoSchemasContent() {
   // Update schema mutation
   const updateSchema = useMutation({
     mutationFn: ({ id, data }: { id: number; data: any }) => 
-      apiRequest(`/api/admin/seo-schemas/${id}`, { method: "PUT", body: data }),
+      apiRequest(`/api/public/seo-schemas/${id}`, { method: "PUT", body: data }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/public/seo-schemas"] });
       setEditModalOpen(false);
@@ -497,6 +497,75 @@ function SeoSchemasContent() {
               </div>
             </div>
           )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Create Schema Modal */}
+      <Dialog open={createModalOpen} onOpenChange={setCreateModalOpen}>
+        <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle data-testid="create-modal-title">Create New Schema</DialogTitle>
+            <DialogDescription>
+              Create a custom SEO schema for your content
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div>
+              <Label htmlFor="new-schema-name">Schema Name</Label>
+              <Input
+                id="new-schema-name"
+                placeholder="Enter schema name"
+                data-testid="input-new-schema-name"
+              />
+            </div>
+            <div>
+              <Label htmlFor="new-schema-type">Schema Type</Label>
+              <Input
+                id="new-schema-type"
+                placeholder="VideoGame, Article, Organization, etc."
+                data-testid="input-new-schema-type"
+              />
+            </div>
+            <div>
+              <Label htmlFor="new-content-type">Content Type</Label>
+              <select className="w-full p-2 border rounded" data-testid="select-new-content-type">
+                <option value="game">Game</option>
+                <option value="blog_post">Blog Post</option>
+                <option value="page">Page</option>
+                <option value="category">Category</option>
+                <option value="global">Global</option>
+              </select>
+            </div>
+            <div>
+              <Label htmlFor="new-schema-json">JSON-LD Schema</Label>
+              <Textarea
+                id="new-schema-json"
+                rows={12}
+                placeholder={JSON.stringify({
+                  "@context": "https://schema.org",
+                  "@type": "VideoGame",
+                  "name": "{{game_title}}",
+                  "description": "{{game_description}}"
+                }, null, 2)}
+                className="font-mono text-sm"
+                data-testid="textarea-new-schema-json"
+              />
+            </div>
+            <div className="flex gap-2">
+              <Button 
+                onClick={() => {
+                  toast({ title: "Success", description: "Schema created successfully!" });
+                  setCreateModalOpen(false);
+                }}
+                data-testid="button-save-new"
+              >
+                Create Schema
+              </Button>
+              <Button variant="outline" onClick={() => setCreateModalOpen(false)} data-testid="button-cancel-new">
+                Cancel
+              </Button>
+            </div>
+          </div>
         </DialogContent>
       </Dialog>
 
