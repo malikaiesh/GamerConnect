@@ -21,12 +21,15 @@ import {
   Image,
   UserCheck,
   Database,
-  CopyX
+  CopyX,
+  ChevronRight,
+  ChevronDown
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
+import { useState } from "react";
 
 interface AdminNavigationProps {
   className?: string;
@@ -52,7 +55,9 @@ const navigationItems = [
     ]
   },
   {
-    section: "Advertising",
+    section: "Ad Manager",
+    expandable: true,
+    icon: Advertisement,
     items: [
       { name: "Home Ads", href: "/admin/home-ads", icon: Advertisement },
       { name: "Games Ads", href: "/admin/games-ads", icon: Target },
@@ -99,9 +104,24 @@ const navigationItems = [
 
 export function AdminNavigation({ className }: AdminNavigationProps) {
   const [location] = useLocation();
+  const [expandedSections, setExpandedSections] = useState<Set<string>>(new Set(['Ad Manager']));
 
   const isActiveRoute = (href: string) => {
     return location === href || location.startsWith(href + "/");
+  };
+
+  const toggleSection = (sectionName: string) => {
+    const newExpanded = new Set(expandedSections);
+    if (newExpanded.has(sectionName)) {
+      newExpanded.delete(sectionName);
+    } else {
+      newExpanded.add(sectionName);
+    }
+    setExpandedSections(newExpanded);
+  };
+
+  const isSectionActive = (section: any) => {
+    return section.items?.some((item: any) => isActiveRoute(item.href));
   };
 
   return (
@@ -120,37 +140,90 @@ export function AdminNavigation({ className }: AdminNavigationProps) {
         <div className="px-3 pb-6">
           {navigationItems.map((section) => (
             <div key={section.section} className="mb-6">
-              <h3 className="mb-2 px-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                {section.section}
-              </h3>
-              <div className="space-y-1">
-                {section.items.map((item) => {
-                  const Icon = item.icon;
-                  const active = isActiveRoute(item.href);
+              {section.expandable ? (
+                // Expandable section (like Ad Manager)
+                <div>
+                  <Button
+                    variant="ghost"
+                    onClick={() => toggleSection(section.section)}
+                    className={`w-full justify-start text-left h-9 mb-2 ${
+                      isSectionActive(section)
+                        ? "bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300"
+                        : "text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white"
+                    }`}
+                    data-testid={`nav-section-${section.section.toLowerCase().replace(/\s+/g, '-')}`}
+                  >
+                    <section.icon className={`mr-3 h-4 w-4 ${isSectionActive(section) ? "text-blue-600 dark:text-blue-400" : ""}`} />
+                    {section.section}
+                    {expandedSections.has(section.section) ? (
+                      <ChevronDown className="ml-auto h-4 w-4" />
+                    ) : (
+                      <ChevronRight className="ml-auto h-4 w-4" />
+                    )}
+                  </Button>
                   
-                  return (
-                    <Link key={item.name} href={item.href}>
-                      <Button
-                        variant={active ? "secondary" : "ghost"}
-                        className={`w-full justify-start text-left h-9 ${
-                          active 
-                            ? "bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300" 
-                            : "text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white"
-                        }`}
-                        data-testid={`nav-link-${item.name.toLowerCase().replace(/\s+/g, '-')}`}
-                      >
-                        <Icon className={`mr-3 h-4 w-4 ${active ? "text-blue-600 dark:text-blue-400" : ""}`} />
-                        {item.name}
-                        {item.name === "Games Ads" && (
-                          <Badge variant="outline" className="ml-auto text-xs">
-                            New
-                          </Badge>
-                        )}
-                      </Button>
-                    </Link>
-                  );
-                })}
-              </div>
+                  {expandedSections.has(section.section) && (
+                    <div className="space-y-1 ml-6">
+                      {section.items.map((item) => {
+                        const Icon = item.icon;
+                        const active = isActiveRoute(item.href);
+                        
+                        return (
+                          <Link key={item.name} href={item.href}>
+                            <Button
+                              variant={active ? "secondary" : "ghost"}
+                              className={`w-full justify-start text-left h-8 text-sm ${
+                                active 
+                                  ? "bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300" 
+                                  : "text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white"
+                              }`}
+                              data-testid={`nav-link-${item.name.toLowerCase().replace(/\s+/g, '-')}`}
+                            >
+                              <Icon className={`mr-3 h-4 w-4 ${active ? "text-blue-600 dark:text-blue-400" : ""}`} />
+                              {item.name}
+                              {item.name === "Games Ads" && (
+                                <Badge variant="outline" className="ml-auto text-xs">
+                                  New
+                                </Badge>
+                              )}
+                            </Button>
+                          </Link>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
+              ) : (
+                // Regular section
+                <div>
+                  <h3 className="mb-2 px-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                    {section.section}
+                  </h3>
+                  <div className="space-y-1">
+                    {section.items.map((item) => {
+                      const Icon = item.icon;
+                      const active = isActiveRoute(item.href);
+                      
+                      return (
+                        <Link key={item.name} href={item.href}>
+                          <Button
+                            variant={active ? "secondary" : "ghost"}
+                            className={`w-full justify-start text-left h-9 ${
+                              active 
+                                ? "bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300" 
+                                : "text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white"
+                            }`}
+                            data-testid={`nav-link-${item.name.toLowerCase().replace(/\s+/g, '-')}`}
+                          >
+                            <Icon className={`mr-3 h-4 w-4 ${active ? "text-blue-600 dark:text-blue-400" : ""}`} />
+                            {item.name}
+                          </Button>
+                        </Link>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
               {section.section !== "Analytics" && <Separator className="mt-4" />}
             </div>
           ))}
