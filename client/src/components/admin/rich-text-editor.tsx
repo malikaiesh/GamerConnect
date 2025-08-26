@@ -30,7 +30,7 @@ export function RichTextEditor({
   const [isLoading, setIsLoading] = useState(true);
   
   // Fetch TinyMCE API key from the database
-  const { data: tinyMceApiKey } = useQuery({
+  const { data: tinyMceApiKey, isLoading: isKeyLoading } = useQuery({
     queryKey: ['/api/api-keys/type/tinymce'],
     queryFn: async () => {
       try {
@@ -42,16 +42,20 @@ export function RichTextEditor({
         console.error('Error fetching TinyMCE API key:', error);
         return null;
       }
-    }
+    },
+    retry: 1, // Don't retry too many times
+    staleTime: 5 * 60 * 1000 // Cache for 5 minutes
   });
   
   useEffect(() => {
     // Set API key when data is loaded
     if (tinyMceApiKey && tinyMceApiKey.key) {
       setApiKey(tinyMceApiKey.key);
-      console.log('TinyMCE API key loaded from database');
+      console.log('TinyMCE API key loaded from database:', tinyMceApiKey.key.substring(0, 10) + '...');
     } else {
       console.log('Using fallback TinyMCE API key');
+      // Use fallback key immediately if API key fetch fails
+      setApiKey('7m14cqmqt0orpe024qq0jh600cbltgk2kxavr07f92sihixj');
     }
   }, [tinyMceApiKey]);
   
@@ -82,6 +86,14 @@ export function RichTextEditor({
           apiKey={apiKey || import.meta.env.VITE_TINYMCE_API_KEY || '7m14cqmqt0orpe024qq0jh600cbltgk2kxavr07f92sihixj'} // Try: DB, environment variable, then fallback
           onInit={(evt, editor) => {
             editorRef.current = editor;
+            setIsLoading(false);
+            console.log('TinyMCE Editor initialized successfully');
+          }}
+          onLoadContent={() => {
+            console.log('TinyMCE content loaded');
+          }}
+          onError={(error) => {
+            console.error('TinyMCE Error:', error);
             setIsLoading(false);
           }}
           initialValue={value}
@@ -212,10 +224,16 @@ export function RichTextEditor({
             
             // Additional customization
             placeholder,
-            resize: true,
             branding: false,
             promotion: false,
             statusbar: true,
+            resize: 'both',
+            elementpath: false,
+            setup: (editor: any) => {
+              editor.on('LoadContent', () => {
+                console.log('TinyMCE setup complete');
+              });
+            }
           }}
           disabled={disabled}
         />

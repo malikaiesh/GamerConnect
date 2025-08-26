@@ -25,7 +25,7 @@ const formSchema = z.object({
   excerpt: z.string().min(10, { message: "Excerpt must be at least 10 characters" }),
   featuredImage: z.string().url({ message: "Featured image must be a valid URL" }),
   categoryId: z.coerce.number().min(1, { message: "Category is required" }),
-  tags: z.string().transform(val => val.split(",").map(tag => tag.trim()).filter(Boolean)),
+  tags: z.string(),
   status: z.enum(["draft", "published"]),
   author: z.string().min(2, { message: "Author name is required" }),
   authorAvatar: z.string().url({ message: "Author avatar must be a valid URL" }).optional().nullable(),
@@ -53,9 +53,16 @@ export function BlogForm({ post, onSuccess }: BlogFormProps) {
     resolver: zodResolver(formSchema),
     defaultValues: post
       ? {
-          ...post,
-          tags: post.tags ? post.tags.join(", ") : "",
+          title: post.title,
+          slug: post.slug,
+          content: post.content,
+          excerpt: post.excerpt,
+          featuredImage: post.featuredImage,
           categoryId: post.categoryId || 0,
+          tags: post.tags ? post.tags.join(", ") : "",
+          status: post.status,
+          author: post.author,
+          authorAvatar: post.authorAvatar || "",
         }
       : {
           title: "",
@@ -87,10 +94,16 @@ export function BlogForm({ post, onSuccess }: BlogFormProps) {
   // Create mutation for adding or updating posts
   const mutation = useMutation({
     mutationFn: async (values: FormValues) => {
+      // Transform tags from string to array
+      const transformedValues = {
+        ...values,
+        tags: values.tags.split(",").map(tag => tag.trim()).filter(Boolean)
+      };
+      
       if (post) {
-        return apiRequest("PUT", `/api/blog/posts/${post.id}`, values);
+        return apiRequest("PUT", `/api/blog/posts/${post.id}`, transformedValues);
       } else {
-        return apiRequest("POST", "/api/blog/posts", values);
+        return apiRequest("POST", "/api/blog/posts", transformedValues);
       }
     },
     onSuccess: () => {
