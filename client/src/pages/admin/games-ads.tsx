@@ -35,16 +35,16 @@ import { insertGameAdSchema } from "@shared/schema";
 const gameAdPositions = [
   { value: 'above_game', label: 'Above Game' },
   { value: 'below_game', label: 'Below Game' },
+  { value: 'above_related', label: 'Above Related Games' },
+  { value: 'below_related', label: 'Below Related Games' },
   { value: 'sidebar_top', label: 'Sidebar Top' },
-  { value: 'sidebar_bottom', label: 'Sidebar Bottom' },
-  { value: 'before_related_games', label: 'Before Related Games' },
-  { value: 'after_related_games', label: 'After Related Games' }
+  { value: 'sidebar_bottom', label: 'Sidebar Bottom' }
 ];
 
-// Simplified schema for form validation
+// Simplified schema for form validation matching the server enum
 const gameAdSchema = z.object({
   name: z.string().min(3, "Name must be at least 3 characters"),
-  position: z.string().min(1, "Position is required"),
+  position: z.enum(['above_game', 'below_game', 'above_related', 'below_related', 'sidebar_top', 'sidebar_bottom']),
   isGoogleAd: z.boolean().default(false),
   adCode: z.string().min(1, "Ad code is required"),
   imageUrl: z.string().optional().nullable().or(z.literal("")),
