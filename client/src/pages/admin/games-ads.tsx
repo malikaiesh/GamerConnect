@@ -28,6 +28,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
+import AdminLayout from "@/components/layout/admin-layout";
 import type { GameAd } from "@shared/schema";
 
 const gameAdPositions = [
@@ -40,14 +41,14 @@ const gameAdPositions = [
 ];
 
 const gameAdSchema = z.object({
-  name: z.string().min(1, "Ad name is required"),
+  name: z.string().min(3, "Name must be at least 3 characters"),
   position: z.string().min(1, "Position is required"),
   isGoogleAd: z.boolean().default(false),
-  adCode: z.string().optional(),
-  imageUrl: z.string().url().optional().or(z.literal("")),
-  targetUrl: z.string().url().optional().or(z.literal("")),
-  startDate: z.string().optional(),
-  endDate: z.string().optional(),
+  adCode: z.string().min(1, "Ad code is required"),
+  imageUrl: z.string().optional().nullable(),
+  targetUrl: z.string().optional().nullable(),
+  startDate: z.string().optional().nullable(),
+  endDate: z.string().optional().nullable(),
   status: z.enum(['active', 'inactive']).default('active'),
   adEnabled: z.boolean().default(true)
 });
@@ -243,8 +244,9 @@ export default function GameAdsPage() {
   }
 
   return (
-    <div className="p-6 space-y-6">
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+    <AdminLayout>
+      <div className="p-6 space-y-6">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Games Ads</h1>
           <p className="text-gray-600 dark:text-gray-400">
@@ -795,6 +797,7 @@ export default function GameAdsPage() {
           </Form>
         </DialogContent>
       </Dialog>
-    </div>
+      </div>
+    </AdminLayout>
   );
 }
