@@ -26,6 +26,7 @@ import { registerWebsiteUpdatesRoutes } from "./api/website-updates";
 import { registerAdminNotificationsRoutes } from "./api/admin-notifications";
 import { registerSeoSchemaRoutes } from "./api/seo-schemas";
 import { registerTeamRoutes } from "./api/team";
+import { registerSignupOptionsRoutes } from "./api/signup-options";
 import { storage } from "./storage";
 import { db } from "../db";
 import { ObjectStorageService, ObjectNotFoundError } from "./objectStorage";
@@ -366,6 +367,7 @@ Sitemap: ${req.protocol}://${req.get('host')}/sitemap.xml`);
   registerAdminNotificationsRoutes(app);
   registerSeoSchemaRoutes(app);
   registerTeamRoutes(app);
+  registerSignupOptionsRoutes(app);
   
   // Quick test route to verify our demo endpoint
   app.post('/api/demo-schemas/test', (req, res) => {

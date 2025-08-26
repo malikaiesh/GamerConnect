@@ -77,6 +77,7 @@ const AdminSeoSchemasPage = lazy(() => import("@/pages/admin/seo/schemas"));
 const AdminUsersPage = lazy(() => import("@/pages/admin/accounts/users"));
 const AdminRolesPage = lazy(() => import("@/pages/admin/accounts/roles"));
 const AdminSignupsPage = lazy(() => import("@/pages/admin/accounts/signups"));
+const AdminSignupOptionsPage = lazy(() => import("@/pages/admin/signup-options"));
 const AdminLocationsPage = lazy(() => import("@/pages/admin/accounts/locations"));
 const AdminProfilePage = lazy(() => import("@/pages/admin/accounts/profile"));
 
@@ -298,6 +299,11 @@ function Router() {
       <Route path="/admin/accounts/signups">
         <ProtectedRoute adminOnly={true}>
           <Suspense fallback={<LoadingFallback />}><AdminSignupsPage /></Suspense>
+        </ProtectedRoute>
+      </Route>
+      <Route path="/admin/signup-options">
+        <ProtectedRoute adminOnly={true}>
+          <Suspense fallback={<LoadingFallback />}><AdminSignupOptionsPage /></Suspense>
         </ProtectedRoute>
       </Route>
       <Route path="/admin/accounts/locations">

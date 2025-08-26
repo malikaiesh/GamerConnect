@@ -16,7 +16,10 @@ export const adPositionEnum = pgEnum('ad_position', ['above_featured', 'below_fe
 export const sitemapTypeEnum = pgEnum('sitemap_type', ['games', 'blog', 'pages', 'main']);
 
 // User Account Type Enum
-export const userAccountTypeEnum = pgEnum('user_account_type', ['local', 'google', 'facebook']);
+export const userAccountTypeEnum = pgEnum('user_account_type', ['local', 'google', 'facebook', 'github', 'discord', 'twitter', 'apple', 'microsoft', 'phone']);
+
+// Signup Provider Enum
+export const signupProviderEnum = pgEnum('signup_provider', ['email', 'google', 'facebook', 'github', 'discord', 'twitter', 'apple', 'microsoft', 'phone']);
 
 // User Status Enum
 export const userStatusEnum = pgEnum('user_status', ['active', 'blocked']);
@@ -495,6 +498,8 @@ export const passwordResetTokensRelations = relations(passwordResetTokens, ({ on
     references: [users.id]
   })
 }));
+
+
 
 export const rolesRelations = relations(roles, ({ many }) => ({
   users: many(users),
@@ -993,6 +998,26 @@ export type SeoSchemaTemplate = typeof seoSchemaTemplates.$inferSelect;
 export type InsertSeoSchemaTemplate = z.infer<typeof insertSeoSchemaTemplateSchema>;
 export type SeoSchemaAnalytics = typeof seoSchemaAnalytics.$inferSelect;
 export type InsertSeoSchemaAnalytics = z.infer<typeof insertSeoSchemaAnalyticsSchema>;
+
+// Signup Options table for managing authentication providers
+export const signupOptions = pgTable('signup_options', {
+  id: serial('id').primaryKey(),
+  provider: signupProviderEnum('provider').notNull().unique(),
+  displayName: text('display_name').notNull(),
+  isEnabled: boolean('is_enabled').default(false).notNull(),
+  icon: text('icon').notNull(), // CSS class or icon name
+  color: text('color').notNull(), // Brand color for the button
+  sortOrder: integer('sort_order').default(0).notNull(),
+  configuration: json('configuration').$type<Record<string, any>>(), // Provider-specific config
+  description: text('description'),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+  updatedAt: timestamp('updated_at').defaultNow().notNull()
+});
+
+// Signup options schema and types
+export const insertSignupOptionSchema = createInsertSchema(signupOptions);
+export type SignupOption = typeof signupOptions.$inferSelect;
+export type InsertSignupOption = z.infer<typeof insertSignupOptionSchema>;
 
 // Team Members types
 export type TeamMember = typeof teamMembers.$inferSelect;
