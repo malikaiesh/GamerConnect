@@ -8,7 +8,7 @@ import { Switch } from "@/components/ui/switch";
 import { HomePageContent, contentStatusEnum } from "@shared/schema";
 import { useToast } from "@/hooks/use-toast";
 import { useState } from "react";
-import { RichTextEditor } from "@/components/ui/rich-text-editor";
+import { BasicTextEditor } from "@/components/admin/basic-text-editor";
 
 // Create a schema for the form
 const formSchema = z.object({
@@ -107,10 +107,9 @@ export function HomepageContentForm({
                   </ul>
                 </div>
                 <FormControl>
-                  <RichTextEditor 
+                  <BasicTextEditor 
                     value={field.value} 
                     onChange={field.onChange}
-                    height={500}
                     placeholder="Enter rich content with formatting, images, and more..."
                   />
                 </FormControl>
