@@ -870,11 +870,18 @@ export const insertGameAdSchema = createInsertSchema(gameAds, {
 })
 .refine(
   (data) => {
-    // At least ad code must be provided
-    return !!(data.adCode && data.adCode.trim().length > 0);
+    // If it's Google Ad, adCode is required
+    if (data.isGoogleAd) {
+      return !!(data.adCode && data.adCode.trim().length > 0);
+    }
+    // If not Google Ad, either imageUrl+targetUrl or adCode must be provided
+    return (
+      (!!data.imageUrl && !!data.targetUrl) || 
+      (!!data.adCode && data.adCode.trim().length > 0)
+    );
   },
   {
-    message: "Ad code is required",
+    message: "For Google Ads provide Ad Code. For custom ads provide either Ad Code or both Image URL and Target URL",
     path: ["adCode"]
   }
 );
