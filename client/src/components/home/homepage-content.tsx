@@ -101,12 +101,37 @@ export function HomepageContent() {
     return Math.max(pTagCount, divWithContentCount);
   };
 
+  // Function to clean HTML content by removing metadata and simplifying structure
+  const cleanHtmlContent = (content: string) => {
+    // Remove Replit metadata attributes
+    let cleaned = content.replace(/data-replit-metadata="[^"]*"/g, '');
+    cleaned = cleaned.replace(/data-component-name="[^"]*"/g, '');
+    
+    // Remove excessive nested divs that only contain other divs
+    cleaned = cleaned.replace(/<div[^>]*>\s*<div[^>]*>/g, '<div>');
+    cleaned = cleaned.replace(/<\/div>\s*<\/div>/g, '</div>');
+    
+    // Remove empty divs
+    cleaned = cleaned.replace(/<div[^>]*>\s*<\/div>/g, '');
+    
+    // Remove empty paragraphs with just &nbsp;
+    cleaned = cleaned.replace(/<p[^>]*>\s*&nbsp;\s*<\/p>/g, '');
+    
+    // Clean up extra whitespace
+    cleaned = cleaned.replace(/\s+/g, ' ').trim();
+    
+    return cleaned;
+  };
+
   // Function to render content with proper formatting
   const renderContent = (content: string, isExpanded: boolean) => {
     // Check if content appears to be HTML
     const isHtmlContent = content.includes('<div>') || content.includes('<p>') || content.includes('<h1>') || content.includes('<h2>');
     
     if (isHtmlContent) {
+      // Clean the HTML content first
+      const cleanedContent = cleanHtmlContent(content);
+      
       if (!isExpanded) {
         // Show truncated HTML content
         return (
@@ -114,7 +139,7 @@ export function HomepageContent() {
             <div 
               className="overflow-hidden prose prose-base sm:prose-lg dark:prose-invert max-w-none" 
               style={{ maxHeight: '300px' }}
-              dangerouslySetInnerHTML={{ __html: content }} 
+              dangerouslySetInnerHTML={{ __html: cleanedContent }} 
             />
             <p className="text-base text-muted-foreground">...</p>
           </div>
@@ -125,7 +150,7 @@ export function HomepageContent() {
           <div className="space-y-2">
             <div 
               className="prose prose-base sm:prose-lg dark:prose-invert max-w-none"
-              dangerouslySetInnerHTML={{ __html: content }} 
+              dangerouslySetInnerHTML={{ __html: cleanedContent }} 
             />
           </div>
         );
