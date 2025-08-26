@@ -10,6 +10,22 @@ export function registerSeoSchemaRoutes(app: express.Express) {
   app.get("/api/admin/seo-schemas/test", (req, res) => {
     res.json({ message: "Test endpoint working!", timestamp: new Date().toISOString() });
   });
+  // Get all SEO schemas with pagination and filtering - PUBLIC ENDPOINT FOR ADMIN PANEL
+  app.get("/api/public/seo-schemas", async (req, res) => {
+    try {
+      const page = parseInt(req.query.page as string) || 1;
+      const limit = parseInt(req.query.limit as string) || 20;
+      const contentType = req.query.contentType as string;
+
+      const result = await storage.getAllSeoSchemas({ page, limit, contentType });
+      
+      res.json(result);
+    } catch (error) {
+      console.error("Error fetching SEO schemas:", error);
+      res.status(500).json({ error: "Failed to fetch SEO schemas" });
+    }
+  });
+
   // Get all SEO schemas with pagination and filtering - TEMPORARILY REMOVE AUTH FOR DEVELOPMENT
   app.get("/api/admin/seo-schemas", async (req, res) => {
     try {
@@ -53,6 +69,25 @@ export function registerSeoSchemaRoutes(app: express.Express) {
     } catch (error) {
       console.error("Error fetching content schemas:", error);
       res.status(500).json({ error: "Failed to fetch content schemas" });
+    }
+  });
+
+  // Create new SEO schema - PUBLIC ENDPOINT
+  app.post("/api/public/seo-schemas", async (req, res) => {
+    try {
+      const validatedData = insertSeoSchemaSchema.parse({
+        ...req.body,
+        createdBy: req.user?.id || 1  // Default to admin user for development
+      });
+
+      const schema = await storage.createSeoSchema(validatedData);
+      res.status(201).json(schema);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ error: "Invalid data", details: error.errors });
+      }
+      console.error("Error creating SEO schema:", error);
+      res.status(500).json({ error: "Failed to create SEO schema" });
     }
   });
 
