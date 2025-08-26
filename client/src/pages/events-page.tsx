@@ -28,8 +28,9 @@ const registrationSchema = z.object({
 
 type RegistrationFormValues = z.infer<typeof registrationSchema>;
 
-function formatDate(dateString: string) {
-  return new Date(dateString).toLocaleDateString('en-US', {
+function formatDate(date: string | Date) {
+  const dateObj = typeof date === 'string' ? new Date(date) : date;
+  return dateObj.toLocaleDateString('en-US', {
     year: 'numeric',
     month: 'long',
     day: 'numeric',
@@ -263,12 +264,20 @@ export default function EventsPage() {
                 Join exciting gaming tournaments, community events, and exclusive releases. Connect with fellow gamers and compete for amazing prizes!
               </p>
               <div className="flex flex-wrap justify-center gap-4">
-                <Link href="#featured" className="bg-primary hover:bg-primary/90 text-primary-foreground font-bold py-3 px-6 rounded-lg transition-colors shadow-lg">
+                <a 
+                  href="#featured" 
+                  className="bg-primary hover:bg-primary/90 text-primary-foreground font-bold py-3 px-6 rounded-lg transition-colors shadow-lg"
+                  data-testid="button-view-featured"
+                >
                   View Featured Events
-                </Link>
-                <Link href="#upcoming" className="bg-secondary hover:bg-secondary/90 text-secondary-foreground font-bold py-3 px-6 rounded-lg transition-colors shadow-lg">
+                </a>
+                <a 
+                  href="#upcoming" 
+                  className="bg-secondary hover:bg-secondary/90 text-secondary-foreground font-bold py-3 px-6 rounded-lg transition-colors shadow-lg"
+                  data-testid="button-browse-all"
+                >
                   Browse All Events
-                </Link>
+                </a>
               </div>
             </div>
           </div>
