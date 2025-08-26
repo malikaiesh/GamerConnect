@@ -57,10 +57,10 @@ export default function GameAdsPage() {
       position: "above_game",
       isGoogleAd: false,
       adCode: "",
-      imageUrl: "",
-      targetUrl: "",
-      startDate: "",
-      endDate: "",
+      imageUrl: null,
+      targetUrl: null,
+      startDate: null,
+      endDate: null,
       status: "active",
       adEnabled: true
     }
@@ -716,6 +716,7 @@ export default function GameAdsPage() {
                           type="date" 
                           {...field}
                           value={field.value || ""}
+                          onChange={(e) => field.onChange(e.target.value || null)}
                           data-testid="input-start-date" 
                         />
                       </FormControl>
@@ -735,6 +736,7 @@ export default function GameAdsPage() {
                           type="date" 
                           {...field}
                           value={field.value || ""}
+                          onChange={(e) => field.onChange(e.target.value || null)}
                           data-testid="input-end-date" 
                         />
                       </FormControl>
