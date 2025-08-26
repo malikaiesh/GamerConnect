@@ -4,7 +4,8 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Users, Linkedin, Twitter, Github, Instagram } from "lucide-react";
+import { Users, Linkedin, Twitter, Github, Instagram, Facebook, Youtube } from "lucide-react";
+import { SiTiktok } from "react-icons/si";
 
 interface TeamSectionProps {
   className?: string;
@@ -182,6 +183,39 @@ export function TeamSection({ className }: TeamSectionProps) {
                       data-testid={`button-instagram-${member.id}`}
                     >
                       <Instagram className="h-3.5 w-3.5" />
+                    </Button>
+                  )}
+                  {(member as any).socialTiktok && (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="h-8 w-8 p-0 hover:bg-black hover:border-black hover:text-white dark:hover:bg-white dark:hover:border-white dark:hover:text-black"
+                      onClick={() => (member as any).socialTiktok && window.open((member as any).socialTiktok, '_blank')}
+                      data-testid={`button-tiktok-${member.id}`}
+                    >
+                      <SiTiktok className="h-3.5 w-3.5" />
+                    </Button>
+                  )}
+                  {(member as any).socialFacebook && (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="h-8 w-8 p-0 hover:bg-blue-50 hover:border-blue-200 hover:text-blue-700 dark:hover:bg-blue-950 dark:hover:border-blue-800"
+                      onClick={() => (member as any).socialFacebook && window.open((member as any).socialFacebook, '_blank')}
+                      data-testid={`button-facebook-${member.id}`}
+                    >
+                      <Facebook className="h-3.5 w-3.5" />
+                    </Button>
+                  )}
+                  {(member as any).socialYoutube && (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="h-8 w-8 p-0 hover:bg-red-50 hover:border-red-200 hover:text-red-600 dark:hover:bg-red-950 dark:hover:border-red-800"
+                      onClick={() => (member as any).socialYoutube && window.open((member as any).socialYoutube, '_blank')}
+                      data-testid={`button-youtube-${member.id}`}
+                    >
+                      <Youtube className="h-3.5 w-3.5" />
                     </Button>
                   )}
                 </div>

@@ -1,12 +1,13 @@
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { PlusCircle, Pencil, Trash2, Upload, MoveUp, MoveDown, Users } from "lucide-react";
+import { PlusCircle, Pencil, Trash2, Upload, MoveUp, MoveDown, Users, Linkedin, Twitter, Github, Instagram, Facebook, Youtube } from "lucide-react";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { TeamMember, insertTeamMemberSchema } from "@shared/schema";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
+import { SiTiktok } from "react-icons/si";
 
 import AdminNavigation from "@/components/admin/navigation";
 import { Button } from "@/components/ui/button";
@@ -107,7 +108,15 @@ export default function TeamAdminPage() {
 
   // Form for create/edit
   const form = useForm<FormData>({
-    resolver: zodResolver(insertTeamMemberSchema),
+    resolver: zodResolver(insertTeamMemberSchema.extend({
+      socialLinkedin: z.string().optional(),
+      socialTwitter: z.string().optional(),
+      socialGithub: z.string().optional(),
+      socialInstagram: z.string().optional(),
+      socialTiktok: z.string().optional(),
+      socialFacebook: z.string().optional(),
+      socialYoutube: z.string().optional(),
+    })),
     defaultValues: {
       name: "",
       designation: "",
@@ -117,6 +126,9 @@ export default function TeamAdminPage() {
       socialTwitter: "",
       socialGithub: "",
       socialInstagram: "",
+      socialTiktok: "",
+      socialFacebook: "",
+      socialYoutube: "",
       displayOrder: 0,
       status: "active"
     }
@@ -226,6 +238,9 @@ export default function TeamAdminPage() {
       socialTwitter: member.socialTwitter || "",
       socialGithub: member.socialGithub || "",
       socialInstagram: member.socialInstagram || "",
+      socialTiktok: (member as any).socialTiktok || "",
+      socialFacebook: (member as any).socialFacebook || "",
+      socialYoutube: (member as any).socialYoutube || "",
       displayOrder: member.displayOrder,
       status: member.status
     });
@@ -314,188 +329,330 @@ export default function TeamAdminPage() {
                 <PlusCircle className="mr-2 h-4 w-4" /> Add Team Member
               </Button>
             </DialogTrigger>
-            <DialogContent className="max-w-2xl">
-              <DialogHeader>
-                <DialogTitle>Add New Team Member</DialogTitle>
+            <DialogContent className="max-w-4xl max-h-[90vh] overflow-hidden bg-gradient-to-br from-background to-muted/50">
+              <DialogHeader className="pb-4 border-b border-border/50">
+                <DialogTitle className="text-2xl font-bold flex items-center gap-2">
+                  <Users className="h-6 w-6 text-primary" />
+                  Add New Team Member
+                </DialogTitle>
                 <DialogDescription>
                   Add a new member to your team. Fill in their details below.
                 </DialogDescription>
               </DialogHeader>
               
-              <Form {...form}>
-                <form onSubmit={form.handleSubmit(handleCreate)} className="space-y-4">
-                  <div className="grid grid-cols-2 gap-4">
-                    <FormField
-                      control={form.control}
-                      name="name"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Name</FormLabel>
-                          <FormControl>
-                            <Input placeholder="John Doe" {...field} data-testid="input-name" />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    
-                    <FormField
-                      control={form.control}
-                      name="designation"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Designation</FormLabel>
-                          <Select onValueChange={field.onChange} defaultValue={field.value}>
+              <div className="overflow-y-auto max-h-[calc(90vh-180px)] px-1">
+                <Form {...form}>
+                  <form onSubmit={form.handleSubmit(handleCreate)} className="space-y-6 py-4">
+                    {/* Basic Information */}
+                    <div className="bg-card/50 rounded-lg p-4 space-y-4">
+                      <h3 className="text-lg font-semibold text-foreground border-b border-border/30 pb-2">
+                        Basic Information
+                      </h3>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <FormField
+                          control={form.control}
+                          name="name"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel className="text-sm font-medium">Name *</FormLabel>
+                              <FormControl>
+                                <Input 
+                                  placeholder="John Doe" 
+                                  {...field} 
+                                  data-testid="input-name"
+                                  className="focus:ring-2 focus:ring-primary/20" 
+                                />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                        
+                        <FormField
+                          control={form.control}
+                          name="designation"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel className="text-sm font-medium">Designation *</FormLabel>
+                              <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                <FormControl>
+                                  <SelectTrigger data-testid="select-designation" className="focus:ring-2 focus:ring-primary/20">
+                                    <SelectValue placeholder="Select designation" />
+                                  </SelectTrigger>
+                                </FormControl>
+                                <SelectContent className="max-h-48">
+                                  {DESIGNATIONS.map((designation) => (
+                                    <SelectItem key={designation} value={designation}>
+                                      {designation}
+                                    </SelectItem>
+                                  ))}
+                                </SelectContent>
+                              </Select>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                      </div>
+                      
+                      <FormField
+                        control={form.control}
+                        name="profilePicture"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel className="text-sm font-medium">Profile Picture URL</FormLabel>
                             <FormControl>
-                              <SelectTrigger data-testid="select-designation">
-                                <SelectValue placeholder="Select designation" />
-                              </SelectTrigger>
+                              <div className="space-y-2">
+                                <Input 
+                                  placeholder="https://example.com/image.jpg" 
+                                  {...field} 
+                                  data-testid="input-profile-picture"
+                                  className="focus:ring-2 focus:ring-primary/20"
+                                />
+                                <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                                  <Upload className="h-3 w-3" />
+                                  <span>Enter a URL for the profile picture (optional)</span>
+                                </div>
+                              </div>
                             </FormControl>
-                            <SelectContent>
-                              {DESIGNATIONS.map((designation) => (
-                                <SelectItem key={designation} value={designation}>
-                                  {designation}
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  </div>
-                  
-                  <FormField
-                    control={form.control}
-                    name="profilePicture"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Profile Picture URL</FormLabel>
-                        <FormControl>
-                          <Input placeholder="https://example.com/image.jpg" {...field} data-testid="input-profile-picture" />
-                        </FormControl>
-                        <FormDescription>
-                          Enter a URL for the profile picture (optional)
-                        </FormDescription>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  
-                  <FormField
-                    control={form.control}
-                    name="bio"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Bio</FormLabel>
-                        <FormControl>
-                          <Textarea 
-                            placeholder="Brief description about the team member..."
-                            {...field}
-                            data-testid="textarea-bio"
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  
-                  <div className="grid grid-cols-2 gap-4">
-                    <FormField
-                      control={form.control}
-                      name="socialLinkedin"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>LinkedIn URL</FormLabel>
-                          <FormControl>
-                            <Input placeholder="https://linkedin.com/in/username" {...field} data-testid="input-linkedin" />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      
+                      <FormField
+                        control={form.control}
+                        name="bio"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel className="text-sm font-medium">Bio</FormLabel>
+                            <FormControl>
+                              <Textarea 
+                                placeholder="Brief description about the team member..."
+                                {...field}
+                                data-testid="textarea-bio"
+                                className="min-h-20 resize-none focus:ring-2 focus:ring-primary/20"
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    </div>
                     
-                    <FormField
-                      control={form.control}
-                      name="socialTwitter"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Twitter URL</FormLabel>
-                          <FormControl>
-                            <Input placeholder="https://twitter.com/username" {...field} data-testid="input-twitter" />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  </div>
-                  
-                  <div className="grid grid-cols-2 gap-4">
-                    <FormField
-                      control={form.control}
-                      name="socialGithub"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>GitHub URL</FormLabel>
-                          <FormControl>
-                            <Input placeholder="https://github.com/username" {...field} data-testid="input-github" />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    
-                    <FormField
-                      control={form.control}
-                      name="socialInstagram"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Instagram URL</FormLabel>
-                          <FormControl>
-                            <Input placeholder="https://instagram.com/username" {...field} data-testid="input-instagram" />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  </div>
-                  
-                  <FormField
-                    control={form.control}
-                    name="status"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Status</FormLabel>
-                        <Select onValueChange={field.onChange} defaultValue={field.value}>
-                          <FormControl>
-                            <SelectTrigger data-testid="select-status">
-                              <SelectValue placeholder="Select status" />
-                            </SelectTrigger>
-                          </FormControl>
-                          <SelectContent>
-                            <SelectItem value="active">Active</SelectItem>
-                            <SelectItem value="inactive">Inactive</SelectItem>
-                          </SelectContent>
-                        </Select>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  
-                  <DialogFooter>
-                    <DialogClose asChild>
-                      <Button type="button" variant="outline">Cancel</Button>
-                    </DialogClose>
-                    <Button 
-                      type="submit" 
-                      disabled={createMutation.isPending}
-                      data-testid="button-submit"
-                    >
-                      {createMutation.isPending ? "Creating..." : "Create Member"}
-                    </Button>
-                  </DialogFooter>
-                </form>
-              </Form>
+                    {/* Social Media Links */}
+                    <div className="bg-card/50 rounded-lg p-4 space-y-4">
+                      <h3 className="text-lg font-semibold text-foreground border-b border-border/30 pb-2 flex items-center gap-2">
+                        <span>Social Media Links</span>
+                        <span className="text-xs text-muted-foreground font-normal">(All Optional)</span>
+                      </h3>
+                      
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <FormField
+                          control={form.control}
+                          name="socialLinkedin"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel className="text-sm font-medium flex items-center gap-2">
+                                <Linkedin className="h-4 w-4 text-blue-600" />
+                                LinkedIn
+                              </FormLabel>
+                              <FormControl>
+                                <Input 
+                                  placeholder="https://linkedin.com/in/username" 
+                                  {...field} 
+                                  data-testid="input-linkedin"
+                                  className="focus:ring-2 focus:ring-blue-500/20"
+                                />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                        
+                        <FormField
+                          control={form.control}
+                          name="socialTwitter"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel className="text-sm font-medium flex items-center gap-2">
+                                <Twitter className="h-4 w-4 text-blue-400" />
+                                Twitter
+                              </FormLabel>
+                              <FormControl>
+                                <Input 
+                                  placeholder="https://twitter.com/username" 
+                                  {...field} 
+                                  data-testid="input-twitter"
+                                  className="focus:ring-2 focus:ring-blue-400/20"
+                                />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                        
+                        <FormField
+                          control={form.control}
+                          name="socialGithub"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel className="text-sm font-medium flex items-center gap-2">
+                                <Github className="h-4 w-4 text-gray-800 dark:text-gray-200" />
+                                GitHub
+                              </FormLabel>
+                              <FormControl>
+                                <Input 
+                                  placeholder="https://github.com/username" 
+                                  {...field} 
+                                  data-testid="input-github"
+                                  className="focus:ring-2 focus:ring-gray-500/20"
+                                />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                        
+                        <FormField
+                          control={form.control}
+                          name="socialInstagram"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel className="text-sm font-medium flex items-center gap-2">
+                                <Instagram className="h-4 w-4 text-pink-600" />
+                                Instagram
+                              </FormLabel>
+                              <FormControl>
+                                <Input 
+                                  placeholder="https://instagram.com/username" 
+                                  {...field} 
+                                  data-testid="input-instagram"
+                                  className="focus:ring-2 focus:ring-pink-500/20"
+                                />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                        
+                        <FormField
+                          control={form.control}
+                          name="socialTiktok"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel className="text-sm font-medium flex items-center gap-2">
+                                <SiTiktok className="h-4 w-4 text-black dark:text-white" />
+                                TikTok
+                              </FormLabel>
+                              <FormControl>
+                                <Input 
+                                  placeholder="https://tiktok.com/@username" 
+                                  {...field} 
+                                  data-testid="input-tiktok"
+                                  className="focus:ring-2 focus:ring-black/20 dark:focus:ring-white/20"
+                                />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                        
+                        <FormField
+                          control={form.control}
+                          name="socialFacebook"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel className="text-sm font-medium flex items-center gap-2">
+                                <Facebook className="h-4 w-4 text-blue-600" />
+                                Facebook
+                              </FormLabel>
+                              <FormControl>
+                                <Input 
+                                  placeholder="https://facebook.com/username" 
+                                  {...field} 
+                                  data-testid="input-facebook"
+                                  className="focus:ring-2 focus:ring-blue-600/20"
+                                />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                        
+                        <FormField
+                          control={form.control}
+                          name="socialYoutube"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel className="text-sm font-medium flex items-center gap-2">
+                                <Youtube className="h-4 w-4 text-red-600" />
+                                YouTube
+                              </FormLabel>
+                              <FormControl>
+                                <Input 
+                                  placeholder="https://youtube.com/@username" 
+                                  {...field} 
+                                  data-testid="input-youtube"
+                                  className="focus:ring-2 focus:ring-red-500/20"
+                                />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                        
+                        <FormField
+                          control={form.control}
+                          name="status"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel className="text-sm font-medium">Status</FormLabel>
+                              <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                <FormControl>
+                                  <SelectTrigger data-testid="select-status" className="focus:ring-2 focus:ring-primary/20">
+                                    <SelectValue placeholder="Select status" />
+                                  </SelectTrigger>
+                                </FormControl>
+                                <SelectContent>
+                                  <SelectItem value="active">Active</SelectItem>
+                                  <SelectItem value="inactive">Inactive</SelectItem>
+                                </SelectContent>
+                              </Select>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                      </div>
+                    </div>
+                  </form>
+                </Form>
+              </div>
+              
+              <DialogFooter className="pt-4 border-t border-border/50 bg-background/80 backdrop-blur-sm">
+                <DialogClose asChild>
+                  <Button type="button" variant="outline" className="hover:bg-muted/80">
+                    Cancel
+                  </Button>
+                </DialogClose>
+                <Button 
+                  onClick={form.handleSubmit(handleCreate)}
+                  disabled={createMutation.isPending}
+                  data-testid="button-submit"
+                  className="bg-primary hover:bg-primary/90 shadow-lg"
+                >
+                  {createMutation.isPending ? (
+                    <>
+                      <div className="animate-spin h-4 w-4 border-2 border-white border-t-transparent rounded-full mr-2" />
+                      Creating...
+                    </>
+                  ) : (
+                    <>
+                      <PlusCircle className="h-4 w-4 mr-2" />
+                      Create Member
+                    </>
+                  )}
+                </Button>
+              </DialogFooter>
             </DialogContent>
           </Dialog>
         </div>
@@ -593,187 +750,319 @@ export default function TeamAdminPage() {
 
         {/* Edit Dialog */}
         <Dialog open={editDialogOpen} onOpenChange={setEditDialogOpen}>
-          <DialogContent className="max-w-2xl">
-            <DialogHeader>
-              <DialogTitle>Edit Team Member</DialogTitle>
+          <DialogContent className="max-w-4xl max-h-[90vh] overflow-hidden bg-gradient-to-br from-background to-muted/50">
+            <DialogHeader className="pb-4 border-b border-border/50">
+              <DialogTitle className="text-2xl font-bold flex items-center gap-2">
+                <Pencil className="h-6 w-6 text-primary" />
+                Edit Team Member
+              </DialogTitle>
               <DialogDescription>
-                Update the team member's information.
+                Update the team member's information below.
               </DialogDescription>
             </DialogHeader>
             
-            <Form {...form}>
-              <form onSubmit={form.handleSubmit(handleUpdate)} className="space-y-4">
-                {/* Same form fields as create dialog */}
-                <div className="grid grid-cols-2 gap-4">
-                  <FormField
-                    control={form.control}
-                    name="name"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Name</FormLabel>
-                        <FormControl>
-                          <Input placeholder="John Doe" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  
-                  <FormField
-                    control={form.control}
-                    name="designation"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Designation</FormLabel>
-                        <Select onValueChange={field.onChange} value={field.value}>
+            <div className="overflow-y-auto max-h-[calc(90vh-180px)] px-1">
+              <Form {...form}>
+                <form onSubmit={form.handleSubmit(handleUpdate)} className="space-y-6 py-4">
+                  {/* Basic Information */}
+                  <div className="bg-card/50 rounded-lg p-4 space-y-4">
+                    <h3 className="text-lg font-semibold text-foreground border-b border-border/30 pb-2">
+                      Basic Information
+                    </h3>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <FormField
+                        control={form.control}
+                        name="name"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel className="text-sm font-medium">Name *</FormLabel>
+                            <FormControl>
+                              <Input 
+                                placeholder="John Doe" 
+                                {...field} 
+                                className="focus:ring-2 focus:ring-primary/20" 
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      
+                      <FormField
+                        control={form.control}
+                        name="designation"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel className="text-sm font-medium">Designation *</FormLabel>
+                            <Select onValueChange={field.onChange} value={field.value}>
+                              <FormControl>
+                                <SelectTrigger className="focus:ring-2 focus:ring-primary/20">
+                                  <SelectValue placeholder="Select designation" />
+                                </SelectTrigger>
+                              </FormControl>
+                              <SelectContent className="max-h-48">
+                                {DESIGNATIONS.map((designation) => (
+                                  <SelectItem key={designation} value={designation}>
+                                    {designation}
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    </div>
+                    
+                    <FormField
+                      control={form.control}
+                      name="profilePicture"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="text-sm font-medium">Profile Picture URL</FormLabel>
                           <FormControl>
-                            <SelectTrigger>
-                              <SelectValue placeholder="Select designation" />
-                            </SelectTrigger>
+                            <div className="space-y-2">
+                              <Input 
+                                placeholder="https://example.com/image.jpg" 
+                                {...field} 
+                                className="focus:ring-2 focus:ring-primary/20"
+                              />
+                              <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                                <Upload className="h-3 w-3" />
+                                <span>Enter a URL for the profile picture (optional)</span>
+                              </div>
+                            </div>
                           </FormControl>
-                          <SelectContent>
-                            {DESIGNATIONS.map((designation) => (
-                              <SelectItem key={designation} value={designation}>
-                                {designation}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </div>
-                
-                <FormField
-                  control={form.control}
-                  name="profilePicture"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Profile Picture URL</FormLabel>
-                      <FormControl>
-                        <Input placeholder="https://example.com/image.jpg" {...field} />
-                      </FormControl>
-                      <FormDescription>
-                        Enter a URL for the profile picture (optional)
-                      </FormDescription>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                
-                <FormField
-                  control={form.control}
-                  name="bio"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Bio</FormLabel>
-                      <FormControl>
-                        <Textarea 
-                          placeholder="Brief description about the team member..."
-                          {...field}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                
-                <div className="grid grid-cols-2 gap-4">
-                  <FormField
-                    control={form.control}
-                    name="socialLinkedin"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>LinkedIn URL</FormLabel>
-                        <FormControl>
-                          <Input placeholder="https://linkedin.com/in/username" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    
+                    <FormField
+                      control={form.control}
+                      name="bio"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="text-sm font-medium">Bio</FormLabel>
+                          <FormControl>
+                            <Textarea 
+                              placeholder="Brief description about the team member..."
+                              {...field}
+                              className="min-h-20 resize-none focus:ring-2 focus:ring-primary/20"
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
                   
-                  <FormField
-                    control={form.control}
-                    name="socialTwitter"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Twitter URL</FormLabel>
-                        <FormControl>
-                          <Input placeholder="https://twitter.com/username" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </div>
-                
-                <div className="grid grid-cols-2 gap-4">
-                  <FormField
-                    control={form.control}
-                    name="socialGithub"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>GitHub URL</FormLabel>
-                        <FormControl>
-                          <Input placeholder="https://github.com/username" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  
-                  <FormField
-                    control={form.control}
-                    name="socialInstagram"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Instagram URL</FormLabel>
-                        <FormControl>
-                          <Input placeholder="https://instagram.com/username" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </div>
-                
-                <FormField
-                  control={form.control}
-                  name="status"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Status</FormLabel>
-                      <Select onValueChange={field.onChange} value={field.value}>
-                        <FormControl>
-                          <SelectTrigger>
-                            <SelectValue placeholder="Select status" />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                          <SelectItem value="active">Active</SelectItem>
-                          <SelectItem value="inactive">Inactive</SelectItem>
-                        </SelectContent>
-                      </Select>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                
-                <DialogFooter>
-                  <DialogClose asChild>
-                    <Button type="button" variant="outline">Cancel</Button>
-                  </DialogClose>
-                  <Button 
-                    type="submit" 
-                    disabled={updateMutation.isPending}
-                  >
-                    {updateMutation.isPending ? "Updating..." : "Update Member"}
-                  </Button>
-                </DialogFooter>
-              </form>
-            </Form>
+                  {/* Social Media Links */}
+                  <div className="bg-card/50 rounded-lg p-4 space-y-4">
+                    <h3 className="text-lg font-semibold text-foreground border-b border-border/30 pb-2 flex items-center gap-2">
+                      <span>Social Media Links</span>
+                      <span className="text-xs text-muted-foreground font-normal">(All Optional)</span>
+                    </h3>
+                    
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <FormField
+                        control={form.control}
+                        name="socialLinkedin"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel className="text-sm font-medium flex items-center gap-2">
+                              <Linkedin className="h-4 w-4 text-blue-600" />
+                              LinkedIn
+                            </FormLabel>
+                            <FormControl>
+                              <Input 
+                                placeholder="https://linkedin.com/in/username" 
+                                {...field} 
+                                className="focus:ring-2 focus:ring-blue-500/20"
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      
+                      <FormField
+                        control={form.control}
+                        name="socialTwitter"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel className="text-sm font-medium flex items-center gap-2">
+                              <Twitter className="h-4 w-4 text-blue-400" />
+                              Twitter
+                            </FormLabel>
+                            <FormControl>
+                              <Input 
+                                placeholder="https://twitter.com/username" 
+                                {...field} 
+                                className="focus:ring-2 focus:ring-blue-400/20"
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      
+                      <FormField
+                        control={form.control}
+                        name="socialGithub"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel className="text-sm font-medium flex items-center gap-2">
+                              <Github className="h-4 w-4 text-gray-800 dark:text-gray-200" />
+                              GitHub
+                            </FormLabel>
+                            <FormControl>
+                              <Input 
+                                placeholder="https://github.com/username" 
+                                {...field} 
+                                className="focus:ring-2 focus:ring-gray-500/20"
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      
+                      <FormField
+                        control={form.control}
+                        name="socialInstagram"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel className="text-sm font-medium flex items-center gap-2">
+                              <Instagram className="h-4 w-4 text-pink-600" />
+                              Instagram
+                            </FormLabel>
+                            <FormControl>
+                              <Input 
+                                placeholder="https://instagram.com/username" 
+                                {...field} 
+                                className="focus:ring-2 focus:ring-pink-500/20"
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      
+                      <FormField
+                        control={form.control}
+                        name="socialTiktok"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel className="text-sm font-medium flex items-center gap-2">
+                              <SiTiktok className="h-4 w-4 text-black dark:text-white" />
+                              TikTok
+                            </FormLabel>
+                            <FormControl>
+                              <Input 
+                                placeholder="https://tiktok.com/@username" 
+                                {...field} 
+                                className="focus:ring-2 focus:ring-black/20 dark:focus:ring-white/20"
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      
+                      <FormField
+                        control={form.control}
+                        name="socialFacebook"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel className="text-sm font-medium flex items-center gap-2">
+                              <Facebook className="h-4 w-4 text-blue-600" />
+                              Facebook
+                            </FormLabel>
+                            <FormControl>
+                              <Input 
+                                placeholder="https://facebook.com/username" 
+                                {...field} 
+                                className="focus:ring-2 focus:ring-blue-600/20"
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      
+                      <FormField
+                        control={form.control}
+                        name="socialYoutube"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel className="text-sm font-medium flex items-center gap-2">
+                              <Youtube className="h-4 w-4 text-red-600" />
+                              YouTube
+                            </FormLabel>
+                            <FormControl>
+                              <Input 
+                                placeholder="https://youtube.com/@username" 
+                                {...field} 
+                                className="focus:ring-2 focus:ring-red-500/20"
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      
+                      <FormField
+                        control={form.control}
+                        name="status"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel className="text-sm font-medium">Status</FormLabel>
+                            <Select onValueChange={field.onChange} value={field.value}>
+                              <FormControl>
+                                <SelectTrigger className="focus:ring-2 focus:ring-primary/20">
+                                  <SelectValue placeholder="Select status" />
+                                </SelectTrigger>
+                              </FormControl>
+                              <SelectContent>
+                                <SelectItem value="active">Active</SelectItem>
+                                <SelectItem value="inactive">Inactive</SelectItem>
+                              </SelectContent>
+                            </Select>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    </div>
+                  </div>
+                </form>
+              </Form>
+            </div>
+            
+            <DialogFooter className="pt-4 border-t border-border/50 bg-background/80 backdrop-blur-sm">
+              <DialogClose asChild>
+                <Button type="button" variant="outline" className="hover:bg-muted/80">
+                  Cancel
+                </Button>
+              </DialogClose>
+              <Button 
+                onClick={form.handleSubmit(handleUpdate)}
+                disabled={updateMutation.isPending}
+                className="bg-primary hover:bg-primary/90 shadow-lg"
+              >
+                {updateMutation.isPending ? (
+                  <>
+                    <div className="animate-spin h-4 w-4 border-2 border-white border-t-transparent rounded-full mr-2" />
+                    Updating...
+                  </>
+                ) : (
+                  <>
+                    <Pencil className="h-4 w-4 mr-2" />
+                    Update Member
+                  </>
+                )}
+              </Button>
+            </DialogFooter>
           </DialogContent>
         </Dialog>
 
