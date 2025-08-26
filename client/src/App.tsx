@@ -5,6 +5,7 @@ import { ThemeProvider } from "./lib/theme-provider";
 import { Toaster } from "@/components/ui/toaster";
 import { AppHead } from "@/components/app-head";
 import { GlobalSeoSchemaInjector } from "@/components/seo-schema-injector";
+import { CookiePopup } from "@/components/cookie-popup";
 import { Suspense, lazy } from "react";
 import { Loader2 } from "lucide-react";
 import { Providers } from "./lib/providers";
@@ -401,6 +402,7 @@ function App() {
           <Router />
           <AdminHelperNav />
           <Toaster />
+          <CookiePopup />
         </Providers>
       </ThemeProvider>
     </QueryClientProvider>

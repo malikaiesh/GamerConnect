@@ -24,7 +24,16 @@ export function registerSettingsRoutes(app: Express) {
     try {
       const schema = z.object({
         currentTheme: z.string().min(1),
-        pushNotificationsEnabled: z.boolean()
+        pushNotificationsEnabled: z.boolean(),
+        cookiePopupEnabled: z.boolean().optional(),
+        cookiePopupTitle: z.string().optional(),
+        cookiePopupMessage: z.string().optional(),
+        cookieAcceptButtonText: z.string().optional(),
+        cookieDeclineButtonText: z.string().optional(),
+        cookieLearnMoreText: z.string().optional(),
+        cookieLearnMoreUrl: z.string().optional(),
+        cookiePopupPosition: z.enum(['bottom', 'top', 'center']).optional(),
+        cookiePopupTheme: z.enum(['dark', 'light']).optional(),
       });
       
       const settingsData = schema.parse(req.body);

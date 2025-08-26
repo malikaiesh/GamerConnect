@@ -9,6 +9,9 @@ import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, For
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Switch } from "@/components/ui/switch";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import { themes } from "@/lib/themes";
 import { useToast } from "@/hooks/use-toast";
 import { Loader2 } from "lucide-react";
@@ -16,6 +19,15 @@ import { Loader2 } from "lucide-react";
 const generalSettingsSchema = z.object({
   currentTheme: z.string().min(1, { message: "Please select a theme" }),
   pushNotificationsEnabled: z.boolean(),
+  cookiePopupEnabled: z.boolean(),
+  cookiePopupTitle: z.string().min(1, { message: "Title is required" }),
+  cookiePopupMessage: z.string().min(1, { message: "Message is required" }),
+  cookieAcceptButtonText: z.string().min(1, { message: "Accept button text is required" }),
+  cookieDeclineButtonText: z.string().min(1, { message: "Decline button text is required" }),
+  cookieLearnMoreText: z.string().min(1, { message: "Learn more text is required" }),
+  cookieLearnMoreUrl: z.string().min(1, { message: "Learn more URL is required" }),
+  cookiePopupPosition: z.enum(['bottom', 'top', 'center']),
+  cookiePopupTheme: z.enum(['dark', 'light']),
 });
 
 type GeneralSettingsFormValues = z.infer<typeof generalSettingsSchema>;
@@ -35,10 +47,28 @@ export function GeneralSettings() {
     defaultValues: {
       currentTheme: settings?.currentTheme || "modern",
       pushNotificationsEnabled: settings?.pushNotificationsEnabled ?? true,
+      cookiePopupEnabled: settings?.cookiePopupEnabled ?? true,
+      cookiePopupTitle: settings?.cookiePopupTitle || "We use cookies",
+      cookiePopupMessage: settings?.cookiePopupMessage || "We use cookies to improve your experience on our website. By browsing this website, you agree to our use of cookies.",
+      cookieAcceptButtonText: settings?.cookieAcceptButtonText || "Accept All",
+      cookieDeclineButtonText: settings?.cookieDeclineButtonText || "Decline",
+      cookieLearnMoreText: settings?.cookieLearnMoreText || "Learn More",
+      cookieLearnMoreUrl: settings?.cookieLearnMoreUrl || "/privacy",
+      cookiePopupPosition: (settings?.cookiePopupPosition as "bottom" | "top" | "center") || "bottom",
+      cookiePopupTheme: (settings?.cookiePopupTheme as "dark" | "light") || "dark",
     },
     values: {
       currentTheme: settings?.currentTheme || "modern",
       pushNotificationsEnabled: settings?.pushNotificationsEnabled ?? true,
+      cookiePopupEnabled: settings?.cookiePopupEnabled ?? true,
+      cookiePopupTitle: settings?.cookiePopupTitle || "We use cookies",
+      cookiePopupMessage: settings?.cookiePopupMessage || "We use cookies to improve your experience on our website. By browsing this website, you agree to our use of cookies.",
+      cookieAcceptButtonText: settings?.cookieAcceptButtonText || "Accept All",
+      cookieDeclineButtonText: settings?.cookieDeclineButtonText || "Decline",
+      cookieLearnMoreText: settings?.cookieLearnMoreText || "Learn More",
+      cookieLearnMoreUrl: settings?.cookieLearnMoreUrl || "/privacy",
+      cookiePopupPosition: (settings?.cookiePopupPosition as "bottom" | "top" | "center") || "bottom",
+      cookiePopupTheme: (settings?.cookiePopupTheme as "dark" | "light") || "dark",
     },
   });
 
@@ -87,6 +117,7 @@ export function GeneralSettings() {
               <TabsList>
                 <TabsTrigger value="themes">Themes</TabsTrigger>
                 <TabsTrigger value="notifications">Notifications</TabsTrigger>
+                <TabsTrigger value="cookies">Cookies</TabsTrigger>
               </TabsList>
               
               <TabsContent value="themes" className="space-y-4 pt-4">
@@ -169,6 +200,195 @@ export function GeneralSettings() {
                     </FormItem>
                   )}
                 />
+              </TabsContent>
+
+              <TabsContent value="cookies" className="space-y-6 pt-4">
+                <div className="space-y-6">
+                  <FormField
+                    control={form.control}
+                    name="cookiePopupEnabled"
+                    render={({ field }) => (
+                      <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
+                        <div className="space-y-0.5">
+                          <FormLabel className="text-base">Enable Cookie Popup</FormLabel>
+                          <FormDescription>
+                            Show cookie consent popup to visitors
+                          </FormDescription>
+                        </div>
+                        <FormControl>
+                          <Switch
+                            checked={field.value}
+                            onCheckedChange={field.onChange}
+                            data-testid="switch-cookie-popup"
+                          />
+                        </FormControl>
+                      </FormItem>
+                    )}
+                  />
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <FormField
+                      control={form.control}
+                      name="cookiePopupTitle"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Popup Title</FormLabel>
+                          <FormControl>
+                            <Input 
+                              placeholder="We use cookies" 
+                              {...field} 
+                              data-testid="input-cookie-title"
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    <FormField
+                      control={form.control}
+                      name="cookiePopupPosition"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Popup Position</FormLabel>
+                          <Select onValueChange={field.onChange} defaultValue={field.value}>
+                            <FormControl>
+                              <SelectTrigger data-testid="select-cookie-position">
+                                <SelectValue placeholder="Select position" />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                              <SelectItem value="bottom">Bottom</SelectItem>
+                              <SelectItem value="top">Top</SelectItem>
+                              <SelectItem value="center">Center</SelectItem>
+                            </SelectContent>
+                          </Select>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+
+                  <FormField
+                    control={form.control}
+                    name="cookiePopupMessage"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Popup Message</FormLabel>
+                        <FormControl>
+                          <Textarea 
+                            placeholder="We use cookies to improve your experience on our website..."
+                            className="min-h-[100px]"
+                            {...field}
+                            data-testid="textarea-cookie-message"
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <FormField
+                      control={form.control}
+                      name="cookieAcceptButtonText"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Accept Button Text</FormLabel>
+                          <FormControl>
+                            <Input 
+                              placeholder="Accept All" 
+                              {...field} 
+                              data-testid="input-accept-text"
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    <FormField
+                      control={form.control}
+                      name="cookieDeclineButtonText"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Decline Button Text</FormLabel>
+                          <FormControl>
+                            <Input 
+                              placeholder="Decline" 
+                              {...field} 
+                              data-testid="input-decline-text"
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    <FormField
+                      control={form.control}
+                      name="cookiePopupTheme"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Popup Theme</FormLabel>
+                          <Select onValueChange={field.onChange} defaultValue={field.value}>
+                            <FormControl>
+                              <SelectTrigger data-testid="select-cookie-theme">
+                                <SelectValue placeholder="Select theme" />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                              <SelectItem value="dark">Dark</SelectItem>
+                              <SelectItem value="light">Light</SelectItem>
+                            </SelectContent>
+                          </Select>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <FormField
+                      control={form.control}
+                      name="cookieLearnMoreText"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Learn More Text</FormLabel>
+                          <FormControl>
+                            <Input 
+                              placeholder="Learn More" 
+                              {...field} 
+                              data-testid="input-learn-more-text"
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    <FormField
+                      control={form.control}
+                      name="cookieLearnMoreUrl"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Learn More URL</FormLabel>
+                          <FormControl>
+                            <Input 
+                              placeholder="/privacy" 
+                              {...field} 
+                              data-testid="input-learn-more-url"
+                            />
+                          </FormControl>
+                          <FormDescription>
+                            URL to your privacy policy or cookie policy page
+                          </FormDescription>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+                </div>
               </TabsContent>
             </Tabs>
 

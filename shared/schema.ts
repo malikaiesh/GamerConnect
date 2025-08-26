@@ -244,6 +244,18 @@ export const siteSettings = pgTable('site_settings', {
   customBodyCode: text('custom_body_code'),
   customFooterCode: text('custom_footer_code'),
   robotsTxt: text('robots_txt'),
+  
+  // Cookie settings
+  cookiePopupEnabled: boolean('cookie_popup_enabled').default(true).notNull(),
+  cookiePopupTitle: text('cookie_popup_title').default('We use cookies').notNull(),
+  cookiePopupMessage: text('cookie_popup_message').default('We use cookies to improve your experience on our website. By browsing this website, you agree to our use of cookies.').notNull(),
+  cookieAcceptButtonText: text('cookie_accept_button_text').default('Accept All').notNull(),
+  cookieDeclineButtonText: text('cookie_decline_button_text').default('Decline').notNull(),
+  cookieLearnMoreText: text('cookie_learn_more_text').default('Learn More').notNull(),
+  cookieLearnMoreUrl: text('cookie_learn_more_url').default('/privacy').notNull(),
+  cookiePopupPosition: text('cookie_popup_position').default('bottom').notNull(), // 'bottom', 'top', 'center'
+  cookiePopupTheme: text('cookie_popup_theme').default('dark').notNull(), // 'dark', 'light'
+  
   updatedAt: timestamp('updated_at').defaultNow().notNull()
 });
 
