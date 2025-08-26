@@ -19,7 +19,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { pageTypeEnum, contentStatusEnum } from "@/lib/constants";
-import { RichTextEditor } from "@/components/admin/rich-text-editor";
+import { BasicTextEditor } from "@/components/admin/basic-text-editor";
 import { InsertStaticPage, StaticPage } from "@shared/schema";
 
 const formSchema = z.object({
@@ -252,14 +252,11 @@ export default function PageEditPage() {
                           <FormItem>
                             <FormLabel>Content</FormLabel>
                             <FormControl>
-                              <div className="border rounded-md">
-                                <RichTextEditor
-                                  id="page-content-editor"
-                                  value={field.value}
-                                  onChange={field.onChange}
-                                  height={400}
-                                />
-                              </div>
+                              <BasicTextEditor
+                                value={field.value}
+                                onChange={field.onChange}
+                                placeholder="Enter page content..."
+                              />
                             </FormControl>
                             <FormDescription>
                               Use the rich text editor tools for formatting with headings, lists, images, and other elements.

@@ -19,7 +19,7 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import { RichTextEditor } from "@/components/admin/rich-text-editor";
+import { BasicTextEditor } from "@/components/admin/basic-text-editor";
 import {
   Select,
   SelectContent,
@@ -385,14 +385,11 @@ export function GameForm({ game, onSuccess }: GameFormProps) {
                 <FormItem>
                   <FormLabel>Description</FormLabel>
                   <FormControl>
-                    <div className="border rounded-md">
-                      <RichTextEditor
-                        id="game-description-editor"
-                        value={field.value}
-                        onChange={field.onChange}
-                        height={350}
-                      />
-                    </div>
+                    <BasicTextEditor
+                      value={field.value}
+                      onChange={field.onChange}
+                      placeholder="Enter game description..."
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -636,14 +633,11 @@ export function GameForm({ game, onSuccess }: GameFormProps) {
                           <FormItem>
                             <FormLabel>Game Instructions</FormLabel>
                             <FormControl>
-                              <div className="border rounded-md">
-                                <RichTextEditor
-                                  id="game-instructions-editor"
-                                  value={field.value || ""}
-                                  onChange={field.onChange}
-                                  height={300}
-                                />
-                              </div>
+                              <BasicTextEditor
+                                value={field.value || ""}
+                                onChange={field.onChange}
+                                placeholder="Enter game instructions..."
+                              />
                             </FormControl>
                             <FormDescription>
                               Explain how to play the game, controls, etc. You can add images, videos, and formatted text.
