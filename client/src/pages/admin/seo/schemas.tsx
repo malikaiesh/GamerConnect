@@ -46,9 +46,10 @@ function SeoSchemasContent() {
   const queryClient = useQueryClient();
 
   // Fetch schemas with pagination - USE PUBLIC ENDPOINT FOR DEVELOPMENT
-  const { data: schemasData, isLoading } = useQuery({
+  const { data: schemasData, isLoading, error } = useQuery({
     queryKey: ["/api/public/seo-schemas", page, contentTypeFilter],
     queryFn: () => apiRequest(`/api/public/seo-schemas?page=${page}&limit=20${contentTypeFilter && contentTypeFilter !== 'all' ? `&contentType=${contentTypeFilter}` : ""}`),
+    retry: 1,
   });
 
   // Delete schema mutation
@@ -205,10 +206,18 @@ function SeoSchemasContent() {
   // Debug logging
   console.log("SEO Schemas Debug:", { 
     isLoading, 
+    error,
     schemasData, 
     schemasCount: schemas.length, 
-    total 
+    total,
+    queryKey: ["/api/public/seo-schemas", page, contentTypeFilter],
+    apiUrl: `/api/public/seo-schemas?page=${page}&limit=20${contentTypeFilter && contentTypeFilter !== 'all' ? `&contentType=${contentTypeFilter}` : ""}`
   });
+  
+  // Show error info if there's an error
+  if (error) {
+    console.error("API Error:", error);
+  }
 
   return (
     <div className="p-6 space-y-6">
@@ -221,6 +230,17 @@ function SeoSchemasContent() {
           </p>
         </div>
         <div className="flex gap-2">
+          <Button
+            variant="outline"
+            onClick={() => {
+              queryClient.invalidateQueries({ queryKey: ["/api/public/seo-schemas"] });
+              toast({ title: "Refreshed", description: "Schema data refreshed" });
+            }}
+            data-testid="button-refresh"
+          >
+            <RefreshCw className="h-4 w-4 mr-2" />
+            Refresh
+          </Button>
           <Button
             variant="outline"
             onClick={() => generateDemoSchemas.mutate()}
