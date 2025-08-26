@@ -62,6 +62,11 @@ export function SimpleRichTextEditor({
     console.log('TinyMCE Editor initialized successfully');
   };
 
+  const handleEditorError = (error: any) => {
+    console.error('TinyMCE initialization error:', error);
+    setIsInitialized(true); // Show editor even with errors
+  };
+
   return (
     <div className="space-y-2 w-full">
       {label && <Label htmlFor={id}>{label}</Label>}
@@ -80,42 +85,34 @@ export function SimpleRichTextEditor({
           initialValue={value}
           value={value}
           onEditorChange={(newValue) => onChange(newValue)}
+          scriptLoading={{
+            async: true,
+            defer: true
+          }}
           init={{
             height,
-            menubar: 'file edit view insert format tools table help',
+            menubar: false,
             plugins: [
-              'advlist', 'autolink', 'lists', 'link', 'image', 'charmap', 'preview',
+              'advlist', 'autolink', 'lists', 'link', 'image', 'charmap',
               'anchor', 'searchreplace', 'visualblocks', 'code', 'fullscreen',
-              'insertdatetime', 'media', 'table', 'help', 'wordcount',
-              'emoticons', 'hr', 'codesample'
+              'insertdatetime', 'media', 'table', 'help', 'wordcount'
             ],
-            toolbar: [
-              'undo redo | formatselect styleselect | bold italic underline strikethrough',
-              'alignleft aligncenter alignright alignjustify | outdent indent',
-              'numlist bullist | link image media table',
-              'emoticons hr codesample | searchreplace code fullscreen | help'
-            ].join(' | '),
-            style_formats: [
-              { title: 'Paragraph', format: 'p' },
-              { title: 'Heading 1', format: 'h1' },
-              { title: 'Heading 2', format: 'h2' },
-              { title: 'Heading 3', format: 'h3' },
-              { title: 'Heading 4', format: 'h4' },
-              { title: 'Heading 5', format: 'h5' },
-              { title: 'Heading 6', format: 'h6' },
-            ],
-            content_style: 'body { font-family:Helvetica,Arial,sans-serif; font-size:14px; color: #333; }',
+            toolbar: 'undo redo | formatselect | bold italic underline | alignleft aligncenter alignright | numlist bullist | link image | code fullscreen',
+            content_style: 'body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; font-size: 14px; line-height: 1.6; }',
             placeholder,
             branding: false,
             promotion: false,
-            statusbar: true,
-            resize: 'both',
+            statusbar: false,
+            resize: false,
             elementpath: false,
             skin: 'oxide',
-            content_css: 'default',
+            content_css: false,
+            forced_root_block: 'p',
+            entity_encoding: 'raw',
             setup: (editor: any) => {
               editor.on('init', () => {
                 console.log('TinyMCE editor ready');
+                setIsInitialized(true);
               });
             }
           }}
