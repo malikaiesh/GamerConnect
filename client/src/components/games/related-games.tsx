@@ -19,7 +19,7 @@ export function RelatedGames({
   isModal = false,
   onGameSelect 
 }: RelatedGamesProps) {
-  const [displayLimit, setDisplayLimit] = useState(isModal ? 4 : 8);
+  const [displayLimit, setDisplayLimit] = useState(isModal ? 4 : 12);
   
   const { data: relatedGames = [], isLoading } = useQuery({
     queryKey: ['/api/games/related', { gameId, category, tags }],
@@ -36,7 +36,7 @@ export function RelatedGames({
   const hasMoreGames = relatedGames.length > displayLimit;
   
   const handleShowMore = () => {
-    setDisplayLimit(prev => Math.min(prev + 4, relatedGames.length));
+    setDisplayLimit(prev => Math.min(prev + 8, relatedGames.length));
   };
   
   const handleGameClick = (game: Game) => {

@@ -57,6 +57,7 @@ const AdminPagesPage = lazy(() => import("@/pages/admin/pages-page"));
 const AdminPageEditPage = lazy(() => import("@/pages/admin/page-edit-page"));
 const AdminApiKeysPage = lazy(() => import("@/pages/admin/api-keys-page"));
 const AdminHomeAdsPage = lazy(() => import("@/pages/admin/home-ads-page"));
+const AdminGamesAdsPage = lazy(() => import("@/pages/admin/games-ads"));
 const AdminSitemapsPage = lazy(() => import("@/pages/admin/sitemaps-page"));
 const AdminBlogAdsPage = lazy(() => import("@/pages/admin/blog-ads-page"));
 const AdminCustomCodePage = lazy(() => import("@/pages/admin/custom-code-page"));
@@ -228,6 +229,11 @@ function Router() {
       <Route path="/admin/home-ads">
         <ProtectedRoute adminOnly={true}>
           <Suspense fallback={<LoadingFallback />}><AdminHomeAdsPage /></Suspense>
+        </ProtectedRoute>
+      </Route>
+      <Route path="/admin/games-ads">
+        <ProtectedRoute adminOnly={true}>
+          <Suspense fallback={<LoadingFallback />}><AdminGamesAdsPage /></Suspense>
         </ProtectedRoute>
       </Route>
       <Route path="/admin/sitemaps">

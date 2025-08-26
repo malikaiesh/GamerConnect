@@ -28,6 +28,8 @@ import {
   InsertApiKey,
   HomeAd,
   InsertHomeAd,
+  GameAd,
+  InsertGameAd,
   Sitemap,
   InsertSitemap,
   Analytic,
@@ -54,6 +56,7 @@ import {
   staticPages,
   apiKeys,
   homeAds,
+  gameAds,
   sitemaps,
   analytics,
   roles,
@@ -258,6 +261,18 @@ export interface IStorage {
   incrementAdImpressions(id: number): Promise<void>;
   incrementAdImpressionCount(id: number): Promise<void>;
   incrementAdClicks(id: number): Promise<void>;
+  
+  // Game Ads methods
+  getGameAdById(id: number): Promise<GameAd | null>;
+  getGameAds(options?: { page?: number, limit?: number }): Promise<GameAd[]>;
+  getActiveGameAds(): Promise<GameAd[]>;
+  getGameAdsByPosition(position: string): Promise<GameAd[]>;
+  getGameAdByPosition(position: string): Promise<GameAd | null>;
+  createGameAd(ad: Omit<InsertGameAd, "createdAt" | "updatedAt">): Promise<GameAd>;
+  updateGameAd(id: number, adData: Partial<InsertGameAd>): Promise<GameAd | null>;
+  deleteGameAd(id: number): Promise<boolean>;
+  incrementGameAdImpressions(id: number): Promise<boolean>;
+  incrementGameAdClicks(id: number): Promise<boolean>;
   
   // Sitemap methods
   getSitemapById(id: number): Promise<Sitemap | null>;
@@ -1803,6 +1818,161 @@ class DatabaseStorage implements IStorage {
     // Alias function to match the API naming
     return this.incrementAdClicks(id);
   }
+
+  // Game Ads methods implementation
+  async getGameAdById(id: number): Promise<GameAd | null> {
+    try {
+      const [gameAd] = await db.select().from(gameAds).where(eq(gameAds.id, id));
+      return gameAd || null;
+    } catch (error) {
+      console.error('Error fetching game ad by ID:', error);
+      return null;
+    }
+  }
+
+  async getGameAds(options?: { page?: number, limit?: number }): Promise<GameAd[]> {
+    try {
+      const { page = 1, limit = 50 } = options || {};
+      const offset = (page - 1) * limit;
+      
+      const ads = await db.select()
+        .from(gameAds)
+        .orderBy(desc(gameAds.updatedAt))
+        .limit(limit)
+        .offset(offset);
+      
+      return ads;
+    } catch (error) {
+      console.error("Error fetching game ads:", error);
+      return [];
+    }
+  }
+
+  async getActiveGameAds(): Promise<GameAd[]> {
+    try {
+      const ads = await db.select()
+        .from(gameAds)
+        .where(and(
+          eq(gameAds.status, 'active'),
+          eq(gameAds.adEnabled, true)
+        ))
+        .orderBy(desc(gameAds.updatedAt));
+      
+      return ads;
+    } catch (error) {
+      console.error("Error fetching active game ads:", error);
+      return [];
+    }
+  }
+
+  async getGameAdsByPosition(position: string): Promise<GameAd[]> {
+    try {
+      const results = await db.select()
+        .from(gameAds)
+        .where(eq(gameAds.position, position))
+        .orderBy(desc(gameAds.updatedAt));
+      return results;
+    } catch (error) {
+      console.error(`Error fetching game ads for position ${position}:`, error);
+      return [];
+    }
+  }
+  
+  async getGameAdByPosition(position: string): Promise<GameAd | null> { 
+    try {
+      const ads = await this.getGameAdsByPosition(position);
+      return ads.length > 0 ? ads[0] : null;
+    } catch (error) {
+      console.error(`Error fetching game ad for position ${position}:`, error);
+      return null;
+    }
+  }
+
+  async createGameAd(ad: Omit<InsertGameAd, "createdAt" | "updatedAt">): Promise<GameAd> {
+    try {
+      const [result] = await db.insert(gameAds)
+        .values({
+          ...ad,
+          isGoogleAd: ad.isGoogleAd || false,
+          adEnabled: ad.adEnabled ?? true,
+          clickCount: 0,
+          impressionCount: 0,
+          createdAt: new Date(),
+          updatedAt: new Date()
+        })
+        .returning();
+      
+      return result;
+    } catch (error) {
+      console.error("Error creating game ad:", error);
+      throw error;
+    }
+  }
+  
+  async updateGameAd(id: number, adData: Partial<InsertGameAd>): Promise<GameAd | null> {
+    try {
+      const updateData: Record<string, any> = { updatedAt: new Date() };
+      
+      // Explicitly add each property if it exists
+      if (adData.name !== undefined) updateData.name = adData.name;
+      if (adData.position !== undefined) updateData.position = adData.position;
+      if (adData.adCode !== undefined) updateData.adCode = adData.adCode;
+      if (adData.status !== undefined) updateData.status = adData.status;
+      if (adData.imageUrl !== undefined) updateData.imageUrl = adData.imageUrl;
+      if (adData.targetUrl !== undefined) updateData.targetUrl = adData.targetUrl;
+      if (adData.startDate !== undefined) updateData.startDate = adData.startDate;
+      if (adData.endDate !== undefined) updateData.endDate = adData.endDate;
+      if (adData.isGoogleAd !== undefined) updateData.isGoogleAd = adData.isGoogleAd;
+      if (adData.adEnabled !== undefined) updateData.adEnabled = adData.adEnabled;
+      
+      const [updatedAd] = await db.update(gameAds)
+        .set(updateData)
+        .where(eq(gameAds.id, id))
+        .returning();
+      
+      return updatedAd || null;
+    } catch (error) {
+      console.error(`Error updating game ad with ID ${id}:`, error);
+      throw error;
+    }
+  }
+  
+  async deleteGameAd(id: number): Promise<boolean> {
+    try {
+      const result = await db.delete(gameAds)
+        .where(eq(gameAds.id, id))
+        .returning({ id: gameAds.id });
+      
+      return result.length > 0;
+    } catch (error) {
+      console.error(`Error deleting game ad with ID ${id}:`, error);
+      throw error;
+    }
+  }
+
+  async incrementGameAdImpressions(id: number): Promise<boolean> {
+    try {
+      await db.update(gameAds)
+        .set({ impressionCount: sql`"impression_count" + 1` })
+        .where(eq(gameAds.id, id));
+      return true;
+    } catch (error) {
+      console.error(`Error incrementing game ad impressions for ad ${id}:`, error);
+      return false;
+    }
+  }
+  
+  async incrementGameAdClicks(id: number): Promise<boolean> {
+    try {
+      await db.update(gameAds)
+        .set({ clickCount: sql`"click_count" + 1` })
+        .where(eq(gameAds.id, id));
+      return true;
+    } catch (error) {
+      console.error(`Error incrementing game ad clicks for ad ${id}:`, error);
+      return false;
+    }
+  }
   
   async getSitemapById(id: number): Promise<Sitemap | null> {
     try {
@@ -2041,7 +2211,7 @@ class DatabaseStorage implements IStorage {
         AND (status = 'active' OR status = 'featured')
         ${gameCategory ? 'AND category = $2' : ''}
         ORDER BY plays DESC
-        LIMIT 8
+        LIMIT 12
       `;
       
       const values = gameCategory ? [gameId, gameCategory] : [gameId];

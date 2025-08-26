@@ -13,6 +13,7 @@ export const contentStatusEnum = pgEnum('content_status', ['active', 'inactive']
 export const pageTypeEnum = pgEnum('page_type', ['about', 'contact', 'privacy', 'terms', 'cookie-policy', 'faq', 'custom']);
 export const apiKeyTypeEnum = pgEnum('api_key_type', ['tinymce', 'game-monetize', 'analytics', 'sendgrid', 'custom']);
 export const adPositionEnum = pgEnum('ad_position', ['above_featured', 'below_featured', 'above_popular', 'below_popular', 'above_about', 'below_about']);
+export const gameAdPositionEnum = pgEnum('game_ad_position', ['above_game', 'below_game', 'above_related', 'below_related', 'sidebar_top', 'sidebar_bottom']);
 export const sitemapTypeEnum = pgEnum('sitemap_type', ['games', 'blog', 'pages', 'main']);
 
 // User Account Type Enum
@@ -387,6 +388,25 @@ export const homeAds = pgTable('home_ads', {
   id: serial('id').primaryKey(),
   name: text('name').notNull(),
   position: adPositionEnum('position').notNull(),
+  adCode: text('ad_code').notNull(),
+  status: contentStatusEnum('status').default('active').notNull(),
+  imageUrl: text('image_url'),
+  targetUrl: text('target_url'),
+  startDate: timestamp('start_date'),
+  endDate: timestamp('end_date'),
+  isGoogleAd: boolean('is_google_ad').default(false).notNull(),
+  adEnabled: boolean('ad_enabled').default(true).notNull(),
+  clickCount: integer('click_count').default(0).notNull(),
+  impressionCount: integer('impression_count').default(0).notNull(),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+  updatedAt: timestamp('updated_at').defaultNow().notNull()
+});
+
+// Games Ads table
+export const gameAds = pgTable('game_ads', {
+  id: serial('id').primaryKey(),
+  name: text('name').notNull(),
+  position: gameAdPositionEnum('position').notNull(),
   adCode: text('ad_code').notNull(),
   status: contentStatusEnum('status').default('active').notNull(),
   imageUrl: text('image_url'),
@@ -820,8 +840,44 @@ export const insertPushResponseSchema = createInsertSchema(pushResponses, {
 
 export type ApiKey = typeof apiKeys.$inferSelect;
 export type InsertApiKey = z.infer<typeof insertApiKeySchema>;
+export const insertGameAdSchema = createInsertSchema(gameAds, {
+  name: (schema) => schema.min(3, "Name must be at least 3 characters"),
+  adCode: (schema) => schema.optional(),
+  imageUrl: (schema) => schema.refine(
+    (val) => !val || val.length === 0 || /^https?:\/\//.test(val),
+    { message: "Image URL must be a valid URL or empty" }
+  ).optional().nullable(),
+  targetUrl: (schema) => schema.refine(
+    (val) => !val || val.length === 0 || /^https?:\/\//.test(val),
+    { message: "Target URL must be a valid URL or empty" }
+  ).optional().nullable(),
+  startDate: (schema) => schema.optional().nullable(),
+  endDate: (schema) => schema.optional().nullable(),
+  isGoogleAd: (schema) => schema.optional().default(false),
+  adEnabled: (schema) => schema.optional().default(true)
+})
+.refine(
+  (data) => {
+    // If it's Google Ad, adCode is required
+    if (data.isGoogleAd) {
+      return !!data.adCode;
+    }
+    // If not Google Ad, either imageUrl+targetUrl or adCode must be provided
+    return (
+      (!!data.imageUrl && !!data.targetUrl) || 
+      !!data.adCode
+    );
+  },
+  {
+    message: "For Google ads, ad code is required. For regular ads, either provide image URL + target URL or ad code.",
+    path: ["adCode"]
+  }
+);
+
 export type HomeAd = typeof homeAds.$inferSelect;
 export type InsertHomeAd = z.infer<typeof insertHomeAdSchema>;
+export type GameAd = typeof gameAds.$inferSelect;
+export type InsertGameAd = z.infer<typeof insertGameAdSchema>;
 export type Sitemap = typeof sitemaps.$inferSelect;
 export type InsertSitemap = z.infer<typeof insertSitemapSchema>;
 
