@@ -30,6 +30,7 @@ import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import AdminLayout from "@/components/layout/admin-layout";
 import type { GameAd } from "@shared/schema";
+import { insertGameAdSchema } from "@shared/schema";
 
 const gameAdPositions = [
   { value: 'above_game', label: 'Above Game' },
@@ -40,15 +41,16 @@ const gameAdPositions = [
   { value: 'after_related_games', label: 'After Related Games' }
 ];
 
+// Simplified schema for form validation
 const gameAdSchema = z.object({
   name: z.string().min(3, "Name must be at least 3 characters"),
   position: z.string().min(1, "Position is required"),
   isGoogleAd: z.boolean().default(false),
   adCode: z.string().min(1, "Ad code is required"),
-  imageUrl: z.string().optional().nullable(),
-  targetUrl: z.string().optional().nullable(),
-  startDate: z.string().optional().nullable(),
-  endDate: z.string().optional().nullable(),
+  imageUrl: z.string().optional().nullable().or(z.literal("")),
+  targetUrl: z.string().optional().nullable().or(z.literal("")),
+  startDate: z.string().optional().nullable().or(z.literal("")),
+  endDate: z.string().optional().nullable().or(z.literal("")),
   status: z.enum(['active', 'inactive']).default('active'),
   adEnabled: z.boolean().default(true)
 });
@@ -662,7 +664,12 @@ export default function GameAdsPage() {
                         <FormItem>
                           <FormLabel>Image URL (Optional)</FormLabel>
                           <FormControl>
-                            <Input placeholder="https://example.com/ad-image.jpg" {...field} data-testid="input-image-url" />
+                            <Input 
+                              {...field}
+                              value={field.value || ""}
+                              placeholder="https://example.com/ad-image.jpg" 
+                              data-testid="input-image-url" 
+                            />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -676,7 +683,12 @@ export default function GameAdsPage() {
                         <FormItem>
                           <FormLabel>Target URL (Optional)</FormLabel>
                           <FormControl>
-                            <Input placeholder="https://example.com" {...field} data-testid="input-target-url" />
+                            <Input 
+                              {...field}
+                              value={field.value || ""}
+                              placeholder="https://example.com" 
+                              data-testid="input-target-url" 
+                            />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -713,7 +725,12 @@ export default function GameAdsPage() {
                     <FormItem>
                       <FormLabel>Start Date (Optional)</FormLabel>
                       <FormControl>
-                        <Input type="date" {...field} data-testid="input-start-date" />
+                        <Input 
+                          type="date" 
+                          {...field}
+                          value={field.value || ""}
+                          data-testid="input-start-date" 
+                        />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -727,7 +744,12 @@ export default function GameAdsPage() {
                     <FormItem>
                       <FormLabel>End Date (Optional)</FormLabel>
                       <FormControl>
-                        <Input type="date" {...field} data-testid="input-end-date" />
+                        <Input 
+                          type="date" 
+                          {...field}
+                          value={field.value || ""}
+                          data-testid="input-end-date" 
+                        />
                       </FormControl>
                       <FormMessage />
                     </FormItem>

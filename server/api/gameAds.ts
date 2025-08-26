@@ -127,8 +127,14 @@ export function registerGameAdsRoutes(app: Express) {
         return res.status(400).json({ error: 'Invalid game ad ID' });
       }
 
-      // For PATCH, we allow partial updates
-      const gameAdData = insertGameAdSchema.partial().parse(req.body);
+      // For PATCH, validate incoming data manually  
+      const allowedFields = ['name', 'position', 'isGoogleAd', 'adCode', 'imageUrl', 'targetUrl', 'startDate', 'endDate', 'status', 'adEnabled'];
+      const gameAdData = Object.keys(req.body)
+        .filter(key => allowedFields.includes(key))
+        .reduce((obj, key) => {
+          obj[key] = req.body[key];
+          return obj;
+        }, {} as any);
       const updatedGameAd = await storage.updateGameAd(id, gameAdData);
 
       if (!updatedGameAd) {

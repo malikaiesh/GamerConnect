@@ -842,7 +842,7 @@ export type ApiKey = typeof apiKeys.$inferSelect;
 export type InsertApiKey = z.infer<typeof insertApiKeySchema>;
 export const insertGameAdSchema = createInsertSchema(gameAds, {
   name: (schema) => schema.min(3, "Name must be at least 3 characters"),
-  adCode: (schema) => schema.min(1, "Ad code is required"),
+  adCode: (schema) => schema.optional(),
   imageUrl: (schema) => schema.refine(
     (val) => !val || val.length === 0 || /^https?:\/\//.test(val),
     { message: "Image URL must be a valid URL or empty" }
@@ -858,18 +858,11 @@ export const insertGameAdSchema = createInsertSchema(gameAds, {
 })
 .refine(
   (data) => {
-    // Ad code is always required and must be valid HTML
-    if (!data.adCode || data.adCode.trim().length === 0) {
-      return false;
-    }
-    // If not Google Ad, either imageUrl+targetUrl or adCode must be provided
-    return (
-      (!!data.imageUrl && !!data.targetUrl) || 
-      !!data.adCode
-    );
+    // At least ad code must be provided
+    return !!(data.adCode && data.adCode.trim().length > 0);
   },
   {
-    message: "For Google ads, ad code is required. For regular ads, either provide image URL + target URL or ad code.",
+    message: "Ad code is required",
     path: ["adCode"]
   }
 );
