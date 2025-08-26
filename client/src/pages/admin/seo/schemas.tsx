@@ -556,24 +556,29 @@ function SeoSchemasContent() {
           </DialogHeader>
           <div className="space-y-4">
             <div>
-              <Label htmlFor="new-schema-name">Schema Name</Label>
+              <Label htmlFor="new-schema-name" className="text-foreground font-medium">Schema Name</Label>
               <Input
                 id="new-schema-name"
                 placeholder="Enter schema name"
+                className="mt-1 bg-background text-foreground border-border"
                 data-testid="input-new-schema-name"
               />
             </div>
             <div>
-              <Label htmlFor="new-schema-type">Schema Type</Label>
+              <Label htmlFor="new-schema-type" className="text-foreground font-medium">Schema Type</Label>
               <Input
                 id="new-schema-type"
                 placeholder="VideoGame, Article, Organization, etc."
+                className="mt-1 bg-background text-foreground border-border"
                 data-testid="input-new-schema-type"
               />
             </div>
             <div>
-              <Label htmlFor="new-content-type">Content Type</Label>
-              <select className="w-full p-2 border rounded" data-testid="select-new-content-type">
+              <Label htmlFor="new-content-type" className="text-foreground font-medium">Content Type</Label>
+              <select 
+                className="w-full p-2 mt-1 border rounded bg-background text-foreground border-border" 
+                data-testid="select-new-content-type"
+              >
                 <option value="game">Game</option>
                 <option value="blog_post">Blog Post</option>
                 <option value="page">Page</option>
@@ -582,7 +587,7 @@ function SeoSchemasContent() {
               </select>
             </div>
             <div>
-              <Label htmlFor="new-schema-json">JSON-LD Schema</Label>
+              <Label htmlFor="new-schema-json" className="text-foreground font-medium">JSON-LD Schema</Label>
               <Textarea
                 id="new-schema-json"
                 rows={12}
@@ -592,7 +597,7 @@ function SeoSchemasContent() {
                   "name": "{{game_title}}",
                   "description": "{{game_description}}"
                 }, null, 2)}
-                className="font-mono text-sm"
+                className="mt-1 font-mono text-sm bg-background text-foreground border-border"
                 data-testid="textarea-new-schema-json"
               />
             </div>
