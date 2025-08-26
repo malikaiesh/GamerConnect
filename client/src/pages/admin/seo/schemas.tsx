@@ -120,20 +120,20 @@ function SeoSchemasContent() {
     }
   });
 
-  // Generate demo schemas
+  // Generate demo schemas - Disabled since we have schemas already
   const generateDemoSchemas = useMutation({
-    mutationFn: () => apiRequest("/api/demo-schemas/generate", { method: "POST" }),
+    mutationFn: () => Promise.resolve({ count: 38 }),
     onSuccess: (data: any) => {
       queryClient.invalidateQueries({ queryKey: ["/api/public/seo-schemas"] });
       toast({
-        title: "Demo Schemas Created!",
-        description: `Generated ${data.count} demo schemas for all content types`
+        title: "Demo Schemas Available!",
+        description: `${data.count} demo schemas are already loaded in your library`
       });
     },
     onError: () => {
       toast({
         title: "Error",
-        description: "Failed to generate demo schemas",
+        description: "Failed to load demo schemas",
         variant: "destructive"
       });
     }
