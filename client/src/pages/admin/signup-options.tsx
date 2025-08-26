@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { apiRequest } from '@/lib/queryClient';
+import AdminNavigation from '@/components/admin/navigation';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Switch } from '@/components/ui/switch';
 import { Button } from '@/components/ui/button';
@@ -344,23 +345,26 @@ export default function SignupOptionsPage() {
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center min-h-[400px]">
-        <Loader2 className="h-8 w-8 animate-spin" />
-      </div>
+      <AdminNavigation>
+        <div className="flex items-center justify-center min-h-[400px]">
+          <Loader2 className="h-8 w-8 animate-spin" />
+        </div>
+      </AdminNavigation>
     );
   }
 
   return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold">Signup Options</h1>
-        <p className="text-muted-foreground">
-          Manage authentication providers and signup methods for your gaming website.
-        </p>
-      </div>
+    <AdminNavigation>
+      <div className="space-y-6">
+        <div>
+          <h1 className="text-3xl font-bold">Signup Options</h1>
+          <p className="text-muted-foreground">
+            Manage authentication providers and signup methods for your gaming website.
+          </p>
+        </div>
 
-      <div className="grid gap-6">
-        {signupOptions.map((option: SignupOption) => (
+        <div className="grid gap-6">
+          {signupOptions.map((option: SignupOption) => (
           <Card key={option.id} className="border-l-4" style={{ borderLeftColor: option.color }}>
             <CardHeader className="pb-3">
               <div className="flex items-center justify-between">
@@ -483,10 +487,10 @@ export default function SignupOptionsPage() {
               </div>
             </CardContent>
           </Card>
-        ))}
-      </div>
+          ))}
+        </div>
 
-      {signupOptions.length === 0 && (
+        {signupOptions.length === 0 && (
         <Card>
           <CardContent className="flex flex-col items-center justify-center min-h-[200px] text-center">
             <Settings className="h-12 w-12 text-muted-foreground mb-4" />
@@ -496,7 +500,8 @@ export default function SignupOptionsPage() {
             </p>
           </CardContent>
         </Card>
-      )}
-    </div>
+        )}
+      </div>
+    </AdminNavigation>
   );
 }
