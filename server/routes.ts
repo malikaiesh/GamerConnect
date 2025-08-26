@@ -637,22 +637,22 @@ Sitemap: ${req.protocol}://${req.get('host')}/sitemap.xml`);
       let queryConditions = [];
       
       if (status) {
-        queryConditions.push(eq(events.status, status as string));
+        queryConditions.push(eq(events.status, status as any));
       }
       if (type) {
-        queryConditions.push(eq(events.eventType, type as string));
+        queryConditions.push(eq(events.eventType, type as any));
       }
       if (featured === 'true') {
         queryConditions.push(eq(events.featured, true));
       }
       
-      let query = db.select().from(events);
+      let baseQuery = db.select().from(events);
       
       if (queryConditions.length > 0) {
-        query = query.where(and(...queryConditions));
+        baseQuery = baseQuery.where(and(...queryConditions));
       }
       
-      const allEvents = await query
+      const allEvents = await baseQuery
         .orderBy(desc(events.startDate))
         .limit(parseInt(limit as string))
         .offset(parseInt(offset as string));
