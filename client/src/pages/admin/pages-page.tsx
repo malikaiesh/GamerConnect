@@ -251,7 +251,7 @@ export default function PagesAdminPage() {
                         <td className="py-3 px-4 font-mono text-xs text-foreground">{page.slug}</td>
                         <td className="py-3 px-4 text-center">
                           {page.status === 'active' ? (
-                            <Badge variant="success"><CheckCircle2 className="h-3 w-3 mr-1" /> Active</Badge>
+                            <Badge variant="default"><CheckCircle2 className="h-3 w-3 mr-1" /> Active</Badge>
                           ) : (
                             <Badge variant="secondary"><XCircle className="h-3 w-3 mr-1" /> Inactive</Badge>
                           )}

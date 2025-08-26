@@ -41,7 +41,6 @@ export default function PageEditPage() {
   const isNew = id === "new" || location.includes('/pages/new');
   const { user } = useAuth();
   const { toast } = useToast();
-  const [, setLocation] = useLocation();
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [activeTab, setActiveTab] = useState("content");
 
@@ -70,9 +69,9 @@ export default function PageEditPage() {
   const saveMutation = useMutation({
     mutationFn: async (values: FormValues) => {
       if (isNew) {
-        return apiRequest("POST", "/api/pages", values);
+        return apiRequest("/api/pages", { method: "POST", body: JSON.stringify(values) });
       } else {
-        return apiRequest("PUT", `/api/pages/${id}`, values);
+        return apiRequest(`/api/pages/${id}`, { method: "PUT", body: JSON.stringify(values) });
       }
     },
     onSuccess: () => {
@@ -97,7 +96,7 @@ export default function PageEditPage() {
   // Delete mutation
   const deleteMutation = useMutation({
     mutationFn: async () => {
-      return apiRequest("DELETE", `/api/pages/${id}`);
+      return apiRequest(`/api/pages/${id}`, { method: "DELETE" });
     },
     onSuccess: () => {
       toast({
@@ -254,6 +253,7 @@ export default function PageEditPage() {
                             <FormLabel>Content</FormLabel>
                             <FormControl>
                               <BasicTextEditor
+                                id="page-content"
                                 value={field.value}
                                 onChange={field.onChange}
                                 placeholder="Enter page content..."
