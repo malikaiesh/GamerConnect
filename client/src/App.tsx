@@ -35,8 +35,6 @@ const CategoriesPage = lazy(() => import("@/pages/categories-page"));
 const TopGamesPage = lazy(() => import("@/pages/top-games-page"));
 const InstallPage = lazy(() => import("@/pages/install-page"));
 const ResetPasswordPage = lazy(() => import("@/pages/reset-password-page"));
-const LoginPage = lazy(() => import("@/pages/login"));
-const SignupPage = lazy(() => import("@/pages/signup"));
 const GamesPage = lazy(() => import("@/pages/categories-page")); // Use categories page for games listing
 
 // Static pages
@@ -151,12 +149,7 @@ function Router() {
       <Route path="/top-games">
         <Suspense fallback={<LoadingFallback />}><TopGamesPage /></Suspense>
       </Route>
-      <Route path="/login">
-        <Suspense fallback={<LoadingFallback />}><LoginPage /></Suspense>
-      </Route>
-      <Route path="/signup">
-        <Suspense fallback={<LoadingFallback />}><SignupPage /></Suspense>
-      </Route>
+
       <Route path="/auth">
         <Suspense fallback={<LoadingFallback />}><AuthPage /></Suspense>
       </Route>

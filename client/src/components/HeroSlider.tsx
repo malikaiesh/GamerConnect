@@ -101,37 +101,47 @@ export function HeroSlider() {
       {/* Hero Action Buttons - positioned at bottom left */}
       <div className="absolute bottom-2 sm:bottom-4 left-2 sm:left-4">
         <div className="flex flex-wrap gap-2">
-          {/* Original CTA Button */}
+          {/* Login Button - First Priority */}
+          <Button
+            size="sm"
+            className="bg-primary hover:bg-primary/90 text-primary-foreground shadow-lg backdrop-blur-sm text-xs sm:text-sm px-3 py-1.5 sm:px-4 sm:py-2 rounded-lg"
+            onClick={() => window.location.href = '/auth'}
+            data-testid="hero-login-button"
+          >
+            Login
+          </Button>
+          
+          {/* Signup Button - Second Priority */}
+          <Button
+            size="sm"
+            className="bg-secondary hover:bg-secondary/90 text-secondary-foreground shadow-lg backdrop-blur-sm text-xs sm:text-sm px-3 py-1.5 sm:px-4 sm:py-2 rounded-lg"
+            onClick={() => window.location.href = '/auth'}
+            data-testid="hero-signup-button"
+          >
+            Sign Up
+          </Button>
+          
+          {/* Play Now Button - Third Priority */}
+          <Button
+            size="sm"
+            className="bg-accent hover:bg-accent/90 text-accent-foreground shadow-lg backdrop-blur-sm text-xs sm:text-sm px-3 py-1.5 sm:px-4 sm:py-2 rounded-lg"
+            onClick={() => window.location.href = '/games'}
+            data-testid="hero-play-button"
+          >
+            Play Now
+          </Button>
+          
+          {/* Original CTA Button - Last if present */}
           {currentImage.linkUrl && currentImage.linkText && (
             <Button
               size="sm"
-              className="bg-blue-500 hover:bg-blue-600 text-white shadow-lg backdrop-blur-sm text-xs sm:text-sm px-3 py-1.5 sm:px-4 sm:py-2 rounded-lg"
+              className="bg-primary/80 hover:bg-primary text-primary-foreground shadow-lg backdrop-blur-sm text-xs sm:text-sm px-3 py-1.5 sm:px-4 sm:py-2 rounded-lg"
               onClick={() => window.location.href = currentImage.linkUrl || ''}
               data-testid="hero-cta-button"
             >
               {currentImage.linkText}
             </Button>
           )}
-          
-          {/* Login Button */}
-          <Button
-            size="sm"
-            className="bg-blue-500 hover:bg-blue-600 text-white shadow-lg backdrop-blur-sm text-xs sm:text-sm px-3 py-1.5 sm:px-4 sm:py-2 rounded-lg"
-            onClick={() => window.location.href = '/login'}
-            data-testid="hero-login-button"
-          >
-            Login
-          </Button>
-          
-          {/* Signup Button */}
-          <Button
-            size="sm"
-            className="bg-blue-600 hover:bg-blue-700 text-white shadow-lg backdrop-blur-sm text-xs sm:text-sm px-3 py-1.5 sm:px-4 sm:py-2 rounded-lg"
-            onClick={() => window.location.href = '/signup'}
-            data-testid="hero-signup-button"
-          >
-            Sign Up
-          </Button>
         </div>
       </div>
 

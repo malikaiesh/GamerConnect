@@ -157,10 +157,10 @@ export default function HomePage() {
                 Discover thousands of immersive games across all genres. No downloads required - play instantly in your browser!
               </p>
               <div className="flex flex-wrap gap-4">
-                <Link href="/games" className="bg-blue-500 hover:bg-blue-600 text-white font-bold py-3 px-6 rounded-lg transition-colors shadow-lg">
+                <Link href="/games" className="bg-primary hover:bg-primary/90 text-primary-foreground font-bold py-3 px-6 rounded-lg transition-colors shadow-lg">
                   Play Now
                 </Link>
-                <Link href="/categories" className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-lg transition-colors shadow-lg">
+                <Link href="/categories" className="bg-secondary hover:bg-secondary/90 text-secondary-foreground font-bold py-3 px-6 rounded-lg transition-colors shadow-lg">
                   Browse Categories
                 </Link>
                 <RandomGameButton 
