@@ -85,9 +85,13 @@ export default function PageEditPage() {
       setLocation("/admin/pages");
     },
     onError: (error: Error) => {
+      let errorMessage = error.message;
+      if (error.message.includes('slug already exists')) {
+        errorMessage = `A page with this URL slug already exists. Please try a different slug or modify the title.`;
+      }
       toast({
         title: "Error",
-        description: error.message,
+        description: errorMessage,
         variant: "destructive",
       });
     },
@@ -139,6 +143,15 @@ export default function PageEditPage() {
       .replace(/-+/g, "-")
       .trim();
   };
+
+  // Watch title changes and auto-generate slug for new pages
+  const titleValue = form.watch("title");
+  useEffect(() => {
+    if (isNew && titleValue && !form.getValues("slug")) {
+      const newSlug = generateSlug(titleValue);
+      form.setValue("slug", newSlug);
+    }
+  }, [titleValue, isNew, form]);
 
   const onSubmit = (values: FormValues) => {
     saveMutation.mutate(values);
