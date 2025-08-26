@@ -41,21 +41,8 @@ const gameAdPositions = [
   { value: 'sidebar_bottom', label: 'Sidebar Bottom' }
 ];
 
-// Simplified schema for form validation matching the server enum
-const gameAdSchema = z.object({
-  name: z.string().min(3, "Name must be at least 3 characters"),
-  position: z.enum(['above_game', 'below_game', 'above_related', 'below_related', 'sidebar_top', 'sidebar_bottom']),
-  isGoogleAd: z.boolean().default(false),
-  adCode: z.string().min(1, "Ad code is required"),
-  imageUrl: z.string().optional().nullable().or(z.literal("")),
-  targetUrl: z.string().optional().nullable().or(z.literal("")),
-  startDate: z.string().optional().nullable().or(z.literal("")),
-  endDate: z.string().optional().nullable().or(z.literal("")),
-  status: z.enum(['active', 'inactive']).default('active'),
-  adEnabled: z.boolean().default(true)
-});
-
-type GameAdFormData = z.infer<typeof gameAdSchema>;
+// Use the server schema for consistency
+type GameAdFormData = z.infer<typeof insertGameAdSchema>;
 
 export default function GameAdsPage() {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -64,10 +51,10 @@ export default function GameAdsPage() {
   const { toast } = useToast();
 
   const form = useForm<GameAdFormData>({
-    resolver: zodResolver(gameAdSchema),
+    resolver: zodResolver(insertGameAdSchema),
     defaultValues: {
       name: "",
-      position: "",
+      position: "above_game",
       isGoogleAd: false,
       adCode: "",
       imageUrl: "",
