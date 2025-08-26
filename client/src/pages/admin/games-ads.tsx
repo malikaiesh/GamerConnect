@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { apiRequest } from '@/lib/queryClient';
 import { useForm } from 'react-hook-form';
@@ -15,7 +15,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useToast } from '@/hooks/use-toast';
-import { AdminNavigation } from '@/components/admin/admin-navigation';
+import { AdminNavigation } from '@/components/admin/AdminNavigation';
 import { GameAd, InsertGameAd } from '@shared/schema';
 import { Trash2, Edit, Plus, BarChart3, FileText, Eye, MousePointer, Calendar, Target } from 'lucide-react';
 
@@ -78,7 +78,7 @@ export default function GamesAdsPage() {
     }
   });
 
-  const { data: gameAds = [], isLoading } = useQuery({
+  const { data: gameAds = [], isLoading } = useQuery<GameAd[]>({
     queryKey: ['/api/game-ads'],
   });
 
@@ -118,7 +118,6 @@ export default function GamesAdsPage() {
       queryClient.invalidateQueries({ queryKey: ['/api/game-ads'] });
       setIsDialogOpen(false);
       setSelectedAd(null);
-      form.reset();
       toast({
         title: "Success",
         description: "Game ad updated successfully",
@@ -159,14 +158,14 @@ export default function GamesAdsPage() {
     mutationFn: async ({ id, enabled }: { id: number; enabled: boolean }) => {
       return apiRequest(`/api/game-ads/${id}/toggle`, {
         method: 'PATCH',
-        body: JSON.stringify({ enabled })
+        body: JSON.stringify({ adEnabled: enabled })
       });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/game-ads'] });
       toast({
         title: "Success",
-        description: "Game ad status updated",
+        description: "Game ad status updated successfully",
       });
     },
     onError: (error) => {
@@ -217,8 +216,8 @@ export default function GamesAdsPage() {
   const onSubmit = (data: GameAdFormData) => {
     const submitData = {
       ...data,
-      startDate: data.startDate ? new Date(data.startDate) : null,
-      endDate: data.endDate ? new Date(data.endDate) : null,
+      startDate: data.startDate || undefined,
+      endDate: data.endDate || undefined,
     };
 
     if (isCreateMode) {
@@ -267,76 +266,365 @@ export default function GamesAdsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900" data-testid="games-ads-page">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       <AdminNavigation />
       <div className="p-6">
         <div className="max-w-7xl mx-auto">
-          <div className="flex justify-between items-center mb-8">
-            <div>
-              <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Games Ads Management</h1>
-              <p className="mt-2 text-gray-600 dark:text-gray-400">
-                Manage advertisements displayed on game pages with strategic placement options
-              </p>
-            </div>
-            <Button onClick={handleCreateAd} data-testid="button-create-game-ad">
-              <Plus className="w-4 h-4 mr-2" />
-              Create Game Ad
-            </Button>
+          <div className="mb-8">
+            <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Games Ads Management</h1>
+            <p className="mt-2 text-gray-600 dark:text-gray-400">
+              Manage and configure advertisements displayed on game pages for strategic revenue generation.
+            </p>
           </div>
 
           <Tabs defaultValue="overview" className="space-y-6">
-            <TabsList className="bg-white dark:bg-gray-800">
-              <TabsTrigger value="overview" className="flex items-center gap-2">
-                <FileText className="w-4 h-4" />
-                All Ads
-              </TabsTrigger>
-              <TabsTrigger value="analytics" className="flex items-center gap-2">
-                <BarChart3 className="w-4 h-4" />
-                Analytics
-              </TabsTrigger>
+            <TabsList className="grid w-full grid-cols-3">
+              <TabsTrigger value="overview">Overview</TabsTrigger>
+              <TabsTrigger value="ads">Manage Ads</TabsTrigger>
+              <TabsTrigger value="analytics">Analytics</TabsTrigger>
             </TabsList>
 
             <TabsContent value="overview" className="space-y-6">
-              <div className="grid gap-6">
+              <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+                <Card>
+                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                    <CardTitle className="text-sm font-medium">Total Ads</CardTitle>
+                    <FileText className="h-4 w-4 text-muted-foreground" />
+                  </CardHeader>
+                  <CardContent>
+                    <div className="text-2xl font-bold">{gameAds.length}</div>
+                  </CardContent>
+                </Card>
+                
+                <Card>
+                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                    <CardTitle className="text-sm font-medium">Active Ads</CardTitle>
+                    <Target className="h-4 w-4 text-muted-foreground" />
+                  </CardHeader>
+                  <CardContent>
+                    <div className="text-2xl font-bold">{gameAds.filter(ad => ad.adEnabled && ad.status === 'active').length}</div>
+                  </CardContent>
+                </Card>
+                
+                <Card>
+                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                    <CardTitle className="text-sm font-medium">Total Impressions</CardTitle>
+                    <Eye className="h-4 w-4 text-muted-foreground" />
+                  </CardHeader>
+                  <CardContent>
+                    <div className="text-2xl font-bold">{gameAds.reduce((sum, ad) => sum + ad.impressionCount, 0)}</div>
+                  </CardContent>
+                </Card>
+                
+                <Card>
+                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                    <CardTitle className="text-sm font-medium">Total Clicks</CardTitle>
+                    <MousePointer className="h-4 w-4 text-muted-foreground" />
+                  </CardHeader>
+                  <CardContent>
+                    <div className="text-2xl font-bold">{gameAds.reduce((sum, ad) => sum + ad.clickCount, 0)}</div>
+                  </CardContent>
+                </Card>
+              </div>
+
+              <Card>
+                <CardHeader>
+                  <CardTitle>Ad Position Distribution</CardTitle>
+                  <CardDescription>Overview of ads by position</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4">
+                    {gameAdPositions.map(position => {
+                      const count = gameAds.filter(ad => ad.position === position.value).length;
+                      return (
+                        <div key={position.value} className="flex items-center justify-between">
+                          <span className="text-sm font-medium">{position.label}</span>
+                          <Badge variant="secondary">{count} ads</Badge>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </CardContent>
+              </Card>
+            </TabsContent>
+
+            <TabsContent value="ads" className="space-y-6">
+              <div className="flex justify-between items-center">
+                <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Manage Game Ads</h2>
+                <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+                  <DialogTrigger asChild>
+                    <Button onClick={handleCreateAd} data-testid="button-create-game-ad">
+                      <Plus className="w-4 h-4 mr-2" />
+                      Create Ad
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent className="max-w-2xl">
+                    <DialogHeader>
+                      <DialogTitle>{isCreateMode ? 'Create Game Ad' : 'Edit Game Ad'}</DialogTitle>
+                      <DialogDescription>
+                        Configure a new advertisement for game pages. Choose from Google Ads, custom code, or image-based ads.
+                      </DialogDescription>
+                    </DialogHeader>
+                    <Form {...form}>
+                      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          <FormField
+                            control={form.control}
+                            name="name"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>Ad Name</FormLabel>
+                                <FormControl>
+                                  <Input placeholder="Enter ad name" {...field} data-testid="input-ad-name" />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                          
+                          <FormField
+                            control={form.control}
+                            name="position"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>Position</FormLabel>
+                                <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                  <FormControl>
+                                    <SelectTrigger data-testid="select-ad-position">
+                                      <SelectValue placeholder="Select position" />
+                                    </SelectTrigger>
+                                  </FormControl>
+                                  <SelectContent>
+                                    {gameAdPositions.map((position) => (
+                                      <SelectItem key={position.value} value={position.value}>
+                                        {position.label}
+                                      </SelectItem>
+                                    ))}
+                                  </SelectContent>
+                                </Select>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                        </div>
+
+                        <FormField
+                          control={form.control}
+                          name="isGoogleAd"
+                          render={({ field }) => (
+                            <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
+                              <div className="space-y-0.5">
+                                <FormLabel className="text-base">Google Ad</FormLabel>
+                                <div className="text-sm text-muted-foreground">
+                                  Enable if this is a Google AdSense ad
+                                </div>
+                              </div>
+                              <FormControl>
+                                <Switch
+                                  checked={field.value}
+                                  onCheckedChange={field.onChange}
+                                  data-testid="switch-google-ad"
+                                />
+                              </FormControl>
+                            </FormItem>
+                          )}
+                        />
+
+                        {isGoogleAd ? (
+                          <FormField
+                            control={form.control}
+                            name="adCode"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>Google Ad Code</FormLabel>
+                                <FormControl>
+                                  <Textarea 
+                                    placeholder="Paste your Google AdSense code here..."
+                                    className="h-32"
+                                    {...field}
+                                    data-testid="textarea-ad-code"
+                                  />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                        ) : (
+                          <>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                              <FormField
+                                control={form.control}
+                                name="imageUrl"
+                                render={({ field }) => (
+                                  <FormItem>
+                                    <FormLabel>Image URL (Optional)</FormLabel>
+                                    <FormControl>
+                                      <Input placeholder="https://example.com/ad-image.jpg" {...field} data-testid="input-image-url" />
+                                    </FormControl>
+                                    <FormMessage />
+                                  </FormItem>
+                                )}
+                              />
+                              
+                              <FormField
+                                control={form.control}
+                                name="targetUrl"
+                                render={({ field }) => (
+                                  <FormItem>
+                                    <FormLabel>Target URL (Optional)</FormLabel>
+                                    <FormControl>
+                                      <Input placeholder="https://example.com" {...field} data-testid="input-target-url" />
+                                    </FormControl>
+                                    <FormMessage />
+                                  </FormItem>
+                                )}
+                              />
+                            </div>
+
+                            <FormField
+                              control={form.control}
+                              name="adCode"
+                              render={({ field }) => (
+                                <FormItem>
+                                  <FormLabel>Custom Ad Code (Optional)</FormLabel>
+                                  <FormControl>
+                                    <Textarea 
+                                      placeholder="Enter custom HTML/JavaScript ad code (alternative to image+URL)..."
+                                      className="h-32"
+                                      {...field}
+                                      data-testid="textarea-custom-ad-code"
+                                    />
+                                  </FormControl>
+                                  <FormMessage />
+                                </FormItem>
+                              )}
+                            />
+                          </>
+                        )}
+
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          <FormField
+                            control={form.control}
+                            name="startDate"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>Start Date (Optional)</FormLabel>
+                                <FormControl>
+                                  <Input type="date" {...field} data-testid="input-start-date" />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                          
+                          <FormField
+                            control={form.control}
+                            name="endDate"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>End Date (Optional)</FormLabel>
+                                <FormControl>
+                                  <Input type="date" {...field} data-testid="input-end-date" />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                        </div>
+
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          <FormField
+                            control={form.control}
+                            name="status"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>Status</FormLabel>
+                                <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                  <FormControl>
+                                    <SelectTrigger data-testid="select-ad-status">
+                                      <SelectValue placeholder="Select status" />
+                                    </SelectTrigger>
+                                  </FormControl>
+                                  <SelectContent>
+                                    <SelectItem value="active">Active</SelectItem>
+                                    <SelectItem value="inactive">Inactive</SelectItem>
+                                  </SelectContent>
+                                </Select>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+
+                          <FormField
+                            control={form.control}
+                            name="adEnabled"
+                            render={({ field }) => (
+                              <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
+                                <div className="space-y-0.5">
+                                  <FormLabel className="text-base">Enabled</FormLabel>
+                                  <div className="text-sm text-muted-foreground">
+                                    Show this ad on the website
+                                  </div>
+                                </div>
+                                <FormControl>
+                                  <Switch
+                                    checked={field.value}
+                                    onCheckedChange={field.onChange}
+                                    data-testid="switch-ad-enabled"
+                                  />
+                                </FormControl>
+                              </FormItem>
+                            )}
+                          />
+                        </div>
+
+                        <div className="flex justify-end space-x-2">
+                          <Button type="button" variant="outline" onClick={() => setIsDialogOpen(false)}>
+                            Cancel
+                          </Button>
+                          <Button
+                            type="submit"
+                            disabled={createGameAdMutation.isPending || updateGameAdMutation.isPending}
+                            data-testid="button-save-game-ad"
+                          >
+                            {createGameAdMutation.isPending || updateGameAdMutation.isPending ? 'Saving...' : 'Save'}
+                          </Button>
+                        </div>
+                      </form>
+                    </Form>
+                  </DialogContent>
+                </Dialog>
+              </div>
+
+              <div className="grid grid-cols-1 gap-6">
                 {gameAds.length === 0 ? (
                   <Card>
-                    <CardContent className="py-16 text-center">
-                      <Target className="w-16 h-16 mx-auto text-gray-400 mb-4" />
-                      <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
-                        No game ads yet
-                      </h3>
-                      <p className="text-gray-600 dark:text-gray-400 mb-6">
+                    <CardContent className="flex flex-col items-center justify-center py-12">
+                      <FileText className="w-12 h-12 text-gray-400 mb-4" />
+                      <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">No game ads found</h3>
+                      <p className="text-gray-600 dark:text-gray-400 text-center mb-4">
                         Create your first game ad to start displaying advertisements on game pages.
                       </p>
-                      <Button onClick={handleCreateAd} data-testid="button-create-first-game-ad">
+                      <Button onClick={handleCreateAd}>
                         <Plus className="w-4 h-4 mr-2" />
-                        Create Your First Game Ad
+                        Create First Ad
                       </Button>
                     </CardContent>
                   </Card>
                 ) : (
-                  gameAds.map((ad: GameAd) => (
-                    <Card key={ad.id} className="border border-gray-200 dark:border-gray-700">
+                  gameAds.map((ad) => (
+                    <Card key={ad.id} className={`${!ad.adEnabled || ad.status !== 'active' ? 'opacity-60' : ''}`}>
                       <CardHeader>
-                        <div className="flex justify-between items-start">
-                          <div className="space-y-2">
-                            <div className="flex items-center gap-3">
-                              <CardTitle className="text-xl" data-testid={`text-ad-name-${ad.id}`}>
-                                {ad.name}
-                              </CardTitle>
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <CardTitle className="flex items-center gap-2">
+                              {ad.name}
                               <Badge variant={ad.status === 'active' ? 'default' : 'secondary'}>
                                 {ad.status}
                               </Badge>
-                              <Badge variant={ad.adEnabled ? 'default' : 'destructive'}>
-                                {ad.adEnabled ? 'Enabled' : 'Disabled'}
-                              </Badge>
-                              {ad.isGoogleAd && (
-                                <Badge variant="outline">Google Ad</Badge>
-                              )}
-                            </div>
-                            <CardDescription>
-                              Position: {getPositionLabel(ad.position)}
-                            </CardDescription>
+                              {ad.isGoogleAd && <Badge variant="outline">Google Ad</Badge>}
+                              <Badge variant="outline">{getPositionLabel(ad.position)}</Badge>
+                            </CardTitle>
                           </div>
                           <div className="flex items-center gap-2">
                             <Switch
@@ -423,269 +711,85 @@ export default function GamesAdsPage() {
               <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
                 <Card>
                   <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                    <CardTitle className="text-sm font-medium">Total Ads</CardTitle>
-                    <Target className="h-4 w-4 text-muted-foreground" />
-                  </CardHeader>
-                  <CardContent>
-                    <div className="text-2xl font-bold">{gameAds.length}</div>
-                  </CardContent>
-                </Card>
-                <Card>
-                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                    <CardTitle className="text-sm font-medium">Active Ads</CardTitle>
-                    <Eye className="h-4 w-4 text-muted-foreground" />
-                  </CardHeader>
-                  <CardContent>
-                    <div className="text-2xl font-bold">
-                      {gameAds.filter((ad: GameAd) => ad.adEnabled && ad.status === 'active').length}
-                    </div>
-                  </CardContent>
-                </Card>
-                <Card>
-                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                     <CardTitle className="text-sm font-medium">Total Impressions</CardTitle>
                     <Eye className="h-4 w-4 text-muted-foreground" />
                   </CardHeader>
                   <CardContent>
-                    <div className="text-2xl font-bold">
-                      {gameAds.reduce((total: number, ad: GameAd) => total + ad.impressionCount, 0)}
-                    </div>
+                    <div className="text-2xl font-bold">{gameAds.reduce((sum, ad) => sum + ad.impressionCount, 0)}</div>
                   </CardContent>
                 </Card>
+                
                 <Card>
                   <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                     <CardTitle className="text-sm font-medium">Total Clicks</CardTitle>
                     <MousePointer className="h-4 w-4 text-muted-foreground" />
                   </CardHeader>
                   <CardContent>
+                    <div className="text-2xl font-bold">{gameAds.reduce((sum, ad) => sum + ad.clickCount, 0)}</div>
+                  </CardContent>
+                </Card>
+                
+                <Card>
+                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                    <CardTitle className="text-sm font-medium">Average CTR</CardTitle>
+                    <BarChart3 className="h-4 w-4 text-muted-foreground" />
+                  </CardHeader>
+                  <CardContent>
                     <div className="text-2xl font-bold">
-                      {gameAds.reduce((total: number, ad: GameAd) => total + ad.clickCount, 0)}
+                      {(() => {
+                        const totalImpressions = gameAds.reduce((sum, ad) => sum + ad.impressionCount, 0);
+                        const totalClicks = gameAds.reduce((sum, ad) => sum + ad.clickCount, 0);
+                        const ctr = totalImpressions > 0 ? (totalClicks / totalImpressions * 100).toFixed(2) : '0.00';
+                        return `${ctr}%`;
+                      })()}
+                    </div>
+                  </CardContent>
+                </Card>
+                
+                <Card>
+                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                    <CardTitle className="text-sm font-medium">Active Positions</CardTitle>
+                    <Target className="h-4 w-4 text-muted-foreground" />
+                  </CardHeader>
+                  <CardContent>
+                    <div className="text-2xl font-bold">
+                      {new Set(gameAds.filter(ad => ad.adEnabled && ad.status === 'active').map(ad => ad.position)).size}
                     </div>
                   </CardContent>
                 </Card>
               </div>
-            </TabsContent>
-          </Tabs>
 
-          <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-            <DialogContent className="max-w-2xl">
-              <DialogHeader>
-                <DialogTitle>
-                  {isCreateMode ? 'Create New Game Ad' : 'Edit Game Ad'}
-                </DialogTitle>
-                <DialogDescription>
-                  {isCreateMode 
-                    ? 'Create a new advertisement to display on game pages.' 
-                    : 'Update the advertisement details.'
-                  }
-                </DialogDescription>
-              </DialogHeader>
-              <Form {...form}>
-                <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-                  <div className="grid grid-cols-2 gap-4">
-                    <FormField
-                      control={form.control}
-                      name="name"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Ad Name</FormLabel>
-                          <FormControl>
-                            <Input placeholder="Enter ad name" {...field} data-testid="input-ad-name" />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    <FormField
-                      control={form.control}
-                      name="position"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Position</FormLabel>
-                          <Select onValueChange={field.onChange} defaultValue={field.value}>
-                            <FormControl>
-                              <SelectTrigger data-testid="select-ad-position">
-                                <SelectValue placeholder="Select position" />
-                              </SelectTrigger>
-                            </FormControl>
-                            <SelectContent>
-                              {gameAdPositions.map((position) => (
-                                <SelectItem key={position.value} value={position.value}>
-                                  {position.label}
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  </div>
-
-                  <FormField
-                    control={form.control}
-                    name="isGoogleAd"
-                    render={({ field }) => (
-                      <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
-                        <div className="space-y-0.5">
-                          <FormLabel className="text-base">Google Ad</FormLabel>
-                          <div className="text-sm text-muted-foreground">
-                            Enable if this is a Google AdSense advertisement
+              <Card>
+                <CardHeader>
+                  <CardTitle>Performance by Position</CardTitle>
+                  <CardDescription>Click-through rates and engagement by ad position</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4">
+                    {gameAdPositions.map(position => {
+                      const positionAds = gameAds.filter(ad => ad.position === position.value);
+                      const totalImpressions = positionAds.reduce((sum, ad) => sum + ad.impressionCount, 0);
+                      const totalClicks = positionAds.reduce((sum, ad) => sum + ad.clickCount, 0);
+                      const ctr = totalImpressions > 0 ? (totalClicks / totalImpressions * 100).toFixed(2) : '0.00';
+                      
+                      return (
+                        <div key={position.value} className="flex items-center justify-between p-4 border rounded-lg">
+                          <div>
+                            <h4 className="font-medium">{position.label}</h4>
+                            <p className="text-sm text-gray-600 dark:text-gray-400">{positionAds.length} ads</p>
+                          </div>
+                          <div className="text-right">
+                            <div className="text-sm font-medium">{totalImpressions} impressions</div>
+                            <div className="text-sm text-gray-600 dark:text-gray-400">{totalClicks} clicks • {ctr}% CTR</div>
                           </div>
                         </div>
-                        <FormControl>
-                          <Switch
-                            checked={field.value}
-                            onCheckedChange={field.onChange}
-                            data-testid="switch-is-google-ad"
-                          />
-                        </FormControl>
-                      </FormItem>
-                    )}
-                  />
-
-                  <FormField
-                    control={form.control}
-                    name="adCode"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>
-                          {isGoogleAd ? 'Google Ad Code (Required)' : 'Ad Code (Optional)'}
-                        </FormLabel>
-                        <FormControl>
-                          <Textarea
-                            placeholder="Enter ad code/script"
-                            className="min-h-[100px]"
-                            {...field}
-                            data-testid="textarea-ad-code"
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-
-                  {!isGoogleAd && (
-                    <div className="grid grid-cols-2 gap-4">
-                      <FormField
-                        control={form.control}
-                        name="imageUrl"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Image URL</FormLabel>
-                            <FormControl>
-                              <Input placeholder="https://example.com/image.jpg" {...field} data-testid="input-image-url" />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                      <FormField
-                        control={form.control}
-                        name="targetUrl"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Target URL</FormLabel>
-                            <FormControl>
-                              <Input placeholder="https://example.com" {...field} data-testid="input-target-url" />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                    </div>
-                  )}
-
-                  <div className="grid grid-cols-2 gap-4">
-                    <FormField
-                      control={form.control}
-                      name="startDate"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Start Date (Optional)</FormLabel>
-                          <FormControl>
-                            <Input type="date" {...field} data-testid="input-start-date" />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    <FormField
-                      control={form.control}
-                      name="endDate"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>End Date (Optional)</FormLabel>
-                          <FormControl>
-                            <Input type="date" {...field} data-testid="input-end-date" />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
+                      );
+                    })}
                   </div>
-
-                  <div className="grid grid-cols-2 gap-4">
-                    <FormField
-                      control={form.control}
-                      name="status"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Status</FormLabel>
-                          <Select onValueChange={field.onChange} defaultValue={field.value}>
-                            <FormControl>
-                              <SelectTrigger data-testid="select-ad-status">
-                                <SelectValue placeholder="Select status" />
-                              </SelectTrigger>
-                            </FormControl>
-                            <SelectContent>
-                              <SelectItem value="active">Active</SelectItem>
-                              <SelectItem value="inactive">Inactive</SelectItem>
-                            </SelectContent>
-                          </Select>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    <FormField
-                      control={form.control}
-                      name="adEnabled"
-                      render={({ field }) => (
-                        <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
-                          <div className="space-y-0.5">
-                            <FormLabel className="text-base">Enabled</FormLabel>
-                            <div className="text-sm text-muted-foreground">
-                              Show this ad on the website
-                            </div>
-                          </div>
-                          <FormControl>
-                            <Switch
-                              checked={field.value}
-                              onCheckedChange={field.onChange}
-                              data-testid="switch-ad-enabled"
-                            />
-                          </FormControl>
-                        </FormItem>
-                      )}
-                    />
-                  </div>
-
-                  <div className="flex justify-end gap-3">
-                    <Button type="button" variant="outline" onClick={() => setIsDialogOpen(false)}>
-                      Cancel
-                    </Button>
-                    <Button
-                      type="submit"
-                      disabled={createGameAdMutation.isPending || updateGameAdMutation.isPending}
-                      data-testid="button-save-game-ad"
-                    >
-                      {createGameAdMutation.isPending || updateGameAdMutation.isPending ? 'Saving...' : 'Save'}
-                    </Button>
-                  </div>
-                </form>
-              </Form>
-            </DialogContent>
-          </Dialog>
+                </CardContent>
+              </Card>
+            </TabsContent>
+          </Tabs>
         </div>
       </div>
     </div>
