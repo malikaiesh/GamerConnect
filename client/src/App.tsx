@@ -292,6 +292,11 @@ function Router() {
           <Suspense fallback={<LoadingFallback />}><AdminPagesPage /></Suspense>
         </ProtectedRoute>
       </Route>
+      <Route path="/admin/pages/new">
+        <ProtectedRoute adminOnly={true}>
+          <Suspense fallback={<LoadingFallback />}><AdminPageEditPage /></Suspense>
+        </ProtectedRoute>
+      </Route>
       <Route path="/admin/page/:id">
         <ProtectedRoute adminOnly={true}>
           <Suspense fallback={<LoadingFallback />}><AdminPageEditPage /></Suspense>

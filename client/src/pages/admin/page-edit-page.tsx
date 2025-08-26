@@ -37,7 +37,8 @@ type FormValues = z.infer<typeof formSchema>;
 
 export default function PageEditPage() {
   const { id } = useParams<{ id: string }>();
-  const isNew = id === "new";
+  const [location, setLocation] = useLocation();
+  const isNew = id === "new" || location.includes('/pages/new');
   const { user } = useAuth();
   const { toast } = useToast();
   const [, setLocation] = useLocation();
