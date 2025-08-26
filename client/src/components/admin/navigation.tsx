@@ -198,6 +198,20 @@ export default function AdminNavigation() {
             </Link>
           </li>
           <li>
+            <Link
+              href="/admin/hero-images"
+              className={cn(
+                "flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all",
+                isActive("/admin/hero-images")
+                  ? "bg-primary/15 text-primary shadow-sm"
+                  : "text-card-foreground hover:bg-primary/10 hover:text-primary"
+              )}
+            >
+              <ImageIcon size={18} className="text-primary opacity-80" />
+              Hero Images
+            </Link>
+          </li>
+          <li>
             <a 
               href="/"
               target="_blank"

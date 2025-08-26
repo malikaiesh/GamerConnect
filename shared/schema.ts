@@ -1022,3 +1022,23 @@ export type InsertSignupOption = z.infer<typeof insertSignupOptionSchema>;
 // Team Members types
 export type TeamMember = typeof teamMembers.$inferSelect;
 export type InsertTeamMember = z.infer<typeof insertTeamMemberSchema>;
+
+// Hero Images table for hero section slider
+export const heroImages = pgTable('hero_images', {
+  id: serial('id').primaryKey(),
+  title: text('title').notNull(),
+  description: text('description'),
+  imagePath: text('image_path').notNull(), // Path to the uploaded image
+  linkUrl: text('link_url'), // Optional link when image is clicked
+  linkText: text('link_text'), // Text for the link button
+  isActive: boolean('is_active').default(true).notNull(),
+  sortOrder: integer('sort_order').default(0).notNull(),
+  displayDuration: integer('display_duration').default(5000).notNull(), // milliseconds
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+  updatedAt: timestamp('updated_at').defaultNow().notNull()
+});
+
+// Hero images schema and types
+export const insertHeroImageSchema = createInsertSchema(heroImages);
+export type HeroImage = typeof heroImages.$inferSelect;
+export type InsertHeroImage = z.infer<typeof insertHeroImageSchema>;
