@@ -157,10 +157,10 @@ export default function HomePage() {
                 Discover thousands of immersive games across all genres. No downloads required - play instantly in your browser!
               </p>
               <div className="flex flex-wrap gap-4">
-                <Link href="#games" className="btn-secondary">
+                <Link href="#games" className="bg-blue-500 hover:bg-blue-600 text-white font-bold py-3 px-6 rounded-lg transition-colors shadow-lg">
                   Play Now
                 </Link>
-                <Link href="#categories" className="bg-white/10 hover:bg-white/20 text-white font-bold py-3 px-6 rounded-lg transition-colors backdrop-blur-sm border border-white/10">
+                <Link href="#categories" className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-lg transition-colors shadow-lg">
                   Browse Categories
                 </Link>
                 <RandomGameButton 
@@ -172,9 +172,6 @@ export default function HomePage() {
             </div>
             <div className="md:w-1/2 relative">
               <HeroSlider />
-              <div className="absolute -top-4 -right-4 bg-accent text-accent-foreground text-lg font-bold py-2 px-4 rounded-lg shadow-lg transform rotate-3 z-20">
-                New Games Daily!
-              </div>
             </div>
           </div>
         </div>
@@ -332,8 +329,8 @@ export default function HomePage() {
       {/* Footer */}
       <Footer />
       
-      {/* Push Notification */}
-      {activeNotification && (
+      {/* Push Notification - Disabled for cleaner UI */}
+      {/* {activeNotification && (
         <PushNotification 
           notification={activeNotification}
           onClose={() => setActiveNotification(null)}
@@ -346,7 +343,7 @@ export default function HomePage() {
             }
           }}
         />
-      )}
+      )} */}
     </div>
   );
 }

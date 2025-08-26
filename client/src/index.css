@@ -48,7 +48,7 @@
     --popover: 0 0% 100%;
     --popover-foreground: 240 10% 3.9%;
     
-    --primary: 262 54% 55%;
+    --primary: 213 100% 58%; /* Modern blue like Subscribe button */
     --primary-foreground: 0 0% 98%;
     
     --secondary: 16 100% 57%;
@@ -65,12 +65,12 @@
     
     --border: 240 5.9% 90%;
     --input: 240 5.9% 90%;
-    --ring: 262 54% 55%;
+    --ring: 213 100% 58%;
     
     --radius: 0.5rem;
 
     /* Theme-specific variables */
-    --theme-primary: 262 54% 55%;
+    --theme-primary: 213 100% 58%;
     --theme-secondary: 16 100% 57%;
     --theme-accent: 122 50% 49%;
   }
