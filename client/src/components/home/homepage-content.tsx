@@ -3,6 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
+import { MarkdownRenderer } from "@/components/blog/markdown-renderer";
 import { HomePageContent } from "@shared/schema";
 import { ChevronDown, ChevronUp, Plus, ArrowDown } from "lucide-react";
 
@@ -102,14 +103,16 @@ export function HomepageContent() {
 
   // Function to render content with proper formatting
   const renderContent = (content: string, isExpanded: boolean) => {
-    // For HTML content, work with the raw HTML
-    if (content.includes('<div>') || content.includes('<p>')) {
+    // Check if content appears to be HTML
+    const isHtmlContent = content.includes('<div>') || content.includes('<p>') || content.includes('<h1>') || content.includes('<h2>');
+    
+    if (isHtmlContent) {
       if (!isExpanded) {
-        // Show truncated content - we'll use CSS to limit height instead of parsing HTML
+        // Show truncated HTML content
         return (
           <div className="space-y-2">
             <div 
-              className="overflow-hidden" 
+              className="overflow-hidden prose prose-base sm:prose-lg dark:prose-invert max-w-none" 
               style={{ maxHeight: '300px' }}
               dangerouslySetInnerHTML={{ __html: content }} 
             />
@@ -117,25 +120,27 @@ export function HomepageContent() {
           </div>
         );
       } else {
-        // Show full content
+        // Show full HTML content
         return (
           <div className="space-y-2">
-            <div dangerouslySetInnerHTML={{ __html: content }} />
+            <div 
+              className="prose prose-base sm:prose-lg dark:prose-invert max-w-none"
+              dangerouslySetInnerHTML={{ __html: content }} 
+            />
           </div>
         );
       }
     }
     
-    // Fallback: Split content into paragraphs for plain text
-    const paragraphs = content.split("\n\n");
-    
-    // If not expanded, show exactly 3 paragraphs
+    // For Markdown or plain text content, use MarkdownRenderer
     if (!isExpanded) {
-      const displayParagraphs = paragraphs.slice(0, 3);
+      // Split content and show limited paragraphs
+      const paragraphs = content.split("\n\n");
+      const limitedContent = paragraphs.slice(0, 3).join("\n\n");
       
       return (
         <div className="space-y-2">
-          {processParagraphs(displayParagraphs)}
+          <MarkdownRenderer content={limitedContent} />
           {paragraphs.length > 3 && (
             <p className="text-base text-muted-foreground">...</p>
           )}
@@ -143,14 +148,10 @@ export function HomepageContent() {
       );
     }
     
-    // If expanded, show first 7 paragraphs (3 initial + 4 more)
-    const expandedParagraphs = paragraphs.slice(0, 7);
+    // Show full Markdown content
     return (
       <div className="space-y-2">
-        {processParagraphs(expandedParagraphs)}
-        {paragraphs.length > 7 && (
-          <p className="text-base text-muted-foreground">... and more</p>
-        )}
+        <MarkdownRenderer content={content} />
       </div>
     );
   };
