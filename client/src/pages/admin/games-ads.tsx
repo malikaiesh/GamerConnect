@@ -15,7 +15,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useToast } from '@/hooks/use-toast';
-import { AdminNavigation } from '@/components/admin/AdminNavigation';
+import AdminNavigation from '@/components/admin/navigation';
 import { GameAd, InsertGameAd } from '@shared/schema';
 import { Trash2, Edit, Plus, BarChart3, FileText, Eye, MousePointer, Calendar, Target } from 'lucide-react';
 
@@ -84,10 +84,7 @@ export default function GamesAdsPage() {
 
   const createGameAdMutation = useMutation({
     mutationFn: async (data: GameAdFormData) => {
-      return apiRequest('/api/game-ads', {
-        method: 'POST',
-        body: JSON.stringify(data)
-      });
+      return apiRequest('POST', '/api/game-ads', data);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/game-ads'] });
@@ -109,10 +106,7 @@ export default function GamesAdsPage() {
 
   const updateGameAdMutation = useMutation({
     mutationFn: async ({ id, data }: { id: number; data: Partial<GameAdFormData> }) => {
-      return apiRequest(`/api/game-ads/${id}`, {
-        method: 'PUT',
-        body: JSON.stringify(data)
-      });
+      return apiRequest('PUT', `/api/game-ads/${id}`, data);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/game-ads'] });
@@ -134,9 +128,7 @@ export default function GamesAdsPage() {
 
   const deleteGameAdMutation = useMutation({
     mutationFn: async (id: number) => {
-      return apiRequest(`/api/game-ads/${id}`, {
-        method: 'DELETE'
-      });
+      return apiRequest('DELETE', `/api/game-ads/${id}`);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/game-ads'] });
@@ -156,10 +148,7 @@ export default function GamesAdsPage() {
 
   const toggleGameAdMutation = useMutation({
     mutationFn: async ({ id, enabled }: { id: number; enabled: boolean }) => {
-      return apiRequest(`/api/game-ads/${id}/toggle`, {
-        method: 'PATCH',
-        body: JSON.stringify({ adEnabled: enabled })
-      });
+      return apiRequest('PATCH', `/api/game-ads/${id}/toggle`, { adEnabled: enabled });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/game-ads'] });
@@ -237,7 +226,7 @@ export default function GamesAdsPage() {
     toggleGameAdMutation.mutate({ id: ad.id, enabled: !ad.adEnabled });
   };
 
-  const formatDate = (date: string | null) => {
+  const formatDate = (date: string | Date | null) => {
     if (!date) return 'N/A';
     return new Date(date).toLocaleDateString();
   };
