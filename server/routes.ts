@@ -710,7 +710,8 @@ Sitemap: ${req.protocol}://${req.get('host')}/sitemap.xml`);
   app.put('/api/events/:id', isAdmin, async (req, res) => {
     try {
       const eventId = parseInt(req.params.id);
-      const updateData = insertEventSchema.omit({ id: true }).partial().parse(req.body);
+      const updateData = { ...req.body };
+      delete updateData.id;
       
       const [updatedEvent] = await db.update(events)
         .set({ ...updateData, updatedAt: new Date() })
@@ -748,6 +749,94 @@ Sitemap: ${req.protocol}://${req.get('host')}/sitemap.xml`);
     } catch (error) {
       console.error('Error deleting event:', error);
       res.status(500).json({ error: 'Failed to delete event' });
+    }
+  });
+
+  // Get event registrations (admin only)
+  app.get('/api/events/:id/registrations', isAdmin, async (req, res) => {
+    try {
+      const eventId = parseInt(req.params.id);
+      
+      const registrations = await db.select({
+        id: eventRegistrations.id,
+        eventId: eventRegistrations.eventId,
+        userId: eventRegistrations.userId,
+        guestName: eventRegistrations.guestName,
+        guestEmail: eventRegistrations.guestEmail,
+        guestPhone: eventRegistrations.guestPhone,
+        status: eventRegistrations.status,
+        notes: eventRegistrations.notes,
+        paymentStatus: eventRegistrations.paymentStatus,
+        registeredAt: eventRegistrations.registeredAt,
+        updatedAt: eventRegistrations.updatedAt,
+        user: {
+          id: users.id,
+          username: users.username,
+          email: users.email,
+          displayName: users.displayName
+        }
+      })
+      .from(eventRegistrations)
+      .leftJoin(users, eq(eventRegistrations.userId, users.id))
+      .where(eq(eventRegistrations.eventId, eventId))
+      .orderBy(desc(eventRegistrations.registeredAt));
+      
+      res.json(registrations);
+    } catch (error) {
+      console.error('Error fetching event registrations:', error);
+      res.status(500).json({ error: 'Failed to fetch registrations' });
+    }
+  });
+
+  // Get all registrations (admin only)
+  app.get('/api/registrations', isAdmin, async (req, res) => {
+    try {
+      const { limit = '50', offset = '0', eventId, status } = req.query;
+      
+      let query = db.select({
+        id: eventRegistrations.id,
+        eventId: eventRegistrations.eventId,
+        userId: eventRegistrations.userId,
+        guestName: eventRegistrations.guestName,
+        guestEmail: eventRegistrations.guestEmail,
+        guestPhone: eventRegistrations.guestPhone,
+        status: eventRegistrations.status,
+        notes: eventRegistrations.notes,
+        paymentStatus: eventRegistrations.paymentStatus,
+        registeredAt: eventRegistrations.registeredAt,
+        updatedAt: eventRegistrations.updatedAt,
+        user: {
+          id: users.id,
+          username: users.username,
+          email: users.email,
+          displayName: users.displayName
+        },
+        event: {
+          id: events.id,
+          title: events.title,
+          slug: events.slug,
+          startDate: events.startDate,
+          endDate: events.endDate,
+          eventType: events.eventType,
+          status: events.status
+        }
+      })
+      .from(eventRegistrations)
+      .leftJoin(users, eq(eventRegistrations.userId, users.id))
+      .leftJoin(events, eq(eventRegistrations.eventId, events.id))
+      .orderBy(desc(eventRegistrations.registeredAt))
+      .limit(parseInt(limit as string))
+      .offset(parseInt(offset as string));
+      
+      if (eventId) {
+        query = query.where(eq(eventRegistrations.eventId, parseInt(eventId as string)));
+      }
+      
+      const registrations = await query;
+      res.json(registrations);
+    } catch (error) {
+      console.error('Error fetching registrations:', error);
+      res.status(500).json({ error: 'Failed to fetch registrations' });
     }
   });
 
