@@ -202,6 +202,14 @@ function SeoSchemasContent() {
   const total = schemasData?.total || 0;
   const totalPages = Math.ceil(total / 20);
 
+  // Debug logging
+  console.log("SEO Schemas Debug:", { 
+    isLoading, 
+    schemasData, 
+    schemasCount: schemas.length, 
+    total 
+  });
+
   return (
     <div className="p-6 space-y-6">
       {/* Header */}
