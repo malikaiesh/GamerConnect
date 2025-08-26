@@ -60,8 +60,8 @@ export function HeroSlider() {
 
   if (isLoading) {
     return (
-      <div className="relative w-full h-[500px] bg-gradient-to-br from-purple-600 via-blue-600 to-teal-600 animate-pulse rounded-lg overflow-hidden">
-        <div className="absolute inset-0 flex items-center justify-center">
+      <div className="relative rounded-2xl overflow-hidden border border-white/10 shadow-[0_0_25px_rgba(124,58,237,0.15)]">
+        <div className="h-[400px] bg-gradient-to-br from-purple-600 via-blue-600 to-teal-600 animate-pulse rounded-xl flex items-center justify-center">
           <div className="text-white text-center">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-white mx-auto mb-4"></div>
             <p>Loading hero content...</p>
@@ -72,73 +72,45 @@ export function HeroSlider() {
   }
 
   if (activeImages.length === 0) {
-    // Default hero section when no images are configured
+    // Default fallback image when no hero images are configured
     return (
-      <div className="relative w-full h-[500px] bg-gradient-to-br from-purple-600 via-blue-600 to-teal-600 rounded-lg overflow-hidden">
-        <div className="absolute inset-0 bg-black/20" />
-        <div className="relative h-full flex items-center justify-center text-center text-white p-8">
-          <div className="max-w-4xl">
-            <h1 className="text-4xl md:text-6xl font-bold mb-6 bg-gradient-to-r from-white to-blue-200 bg-clip-text text-transparent">
-              Welcome to GameZone
-            </h1>
-            <p className="text-xl md:text-2xl mb-8 text-blue-100">
-              Discover amazing games, connect with fellow gamers, and dive into endless entertainment
-            </p>
-            <div className="space-x-4">
-              <Button size="lg" className="bg-white text-purple-600 hover:bg-blue-50">
-                Explore Games
-              </Button>
-              <Button size="lg" variant="outline" className="border-white text-white hover:bg-white/10">
-                Learn More
-              </Button>
-            </div>
-          </div>
-        </div>
+      <div className="relative rounded-2xl overflow-hidden border border-white/10 shadow-[0_0_25px_rgba(124,58,237,0.15)]">
+        <img 
+          src="https://images.unsplash.com/photo-1542751371-adc38448a05e?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&h=400&q=80" 
+          alt="Gaming setup with neon lighting" 
+          className="rounded-xl shadow-2xl w-full object-cover h-[400px]" 
+        />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
       </div>
     );
   }
 
   return (
-    <div className="relative w-full h-[500px] rounded-lg overflow-hidden group" data-testid="hero-slider">
+    <div className="relative rounded-2xl overflow-hidden border border-white/10 shadow-[0_0_25px_rgba(124,58,237,0.15)] group" data-testid="hero-slider">
       {/* Main Image */}
-      <div className="relative h-full">
+      <div className="relative h-[400px]">
         <img
           src={currentImage.imagePath}
           alt={currentImage.title}
-          className="w-full h-full object-cover"
+          className="w-full h-full object-cover rounded-xl"
           data-testid={`hero-image-${currentImage.id}`}
         />
-        <div className="absolute inset-0 bg-gradient-to-r from-black/50 via-transparent to-black/30" />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent rounded-xl" />
       </div>
 
-      {/* Content Overlay */}
-      <div className="absolute inset-0 flex items-center">
-        <div className="container mx-auto px-6">
-          <div className="max-w-2xl text-white">
-            <div className="inline-block bg-primary/20 text-primary-foreground text-sm font-medium px-3 py-1 rounded-full mb-4 backdrop-blur-sm">
-              Featured
-            </div>
-            <h1 className="text-4xl md:text-6xl font-bold mb-6 drop-shadow-lg">
-              {currentImage.title}
-            </h1>
-            {currentImage.description && (
-              <p className="text-lg md:text-xl mb-8 text-gray-100 drop-shadow-md">
-                {currentImage.description}
-              </p>
-            )}
-            {currentImage.linkUrl && currentImage.linkText && (
-              <div className="space-x-4">
-                <Button
-                  size="lg"
-                  className="bg-primary hover:bg-primary/90 shadow-lg"
-                  onClick={() => window.location.href = currentImage.linkUrl || ''}
-                  data-testid="hero-cta-button"
-                >
-                  {currentImage.linkText}
-                </Button>
-              </div>
-            )}
-          </div>
+      {/* Small overlay for image info - positioned at bottom left */}
+      <div className="absolute bottom-4 left-4">
+        <div className="text-white">
+          {currentImage.linkUrl && currentImage.linkText && (
+            <Button
+              size="sm"
+              className="bg-primary/80 hover:bg-primary text-white shadow-lg backdrop-blur-sm"
+              onClick={() => window.location.href = currentImage.linkUrl || ''}
+              data-testid="hero-cta-button"
+            >
+              {currentImage.linkText}
+            </Button>
+          )}
         </div>
       </div>
 
@@ -161,13 +133,13 @@ export function HeroSlider() {
             <ChevronRight className="h-6 w-6" />
           </button>
 
-          {/* Slide Indicators */}
-          <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex space-x-2">
+          {/* Slide Indicators - positioned at bottom center */}
+          <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex space-x-2">
             {activeImages.map((_, index) => (
               <button
                 key={index}
                 onClick={() => goToSlide(index)}
-                className={`relative w-12 h-2 rounded-full transition-all ${
+                className={`relative w-8 h-2 rounded-full transition-all ${
                   index === currentIndex ? 'bg-white' : 'bg-white/50 hover:bg-white/70'
                 }`}
                 data-testid={`hero-indicator-${index}`}
@@ -182,13 +154,13 @@ export function HeroSlider() {
             ))}
           </div>
 
-          {/* Play/Pause Button */}
+          {/* Play/Pause Button - positioned at bottom right */}
           <button
             onClick={togglePlayPause}
-            className="absolute bottom-6 right-6 bg-black/50 hover:bg-black/70 text-white p-2 rounded-full transition-all opacity-0 group-hover:opacity-100"
+            className="absolute bottom-4 right-4 bg-black/50 hover:bg-black/70 text-white p-1.5 rounded-full transition-all opacity-0 group-hover:opacity-100"
             data-testid="hero-play-pause-button"
           >
-            {isPlaying ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4" />}
+            {isPlaying ? <Pause className="h-3 w-3" /> : <Play className="h-3 w-3" />}
           </button>
         </>
       )}

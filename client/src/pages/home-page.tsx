@@ -137,9 +137,46 @@ export default function HomePage() {
       <Header />
       
       {/* Hero Section */}
-      <section className="py-8">
-        <div className="container mx-auto px-4">
-          <HeroSlider />
+      <section className="relative py-16 overflow-hidden" style={{
+        background: "linear-gradient(135deg, hsl(260 40% 12%) 0%, hsl(270 45% 15%) 100%)",
+        boxShadow: "0 4px 30px rgba(0, 0, 0, 0.2)",
+      }}>
+        {/* Decorative circles */}
+        <div className="absolute -top-24 -left-24 w-64 h-64 rounded-full bg-primary/10 blur-3xl"></div>
+        <div className="absolute top-1/2 right-20 w-80 h-80 rounded-full bg-secondary/10 blur-3xl"></div>
+        <div className="absolute -bottom-20 left-1/3 w-72 h-72 rounded-full bg-accent/10 blur-3xl"></div>
+        
+        <div className="container mx-auto px-4 relative z-10">
+          <div className="flex flex-col md:flex-row items-center justify-between">
+            <div className="md:w-1/2 mb-8 md:mb-0">
+              <h1 className="heading-xl mb-4 text-white">
+                <span className="block bg-clip-text text-transparent bg-gradient-to-r from-secondary to-primary">Play the Best</span> 
+                Gaming Experience
+              </h1>
+              <p className="text-lg md:text-xl mb-6 text-white/90">
+                Discover thousands of immersive games across all genres. No downloads required - play instantly in your browser!
+              </p>
+              <div className="flex flex-wrap gap-4">
+                <Link href="#games" className="btn-secondary">
+                  Play Now
+                </Link>
+                <Link href="#categories" className="bg-white/10 hover:bg-white/20 text-white font-bold py-3 px-6 rounded-lg transition-colors backdrop-blur-sm border border-white/10">
+                  Browse Categories
+                </Link>
+                <RandomGameButton 
+                  variant="outline" 
+                  size="lg"
+                  className="border-white/20 text-white hover:bg-white/10"
+                />
+              </div>
+            </div>
+            <div className="md:w-1/2 relative">
+              <HeroSlider />
+              <div className="absolute -top-4 -right-4 bg-accent text-accent-foreground text-lg font-bold py-2 px-4 rounded-lg shadow-lg transform rotate-3 z-20">
+                New Games Daily!
+              </div>
+            </div>
+          </div>
         </div>
       </section>
       
