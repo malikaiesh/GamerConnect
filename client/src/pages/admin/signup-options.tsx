@@ -345,17 +345,20 @@ export default function SignupOptionsPage() {
 
   if (isLoading) {
     return (
-      <AdminNavigation>
-        <div className="flex items-center justify-center min-h-[400px]">
+      <div className="flex min-h-screen bg-background">
+        <AdminNavigation />
+        <div className="flex-1 flex items-center justify-center">
           <Loader2 className="h-8 w-8 animate-spin" />
         </div>
-      </AdminNavigation>
+      </div>
     );
   }
 
   return (
-    <AdminNavigation>
-      <div className="space-y-6">
+    <div className="flex min-h-screen bg-background">
+      <AdminNavigation />
+      <div className="flex-1 p-8">
+        <div className="space-y-6">
         <div>
           <h1 className="text-3xl font-bold">Signup Options</h1>
           <p className="text-muted-foreground">
@@ -501,7 +504,8 @@ export default function SignupOptionsPage() {
           </CardContent>
         </Card>
         )}
+        </div>
       </div>
-    </AdminNavigation>
+    </div>
   );
 }
