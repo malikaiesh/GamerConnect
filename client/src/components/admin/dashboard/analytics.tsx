@@ -56,18 +56,25 @@ interface AnalyticsData {
 const COLORS = ['#7e57c2', '#ff5722', '#4caf50', '#2196f3', '#ff9800'];
 const defaultTimeframe = '7days';
 
-// Timeframe options
-const timeframeOptions = [
+// Quick filter options (shown as buttons)
+const quickFilters = [
   { value: '7days', label: '7 Days' },
   { value: '30days', label: '30 Days' },
   { value: '90days', label: '90 Days' },
-  { value: '6months', label: '6 Months' },
+  { value: '6months', label: '6 Months' }
+];
+
+// Extended timeframe options (shown in dropdown)
+const extendedTimeframeOptions = [
   { value: '1year', label: '1 Year' },
   { value: '2years', label: '2 Years' },
   { value: '5years', label: '5 Years' },
   { value: 'alltime', label: 'All Time' },
   { value: 'custom', label: 'Custom Range' }
 ];
+
+// All timeframe options combined (for finding labels)
+const allTimeframeOptions = [...quickFilters, ...extendedTimeframeOptions];
 
 // Memoized chart components for better performance
 const MemoizedStatsCard = memo(({ title, value, description }: { title: string; value: string; description: string }) => (
@@ -334,21 +341,44 @@ export function Analytics() {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-        <h2 className="text-2xl font-bold">Analytics Dashboard</h2>
-        <div className="flex gap-2">
-          <Select value={timeframe} onValueChange={handleTimeframeChange}>
-            <SelectTrigger className="w-[200px]">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              {timeframeOptions.map((option) => (
-                <SelectItem key={option.value} value={option.value}>
-                  {option.label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+      <div className="flex flex-col gap-4">
+        {/* Quick Filters and Title */}
+        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
+          <div className="flex flex-wrap gap-2">
+            {quickFilters.map((filter) => (
+              <Button
+                key={filter.value}
+                variant={timeframe === filter.value ? "default" : "outline"}
+                size="sm"
+                onClick={() => handleTimeframeChange(filter.value)}
+                data-testid={`filter-${filter.value}`}
+              >
+                {filter.label}
+              </Button>
+            ))}
+          </div>
+          <h2 className="text-2xl font-bold">Analytics Dashboard</h2>
+        </div>
+        
+        {/* Extended Filters and Export */}
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+          <div className="flex gap-2">
+            <Select 
+              value={quickFilters.some(f => f.value === timeframe) ? "" : timeframe} 
+              onValueChange={handleTimeframeChange}
+            >
+              <SelectTrigger className="w-[200px]">
+                <SelectValue placeholder="More options..." />
+              </SelectTrigger>
+              <SelectContent>
+                {extendedTimeframeOptions.map((option) => (
+                  <SelectItem key={option.value} value={option.value}>
+                    {option.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
           
           <Dialog open={exportDialogOpen} onOpenChange={setExportDialogOpen}>
             <DialogTrigger asChild>
@@ -380,7 +410,7 @@ export function Analytics() {
                   </Select>
                 </div>
                 <div className="text-sm text-muted-foreground">
-                  Current selection: {timeframeOptions.find(opt => opt.value === timeframe)?.label}
+                  Current selection: {allTimeframeOptions.find(opt => opt.value === timeframe)?.label}
                   {timeframe === 'custom' && startDate && endDate && (
                     <span> ({format(startDate, 'PPP')} to {format(endDate, 'PPP')})</span>
                   )}
