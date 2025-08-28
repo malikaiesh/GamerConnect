@@ -86,7 +86,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   
   const updateProfileMutation = useMutation({
     mutationFn: async (profileData: ProfileUpdateData) => {
-      return await apiRequest("PUT", "/api/user/profile", profileData);
+      return await apiRequest("/api/user/profile", {
+        method: "PUT",
+        body: JSON.stringify(profileData)
+      });
     },
     onSuccess: (user: SelectUser) => {
       queryClient.setQueryData(["/api/user"], user);
@@ -111,7 +114,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const logoutMutation = useMutation({
     mutationFn: async () => {
-      await apiRequest("POST", "/api/logout");
+      await apiRequest("/api/logout", {
+        method: "POST"
+      });
     },
     onSuccess: () => {
       queryClient.setQueryData(["/api/user"], null);
