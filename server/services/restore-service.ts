@@ -46,11 +46,10 @@ export class RestoreService {
     try {
       await db.insert(backupLogs).values({
         restoreId,
-        operationType: 'restore',
+        operation: 'restore',
         level,
         message,
-        data,
-        duration
+        details: data
       });
     } catch (error) {
       console.error('Failed to log restore operation:', error);

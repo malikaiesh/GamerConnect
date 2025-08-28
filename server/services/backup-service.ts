@@ -58,11 +58,10 @@ export class BackupService {
     try {
       await db.insert(backupLogs).values({
         backupId,
-        operationType: 'backup',
+        operation: 'backup',
         level,
         message,
-        data,
-        duration
+        details: data
       });
     } catch (error) {
       console.error('Failed to log backup operation:', error);
@@ -73,11 +72,10 @@ export class BackupService {
     try {
       await db.insert(backupLogs).values({
         restoreId,
-        operationType: 'restore',
+        operation: 'restore',
         level,
         message,
-        data,
-        duration
+        details: data
       });
     } catch (error) {
       console.error('Failed to log restore operation:', error);
