@@ -18,7 +18,9 @@ export function isAdmin(req: Request, res: Response, next: NextFunction) {
     return res.status(401).json({ message: 'Authentication required' });
   }
   
-  if (!req.user || !req.user.isAdmin) {
+  // Check for admin privileges using both camelCase and snake_case field names
+  const isAdmin = req.user?.isAdmin || (req.user as any)?.is_admin;
+  if (!req.user || !isAdmin) {
     return res.status(403).json({ message: 'Admin privileges required' });
   }
   
