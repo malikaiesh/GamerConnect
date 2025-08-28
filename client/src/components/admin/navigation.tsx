@@ -214,6 +214,20 @@ export default function AdminNavigation() {
           </li>
           <li>
             <Link
+              href="/admin/google-indexing"
+              className={cn(
+                "flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all",
+                isActive("/admin/google-indexing")
+                  ? "bg-primary/15 text-primary shadow-sm"
+                  : "text-card-foreground hover:bg-primary/10 hover:text-primary"
+              )}
+            >
+              <Cloud size={18} className="text-primary opacity-80" />
+              Google Indexing
+            </Link>
+          </li>
+          <li>
+            <Link
               href="/admin/homepage-content"
               className={cn(
                 "flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all",

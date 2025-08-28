@@ -49,6 +49,12 @@ export const eventLocationTypeEnum = pgEnum('event_location_type', ['online', 'p
 // Registration Status Enum
 export const registrationStatusEnum = pgEnum('registration_status', ['registered', 'cancelled', 'attended', 'no_show']);
 
+// Google Indexing Status Enum
+export const indexingStatusEnum = pgEnum('indexing_status', ['pending', 'submitted', 'indexed', 'failed', 'rate_limited']);
+
+// Content Type Enum for Indexing
+export const indexingContentTypeEnum = pgEnum('indexing_content_type', ['game', 'blog_post', 'page', 'category']);
+
 // Roles table
 export const roles = pgTable('roles', {
   id: serial('id').primaryKey(),
@@ -1330,3 +1336,79 @@ export const heroImages = pgTable('hero_images', {
 export const insertHeroImageSchema = createInsertSchema(heroImages);
 export type HeroImage = typeof heroImages.$inferSelect;
 export type InsertHeroImage = z.infer<typeof insertHeroImageSchema>;
+
+// Google Indexing Credentials table
+export const googleIndexingCredentials = pgTable('google_indexing_credentials', {
+  id: serial('id').primaryKey(),
+  projectId: text('project_id').notNull(),
+  serviceAccountEmail: text('service_account_email').notNull(),
+  privateKey: text('private_key').notNull(), // Encrypted service account private key
+  clientEmail: text('client_email').notNull(),
+  clientId: text('client_id').notNull(),
+  authUri: text('auth_uri').notNull(),
+  tokenUri: text('token_uri').notNull(),
+  isActive: boolean('is_active').default(true).notNull(),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+  updatedAt: timestamp('updated_at').defaultNow().notNull()
+});
+
+// Indexing Requests table
+export const indexingRequests = pgTable('indexing_requests', {
+  id: serial('id').primaryKey(),
+  url: text('url').notNull(),
+  contentType: indexingContentTypeEnum('content_type').notNull(),
+  contentId: integer('content_id').notNull(), // ID of the game, blog post, page, or category
+  status: indexingStatusEnum('status').default('pending').notNull(),
+  requestType: text('request_type').notNull().default('URL_UPDATED'), // URL_UPDATED, URL_DELETED
+  submitDate: timestamp('submit_date').defaultNow().notNull(),
+  indexedDate: timestamp('indexed_date'),
+  responseData: json('response_data').$type<Record<string, any>>(), // Google API response
+  errorMessage: text('error_message'),
+  retryCount: integer('retry_count').default(0).notNull(),
+  createdBy: integer('created_by').references(() => users.id),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+  updatedAt: timestamp('updated_at').defaultNow().notNull()
+});
+
+// Indexing Logs table (for history and analytics)
+export const indexingLogs = pgTable('indexing_logs', {
+  id: serial('id').primaryKey(),
+  requestId: integer('request_id').references(() => indexingRequests.id, { onDelete: 'cascade' }),
+  action: text('action').notNull(), // 'submit', 'retry', 'status_check', 'delete'
+  status: indexingStatusEnum('status').notNull(),
+  message: text('message'),
+  responseData: json('response_data').$type<Record<string, any>>(),
+  quotaUsed: integer('quota_used').default(1).notNull(), // Track API quota usage
+  duration: integer('duration'), // Request duration in milliseconds
+  ipAddress: text('ip_address'),
+  userAgent: text('user_agent'),
+  createdAt: timestamp('created_at').defaultNow().notNull()
+});
+
+// Indexing settings table
+export const indexingSettings = pgTable('indexing_settings', {
+  id: serial('id').primaryKey(),
+  autoIndexing: boolean('auto_indexing').default(false).notNull(), // Auto-submit new content
+  batchSize: integer('batch_size').default(100).notNull(), // URLs per batch
+  dailyQuotaLimit: integer('daily_quota_limit').default(200).notNull(), // Daily API calls limit
+  quotaUsedToday: integer('quota_used_today').default(0).notNull(),
+  lastQuotaReset: timestamp('last_quota_reset').defaultNow().notNull(),
+  retryFailedAfterHours: integer('retry_failed_after_hours').default(24).notNull(),
+  enableNotifications: boolean('enable_notifications').default(true).notNull(),
+  updatedAt: timestamp('updated_at').defaultNow().notNull()
+});
+
+// Google indexing schema and types
+export const insertGoogleIndexingCredentialSchema = createInsertSchema(googleIndexingCredentials);
+export const insertIndexingRequestSchema = createInsertSchema(indexingRequests);
+export const insertIndexingLogSchema = createInsertSchema(indexingLogs);
+export const insertIndexingSettingsSchema = createInsertSchema(indexingSettings);
+
+export type GoogleIndexingCredential = typeof googleIndexingCredentials.$inferSelect;
+export type InsertGoogleIndexingCredential = z.infer<typeof insertGoogleIndexingCredentialSchema>;
+export type IndexingRequest = typeof indexingRequests.$inferSelect;
+export type InsertIndexingRequest = z.infer<typeof insertIndexingRequestSchema>;
+export type IndexingLog = typeof indexingLogs.$inferSelect;
+export type InsertIndexingLog = z.infer<typeof insertIndexingLogSchema>;
+export type IndexingSettings = typeof indexingSettings.$inferSelect;
+export type InsertIndexingSettings = z.infer<typeof insertIndexingSettingsSchema>;

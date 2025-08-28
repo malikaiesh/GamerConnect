@@ -29,6 +29,7 @@ import { registerSeoSchemaRoutes } from "./api/seo-schemas";
 import { registerTeamRoutes } from "./api/team";
 import { registerSignupOptionsRoutes } from "./api/signup-options";
 import { registerHeroImageRoutes } from "./api/hero-images";
+import { registerGoogleIndexingRoutes } from "./api/google-indexing";
 import { storage } from "./storage";
 import { db } from "../db";
 import { ObjectStorageService, ObjectNotFoundError } from "./objectStorage";
@@ -374,6 +375,7 @@ Sitemap: ${req.protocol}://${req.get('host')}/sitemap.xml`);
   registerTeamRoutes(app);
   registerSignupOptionsRoutes(app);
   registerHeroImageRoutes(app);
+  registerGoogleIndexingRoutes(app);
   
   // Quick test route to verify our demo endpoint
   app.post('/api/demo-schemas/test', (req, res) => {

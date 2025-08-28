@@ -12,6 +12,7 @@
     "db:seed": "tsx db/seed.ts"
   },
   "dependencies": {
+    "@google-cloud/local-auth": "^3.0.1",
     "@google-cloud/storage": "^7.17.0",
     "@hookform/resolvers": "^3.9.1",
     "@jridgewell/trace-mapping": "^0.3.25",
@@ -78,6 +79,7 @@
     "express-validator": "^7.2.1",
     "framer-motion": "^11.18.2",
     "google-auth-library": "^10.2.1",
+    "googleapis": "^159.0.0",
     "helmet": "^8.1.0",
     "hpp": "^0.2.3",
     "input-otp": "^1.2.4",
