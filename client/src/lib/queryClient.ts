@@ -53,13 +53,19 @@ export async function apiRequest(
   url: string,
   options?: {
     method?: "GET" | "POST" | "PUT" | "PATCH" | "DELETE";
-    body?: string;
+    body?: any;
     headers?: Record<string, string>;
   }
 ) {
   const method = options?.method || "GET";
   const controller = new AbortController();
   const timeoutId = setTimeout(() => controller.abort(), 30000); // 30-second timeout
+  
+  // Automatically JSON.stringify body if it's an object
+  let body = options?.body;
+  if (body && typeof body === 'object' && !(body instanceof FormData) && !(body instanceof URLSearchParams)) {
+    body = JSON.stringify(body);
+  }
   
   try {
     const res = await fetch(url, {
@@ -69,7 +75,7 @@ export async function apiRequest(
         "Content-Type": "application/json",
         ...options?.headers,
       },
-      body: options?.body,
+      body,
       signal: controller.signal
     });
     
