@@ -130,12 +130,15 @@ export default function TeamAdminPage() {
   // Profile picture upload functions
   const getUploadParameters = async () => {
     try {
-      const response = await apiRequest('/api/objects/upload', { method: 'POST' });
+      console.log('Getting upload parameters...');
+      const response = await apiRequest("POST", "/api/objects/upload");
+      console.log('Upload parameters response:', response);
       return {
         method: 'PUT' as const,
         url: response.uploadURL
       };
     } catch (error) {
+      console.error('Error getting upload parameters:', error);
       toast({
         title: "Error",
         description: "Failed to get upload URL",
