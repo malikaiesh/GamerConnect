@@ -663,7 +663,16 @@ export const insertBlogPostSchema = createInsertSchema(blogPosts, {
   title: (schema) => schema.min(5, "Title must be at least 5 characters"),
   content: (schema) => schema.min(50, "Content must be at least 50 characters"),
   excerpt: (schema) => schema.min(10, "Excerpt must be at least 10 characters"),
-  featuredImage: (schema) => schema.url("Featured image must be a valid URL"),
+  featuredImage: (schema) => schema.min(1, "Featured image is required").refine((val) => {
+    // Allow local file paths (starting with /) or valid URLs
+    if (val.startsWith('/')) return true;
+    try {
+      new URL(val);
+      return true;
+    } catch {
+      return false;
+    }
+  }, { message: "Featured image must be a valid URL or uploaded image" }),
   authorAvatar: (schema) => schema.optional().nullable().refine((val) => {
     if (!val) return true; // Allow null/undefined
     try {

@@ -23,7 +23,16 @@ const formSchema = z.object({
   }),
   content: z.string().min(50, { message: "Content must be at least 50 characters" }),
   excerpt: z.string().min(10, { message: "Excerpt must be at least 10 characters" }),
-  featuredImage: z.string().url({ message: "Featured image must be a valid URL" }),
+  featuredImage: z.string().min(1, { message: "Featured image is required" }).refine((val) => {
+    // Allow local file paths (starting with /) or valid URLs
+    if (val.startsWith('/')) return true;
+    try {
+      new URL(val);
+      return true;
+    } catch {
+      return false;
+    }
+  }, { message: "Featured image must be a valid URL or uploaded image" }),
   categoryId: z.coerce.number().min(1, { message: "Category is required" }),
   tags: z.string(),
   status: z.enum(["draft", "published"]),
