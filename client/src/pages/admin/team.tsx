@@ -8,6 +8,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { SiTiktok } from "react-icons/si";
+import { ObjectUploader } from "@/components/ObjectUploader";
 
 import AdminNavigation from "@/components/admin/navigation";
 import { Button } from "@/components/ui/button";
@@ -108,15 +109,7 @@ export default function TeamAdminPage() {
 
   // Form for create/edit
   const form = useForm<FormData>({
-    resolver: zodResolver(insertTeamMemberSchema.extend({
-      socialLinkedin: z.string().optional(),
-      socialTwitter: z.string().optional(),
-      socialGithub: z.string().optional(),
-      socialInstagram: z.string().optional(),
-      socialTiktok: z.string().optional(),
-      socialFacebook: z.string().optional(),
-      socialYoutube: z.string().optional(),
-    })),
+    resolver: zodResolver(insertTeamMemberSchema),
     defaultValues: {
       name: "",
       designation: "",
@@ -133,6 +126,35 @@ export default function TeamAdminPage() {
       status: "active"
     }
   });
+
+  // Profile picture upload functions
+  const getUploadParameters = async () => {
+    try {
+      const response = await apiRequest('/api/objects/upload', { method: 'POST' });
+      return {
+        method: 'PUT' as const,
+        url: response.uploadURL
+      };
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to get upload URL",
+        variant: "destructive"
+      });
+      throw error;
+    }
+  };
+
+  const handleUploadComplete = (result: any) => {
+    if (result.successful && result.successful[0] && result.successful[0].uploadURL) {
+      // Set the uploaded image URL to the form
+      form.setValue('profilePicture', result.successful[0].uploadURL);
+      toast({
+        title: "Success",
+        description: "Profile picture uploaded successfully"
+      });
+    }
+  };
 
   // Create member mutation
   const createMutation = useMutation({
@@ -399,18 +421,57 @@ export default function TeamAdminPage() {
                         name="profilePicture"
                         render={({ field }) => (
                           <FormItem>
-                            <FormLabel className="text-sm font-medium">Profile Picture URL</FormLabel>
+                            <FormLabel className="text-sm font-medium">Profile Picture</FormLabel>
                             <FormControl>
-                              <div className="space-y-2">
-                                <Input 
-                                  placeholder="https://example.com/image.jpg" 
-                                  {...field} 
-                                  data-testid="input-profile-picture"
-                                  className="focus:ring-2 focus:ring-primary/20"
-                                />
-                                <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                                  <Upload className="h-3 w-3" />
-                                  <span>Enter a URL for the profile picture (optional)</span>
+                              <div className="space-y-3">
+                                {/* Upload Button */}
+                                <ObjectUploader
+                                  maxNumberOfFiles={1}
+                                  maxFileSize={5485760} // 5MB
+                                  onGetUploadParameters={getUploadParameters}
+                                  onComplete={handleUploadComplete}
+                                  buttonClassName="w-full"
+                                >
+                                  <div className="flex items-center gap-2">
+                                    <Upload className="h-4 w-4" />
+                                    <span>Upload Profile Picture</span>
+                                  </div>
+                                </ObjectUploader>
+                                
+                                {/* Current Image Preview */}
+                                {field.value && (
+                                  <div className="flex items-center gap-3 p-3 bg-muted/50 rounded-lg">
+                                    <img 
+                                      src={field.value} 
+                                      alt="Profile preview" 
+                                      className="w-12 h-12 object-cover rounded-full"
+                                    />
+                                    <div className="flex-1 text-sm">
+                                      <p className="text-foreground">Profile picture uploaded</p>
+                                      <p className="text-muted-foreground truncate">{field.value}</p>
+                                    </div>
+                                    <Button
+                                      type="button"
+                                      variant="outline"
+                                      size="sm"
+                                      onClick={() => form.setValue('profilePicture', '')}
+                                    >
+                                      Remove
+                                    </Button>
+                                  </div>
+                                )}
+                                
+                                {/* Manual URL Input (as fallback) */}
+                                <div className="space-y-2">
+                                  <Input 
+                                    placeholder="Or enter image URL manually" 
+                                    {...field} 
+                                    data-testid="input-profile-picture"
+                                    className="focus:ring-2 focus:ring-primary/20"
+                                  />
+                                  <p className="text-xs text-muted-foreground">
+                                    Upload an image file or enter a URL manually (optional)
+                                  </p>
                                 </div>
                               </div>
                             </FormControl>
@@ -819,17 +880,56 @@ export default function TeamAdminPage() {
                       name="profilePicture"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel className="text-sm font-medium">Profile Picture URL</FormLabel>
+                          <FormLabel className="text-sm font-medium">Profile Picture</FormLabel>
                           <FormControl>
-                            <div className="space-y-2">
-                              <Input 
-                                placeholder="https://example.com/image.jpg" 
-                                {...field} 
-                                className="focus:ring-2 focus:ring-primary/20"
-                              />
-                              <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                                <Upload className="h-3 w-3" />
-                                <span>Enter a URL for the profile picture (optional)</span>
+                            <div className="space-y-3">
+                              {/* Upload Button */}
+                              <ObjectUploader
+                                maxNumberOfFiles={1}
+                                maxFileSize={5485760} // 5MB
+                                onGetUploadParameters={getUploadParameters}
+                                onComplete={handleUploadComplete}
+                                buttonClassName="w-full"
+                              >
+                                <div className="flex items-center gap-2">
+                                  <Upload className="h-4 w-4" />
+                                  <span>Upload Profile Picture</span>
+                                </div>
+                              </ObjectUploader>
+                              
+                              {/* Current Image Preview */}
+                              {field.value && (
+                                <div className="flex items-center gap-3 p-3 bg-muted/50 rounded-lg">
+                                  <img 
+                                    src={field.value} 
+                                    alt="Profile preview" 
+                                    className="w-12 h-12 object-cover rounded-full"
+                                  />
+                                  <div className="flex-1 text-sm">
+                                    <p className="text-foreground">Profile picture uploaded</p>
+                                    <p className="text-muted-foreground truncate">{field.value}</p>
+                                  </div>
+                                  <Button
+                                    type="button"
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={() => form.setValue('profilePicture', '')}
+                                  >
+                                    Remove
+                                  </Button>
+                                </div>
+                              )}
+                              
+                              {/* Manual URL Input (as fallback) */}
+                              <div className="space-y-2">
+                                <Input 
+                                  placeholder="Or enter image URL manually" 
+                                  {...field} 
+                                  className="focus:ring-2 focus:ring-primary/20"
+                                />
+                                <p className="text-xs text-muted-foreground">
+                                  Upload an image file or enter a URL manually (optional)
+                                </p>
                               </div>
                             </div>
                           </FormControl>

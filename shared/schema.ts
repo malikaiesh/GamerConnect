@@ -730,12 +730,15 @@ export const insertStaticPageSchema = createInsertSchema(staticPages, {
 export const insertTeamMemberSchema = createInsertSchema(teamMembers, {
   name: (schema) => schema.min(2, "Name must be at least 2 characters"),
   designation: (schema) => schema.min(2, "Designation must be at least 2 characters"),
-  profilePicture: (schema) => schema.url("Profile picture must be a valid URL").optional().nullable(),
+  profilePicture: (schema) => schema.optional().nullable().refine((val) => !val || val === "" || z.string().url().safeParse(val).success, "Profile picture must be a valid URL or empty"),
   bio: (schema) => schema.max(500, "Bio must not exceed 500 characters").optional().nullable(),
-  socialLinkedin: (schema) => schema.url("LinkedIn must be a valid URL").optional().nullable(),
-  socialTwitter: (schema) => schema.url("Twitter must be a valid URL").optional().nullable(),
-  socialGithub: (schema) => schema.url("GitHub must be a valid URL").optional().nullable(),
-  socialInstagram: (schema) => schema.url("Instagram must be a valid URL").optional().nullable(),
+  socialLinkedin: (schema) => schema.optional().nullable().refine((val) => !val || val === "" || z.string().url().safeParse(val).success, "LinkedIn must be a valid URL or empty"),
+  socialTwitter: (schema) => schema.optional().nullable().refine((val) => !val || val === "" || z.string().url().safeParse(val).success, "Twitter must be a valid URL or empty"),
+  socialGithub: (schema) => schema.optional().nullable().refine((val) => !val || val === "" || z.string().url().safeParse(val).success, "GitHub must be a valid URL or empty"),
+  socialInstagram: (schema) => schema.optional().nullable().refine((val) => !val || val === "" || z.string().url().safeParse(val).success, "Instagram must be a valid URL or empty"),
+  socialTiktok: (schema) => schema.optional().nullable().refine((val) => !val || val === "" || z.string().url().safeParse(val).success, "TikTok must be a valid URL or empty"),
+  socialFacebook: (schema) => schema.optional().nullable().refine((val) => !val || val === "" || z.string().url().safeParse(val).success, "Facebook must be a valid URL or empty"),
+  socialYoutube: (schema) => schema.optional().nullable().refine((val) => !val || val === "" || z.string().url().safeParse(val).success, "YouTube must be a valid URL or empty"),
   displayOrder: (schema) => schema.optional(),
   status: (schema) => schema.optional().default('active')
 });

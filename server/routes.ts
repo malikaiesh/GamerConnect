@@ -31,6 +31,7 @@ import { registerSignupOptionsRoutes } from "./api/signup-options";
 import { registerHeroImageRoutes } from "./api/hero-images";
 import { registerGoogleIndexingRoutes } from "./api/google-indexing";
 import backupRestoreRoutes from "./api/backup-restore";
+import objectsRoutes from "./api/objects";
 import { storage } from "./storage";
 import { db } from "../db";
 import { ObjectStorageService, ObjectNotFoundError } from "./objectStorage";
@@ -380,6 +381,9 @@ Sitemap: ${req.protocol}://${req.get('host')}/sitemap.xml`);
   
   // Register backup and restore routes (admin only)
   app.use('/api/backup-restore', isAdmin, backupRestoreRoutes);
+  
+  // Register object storage routes
+  app.use('/api/objects', objectsRoutes);
   
   // Quick test route to verify our demo endpoint
   app.post('/api/demo-schemas/test', (req, res) => {
