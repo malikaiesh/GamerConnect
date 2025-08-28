@@ -143,30 +143,31 @@ export function BlogForm({ post, onSuccess }: BlogFormProps) {
     setIsUploading(true);
     try {
       const formData = new FormData();
-      formData.append('image', file);
-      formData.append('folder', 'blog');
+      formData.append('file', file); // Changed from 'image' to 'file'
       
-      const response = await fetch('/api/upload/image', {
+      const response = await fetch('/api/upload-image', { // Changed from '/api/upload/image' to '/api/upload-image'
         method: 'POST',
         body: formData,
         credentials: 'include',
       });
       
       if (!response.ok) {
-        throw new Error('Upload failed');
+        const errorData = await response.json();
+        throw new Error(errorData.error?.message || 'Upload failed');
       }
       
       const data = await response.json();
-      form.setValue(fieldName, data.url);
+      form.setValue(fieldName, data.location); // Changed from data.url to data.location
       
       toast({
         title: "Upload successful",
         description: `${fieldName === 'featuredImage' ? 'Featured image' : 'Author avatar'} uploaded successfully`,
       });
     } catch (error) {
+      console.error('Upload error:', error);
       toast({
         title: "Upload failed",
-        description: "Failed to upload image. Please try again.",
+        description: error instanceof Error ? error.message : "Failed to upload image. Please try again.",
         variant: "destructive",
       });
     } finally {
