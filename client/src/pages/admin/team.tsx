@@ -131,8 +131,32 @@ export default function TeamAdminPage() {
   const getUploadParameters = async () => {
     try {
       console.log('Getting upload parameters...');
-      const response = await apiRequest("POST", "/api/objects/upload");
-      console.log('Upload parameters response:', response);
+      
+      // Try with raw fetch first to debug
+      const rawResponse = await fetch('/api/objects/upload', {
+        method: 'POST',
+        credentials: 'include',
+        headers: {
+          'Content-Type': 'application/json',
+        }
+      });
+      
+      console.log('Raw response status:', rawResponse.status);
+      console.log('Raw response headers:', rawResponse.headers);
+      
+      const responseText = await rawResponse.text();
+      console.log('Raw response text:', responseText);
+      
+      let response;
+      try {
+        response = JSON.parse(responseText);
+      } catch (parseError) {
+        console.error('JSON parse error:', parseError);
+        console.log('Response was not valid JSON:', responseText);
+        throw new Error('Invalid JSON response from server');
+      }
+      
+      console.log('Parsed response:', response);
       return {
         method: 'PUT' as const,
         url: response.uploadURL
