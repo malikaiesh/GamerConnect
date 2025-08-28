@@ -27,8 +27,10 @@ export default function SitemapsPage() {
 
   const updateSitemapMutation = useMutation({
     mutationFn: async ({ id, data }: { id: number; data: any }) => {
-      const response = await apiRequest("PATCH", `/api/sitemaps/${id}`, data);
-      return response.json();
+      return await apiRequest(`/api/sitemaps/${id}`, {
+        method: "PATCH",
+        body: JSON.stringify(data)
+      });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/sitemaps"] });
@@ -49,8 +51,9 @@ export default function SitemapsPage() {
   const generateSitemapMutation = useMutation({
     mutationFn: async (type: string) => {
       setIsRefreshing(prev => ({ ...prev, [type]: true }));
-      const response = await apiRequest("POST", `/api/sitemaps/generate/${type}`, {});
-      return response.json();
+      return await apiRequest(`/api/sitemaps/generate/${type}`, {
+        method: "POST"
+      });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/sitemaps"] });
@@ -73,8 +76,9 @@ export default function SitemapsPage() {
 
   const generateAllSitemapsMutation = useMutation({
     mutationFn: async () => {
-      const response = await apiRequest("POST", "/api/sitemaps/generate-all", {});
-      return response.json();
+      return await apiRequest("/api/sitemaps/generate-all", {
+        method: "POST"
+      });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/sitemaps"] });
