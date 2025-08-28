@@ -133,6 +133,12 @@ export const users = pgTable('users', {
     latitude?: number;
     longitude?: number;
   }>(),
+  
+  // Verification system
+  isVerified: boolean('is_verified').default(false).notNull(),
+  verifiedAt: timestamp('verified_at'),
+  verifiedBy: integer('verified_by').references(() => users.id),
+  
   createdAt: timestamp('created_at').defaultNow().notNull(),
   updatedAt: timestamp('updated_at').defaultNow().notNull()
 });
@@ -1684,6 +1690,11 @@ export const rooms = pgTable('rooms', {
   totalVisits: integer('total_visits').default(0).notNull(),
   totalGiftsReceived: integer('total_gifts_received').default(0).notNull(),
   totalGiftValue: integer('total_gift_value').default(0).notNull(), // in cents
+  
+  // Verification system
+  isVerified: boolean('is_verified').default(false).notNull(),
+  verifiedAt: timestamp('verified_at'),
+  verifiedBy: integer('verified_by').references(() => users.id),
   
   createdAt: timestamp('created_at').defaultNow().notNull(),
   updatedAt: timestamp('updated_at').defaultNow().notNull(),

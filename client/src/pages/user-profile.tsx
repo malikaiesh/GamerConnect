@@ -21,7 +21,8 @@ import {
   Users,
   Settings,
   Eye,
-  EyeOff
+  EyeOff,
+  ShieldCheck
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
@@ -67,6 +68,8 @@ interface UserProfile {
   joinedAt: string;
   totalRooms: number;
   totalMessages: number;
+  isVerified: boolean;
+  verifiedAt?: string;
 }
 
 export default function UserProfile() {
@@ -266,6 +269,12 @@ export default function UserProfile() {
                   <CardTitle className="flex items-center gap-2">
                     <User className="h-5 w-5" />
                     Profile Information
+                    {profile?.isVerified && (
+                      <div className="flex items-center gap-1 ml-auto">
+                        <ShieldCheck className="h-5 w-5 text-blue-600" />
+                        <span className="text-sm text-blue-600 font-medium">Verified</span>
+                      </div>
+                    )}
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-6">

@@ -186,6 +186,20 @@ export default function AdminNavigation() {
           </li>
           <li>
             <Link
+              href="/admin/verification"
+              className={cn(
+                "flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all",
+                isActive("/admin/verification")
+                  ? "bg-primary/15 text-primary shadow-sm"
+                  : "text-card-foreground hover:bg-primary/10 hover:text-primary"
+              )}
+            >
+              <Shield size={18} className="text-primary opacity-80" />
+              Verification Tool
+            </Link>
+          </li>
+          <li>
+            <Link
               href="/admin/events"
               className={cn(
                 "flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all",

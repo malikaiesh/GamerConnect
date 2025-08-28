@@ -10,7 +10,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { 
   Mic, MicOff, Volume2, VolumeX, Gift, MessageCircle, Settings, 
   Users, Crown, LogOut, Send, Smile, Heart, Star, Diamond,
-  Phone, PhoneOff, Video, VideoOff, MoreVertical, UserPlus
+  Phone, PhoneOff, Video, VideoOff, MoreVertical, UserPlus, ShieldCheck
 } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
 import { formatDistanceToNow } from "date-fns";
@@ -57,12 +57,16 @@ interface RoomData {
     backgroundTheme: string;
     status: string;
     ownerId: number;
+    isVerified: boolean;
+    verifiedAt?: string;
   };
   owner: {
     id: number;
     username: string;
     displayName: string | null;
     profilePicture: string | null;
+    isVerified: boolean;
+    verifiedAt?: string;
   };
   users: RoomUser[];
 }
@@ -304,7 +308,12 @@ export default function RoomInterfacePage() {
                     {roomData.room.name[0]}
                   </div>
                   <div>
-                    <h1 className="text-2xl font-bold">{roomData.room.name}</h1>
+                    <div className="flex items-center gap-2">
+                      <h1 className="text-2xl font-bold">{roomData.room.name}</h1>
+                      {roomData.room.isVerified && (
+                        <ShieldCheck className="h-6 w-6 text-blue-600" />
+                      )}
+                    </div>
                     <div className="flex items-center gap-2 text-sm text-muted-foreground">
                       <span>ID: {roomData.room.roomId}</span>
                       <Badge variant="outline">{roomData.room.type}</Badge>
@@ -320,8 +329,11 @@ export default function RoomInterfacePage() {
                   <div className="text-sm font-medium">
                     {roomData.room.currentUsers}/{roomData.room.maxSeats} Users
                   </div>
-                  <div className="text-xs text-muted-foreground">
-                    Owner: @{roomData.owner.displayName || roomData.owner.username}
+                  <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                    <span>Owner: @{roomData.owner.displayName || roomData.owner.username}</span>
+                    {roomData.owner.isVerified && (
+                      <ShieldCheck className="h-3 w-3 text-blue-600" />
+                    )}
                   </div>
                 </div>
                 {currentUserInRoom && (
