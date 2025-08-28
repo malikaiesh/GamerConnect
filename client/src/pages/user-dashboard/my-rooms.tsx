@@ -35,6 +35,7 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { Plus, Settings, Users, Lock, Globe, Edit, Trash2, Eye, Crown, Play, Clock, MapPin, MessageCircle, Mic, Gift } from "lucide-react";
+import { Sidebar } from "@/components/layout/sidebar";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useLocation } from "wouter";
 import { apiRequest } from "@/lib/queryClient";
@@ -514,7 +515,12 @@ export default function MyRoomsPage() {
   );
 
   return (
-    <div className="space-y-6">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-950 flex">
+      <Sidebar />
+      
+      {/* Main Content */}
+      <div className="flex-1 ml-64 p-6">
+        <div className="max-w-6xl mx-auto space-y-6">
       {/* Header */}
       <div className="flex justify-between items-center">
         <div>
@@ -722,6 +728,7 @@ export default function MyRoomsPage() {
           <RoomForm onSubmit={handleUpdateRoom} isPending={updateRoomMutation.isPending} />
         </DialogContent>
       </Dialog>
+        </div>
       </div>
     </div>
   );
