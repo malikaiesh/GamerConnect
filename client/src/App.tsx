@@ -81,6 +81,7 @@ const AdminGeneralSettingsPage = lazy(() => import("@/pages/admin/settings/gener
 // Admin SEO pages
 const AdminSeoSchemasPage = lazy(() => import("@/pages/admin/seo/schemas"));
 const AdminGoogleIndexingPage = lazy(() => import("@/pages/admin/google-indexing-page"));
+const AdminBackupRestorePage = lazy(() => import("@/pages/admin/backup-restore-page"));
 // Admin accounts pages
 const AdminUsersPage = lazy(() => import("@/pages/admin/accounts/users"));
 const AdminRolesPage = lazy(() => import("@/pages/admin/accounts/roles"));
@@ -326,6 +327,11 @@ function Router() {
       <Route path="/admin/google-indexing">
         <ProtectedRoute adminOnly={true}>
           <Suspense fallback={<LoadingFallback />}><AdminGoogleIndexingPage /></Suspense>
+        </ProtectedRoute>
+      </Route>
+      <Route path="/admin/backup-restore">
+        <ProtectedRoute adminOnly={true}>
+          <Suspense fallback={<LoadingFallback />}><AdminBackupRestorePage /></Suspense>
         </ProtectedRoute>
       </Route>
       

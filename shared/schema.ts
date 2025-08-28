@@ -55,6 +55,18 @@ export const indexingStatusEnum = pgEnum('indexing_status', ['pending', 'submitt
 // Content Type Enum for Indexing
 export const indexingContentTypeEnum = pgEnum('indexing_content_type', ['game', 'blog_post', 'page', 'category']);
 
+// Backup Status Enum
+export const backupStatusEnum = pgEnum('backup_status', ['pending', 'in_progress', 'completed', 'failed', 'cancelled']);
+
+// Backup Type Enum
+export const backupTypeEnum = pgEnum('backup_type', ['full', 'database_only', 'files_only', 'settings_only']);
+
+// Backup Storage Location Enum
+export const backupStorageEnum = pgEnum('backup_storage', ['local', 'cloud', 'both']);
+
+// Restore Status Enum
+export const restoreStatusEnum = pgEnum('restore_status', ['pending', 'in_progress', 'completed', 'failed', 'cancelled']);
+
 // Roles table
 export const roles = pgTable('roles', {
   id: serial('id').primaryKey(),
@@ -1412,3 +1424,189 @@ export type IndexingLog = typeof indexingLogs.$inferSelect;
 export type InsertIndexingLog = z.infer<typeof insertIndexingLogSchema>;
 export type IndexingSettings = typeof indexingSettings.$inferSelect;
 export type InsertIndexingSettings = z.infer<typeof insertIndexingSettingsSchema>;
+
+// ================== BACKUP & RESTORE SYSTEM ==================
+
+// Backup Configurations table (for scheduled backups)
+export const backupConfigs = pgTable('backup_configs', {
+  id: serial('id').primaryKey(),
+  name: text('name').notNull(), // Friendly name for the backup config
+  description: text('description'),
+  backupType: backupTypeEnum('backup_type').default('full').notNull(),
+  storageLocation: backupStorageEnum('storage_location').default('local').notNull(),
+  cloudStoragePath: text('cloud_storage_path'), // Cloud storage bucket/path
+  schedule: text('schedule'), // Cron expression for scheduled backups
+  isScheduleEnabled: boolean('is_schedule_enabled').default(false).notNull(),
+  retentionDays: integer('retention_days').default(30).notNull(), // How long to keep backups
+  maxBackups: integer('max_backups').default(10).notNull(), // Maximum number of backups to keep
+  
+  // Include/exclude options
+  includeDatabaseStructure: boolean('include_database_structure').default(true).notNull(),
+  includeDatabaseData: boolean('include_database_data').default(true).notNull(),
+  includeUploads: boolean('include_uploads').default(true).notNull(),
+  includeAssets: boolean('include_assets').default(true).notNull(),
+  includeSettings: boolean('include_settings').default(true).notNull(),
+  includeLogs: boolean('include_logs').default(false).notNull(),
+  
+  // Compression settings
+  compressionEnabled: boolean('compression_enabled').default(true).notNull(),
+  compressionLevel: integer('compression_level').default(6).notNull(), // 1-9, 6 is balanced
+  
+  isActive: boolean('is_active').default(true).notNull(),
+  createdBy: integer('created_by').references(() => users.id),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+  updatedAt: timestamp('updated_at').defaultNow().notNull()
+});
+
+// Backups table (records of all backups taken)
+export const backups = pgTable('backups', {
+  id: serial('id').primaryKey(),
+  configId: integer('config_id').references(() => backupConfigs.id, { onDelete: 'set null' }),
+  name: text('name').notNull(), // Generated name for the backup
+  description: text('description'),
+  backupType: backupTypeEnum('backup_type').notNull(),
+  status: backupStatusEnum('status').default('pending').notNull(),
+  
+  // File information
+  fileName: text('file_name'), // Name of the backup file
+  filePath: text('file_path'), // Local path to backup file
+  cloudStoragePath: text('cloud_storage_path'), // Cloud storage path
+  fileSize: integer('file_size'), // Size in bytes
+  checksumMd5: text('checksum_md5'), // MD5 hash for integrity
+  checksumSha256: text('checksum_sha256'), // SHA256 hash for integrity
+  
+  // Backup content information
+  databaseTableCount: integer('database_table_count'),
+  totalRecords: integer('total_records'),
+  fileCount: integer('file_count'), // Number of files included
+  
+  // Timing information
+  startedAt: timestamp('started_at'),
+  completedAt: timestamp('completed_at'),
+  duration: integer('duration'), // Duration in seconds
+  
+  // Error handling
+  errorMessage: text('error_message'),
+  warningMessage: text('warning_message'),
+  
+  // Metadata
+  metadata: json('metadata').$type<{
+    includes?: string[];
+    excludes?: string[];
+    compression?: {
+      enabled: boolean;
+      level: number;
+      originalSize?: number;
+      compressedSize?: number;
+    };
+    environment?: {
+      nodeVersion?: string;
+      databaseVersion?: string;
+      serverInfo?: string;
+    };
+  }>(),
+  
+  // Track who initiated the backup
+  triggeredBy: text('triggered_by').default('manual').notNull(), // 'manual', 'scheduled', 'api'
+  createdBy: integer('created_by').references(() => users.id),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+  updatedAt: timestamp('updated_at').defaultNow().notNull()
+});
+
+// Backup Files table (manifest of files in each backup)
+export const backupFiles = pgTable('backup_files', {
+  id: serial('id').primaryKey(),
+  backupId: integer('backup_id').references(() => backups.id, { onDelete: 'cascade' }).notNull(),
+  filePath: text('file_path').notNull(), // Relative path of the file
+  fileName: text('file_name').notNull(),
+  fileType: text('file_type').notNull(), // 'database', 'upload', 'asset', 'config', 'log'
+  fileSize: integer('file_size'), // Size in bytes
+  checksumMd5: text('checksum_md5'), // MD5 hash of the file
+  lastModified: timestamp('last_modified'),
+  createdAt: timestamp('created_at').defaultNow().notNull()
+});
+
+// Backup Logs table (detailed logs of backup operations)
+export const backupLogs = pgTable('backup_logs', {
+  id: serial('id').primaryKey(),
+  backupId: integer('backup_id').references(() => backups.id, { onDelete: 'cascade' }),
+  restoreId: integer('restore_id'), // Will add foreign key relation later to avoid circular reference
+  operationType: text('operation_type').notNull().default('backup'), // 'backup', 'restore'
+  level: text('level').notNull().default('info'), // 'debug', 'info', 'warn', 'error'
+  message: text('message').notNull(),
+  data: json('data').$type<Record<string, any>>(), // Additional structured data
+  duration: integer('duration'), // Operation duration in milliseconds
+  createdAt: timestamp('created_at').defaultNow().notNull()
+});
+
+// Restores table (records of restore operations)
+export const restores = pgTable('restores', {
+  id: serial('id').primaryKey(),
+  backupId: integer('backup_id').references(() => backups.id).notNull(),
+  name: text('name').notNull(), // Name for the restore operation
+  description: text('description'),
+  status: restoreStatusEnum('status').default('pending').notNull(),
+  
+  // Restore options
+  restoreDatabase: boolean('restore_database').default(true).notNull(),
+  restoreFiles: boolean('restore_files').default(true).notNull(),
+  restoreSettings: boolean('restore_settings').default(true).notNull(),
+  createBackupBeforeRestore: boolean('create_backup_before_restore').default(true).notNull(),
+  
+  // Pre-restore backup information
+  preRestoreBackupId: integer('pre_restore_backup_id').references(() => backups.id),
+  
+  // Timing information
+  startedAt: timestamp('started_at'),
+  completedAt: timestamp('completed_at'),
+  duration: integer('duration'), // Duration in seconds
+  
+  // Progress tracking
+  totalSteps: integer('total_steps'),
+  completedSteps: integer('completed_steps'),
+  currentStep: text('current_step'),
+  
+  // Results
+  tablesRestored: integer('tables_restored'),
+  recordsRestored: integer('records_restored'),
+  filesRestored: integer('files_restored'),
+  
+  // Error handling
+  errorMessage: text('error_message'),
+  warningMessage: text('warning_message'),
+  
+  // Metadata
+  metadata: json('metadata').$type<{
+    originalBackupInfo?: {
+      createdAt?: string;
+      backupType?: string;
+      fileSize?: number;
+    };
+    environment?: {
+      nodeVersion?: string;
+      databaseVersion?: string;
+    };
+  }>(),
+  
+  createdBy: integer('created_by').references(() => users.id),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+  updatedAt: timestamp('updated_at').defaultNow().notNull()
+});
+
+// Backup & Restore schema and types
+export const insertBackupConfigSchema = createInsertSchema(backupConfigs);
+export const insertBackupSchema = createInsertSchema(backups);
+export const insertBackupFileSchema = createInsertSchema(backupFiles);
+export const insertBackupLogSchema = createInsertSchema(backupLogs);
+export const insertRestoreSchema = createInsertSchema(restores);
+
+export type BackupConfig = typeof backupConfigs.$inferSelect;
+export type InsertBackupConfig = z.infer<typeof insertBackupConfigSchema>;
+export type Backup = typeof backups.$inferSelect;
+export type InsertBackup = z.infer<typeof insertBackupSchema>;
+export type BackupFile = typeof backupFiles.$inferSelect;
+export type InsertBackupFile = z.infer<typeof insertBackupFileSchema>;
+export type BackupLog = typeof backupLogs.$inferSelect;
+export type InsertBackupLog = z.infer<typeof insertBackupLogSchema>;
+export type Restore = typeof restores.$inferSelect;
+export type InsertRestore = z.infer<typeof insertRestoreSchema>;
