@@ -43,7 +43,10 @@ export default function SignupOptionsPage() {
   // Toggle provider enabled/disabled
   const toggleMutation = useMutation({
     mutationFn: async (id: number) => {
-      return await apiRequest('PATCH', `/api/signup-options/${id}/toggle`, {});
+      return await apiRequest(`/api/signup-options/${id}/toggle`, {
+        method: 'PATCH',
+        body: JSON.stringify({})
+      });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/signup-options'] });
@@ -64,7 +67,10 @@ export default function SignupOptionsPage() {
   // Update provider configuration
   const updateMutation = useMutation({
     mutationFn: async ({ id, data }: { id: number; data: Partial<SignupOption> }) => {
-      return await apiRequest('PUT', `/api/signup-options/${id}`, data);
+      return await apiRequest(`/api/signup-options/${id}`, {
+        method: 'PUT',
+        body: JSON.stringify(data)
+      });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/signup-options'] });
