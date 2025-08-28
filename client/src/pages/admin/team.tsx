@@ -130,15 +130,39 @@ export default function TeamAdminPage() {
   // Profile picture upload functions
   const getUploadParameters = async () => {
     try {
-      const response = await apiRequest('/api/objects/upload', { method: 'POST' });
+      console.log('Getting upload parameters...');
+      
+      // Direct fetch to debug the issue
+      const response = await fetch('/api/objects/upload', {
+        method: 'POST',
+        credentials: 'include',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
+        }
+      });
+
+      console.log('Response status:', response.status);
+      console.log('Response headers:', response.headers);
+      
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error('Response error text:', errorText);
+        throw new Error(`HTTP ${response.status}: ${errorText}`);
+      }
+
+      const data = await response.json();
+      console.log('Upload URL response:', data);
+
       return {
         method: 'PUT' as const,
-        url: response.uploadURL
+        url: data.uploadURL
       };
     } catch (error) {
+      console.error('Error in getUploadParameters:', error);
       toast({
         title: "Error",
-        description: "Failed to get upload URL",
+        description: `Failed to get upload URL: ${error instanceof Error ? error.message : 'Unknown error'}`,
         variant: "destructive"
       });
       throw error;
