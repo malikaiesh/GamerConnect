@@ -106,6 +106,10 @@ const MyRoomsPage = lazy(() => import("@/pages/user-dashboard/my-rooms"));
 // Room pages
 const RoomLobbyPage = lazy(() => import("@/pages/room-lobby"));
 
+// Login pages  
+const AdminLoginPage = lazy(() => import("@/pages/admin-login"));
+const UserLoginPage = lazy(() => import("@/pages/user-login"));
+
 // Admin Helper Navigation
 const AdminHelperNav = () => {
   const { user } = useAuth();
@@ -167,6 +171,12 @@ function Router() {
 
       <Route path="/auth">
         <Suspense fallback={<LoadingFallback />}><AuthPage /></Suspense>
+      </Route>
+      <Route path="/admin-login">
+        <Suspense fallback={<LoadingFallback />}><AdminLoginPage /></Suspense>
+      </Route>
+      <Route path="/user-login">
+        <Suspense fallback={<LoadingFallback />}><UserLoginPage /></Suspense>
       </Route>
       <Route path="/dev-login">
         <Suspense fallback={<LoadingFallback />}><DevLogin /></Suspense>
