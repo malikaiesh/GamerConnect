@@ -96,6 +96,18 @@ export default function AuthPage() {
     });
   };
 
+  // Auto login function for development
+  const autoLogin = () => {
+    loginMutation.mutate({
+      username: "admin",
+      password: "admin123"
+    }, {
+      onSuccess: () => {
+        setTimeout(() => navigate('/admin/dashboard'), 1000);
+      }
+    });
+  };
+
   // Handle registration form submission
   const onRegisterSubmit = (values: RegisterValues) => {
     registerMutation.mutate({
@@ -259,6 +271,19 @@ export default function AuthPage() {
                           <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                         )}
                         Sign In
+                      </Button>
+
+                      {/* Auto Login Button for Development */}
+                      <Button
+                        type="button"
+                        onClick={autoLogin}
+                        className="w-full bg-green-600 hover:bg-green-700 mt-3"
+                        disabled={loginMutation.isPending}
+                      >
+                        {loginMutation.isPending && (
+                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        )}
+                        🚀 Auto Login as Admin
                       </Button>
                       
                       <div className="relative my-4">
