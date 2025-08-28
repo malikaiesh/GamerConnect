@@ -89,23 +89,58 @@ export default function GamesIntegrationPage() {
 
   const updateSettingsMutation = useMutation({
     mutationFn: async (data: GamesIntegrationValues) => {
-      // Fetch current settings first
-      const currentSettings = await apiRequest('/api/settings');
-      
-      // Merge with new games integration settings
-      const updatedSettings = {
-        ...currentSettings,
-        blogGamesEnabled: data.blogGamesEnabled,
-        paragraph2GamesEnabled: data.paragraph2GamesEnabled,
-        paragraph6GamesEnabled: data.paragraph6GamesEnabled,
-        paragraph8GamesEnabled: data.paragraph8GamesEnabled,
-        paragraph10GamesEnabled: data.paragraph10GamesEnabled,
-      };
-      
-      return apiRequest('/api/settings', {
-        method: 'PUT',
-        body: updatedSettings
-      });
+      try {
+        // Try to fetch current settings first
+        const currentSettings = await apiRequest('/api/settings');
+        
+        // Merge with new games integration settings
+        const updatedSettings = {
+          ...currentSettings,
+          blogGamesEnabled: data.blogGamesEnabled,
+          paragraph2GamesEnabled: data.paragraph2GamesEnabled,
+          paragraph6GamesEnabled: data.paragraph6GamesEnabled,
+          paragraph8GamesEnabled: data.paragraph8GamesEnabled,
+          paragraph10GamesEnabled: data.paragraph10GamesEnabled,
+        };
+        
+        return apiRequest('/api/settings', {
+          method: 'PUT',
+          body: updatedSettings
+        });
+      } catch (error: any) {
+        // If settings don't exist (404), create them with defaults
+        if (error.message?.includes('Site settings not found')) {
+          const defaultSettings = {
+            siteTitle: 'Gaming Portal',
+            metaDescription: 'A comprehensive gaming portal with the latest games, reviews, and community features.',
+            keywords: 'games, gaming, portal, reviews, community',
+            currentTheme: 'modern',
+            useTextLogo: true,
+            textLogoColor: '#4f46e5',
+            pushNotificationsEnabled: true,
+            cookiePopupEnabled: true,
+            cookiePopupTitle: 'We use cookies',
+            cookiePopupMessage: 'We use cookies to improve your experience on our website. By browsing this website, you agree to our use of cookies.',
+            cookieAcceptButtonText: 'Accept All',
+            cookieDeclineButtonText: 'Decline',
+            cookieLearnMoreText: 'Learn More',
+            cookieLearnMoreUrl: '/privacy',
+            cookiePopupPosition: 'bottom',
+            cookiePopupTheme: 'dark',
+            blogGamesEnabled: data.blogGamesEnabled,
+            paragraph2GamesEnabled: data.paragraph2GamesEnabled,
+            paragraph6GamesEnabled: data.paragraph6GamesEnabled,
+            paragraph8GamesEnabled: data.paragraph8GamesEnabled,
+            paragraph10GamesEnabled: data.paragraph10GamesEnabled,
+          };
+          
+          return apiRequest('/api/settings', {
+            method: 'PUT',
+            body: defaultSettings
+          });
+        }
+        throw error;
+      }
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/settings'] });
