@@ -135,6 +135,7 @@ export default function BackupRestorePage() {
   const [activeTab, setActiveTab] = useState("backups");
   const [createBackupDialogOpen, setCreateBackupDialogOpen] = useState(false);
   const [createRestoreDialogOpen, setCreateRestoreDialogOpen] = useState(false);
+  const [uploadBackupDialogOpen, setUploadBackupDialogOpen] = useState(false);
   const [selectedBackupForRestore, setSelectedBackupForRestore] = useState<Backup | null>(null);
   const { toast } = useToast();
   const queryClient = useQueryClient();
@@ -247,6 +248,31 @@ export default function BackupRestorePage() {
     },
   });
 
+  // Upload backup mutation
+  const uploadBackupMutation = useMutation({
+    mutationFn: async (formData: FormData) => {
+      const response = await fetch('/api/backup-restore/backups/upload', {
+        method: 'POST',
+        credentials: 'include',
+        body: formData,
+      });
+      if (!response.ok) throw new Error('Failed to upload backup');
+      return response.json();
+    },
+    onSuccess: () => {
+      toast({ title: "Backup uploaded successfully!" });
+      setUploadBackupDialogOpen(false);
+      refetchBackups();
+    },
+    onError: (error) => {
+      toast({
+        title: "Error",
+        description: `Failed to upload backup: ${error}`,
+        variant: "destructive",
+      });
+    },
+  });
+
   const handleCreateBackup = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     const formData = new FormData(event.currentTarget);
@@ -283,6 +309,21 @@ export default function BackupRestorePage() {
     createRestoreMutation.mutate(data);
   };
 
+  const handleUploadBackup = (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    const formData = new FormData(event.currentTarget);
+    uploadBackupMutation.mutate(formData);
+  };
+
+  const handleDownloadBackup = (backup: Backup) => {
+    const link = document.createElement('a');
+    link.href = `/api/backup-restore/backups/${backup.id}/download`;
+    link.download = backup.fileName || `backup_${backup.name}.zip`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
   const backups = backupsData?.backups || [];
   const restores = restoresData?.restores || [];
   const configs = configsData?.configs || [];
@@ -298,6 +339,62 @@ export default function BackupRestorePage() {
             </p>
           </div>
           <div className="flex gap-2">
+            <Dialog open={uploadBackupDialogOpen} onOpenChange={setUploadBackupDialogOpen}>
+              <DialogTrigger asChild>
+                <Button variant="outline" data-testid="upload-backup-button">
+                  <Upload className="w-4 h-4 mr-2" />
+                  Upload Backup
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="max-w-md">
+                <DialogHeader>
+                  <DialogTitle>Upload Backup File</DialogTitle>
+                  <DialogDescription>
+                    Upload a backup file (.zip) to restore from
+                  </DialogDescription>
+                </DialogHeader>
+                <form onSubmit={handleUploadBackup} className="space-y-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="backupFile">Backup File</Label>
+                    <Input
+                      id="backupFile"
+                      name="backupFile"
+                      type="file"
+                      accept=".zip,application/zip"
+                      required
+                      data-testid="backup-file-input"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="uploadName">Backup Name</Label>
+                    <Input
+                      id="uploadName"
+                      name="name"
+                      placeholder="My Uploaded Backup"
+                      data-testid="upload-backup-name-input"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="uploadDescription">Description</Label>
+                    <Textarea
+                      id="uploadDescription"
+                      name="description"
+                      placeholder="Optional description"
+                      rows={2}
+                    />
+                  </div>
+                  <DialogFooter>
+                    <Button 
+                      type="submit" 
+                      disabled={uploadBackupMutation.isPending}
+                      data-testid="submit-upload-backup-button"
+                    >
+                      {uploadBackupMutation.isPending ? 'Uploading...' : 'Upload Backup'}
+                    </Button>
+                  </DialogFooter>
+                </form>
+              </DialogContent>
+            </Dialog>
             <Dialog open={createBackupDialogOpen} onOpenChange={setCreateBackupDialogOpen}>
               <DialogTrigger asChild>
                 <Button data-testid="create-backup-button">
@@ -484,7 +581,10 @@ export default function BackupRestorePage() {
                               </Button>
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align="end">
-                              <DropdownMenuItem disabled>
+                              <DropdownMenuItem 
+                                onClick={() => handleDownloadBackup(backup)}
+                                data-testid={`download-backup-${backup.id}`}
+                              >
                                 <Download className="w-4 h-4 mr-2" />
                                 Download
                               </DropdownMenuItem>

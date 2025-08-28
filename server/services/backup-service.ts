@@ -193,6 +193,44 @@ export class BackupService {
     }
   }
 
+  async createBackupRecord(backupData: {
+    name: string;
+    description?: string;
+    backupType: 'full' | 'database_only' | 'files_only' | 'settings_only';
+    status: 'pending' | 'in_progress' | 'completed' | 'failed' | 'cancelled';
+    fileName?: string;
+    filePath?: string;
+    fileSize?: number;
+    checksumMd5?: string;
+    checksumSha256?: string;
+    triggeredBy: string;
+    userId?: number;
+    startedAt?: Date;
+    completedAt?: Date;
+    duration?: number;
+    errorMessage?: string;
+  }): Promise<number> {
+    const [backup] = await db.insert(backups).values({
+      name: backupData.name,
+      description: backupData.description,
+      backupType: backupData.backupType,
+      status: backupData.status,
+      fileName: backupData.fileName,
+      filePath: backupData.filePath,
+      fileSize: backupData.fileSize,
+      checksumMd5: backupData.checksumMd5,
+      checksumSha256: backupData.checksumSha256,
+      triggeredBy: backupData.triggeredBy,
+      createdBy: backupData.userId,
+      startedAt: backupData.startedAt,
+      completedAt: backupData.completedAt,
+      duration: backupData.duration,
+      errorMessage: backupData.errorMessage,
+    }).returning();
+
+    return backup.id;
+  }
+
   async createBackup(options: BackupOptions): Promise<number> {
     const startTime = Date.now();
     const timestamp = new Date().toISOString().replace(/[:.]/g, '-');

@@ -142,6 +142,147 @@ router.post('/backups/:id/validate',
   }
 );
 
+// Download backup file
+router.get('/backups/:id/download',
+  param('id').isInt().toInt(),
+  handleValidationErrors,
+  async (req, res) => {
+    try {
+      const backup = await backupService.getBackupById(req.params.id);
+      if (!backup) {
+        return res.status(404).json({ error: 'Backup not found' });
+      }
+      
+      if (backup.status !== 'completed') {
+        return res.status(400).json({ error: 'Backup is not completed yet' });
+      }
+      
+      if (!backup.filePath) {
+        return res.status(404).json({ error: 'Backup file not found' });
+      }
+
+      const fs = await import('fs');
+      const path = await import('path');
+      
+      // Check if file exists
+      if (!fs.existsSync(backup.filePath)) {
+        return res.status(404).json({ error: 'Backup file not found on disk' });
+      }
+
+      // Set appropriate headers for download
+      const fileName = backup.fileName || `backup_${backup.id}_${backup.name.replace(/[^a-zA-Z0-9]/g, '_')}.zip`;
+      res.setHeader('Content-Disposition', `attachment; filename="${fileName}"`);
+      res.setHeader('Content-Type', 'application/zip');
+      
+      // Stream the file to client
+      const fileStream = fs.createReadStream(backup.filePath);
+      fileStream.pipe(res);
+      
+      fileStream.on('error', (error) => {
+        console.error('Error streaming backup file:', error);
+        if (!res.headersSent) {
+          res.status(500).json({ error: 'Failed to download backup file' });
+        }
+      });
+    } catch (error) {
+      console.error('Error downloading backup:', error);
+      res.status(500).json({ error: 'Failed to download backup' });
+    }
+  }
+);
+
+// Upload backup file for restore
+router.post('/backups/upload',
+  async (req, res) => {
+    try {
+      const multer = await import('multer');
+      const path = await import('path');
+      const fs = await import('fs');
+      
+      // Configure multer for file upload
+      const storage = multer.diskStorage({
+        destination: (req, file, cb) => {
+          const uploadDir = path.join(process.cwd(), 'uploads', 'backups', 'temp');
+          // Ensure directory exists
+          if (!fs.existsSync(uploadDir)) {
+            fs.mkdirSync(uploadDir, { recursive: true });
+          }
+          cb(null, uploadDir);
+        },
+        filename: (req, file, cb) => {
+          // Generate unique filename
+          const timestamp = Date.now();
+          const originalName = file.originalname.replace(/[^a-zA-Z0-9.-]/g, '_');
+          cb(null, `upload_${timestamp}_${originalName}`);
+        }
+      });
+
+      const upload = multer.default({
+        storage,
+        limits: {
+          fileSize: 5 * 1024 * 1024 * 1024, // 5GB limit
+        },
+        fileFilter: (req, file, cb) => {
+          // Allow only zip files
+          if (file.mimetype === 'application/zip' || file.originalname.endsWith('.zip')) {
+            cb(null, true);
+          } else {
+            cb(new Error('Only ZIP files are allowed'));
+          }
+        }
+      }).single('backupFile');
+
+      upload(req, res, async (err) => {
+        if (err) {
+          console.error('File upload error:', err);
+          return res.status(400).json({ error: err.message || 'File upload failed' });
+        }
+
+        if (!req.file) {
+          return res.status(400).json({ error: 'No file uploaded' });
+        }
+
+        try {
+          // Create a backup record for the uploaded file
+          const backupRecord = {
+            name: req.body.name || `Uploaded Backup - ${req.file.originalname}`,
+            description: req.body.description || `Backup uploaded from file: ${req.file.originalname}`,
+            backupType: 'full' as const,
+            status: 'completed' as const,
+            fileName: req.file.originalname,
+            filePath: req.file.path,
+            fileSize: req.file.size,
+            triggeredBy: 'manual',
+            userId: req.user?.id,
+            startedAt: new Date(),
+            completedAt: new Date(),
+            duration: 0,
+          };
+
+          const backupId = await backupService.createBackupRecord(backupRecord);
+          const backup = await backupService.getBackupById(backupId);
+
+          res.status(201).json({
+            message: 'Backup file uploaded successfully',
+            backup
+          });
+        } catch (error) {
+          // Clean up uploaded file on error
+          try {
+            fs.unlinkSync(req.file.path);
+          } catch (cleanupError) {
+            console.error('Failed to cleanup uploaded file:', cleanupError);
+          }
+          throw error;
+        }
+      });
+    } catch (error) {
+      console.error('Error handling backup upload:', error);
+      res.status(500).json({ error: 'Failed to upload backup file' });
+    }
+  }
+);
+
 // ==================== RESTORE ENDPOINTS ====================
 
 // Get all restores
