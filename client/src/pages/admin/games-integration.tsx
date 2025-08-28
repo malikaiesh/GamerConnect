@@ -89,12 +89,15 @@ export default function GamesIntegrationPage() {
 
   const updateSettingsMutation = useMutation({
     mutationFn: async (data: GamesIntegrationValues) => {
-      return apiRequest('PUT', '/api/settings', {
-        blogGamesEnabled: data.blogGamesEnabled,
-        paragraph2GamesEnabled: data.paragraph2GamesEnabled,
-        paragraph6GamesEnabled: data.paragraph6GamesEnabled,
-        paragraph8GamesEnabled: data.paragraph8GamesEnabled,
-        paragraph10GamesEnabled: data.paragraph10GamesEnabled,
+      return apiRequest('/api/settings', {
+        method: 'PUT',
+        body: {
+          blogGamesEnabled: data.blogGamesEnabled,
+          paragraph2GamesEnabled: data.paragraph2GamesEnabled,
+          paragraph6GamesEnabled: data.paragraph6GamesEnabled,
+          paragraph8GamesEnabled: data.paragraph8GamesEnabled,
+          paragraph10GamesEnabled: data.paragraph10GamesEnabled,
+        }
       });
     },
     onSuccess: () => {
