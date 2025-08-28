@@ -2324,6 +2324,10 @@ class DatabaseStorage implements IStorage {
           case '5years':
             daysToLookBack = 1825;
             break;
+          case 'alltime':
+            // Set to 10 years for all time
+            daysToLookBack = 3650;
+            break;
           default: // '7days'
             daysToLookBack = 7;
         }

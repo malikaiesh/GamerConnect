@@ -65,6 +65,7 @@ const timeframeOptions = [
   { value: '1year', label: '1 Year' },
   { value: '2years', label: '2 Years' },
   { value: '5years', label: '5 Years' },
+  { value: 'alltime', label: 'All Time' },
   { value: 'custom', label: 'Custom Range' }
 ];
 
@@ -232,7 +233,11 @@ export function Analytics() {
       const url = window.URL.createObjectURL(blob);
       const link = document.createElement('a');
       link.href = url;
-      link.download = `analytics_${timeframe}_${format(new Date(), 'yyyy-MM-dd')}.${exportFormat}`;
+      
+      // Set proper file extension based on format
+      const fileExtension = exportFormat === 'excel' ? 'xlsx' : exportFormat;
+      link.download = `analytics_${timeframe}_${format(new Date(), 'yyyy-MM-dd')}.${fileExtension}`;
+      
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
@@ -369,6 +374,8 @@ export function Analytics() {
                     <SelectContent>
                       <SelectItem value="json">JSON</SelectItem>
                       <SelectItem value="csv">CSV</SelectItem>
+                      <SelectItem value="excel">Excel (.xlsx)</SelectItem>
+                      <SelectItem value="pdf">PDF</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>

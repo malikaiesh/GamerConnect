@@ -1,6 +1,9 @@
 import { Express, Request, Response } from "express";
 import { storage } from "../storage";
 import { z } from "zod";
+import * as XLSX from 'xlsx';
+import jsPDF from 'jspdf';
+import 'jspdf-autotable';
 
 // Validation schema for custom date range
 const customDateRangeSchema = z.object({
@@ -18,12 +21,12 @@ export function registerAnalyticsRoutes(app: Express) {
       
       // Extended timeframe validation
       const validTimeframes = [
-        '7days', '30days', '90days', '6months', '1year', '2years', '5years', 'custom'
+        '7days', '30days', '90days', '6months', '1year', '2years', '5years', 'alltime', 'custom'
       ];
       
       if (!validTimeframes.includes(timeframe)) {
         return res.status(400).json({ 
-          message: 'Invalid timeframe. Use 7days, 30days, 90days, 6months, 1year, 2years, 5years, or custom.' 
+          message: 'Invalid timeframe. Use 7days, 30days, 90days, 6months, 1year, 2years, 5years, alltime, or custom.' 
         });
       }
 
@@ -74,7 +77,7 @@ export function registerAnalyticsRoutes(app: Express) {
       
       if (!validTimeframes.includes(timeframe)) {
         return res.status(400).json({ 
-          message: 'Invalid timeframe. Use 7days, 30days, 90days, 6months, 1year, 2years, 5years, or custom.' 
+          message: 'Invalid timeframe. Use 7days, 30days, 90days, 6months, 1year, 2years, 5years, alltime, or custom.' 
         });
       }
 
@@ -96,9 +99,9 @@ export function registerAnalyticsRoutes(app: Express) {
       }
 
       // Validate export format
-      if (!['json', 'csv'].includes(format)) {
+      if (!['json', 'csv', 'excel', 'pdf'].includes(format)) {
         return res.status(400).json({ 
-          message: 'Invalid export format. Use json or csv.' 
+          message: 'Invalid export format. Use json, csv, excel, or pdf.' 
         });
       }
 
@@ -114,6 +117,18 @@ export function registerAnalyticsRoutes(app: Express) {
         res.setHeader('Content-Type', 'text/csv');
         res.setHeader('Content-Disposition', `attachment; filename="${filename}.csv"`);
         res.send(csv);
+      } else if (format === 'excel') {
+        // Convert to Excel format
+        const excelBuffer = convertAnalyticsToExcel(analyticsData, timeframe);
+        res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+        res.setHeader('Content-Disposition', `attachment; filename="${filename}.xlsx"`);
+        res.send(excelBuffer);
+      } else if (format === 'pdf') {
+        // Convert to PDF format
+        const pdfBuffer = convertAnalyticsToPDF(analyticsData, timeframe);
+        res.setHeader('Content-Type', 'application/pdf');
+        res.setHeader('Content-Disposition', `attachment; filename="${filename}.pdf"`);
+        res.send(pdfBuffer);
       } else {
         // JSON format
         res.setHeader('Content-Type', 'application/json');
@@ -207,4 +222,166 @@ function convertAnalyticsToCSV(data: any, timeframe: string): string {
   }
   
   return rows.join('\n');
+}
+
+// Helper function to convert analytics data to Excel format
+function convertAnalyticsToExcel(data: any, timeframe: string): Buffer {
+  const workbook = XLSX.utils.book_new();
+  
+  // Summary sheet
+  const summaryData = [
+    ['Analytics Report', timeframe],
+    ['Export Date', new Date().toISOString()],
+    [''],
+    ['Summary Statistics', ''],
+    ['Metric', 'Value'],
+    ['Page Views', data.pageViews],
+    ['Unique Visitors', data.uniqueVisitors],
+    ['Average Time on Site', `${data.avgTimeOnSite}m`],
+    ['Bounce Rate', `${data.bounceRate}%`]
+  ];
+  
+  const summarySheet = XLSX.utils.aoa_to_sheet(summaryData);
+  XLSX.utils.book_append_sheet(workbook, summarySheet, 'Summary');
+  
+  // Top Pages sheet
+  if (data.topPages && data.topPages.length > 0) {
+    const pagesData = [
+      ['Page Path', 'Views'],
+      ...data.topPages.map((page: any) => [page.path, page.views])
+    ];
+    const pagesSheet = XLSX.utils.aoa_to_sheet(pagesData);
+    XLSX.utils.book_append_sheet(workbook, pagesSheet, 'Top Pages');
+  }
+  
+  // Top Games sheet
+  if (data.topGames && data.topGames.length > 0) {
+    const gamesData = [
+      ['Game Name', 'Plays'],
+      ...data.topGames.map((game: any) => [game.name, game.plays])
+    ];
+    const gamesSheet = XLSX.utils.aoa_to_sheet(gamesData);
+    XLSX.utils.book_append_sheet(workbook, gamesSheet, 'Top Games');
+  }
+  
+  // Daily Visitors sheet
+  if (data.dailyVisitors && data.dailyVisitors.length > 0) {
+    const visitorsData = [
+      ['Date', 'Visitors'],
+      ...data.dailyVisitors.map((day: any) => [day.date, day.visitors])
+    ];
+    const visitorsSheet = XLSX.utils.aoa_to_sheet(visitorsData);
+    XLSX.utils.book_append_sheet(workbook, visitorsSheet, 'Daily Visitors');
+  }
+  
+  // Device Distribution sheet
+  if (data.userDevices && data.userDevices.length > 0) {
+    const devicesData = [
+      ['Device', 'Count'],
+      ...data.userDevices.map((device: any) => [device.device, device.count])
+    ];
+    const devicesSheet = XLSX.utils.aoa_to_sheet(devicesData);
+    XLSX.utils.book_append_sheet(workbook, devicesSheet, 'Device Distribution');
+  }
+  
+  return XLSX.write(workbook, { type: 'buffer', bookType: 'xlsx' });
+}
+
+// Helper function to convert analytics data to PDF format
+function convertAnalyticsToPDF(data: any, timeframe: string): Buffer {
+  const doc = new jsPDF();
+  
+  // Title
+  doc.setFontSize(20);
+  doc.text(`Analytics Report - ${timeframe}`, 20, 30);
+  
+  doc.setFontSize(10);
+  doc.text(`Export Date: ${new Date().toISOString()}`, 20, 40);
+  
+  let yPosition = 60;
+  
+  // Summary statistics
+  doc.setFontSize(14);
+  doc.text('Summary Statistics', 20, yPosition);
+  yPosition += 10;
+  
+  const summaryData = [
+    ['Metric', 'Value'],
+    ['Page Views', data.pageViews.toLocaleString()],
+    ['Unique Visitors', data.uniqueVisitors.toLocaleString()],
+    ['Average Time on Site', `${data.avgTimeOnSite}m`],
+    ['Bounce Rate', `${data.bounceRate}%`]
+  ];
+  
+  (doc as any).autoTable({
+    head: [summaryData[0]],
+    body: summaryData.slice(1),
+    startY: yPosition,
+    theme: 'striped',
+    styles: { fontSize: 8 }
+  });
+  
+  yPosition = (doc as any).lastAutoTable.finalY + 20;
+  
+  // Top Pages
+  if (data.topPages && data.topPages.length > 0) {
+    doc.setFontSize(14);
+    doc.text('Top Pages', 20, yPosition);
+    yPosition += 10;
+    
+    const pagesData = data.topPages.map((page: any) => [page.path, page.views]);
+    
+    (doc as any).autoTable({
+      head: [['Page Path', 'Views']],
+      body: pagesData,
+      startY: yPosition,
+      theme: 'striped',
+      styles: { fontSize: 8 }
+    });
+    
+    yPosition = (doc as any).lastAutoTable.finalY + 20;
+  }
+  
+  // Top Games
+  if (data.topGames && data.topGames.length > 0) {
+    doc.setFontSize(14);
+    doc.text('Top Games', 20, yPosition);
+    yPosition += 10;
+    
+    const gamesData = data.topGames.map((game: any) => [game.name, game.plays]);
+    
+    (doc as any).autoTable({
+      head: [['Game Name', 'Plays']],
+      body: gamesData,
+      startY: yPosition,
+      theme: 'striped',
+      styles: { fontSize: 8 }
+    });
+    
+    yPosition = (doc as any).lastAutoTable.finalY + 20;
+  }
+  
+  // Device Distribution
+  if (data.userDevices && data.userDevices.length > 0) {
+    if (yPosition > 250) {
+      doc.addPage();
+      yPosition = 30;
+    }
+    
+    doc.setFontSize(14);
+    doc.text('Device Distribution', 20, yPosition);
+    yPosition += 10;
+    
+    const devicesData = data.userDevices.map((device: any) => [device.device, device.count]);
+    
+    (doc as any).autoTable({
+      head: [['Device', 'Count']],
+      body: devicesData,
+      startY: yPosition,
+      theme: 'striped',
+      styles: { fontSize: 8 }
+    });
+  }
+  
+  return Buffer.from(doc.output('arraybuffer'));
 }
