@@ -67,6 +67,14 @@ export const backupStorageEnum = pgEnum('backup_storage', ['local', 'cloud', 'bo
 // Restore Status Enum
 export const restoreStatusEnum = pgEnum('restore_status', ['pending', 'in_progress', 'completed', 'failed', 'cancelled']);
 
+// Room System Enums
+export const roomTypeEnum = pgEnum('room_type', ['public', 'private']);
+export const roomStatusEnum = pgEnum('room_status', ['active', 'inactive', 'maintenance']);
+export const roomUserRoleEnum = pgEnum('room_user_role', ['owner', 'manager', 'member', 'guest']);
+export const roomUserStatusEnum = pgEnum('room_user_status', ['active', 'muted', 'kicked', 'banned']);
+export const giftTypeEnum = pgEnum('gift_type', ['flower', 'car', 'diamond', 'crown', 'castle', 'ring', 'heart']);
+export const giftAnimationEnum = pgEnum('gift_animation', ['default', 'sparkle', 'confetti', 'fireworks']);
+
 // Roles table
 export const roles = pgTable('roles', {
   id: serial('id').primaryKey(),
@@ -1635,3 +1643,303 @@ export type BackupLog = typeof backupLogs.$inferSelect;
 export type InsertBackupLog = z.infer<typeof insertBackupLogSchema>;
 export type Restore = typeof restores.$inferSelect;
 export type InsertRestore = z.infer<typeof insertRestoreSchema>;
+
+// Room System Tables
+
+// Rooms table
+export const rooms = pgTable('rooms', {
+  id: serial('id').primaryKey(),
+  roomId: text('room_id').notNull().unique(), // Unique room identifier for joining
+  name: text('name').notNull(),
+  description: text('description'),
+  type: roomTypeEnum('type').default('public').notNull(),
+  password: text('password'), // For private rooms
+  maxSeats: integer('max_seats').default(8).notNull(),
+  currentUsers: integer('current_users').default(0).notNull(),
+  
+  // Room settings
+  voiceChatEnabled: boolean('voice_chat_enabled').default(true).notNull(),
+  textChatEnabled: boolean('text_chat_enabled').default(true).notNull(),
+  giftsEnabled: boolean('gifts_enabled').default(true).notNull(),
+  backgroundTheme: text('background_theme').default('default'),
+  backgroundMusic: text('background_music'),
+  musicEnabled: boolean('music_enabled').default(false).notNull(),
+  
+  // Room customization
+  bannerImage: text('banner_image'),
+  tags: text('tags').array().default([]),
+  category: text('category').default('general'),
+  country: text('country'),
+  language: text('language').default('en'),
+  
+  // Room state
+  status: roomStatusEnum('status').default('active').notNull(),
+  isLocked: boolean('is_locked').default(false).notNull(),
+  isFeatured: boolean('is_featured').default(false).notNull(),
+  
+  // Owner information
+  ownerId: integer('owner_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
+  
+  // Statistics
+  totalVisits: integer('total_visits').default(0).notNull(),
+  totalGiftsReceived: integer('total_gifts_received').default(0).notNull(),
+  totalGiftValue: integer('total_gift_value').default(0).notNull(), // in cents
+  
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+  updatedAt: timestamp('updated_at').defaultNow().notNull(),
+  lastActivity: timestamp('last_activity').defaultNow().notNull()
+});
+
+// Room Users table (junction table for users in rooms)
+export const roomUsers = pgTable('room_users', {
+  id: serial('id').primaryKey(),
+  roomId: integer('room_id').notNull().references(() => rooms.id, { onDelete: 'cascade' }),
+  userId: integer('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
+  
+  role: roomUserRoleEnum('role').default('member').notNull(),
+  status: roomUserStatusEnum('status').default('active').notNull(),
+  seatNumber: integer('seat_number'), // Which seat they're in (1-8)
+  
+  // User state in room
+  isMuted: boolean('is_muted').default(false).notNull(),
+  isMicOn: boolean('is_mic_on').default(false).notNull(),
+  isActive: boolean('is_active').default(true).notNull(),
+  
+  // Statistics
+  giftsReceived: integer('gifts_received').default(0).notNull(),
+  giftsSent: integer('gifts_sent').default(0).notNull(),
+  messagesCount: integer('messages_count').default(0).notNull(),
+  
+  joinedAt: timestamp('joined_at').defaultNow().notNull(),
+  lastSeen: timestamp('last_seen').defaultNow().notNull()
+});
+
+// Room Messages table
+export const roomMessages = pgTable('room_messages', {
+  id: serial('id').primaryKey(),
+  roomId: integer('room_id').notNull().references(() => rooms.id, { onDelete: 'cascade' }),
+  userId: integer('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
+  
+  message: text('message').notNull(),
+  messageType: text('message_type').default('text').notNull(), // 'text', 'emoji', 'system'
+  isPrivate: boolean('is_private').default(false).notNull(),
+  recipientId: integer('recipient_id').references(() => users.id, { onDelete: 'cascade' }), // For private messages
+  
+  createdAt: timestamp('created_at').defaultNow().notNull()
+});
+
+// Gifts table
+export const gifts = pgTable('gifts', {
+  id: serial('id').primaryKey(),
+  name: text('name').notNull(),
+  description: text('description'),
+  type: giftTypeEnum('type').notNull(),
+  image: text('image').notNull(),
+  animation: giftAnimationEnum('animation').default('default').notNull(),
+  
+  price: integer('price').notNull(), // Price in coins/diamonds
+  rarity: text('rarity').default('common').notNull(), // 'common', 'rare', 'epic', 'legendary'
+  
+  isActive: boolean('is_active').default(true).notNull(),
+  sortOrder: integer('sort_order').default(0).notNull(),
+  
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+  updatedAt: timestamp('updated_at').defaultNow().notNull()
+});
+
+// Room Gifts table (gifts sent in rooms)
+export const roomGifts = pgTable('room_gifts', {
+  id: serial('id').primaryKey(),
+  roomId: integer('room_id').notNull().references(() => rooms.id, { onDelete: 'cascade' }),
+  senderId: integer('sender_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
+  recipientId: integer('recipient_id').references(() => users.id, { onDelete: 'cascade' }), // Can be null for room-wide gifts
+  giftId: integer('gift_id').notNull().references(() => gifts.id, { onDelete: 'cascade' }),
+  
+  quantity: integer('quantity').default(1).notNull(),
+  totalValue: integer('total_value').notNull(), // Total value in coins/diamonds
+  message: text('message'), // Optional message with gift
+  
+  createdAt: timestamp('created_at').defaultNow().notNull()
+});
+
+// User Wallets table (for virtual currency)
+export const userWallets = pgTable('user_wallets', {
+  id: serial('id').primaryKey(),
+  userId: integer('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
+  
+  coins: integer('coins').default(0).notNull(),
+  diamonds: integer('diamonds').default(0).notNull(),
+  
+  // Lifetime statistics
+  totalCoinsEarned: integer('total_coins_earned').default(0).notNull(),
+  totalDiamondsEarned: integer('total_diamonds_earned').default(0).notNull(),
+  totalCoinsSpent: integer('total_coins_spent').default(0).notNull(),
+  totalDiamondsSpent: integer('total_diamonds_spent').default(0).notNull(),
+  
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+  updatedAt: timestamp('updated_at').defaultNow().notNull()
+});
+
+// User Relationships table (friends, followers)
+export const userRelationships = pgTable('user_relationships', {
+  id: serial('id').primaryKey(),
+  userId: integer('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
+  targetUserId: integer('target_user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
+  
+  relationshipType: text('relationship_type').notNull(), // 'friend_request', 'friend', 'following', 'blocked'
+  status: text('status').default('pending').notNull(), // 'pending', 'accepted', 'rejected', 'blocked'
+  
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+  updatedAt: timestamp('updated_at').defaultNow().notNull()
+});
+
+// Room Analytics table
+export const roomAnalytics = pgTable('room_analytics', {
+  id: serial('id').primaryKey(),
+  roomId: integer('room_id').notNull().references(() => rooms.id, { onDelete: 'cascade' }),
+  
+  date: timestamp('date').notNull(),
+  uniqueVisitors: integer('unique_visitors').default(0).notNull(),
+  totalMessages: integer('total_messages').default(0).notNull(),
+  totalGifts: integer('total_gifts').default(0).notNull(),
+  totalGiftValue: integer('total_gift_value').default(0).notNull(),
+  averageStayDuration: integer('average_stay_duration').default(0).notNull(), // in seconds
+  
+  createdAt: timestamp('created_at').defaultNow().notNull()
+});
+
+// Room System Relations
+export const roomsRelations = relations(rooms, ({ many, one }) => ({
+  owner: one(users, {
+    fields: [rooms.ownerId],
+    references: [users.id]
+  }),
+  roomUsers: many(roomUsers),
+  messages: many(roomMessages),
+  gifts: many(roomGifts),
+  analytics: many(roomAnalytics)
+}));
+
+export const roomUsersRelations = relations(roomUsers, ({ one }) => ({
+  room: one(rooms, {
+    fields: [roomUsers.roomId],
+    references: [rooms.id]
+  }),
+  user: one(users, {
+    fields: [roomUsers.userId],
+    references: [users.id]
+  })
+}));
+
+export const roomMessagesRelations = relations(roomMessages, ({ one }) => ({
+  room: one(rooms, {
+    fields: [roomMessages.roomId],
+    references: [rooms.id]
+  }),
+  user: one(users, {
+    fields: [roomMessages.userId],
+    references: [users.id]
+  }),
+  recipient: one(users, {
+    fields: [roomMessages.recipientId],
+    references: [users.id]
+  })
+}));
+
+export const giftsRelations = relations(gifts, ({ many }) => ({
+  roomGifts: many(roomGifts)
+}));
+
+export const roomGiftsRelations = relations(roomGifts, ({ one }) => ({
+  room: one(rooms, {
+    fields: [roomGifts.roomId],
+    references: [rooms.id]
+  }),
+  sender: one(users, {
+    fields: [roomGifts.senderId],
+    references: [users.id]
+  }),
+  recipient: one(users, {
+    fields: [roomGifts.recipientId],
+    references: [users.id]
+  }),
+  gift: one(gifts, {
+    fields: [roomGifts.giftId],
+    references: [gifts.id]
+  })
+}));
+
+export const userWalletsRelations = relations(userWallets, ({ one }) => ({
+  user: one(users, {
+    fields: [userWallets.userId],
+    references: [users.id]
+  })
+}));
+
+export const userRelationshipsRelations = relations(userRelationships, ({ one }) => ({
+  user: one(users, {
+    fields: [userRelationships.userId],
+    references: [users.id]
+  }),
+  targetUser: one(users, {
+    fields: [userRelationships.targetUserId],
+    references: [users.id]
+  })
+}));
+
+export const roomAnalyticsRelations = relations(roomAnalytics, ({ one }) => ({
+  room: one(rooms, {
+    fields: [roomAnalytics.roomId],
+    references: [rooms.id]
+  })
+}));
+
+// Room System Validation Schemas
+export const insertRoomSchema = createInsertSchema(rooms, {
+  name: (schema) => schema.min(3, "Room name must be at least 3 characters").max(50, "Room name must be less than 50 characters"),
+  roomId: (schema) => schema.min(6, "Room ID must be at least 6 characters").max(12, "Room ID must be less than 12 characters"),
+  description: (schema) => schema.optional(),
+  password: (schema) => schema.optional(),
+  maxSeats: (schema) => schema.min(2, "Minimum 2 seats").max(20, "Maximum 20 seats"),
+  tags: (schema) => schema.optional()
+});
+
+export const insertRoomUserSchema = createInsertSchema(roomUsers, {
+  seatNumber: (schema) => schema.optional().nullable()
+});
+
+export const insertRoomMessageSchema = createInsertSchema(roomMessages, {
+  message: (schema) => schema.min(1, "Message cannot be empty").max(500, "Message too long")
+});
+
+export const insertGiftSchema = createInsertSchema(gifts, {
+  name: (schema) => schema.min(3, "Gift name must be at least 3 characters"),
+  price: (schema) => schema.min(1, "Gift price must be at least 1")
+});
+
+export const insertRoomGiftSchema = createInsertSchema(roomGifts, {
+  quantity: (schema) => schema.min(1, "Quantity must be at least 1"),
+  totalValue: (schema) => schema.min(1, "Total value must be at least 1")
+});
+
+export const insertUserWalletSchema = createInsertSchema(userWallets);
+export const insertUserRelationshipSchema = createInsertSchema(userRelationships);
+export const insertRoomAnalyticsSchema = createInsertSchema(roomAnalytics);
+
+// Room System Type Exports
+export type Room = typeof rooms.$inferSelect;
+export type InsertRoom = z.infer<typeof insertRoomSchema>;
+export type RoomUser = typeof roomUsers.$inferSelect;
+export type InsertRoomUser = z.infer<typeof insertRoomUserSchema>;
+export type RoomMessage = typeof roomMessages.$inferSelect;
+export type InsertRoomMessage = z.infer<typeof insertRoomMessageSchema>;
+export type Gift = typeof gifts.$inferSelect;
+export type InsertGift = z.infer<typeof insertGiftSchema>;
+export type RoomGift = typeof roomGifts.$inferSelect;
+export type InsertRoomGift = z.infer<typeof insertRoomGiftSchema>;
+export type UserWallet = typeof userWallets.$inferSelect;
+export type InsertUserWallet = z.infer<typeof insertUserWalletSchema>;
+export type UserRelationship = typeof userRelationships.$inferSelect;
+export type InsertUserRelationship = z.infer<typeof insertUserRelationshipSchema>;
+export type RoomAnalytics = typeof roomAnalytics.$inferSelect;
+export type InsertRoomAnalytics = z.infer<typeof insertRoomAnalyticsSchema>;

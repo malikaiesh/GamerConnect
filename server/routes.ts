@@ -32,6 +32,7 @@ import { registerHeroImageRoutes } from "./api/hero-images";
 import { registerGoogleIndexingRoutes } from "./api/google-indexing";
 import backupRestoreRoutes from "./api/backup-restore";
 import objectsRoutes from "./api/objects";
+import { roomsRouter } from "./api/rooms";
 import { storage } from "./storage";
 import { db } from "../db";
 import { ObjectStorageService, ObjectNotFoundError } from "./objectStorage";
@@ -384,6 +385,9 @@ Sitemap: ${req.protocol}://${req.get('host')}/sitemap.xml`);
   
   // Register object storage routes
   app.use('/api/objects', objectsRoutes);
+  
+  // Room system routes
+  app.use('/api/rooms', roomsRouter);
   
   // Quick test route to verify our demo endpoint
   app.post('/api/demo-schemas/test', (req, res) => {

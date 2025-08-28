@@ -1,0 +1,664 @@
+import { useState } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
+import { Switch } from "@/components/ui/switch";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
+import { Plus, Settings, Users, Lock, Globe, Edit, Trash2, Eye } from "lucide-react";
+import { apiRequest } from "@/lib/queryClient";
+import { useToast } from "@/hooks/use-toast";
+import { formatDistanceToNow } from "date-fns";
+import { z } from "zod";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import {
+  Form,
+  FormControl,
+  FormDescription,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
+
+interface Room {
+  room: {
+    id: number;
+    roomId: string;
+    name: string;
+    description: string | null;
+    type: "public" | "private";
+    status: "active" | "inactive" | "maintenance";
+    maxSeats: number;
+    currentUsers: number;
+    category: string;
+    country: string | null;
+    language: string;
+    isLocked: boolean;
+    isFeatured: boolean;
+    voiceChatEnabled: boolean;
+    textChatEnabled: boolean;
+    giftsEnabled: boolean;
+    backgroundTheme: string;
+    tags: string[];
+    totalVisits: number;
+    totalGiftsReceived: number;
+    totalGiftValue: number;
+    createdAt: string;
+    lastActivity: string;
+  };
+  userCount: number;
+}
+
+const roomFormSchema = z.object({
+  name: z.string().min(3, "Room name must be at least 3 characters").max(50, "Room name must be less than 50 characters"),
+  description: z.string().optional(),
+  type: z.enum(["public", "private"]),
+  password: z.string().optional(),
+  maxSeats: z.number().min(2, "Minimum 2 seats").max(20, "Maximum 20 seats"),
+  category: z.string().min(1, "Please select a category"),
+  country: z.string().optional(),
+  language: z.string().default("en"),
+  voiceChatEnabled: z.boolean().default(true),
+  textChatEnabled: z.boolean().default(true),
+  giftsEnabled: z.boolean().default(true),
+  backgroundTheme: z.string().default("default"),
+  tags: z.array(z.string()).default([]),
+});
+
+type RoomFormData = z.infer<typeof roomFormSchema>;
+
+export default function MyRoomsPage() {
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [selectedRoom, setSelectedRoom] = useState<Room | null>(null);
+  const [tagInput, setTagInput] = useState("");
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
+
+  const form = useForm<RoomFormData>({
+    resolver: zodResolver(roomFormSchema),
+    defaultValues: {
+      name: "",
+      description: "",
+      type: "public",
+      password: "",
+      maxSeats: 8,
+      category: "general",
+      country: "",
+      language: "en",
+      voiceChatEnabled: true,
+      textChatEnabled: true,
+      giftsEnabled: true,
+      backgroundTheme: "default",
+      tags: [],
+    },
+  });
+
+  // Fetch user's rooms
+  const { data: rooms, isLoading } = useQuery<Room[]>({
+    queryKey: ["/api/rooms/my-rooms"],
+  });
+
+  // Create room mutation
+  const createRoomMutation = useMutation({
+    mutationFn: (data: RoomFormData) => apiRequest("/api/rooms", { method: "POST", body: data }),
+    onSuccess: () => {
+      toast({
+        title: "Success",
+        description: "Room created successfully",
+      });
+      setIsCreateModalOpen(false);
+      form.reset();
+      queryClient.invalidateQueries({ queryKey: ["/api/rooms"] });
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Error",
+        description: error.message,
+        variant: "destructive",
+      });
+    },
+  });
+
+  // Update room mutation
+  const updateRoomMutation = useMutation({
+    mutationFn: ({ roomId, updates }: { roomId: string; updates: Partial<RoomFormData> }) => 
+      apiRequest(`/api/rooms/${roomId}`, { method: "PATCH", body: updates }),
+    onSuccess: () => {
+      toast({
+        title: "Success",
+        description: "Room updated successfully",
+      });
+      setIsEditModalOpen(false);
+      setSelectedRoom(null);
+      queryClient.invalidateQueries({ queryKey: ["/api/rooms"] });
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Error",
+        description: error.message,
+        variant: "destructive",
+      });
+    },
+  });
+
+  // Delete room mutation
+  const deleteRoomMutation = useMutation({
+    mutationFn: (roomId: string) => apiRequest(`/api/rooms/${roomId}`, { method: "DELETE" }),
+    onSuccess: () => {
+      toast({
+        title: "Success",
+        description: "Room deleted successfully",
+      });
+      queryClient.invalidateQueries({ queryKey: ["/api/rooms"] });
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Error",
+        description: error.message,
+        variant: "destructive",
+      });
+    },
+  });
+
+  const handleCreateRoom = (data: RoomFormData) => {
+    createRoomMutation.mutate(data);
+  };
+
+  const handleEditRoom = (room: Room) => {
+    setSelectedRoom(room);
+    form.reset({
+      name: room.room.name,
+      description: room.room.description || "",
+      type: room.room.type,
+      maxSeats: room.room.maxSeats,
+      category: room.room.category,
+      country: room.room.country || "",
+      language: room.room.language,
+      voiceChatEnabled: room.room.voiceChatEnabled,
+      textChatEnabled: room.room.textChatEnabled,
+      giftsEnabled: room.room.giftsEnabled,
+      backgroundTheme: room.room.backgroundTheme,
+      tags: room.room.tags || [],
+    });
+    setIsEditModalOpen(true);
+  };
+
+  const handleUpdateRoom = (data: RoomFormData) => {
+    if (!selectedRoom) return;
+    updateRoomMutation.mutate({ roomId: selectedRoom.room.roomId, updates: data });
+  };
+
+  const handleDeleteRoom = (roomId: string) => {
+    deleteRoomMutation.mutate(roomId);
+  };
+
+  const addTag = () => {
+    if (tagInput.trim() && !form.getValues().tags.includes(tagInput.trim())) {
+      const currentTags = form.getValues().tags;
+      form.setValue("tags", [...currentTags, tagInput.trim()]);
+      setTagInput("");
+    }
+  };
+
+  const removeTag = (tagToRemove: string) => {
+    const currentTags = form.getValues().tags;
+    form.setValue("tags", currentTags.filter(tag => tag !== tagToRemove));
+  };
+
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case "active":
+        return "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300";
+      case "inactive":
+        return "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300";
+      case "maintenance":
+        return "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300";
+      default:
+        return "bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-300";
+    }
+  };
+
+  const RoomForm = ({ onSubmit, isPending }: { onSubmit: (data: RoomFormData) => void; isPending: boolean }) => (
+    <Form {...form}>
+      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+        <div className="grid gap-4 md:grid-cols-2">
+          <FormField
+            control={form.control}
+            name="name"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Room Name</FormLabel>
+                <FormControl>
+                  <Input placeholder="Enter room name" {...field} data-testid="input-room-name" />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
+            name="category"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Category</FormLabel>
+                <Select onValueChange={field.onChange} value={field.value}>
+                  <FormControl>
+                    <SelectTrigger data-testid="select-category">
+                      <SelectValue placeholder="Select category" />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent>
+                    <SelectItem value="general">General</SelectItem>
+                    <SelectItem value="gaming">Gaming</SelectItem>
+                    <SelectItem value="music">Music</SelectItem>
+                    <SelectItem value="chat">Chat</SelectItem>
+                    <SelectItem value="study">Study</SelectItem>
+                    <SelectItem value="business">Business</SelectItem>
+                  </SelectContent>
+                </Select>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        </div>
+
+        <FormField
+          control={form.control}
+          name="description"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Description</FormLabel>
+              <FormControl>
+                <Textarea placeholder="Describe your room..." {...field} data-testid="textarea-description" />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <div className="grid gap-4 md:grid-cols-3">
+          <FormField
+            control={form.control}
+            name="type"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Room Type</FormLabel>
+                <Select onValueChange={field.onChange} value={field.value}>
+                  <FormControl>
+                    <SelectTrigger data-testid="select-type">
+                      <SelectValue placeholder="Select type" />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent>
+                    <SelectItem value="public">Public</SelectItem>
+                    <SelectItem value="private">Private</SelectItem>
+                  </SelectContent>
+                </Select>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
+            name="maxSeats"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Max Seats</FormLabel>
+                <FormControl>
+                  <Input 
+                    type="number" 
+                    min={2} 
+                    max={20} 
+                    {...field} 
+                    onChange={(e) => field.onChange(parseInt(e.target.value))}
+                    data-testid="input-max-seats" 
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
+            name="language"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Language</FormLabel>
+                <Select onValueChange={field.onChange} value={field.value}>
+                  <FormControl>
+                    <SelectTrigger data-testid="select-language">
+                      <SelectValue placeholder="Select language" />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent>
+                    <SelectItem value="en">English</SelectItem>
+                    <SelectItem value="es">Spanish</SelectItem>
+                    <SelectItem value="fr">French</SelectItem>
+                    <SelectItem value="de">German</SelectItem>
+                    <SelectItem value="it">Italian</SelectItem>
+                    <SelectItem value="pt">Portuguese</SelectItem>
+                    <SelectItem value="ar">Arabic</SelectItem>
+                    <SelectItem value="hi">Hindi</SelectItem>
+                    <SelectItem value="ur">Urdu</SelectItem>
+                  </SelectContent>
+                </Select>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        </div>
+
+        {form.watch("type") === "private" && (
+          <FormField
+            control={form.control}
+            name="password"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Room Password</FormLabel>
+                <FormControl>
+                  <Input type="password" placeholder="Enter room password" {...field} data-testid="input-password" />
+                </FormControl>
+                <FormDescription>Required for private rooms</FormDescription>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        )}
+
+        <div className="space-y-4">
+          <Label>Room Features</Label>
+          <div className="grid gap-4 md:grid-cols-3">
+            <FormField
+              control={form.control}
+              name="voiceChatEnabled"
+              render={({ field }) => (
+                <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
+                  <div className="space-y-0.5">
+                    <FormLabel className="text-base">Voice Chat</FormLabel>
+                    <FormDescription>Enable voice communication</FormDescription>
+                  </div>
+                  <FormControl>
+                    <Switch checked={field.value} onCheckedChange={field.onChange} data-testid="switch-voice-chat" />
+                  </FormControl>
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="textChatEnabled"
+              render={({ field }) => (
+                <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
+                  <div className="space-y-0.5">
+                    <FormLabel className="text-base">Text Chat</FormLabel>
+                    <FormDescription>Enable text messaging</FormDescription>
+                  </div>
+                  <FormControl>
+                    <Switch checked={field.value} onCheckedChange={field.onChange} data-testid="switch-text-chat" />
+                  </FormControl>
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="giftsEnabled"
+              render={({ field }) => (
+                <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
+                  <div className="space-y-0.5">
+                    <FormLabel className="text-base">Gifts</FormLabel>
+                    <FormDescription>Allow gift sending</FormDescription>
+                  </div>
+                  <FormControl>
+                    <Switch checked={field.value} onCheckedChange={field.onChange} data-testid="switch-gifts" />
+                  </FormControl>
+                </FormItem>
+              )}
+            />
+          </div>
+        </div>
+
+        <div className="space-y-4">
+          <Label>Tags</Label>
+          <div className="flex gap-2">
+            <Input
+              placeholder="Add tags..."
+              value={tagInput}
+              onChange={(e) => setTagInput(e.target.value)}
+              onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), addTag())}
+              data-testid="input-tags"
+            />
+            <Button type="button" onClick={addTag} data-testid="button-add-tag">Add</Button>
+          </div>
+          {form.watch("tags").length > 0 && (
+            <div className="flex flex-wrap gap-2">
+              {form.watch("tags").map((tag) => (
+                <Badge key={tag} variant="secondary" className="flex items-center gap-1">
+                  {tag}
+                  <button
+                    type="button"
+                    onClick={() => removeTag(tag)}
+                    className="text-xs hover:text-red-500"
+                    data-testid={`button-remove-tag-${tag}`}
+                  >
+                    ×
+                  </button>
+                </Badge>
+              ))}
+            </div>
+          )}
+        </div>
+
+        <DialogFooter>
+          <Button type="submit" disabled={isPending} data-testid="button-submit">
+            {isPending ? "Creating..." : selectedRoom ? "Update Room" : "Create Room"}
+          </Button>
+        </DialogFooter>
+      </form>
+    </Form>
+  );
+
+  return (
+    <div className="space-y-6">
+      {/* Header */}
+      <div className="flex justify-between items-center">
+        <div>
+          <h1 className="text-3xl font-bold" data-testid="page-title">My Rooms</h1>
+          <p className="text-muted-foreground">
+            Create and manage your rooms, customize settings, and monitor activity.
+          </p>
+        </div>
+        <Dialog open={isCreateModalOpen} onOpenChange={setIsCreateModalOpen}>
+          <DialogTrigger asChild>
+            <Button data-testid="button-create-room">
+              <Plus className="h-4 w-4 mr-2" />
+              Create Room
+            </Button>
+          </DialogTrigger>
+          <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle>Create New Room</DialogTitle>
+              <DialogDescription>
+                Set up your room with custom settings and features.
+              </DialogDescription>
+            </DialogHeader>
+            <RoomForm onSubmit={handleCreateRoom} isPending={createRoomMutation.isPending} />
+          </DialogContent>
+        </Dialog>
+      </div>
+
+      {/* Rooms Grid */}
+      {isLoading ? (
+        <div className="flex items-center justify-center py-8">
+          <div className="text-muted-foreground">Loading your rooms...</div>
+        </div>
+      ) : !rooms?.length ? (
+        <Card data-testid="card-empty-state">
+          <CardContent className="flex flex-col items-center justify-center py-8">
+            <Users className="h-16 w-16 text-muted-foreground mb-4" />
+            <h3 className="text-lg font-medium mb-2">No rooms created yet</h3>
+            <p className="text-muted-foreground text-center mb-4">
+              Create your first room to start building your community and connecting with others.
+            </p>
+            <Button onClick={() => setIsCreateModalOpen(true)} data-testid="button-create-first-room">
+              <Plus className="h-4 w-4 mr-2" />
+              Create Your First Room
+            </Button>
+          </CardContent>
+        </Card>
+      ) : (
+        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+          {rooms.map((room) => (
+            <Card key={room.room.id} data-testid={`card-room-${room.room.id}`}>
+              <CardHeader>
+                <div className="flex items-center justify-between">
+                  <CardTitle className="flex items-center gap-2">
+                    {room.room.type === 'public' ? <Globe className="h-4 w-4" /> : <Lock className="h-4 w-4" />}
+                    {room.room.name}
+                  </CardTitle>
+                  <Badge className={getStatusColor(room.room.status)}>
+                    {room.room.status}
+                  </Badge>
+                </div>
+                <div className="text-sm text-muted-foreground">
+                  Room ID: {room.room.roomId}
+                </div>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  {room.room.description && (
+                    <p className="text-sm text-muted-foreground">{room.room.description}</p>
+                  )}
+                  
+                  <div className="grid gap-2 text-sm">
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground">Users:</span>
+                      <span>{room.userCount}/{room.room.maxSeats}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground">Category:</span>
+                      <span className="capitalize">{room.room.category}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground">Total Visits:</span>
+                      <span>{room.room.totalVisits}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground">Last Active:</span>
+                      <span>{formatDistanceToNow(new Date(room.room.lastActivity))} ago</span>
+                    </div>
+                  </div>
+
+                  {room.room.tags.length > 0 && (
+                    <div className="flex flex-wrap gap-1">
+                      {room.room.tags.slice(0, 3).map((tag) => (
+                        <Badge key={tag} variant="outline" className="text-xs">
+                          {tag}
+                        </Badge>
+                      ))}
+                      {room.room.tags.length > 3 && (
+                        <Badge variant="outline" className="text-xs">
+                          +{room.room.tags.length - 3} more
+                        </Badge>
+                      )}
+                    </div>
+                  )}
+
+                  <div className="flex justify-between pt-4">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handleEditRoom(room)}
+                      data-testid={`button-edit-${room.room.id}`}
+                    >
+                      <Edit className="h-4 w-4 mr-2" />
+                      Edit
+                    </Button>
+                    <AlertDialog>
+                      <AlertDialogTrigger asChild>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          data-testid={`button-delete-${room.room.id}`}
+                        >
+                          <Trash2 className="h-4 w-4 text-red-500" />
+                        </Button>
+                      </AlertDialogTrigger>
+                      <AlertDialogContent>
+                        <AlertDialogHeader>
+                          <AlertDialogTitle>Delete Room</AlertDialogTitle>
+                          <AlertDialogDescription>
+                            Are you sure you want to delete "{room.room.name}"? This action cannot be undone.
+                            All room data and messages will be permanently removed.
+                          </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                          <AlertDialogCancel>Cancel</AlertDialogCancel>
+                          <AlertDialogAction
+                            onClick={() => handleDeleteRoom(room.room.roomId)}
+                            className="bg-red-600 hover:bg-red-700"
+                            data-testid={`button-confirm-delete-${room.room.id}`}
+                          >
+                            Delete Room
+                          </AlertDialogAction>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      )}
+
+      {/* Edit Room Modal */}
+      <Dialog open={isEditModalOpen} onOpenChange={setIsEditModalOpen}>
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Edit Room</DialogTitle>
+            <DialogDescription>
+              Update your room settings and features.
+            </DialogDescription>
+          </DialogHeader>
+          <RoomForm onSubmit={handleUpdateRoom} isPending={updateRoomMutation.isPending} />
+        </DialogContent>
+      </Dialog>
+    </div>
+  );
+}

@@ -1,0 +1,393 @@
+import { Router } from "express";
+import { db } from "../../db";
+import {
+  rooms,
+  roomUsers,
+  roomMessages,
+  gifts,
+  roomGifts,
+  userWallets,
+  userRelationships,
+  roomAnalytics,
+  users,
+  insertRoomSchema,
+  insertRoomUserSchema,
+  insertRoomMessageSchema,
+  insertGiftSchema,
+  insertRoomGiftSchema,
+  type Room,
+  type RoomUser,
+  type Gift,
+  type RoomMessage
+} from "@shared/schema";
+import { eq, desc, and, sql, count, gte, sum } from "drizzle-orm";
+import { isAuthenticated, isAdmin } from "../middleware/auth";
+import { z } from "zod";
+import { Request, Response } from "express";
+
+const router = Router();
+
+// Generate unique room ID
+function generateRoomId(): string {
+  const chars = 'ABCDEFGHIJKLMNPQRSTUVWXYZ123456789'; // Excluded O and 0 for clarity
+  let result = '';
+  for (let i = 0; i < 6; i++) {
+    result += chars.charAt(Math.floor(Math.random() * chars.length));
+  }
+  return result;
+}
+
+// Get all rooms for admin (paginated)
+router.get("/admin", isAuthenticated, isAdmin, async (req: Request, res: Response) => {
+  try {
+    const page = parseInt(req.query.page as string) || 1;
+    const limit = parseInt(req.query.limit as string) || 20;
+    const search = req.query.search as string;
+    const status = req.query.status as string;
+    const type = req.query.type as string;
+
+    const offset = (page - 1) * limit;
+
+    let query = db
+      .select({
+        room: rooms,
+        owner: {
+          id: users.id,
+          username: users.username,
+          displayName: users.displayName,
+          profilePicture: users.profilePicture
+        }
+      })
+      .from(rooms)
+      .innerJoin(users, eq(rooms.ownerId, users.id));
+
+    // Add filters
+    const conditions = [];
+    if (search) {
+      conditions.push(
+        sql`${rooms.name} ILIKE ${`%${search}%`} OR ${rooms.roomId} ILIKE ${`%${search}%`}`
+      );
+    }
+    if (status) {
+      conditions.push(eq(rooms.status, status as any));
+    }
+    if (type) {
+      conditions.push(eq(rooms.type, type as any));
+    }
+
+    if (conditions.length > 0) {
+      query = query.where(and(...conditions));
+    }
+
+    const roomsData = await query
+      .orderBy(desc(rooms.createdAt))
+      .limit(limit)
+      .offset(offset);
+
+    // Get total count for pagination
+    let countQuery = db.select({ count: count() }).from(rooms);
+    if (conditions.length > 0) {
+      countQuery = countQuery.where(and(...conditions));
+    }
+    const totalCount = await countQuery;
+
+    res.json({
+      rooms: roomsData,
+      pagination: {
+        page,
+        limit,
+        total: totalCount[0].count,
+        pages: Math.ceil(totalCount[0].count / limit)
+      }
+    });
+  } catch (error) {
+    console.error("Error fetching admin rooms:", error);
+    res.status(500).json({ error: "Failed to fetch rooms" });
+  }
+});
+
+// Get user's rooms (for user dashboard)
+router.get("/my-rooms", isAuthenticated, async (req: Request, res: Response) => {
+  try {
+    const userId = (req as any).user?.id;
+    if (!userId) {
+      return res.status(401).json({ error: "User not authenticated" });
+    }
+
+    const userRooms = await db
+      .select({
+        room: rooms,
+        userCount: sql<number>`(SELECT COUNT(*) FROM ${roomUsers} WHERE ${roomUsers.roomId} = ${rooms.id} AND ${roomUsers.status} = 'active')`
+      })
+      .from(rooms)
+      .where(eq(rooms.ownerId, userId))
+      .orderBy(desc(rooms.lastActivity));
+
+    res.json(userRooms);
+  } catch (error) {
+    console.error("Error fetching user rooms:", error);
+    res.status(500).json({ error: "Failed to fetch user rooms" });
+  }
+});
+
+// Get room details by ID
+router.get("/:roomId", async (req: Request, res: Response) => {
+  try {
+    const { roomId } = req.params;
+
+    const roomData = await db
+      .select({
+        room: rooms,
+        owner: {
+          id: users.id,
+          username: users.username,
+          displayName: users.displayName,
+          profilePicture: users.profilePicture
+        }
+      })
+      .from(rooms)
+      .innerJoin(users, eq(rooms.ownerId, users.id))
+      .where(eq(rooms.roomId, roomId))
+      .limit(1);
+
+    if (roomData.length === 0) {
+      return res.status(404).json({ error: "Room not found" });
+    }
+
+    // Get current users in room
+    const currentUsers = await db
+      .select({
+        user: {
+          id: users.id,
+          username: users.username,
+          displayName: users.displayName,
+          profilePicture: users.profilePicture
+        },
+        roomUser: roomUsers
+      })
+      .from(roomUsers)
+      .innerJoin(users, eq(roomUsers.userId, users.id))
+      .where(and(
+        eq(roomUsers.roomId, roomData[0].room.id),
+        eq(roomUsers.status, 'active')
+      ))
+      .orderBy(roomUsers.seatNumber);
+
+    res.json({
+      ...roomData[0],
+      currentUsers
+    });
+  } catch (error) {
+    console.error("Error fetching room:", error);
+    res.status(500).json({ error: "Failed to fetch room" });
+  }
+});
+
+// Create new room
+router.post("/", isAuthenticated, async (req: Request, res: Response) => {
+  try {
+    const userId = (req as any).user?.id;
+    if (!userId) {
+      return res.status(401).json({ error: "User not authenticated" });
+    }
+
+    // Generate unique room ID
+    let roomId;
+    let isUnique = false;
+    while (!isUnique) {
+      roomId = generateRoomId();
+      const existing = await db.select().from(rooms).where(eq(rooms.roomId, roomId)).limit(1);
+      if (existing.length === 0) {
+        isUnique = true;
+      }
+    }
+
+    const validatedData = insertRoomSchema.parse({
+      ...req.body,
+      roomId,
+      ownerId: userId
+    });
+
+    const [newRoom] = await db.insert(rooms).values(validatedData).returning();
+
+    // Add owner as room user
+    await db.insert(roomUsers).values({
+      roomId: newRoom.id,
+      userId,
+      role: 'owner',
+      seatNumber: 1
+    });
+
+    // Initialize room analytics
+    await db.insert(roomAnalytics).values({
+      roomId: newRoom.id,
+      date: new Date()
+    });
+
+    res.status(201).json(newRoom);
+  } catch (error) {
+    console.error("Error creating room:", error);
+    if (error instanceof z.ZodError) {
+      return res.status(400).json({ error: "Validation error", details: error.errors });
+    }
+    res.status(500).json({ error: "Failed to create room" });
+  }
+});
+
+// Update room
+router.patch("/:roomId", isAuthenticated, async (req: Request, res: Response) => {
+  try {
+    const { roomId } = req.params;
+    const userId = (req as any).user?.id;
+    const isAdminUser = (req as any).user?.isAdmin;
+
+    // Get room first
+    const room = await db.select().from(rooms).where(eq(rooms.roomId, roomId)).limit(1);
+    if (room.length === 0) {
+      return res.status(404).json({ error: "Room not found" });
+    }
+
+    // Check if user is owner or admin
+    if (room[0].ownerId !== userId && !isAdminUser) {
+      return res.status(403).json({ error: "Not authorized to update this room" });
+    }
+
+    const updateData = insertRoomSchema.partial().parse(req.body);
+    delete (updateData as any).roomId; // Don't allow changing roomId
+    delete (updateData as any).ownerId; // Don't allow changing owner through this endpoint
+
+    const [updatedRoom] = await db
+      .update(rooms)
+      .set({ ...updateData, updatedAt: new Date() })
+      .where(eq(rooms.id, room[0].id))
+      .returning();
+
+    res.json(updatedRoom);
+  } catch (error) {
+    console.error("Error updating room:", error);
+    if (error instanceof z.ZodError) {
+      return res.status(400).json({ error: "Validation error", details: error.errors });
+    }
+    res.status(500).json({ error: "Failed to update room" });
+  }
+});
+
+// Delete room
+router.delete("/:roomId", isAuthenticated, async (req: Request, res: Response) => {
+  try {
+    const { roomId } = req.params;
+    const userId = (req as any).user?.id;
+    const isAdminUser = (req as any).user?.isAdmin;
+
+    // Get room first
+    const room = await db.select().from(rooms).where(eq(rooms.roomId, roomId)).limit(1);
+    if (room.length === 0) {
+      return res.status(404).json({ error: "Room not found" });
+    }
+
+    // Check if user is owner or admin
+    if (room[0].ownerId !== userId && !isAdminUser) {
+      return res.status(403).json({ error: "Not authorized to delete this room" });
+    }
+
+    await db.delete(rooms).where(eq(rooms.id, room[0].id));
+
+    res.json({ message: "Room deleted successfully" });
+  } catch (error) {
+    console.error("Error deleting room:", error);
+    res.status(500).json({ error: "Failed to delete room" });
+  }
+});
+
+// Get public rooms for explore page
+router.get("/", async (req: Request, res: Response) => {
+  try {
+    const page = parseInt(req.query.page as string) || 1;
+    const limit = parseInt(req.query.limit as string) || 20;
+    const category = req.query.category as string;
+    const country = req.query.country as string;
+    const search = req.query.search as string;
+
+    const offset = (page - 1) * limit;
+
+    let query = db
+      .select({
+        room: rooms,
+        owner: {
+          id: users.id,
+          username: users.username,
+          displayName: users.displayName,
+          profilePicture: users.profilePicture
+        },
+        userCount: sql<number>`(SELECT COUNT(*) FROM ${roomUsers} WHERE ${roomUsers.roomId} = ${rooms.id} AND ${roomUsers.status} = 'active')`
+      })
+      .from(rooms)
+      .innerJoin(users, eq(rooms.ownerId, users.id))
+      .where(and(
+        eq(rooms.type, 'public'),
+        eq(rooms.status, 'active')
+      ));
+
+    // Add filters
+    const conditions = [eq(rooms.type, 'public'), eq(rooms.status, 'active')];
+    if (category) {
+      conditions.push(eq(rooms.category, category));
+    }
+    if (country) {
+      conditions.push(eq(rooms.country, country));
+    }
+    if (search) {
+      conditions.push(
+        sql`${rooms.name} ILIKE ${`%${search}%`} OR ${rooms.roomId} ILIKE ${`%${search}%`}`
+      );
+    }
+
+    const publicRooms = await query
+      .where(and(...conditions))
+      .orderBy(desc(rooms.isFeatured), desc(rooms.currentUsers), desc(rooms.lastActivity))
+      .limit(limit)
+      .offset(offset);
+
+    res.json(publicRooms);
+  } catch (error) {
+    console.error("Error fetching public rooms:", error);
+    res.status(500).json({ error: "Failed to fetch rooms" });
+  }
+});
+
+// Get room statistics for dashboard
+router.get("/stats/overview", isAuthenticated, isAdmin, async (req: Request, res: Response) => {
+  try {
+    const [totalRoomsResult] = await db.select({ count: count() }).from(rooms);
+    const [activeRoomsResult] = await db.select({ count: count() }).from(rooms).where(eq(rooms.status, 'active'));
+    const [publicRoomsResult] = await db.select({ count: count() }).from(rooms).where(eq(rooms.type, 'public'));
+    const [privateRoomsResult] = await db.select({ count: count() }).from(rooms).where(eq(rooms.type, 'private'));
+
+    // Get recent room activity
+    const recentRooms = await db
+      .select({
+        room: rooms,
+        owner: {
+          username: users.username,
+          displayName: users.displayName
+        }
+      })
+      .from(rooms)
+      .innerJoin(users, eq(rooms.ownerId, users.id))
+      .orderBy(desc(rooms.createdAt))
+      .limit(5);
+
+    res.json({
+      totalRooms: totalRoomsResult.count,
+      activeRooms: activeRoomsResult.count,
+      publicRooms: publicRoomsResult.count,
+      privateRooms: privateRoomsResult.count,
+      recentRooms
+    });
+  } catch (error) {
+    console.error("Error fetching room stats:", error);
+    res.status(500).json({ error: "Failed to fetch room statistics" });
+  }
+});
+
+export { router as roomsRouter };

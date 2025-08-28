@@ -55,6 +55,7 @@ const AdminBlog = lazy(() => import("@/pages/admin/blog"));
 const AdminTeam = lazy(() => import("@/pages/admin/team"));
 const AdminEvents = lazy(() => import("@/pages/admin/events-page"));
 const AdminEventRegistrations = lazy(() => import("@/pages/admin/event-registrations"));
+const AdminRoomsPage = lazy(() => import("@/pages/admin/rooms-page"));
 const AdminGameCategories = lazy(() => import("@/pages/admin/game-categories-page"));
 const AdminSettings = lazy(() => import("@/pages/admin/settings"));
 const AdminHomepageContent = lazy(() => import("@/pages/admin/homepage-content"));
@@ -98,6 +99,12 @@ const AdminImageUploadDemo = lazy(() => import("@/pages/admin/image-upload-demo"
 const AdminTwoFactorPage = lazy(() => import("@/pages/admin/security/two-factor"));
 const AdminSecurityLogsPage = lazy(() => import("@/pages/admin/security/logs"));
 const AdminSecuritySettingsPage = lazy(() => import("@/pages/admin/security/settings"));
+
+// User Dashboard pages
+const MyRoomsPage = lazy(() => import("@/pages/user-dashboard/my-rooms"));
+
+// Room pages
+const RoomLobbyPage = lazy(() => import("@/pages/room-lobby"));
 
 // Admin Helper Navigation
 const AdminHelperNav = () => {
@@ -163,6 +170,20 @@ function Router() {
       </Route>
       <Route path="/dev-login">
         <Suspense fallback={<LoadingFallback />}><DevLogin /></Suspense>
+      </Route>
+      
+      {/* Room pages */}
+      <Route path="/rooms">
+        <Suspense fallback={<LoadingFallback />}><RoomLobbyPage /></Suspense>
+      </Route>
+      
+      {/* User Dashboard pages */}
+      <Route path="/my-rooms">
+        <Suspense fallback={<LoadingFallback />}>
+          <ProtectedRoute>
+            <MyRoomsPage />
+          </ProtectedRoute>
+        </Suspense>
       </Route>
       <Route path="/reset-password">
         <Suspense fallback={<LoadingFallback />}><ResetPasswordPage /></Suspense>
@@ -237,6 +258,11 @@ function Router() {
       <Route path="/admin/event-registrations">
         <ProtectedRoute adminOnly={true}>
           <Suspense fallback={<LoadingFallback />}><AdminEventRegistrations /></Suspense>
+        </ProtectedRoute>
+      </Route>
+      <Route path="/admin/rooms">
+        <ProtectedRoute adminOnly={true}>
+          <Suspense fallback={<LoadingFallback />}><AdminRoomsPage /></Suspense>
         </ProtectedRoute>
       </Route>
       <Route path="/admin/homepage-content">
