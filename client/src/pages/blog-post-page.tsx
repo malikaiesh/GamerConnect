@@ -75,12 +75,12 @@ function EnhancedBlogContent({ content, settings, className }: {
       paragraphsInSection++;
       
       // Add game after specific paragraph counts in each section based on individual controls
+      // Simplified logic: add games more frequently to ensure they appear
       const shouldAddGame = 
-        (currentSection === 1 && paragraphsInSection === 2 && (settings as any).paragraph2GamesEnabled) || // First section: after 2 paragraphs
-        (currentSection === 2 && paragraphsInSection === 3 && (settings as any).paragraph6GamesEnabled) || // Second section: after 3 paragraphs  
-        (currentSection === 3 && paragraphsInSection === 2 && (settings as any).paragraph8GamesEnabled) || // Third section: after 2 paragraphs
-        (currentSection === 4 && paragraphsInSection === 3 && (settings as any).paragraph10GamesEnabled) || // Fourth section: after 3 paragraphs
-        (currentSection === 5 && paragraphsInSection === 2 && (settings as any).paragraph2GamesEnabled);   // Fifth section: after 2 paragraphs
+        (currentSection >= 1 && paragraphsInSection === 2 && settings.paragraph2GamesEnabled) || // After 2 paragraphs in any section
+        (currentSection >= 2 && paragraphsInSection === 4 && settings.paragraph6GamesEnabled) || // After 4 paragraphs in later sections  
+        (currentSection >= 3 && paragraphsInSection === 6 && settings.paragraph8GamesEnabled) || // After 6 paragraphs in later sections
+        (currentSection >= 1 && paragraphsInSection === 3 && settings.paragraph10GamesEnabled);   // After 3 paragraphs in any section
       
       if (shouldAddGame && gameIndex <= 5) {
         result.push(
