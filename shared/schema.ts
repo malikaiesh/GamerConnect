@@ -1118,7 +1118,11 @@ export const insertEventSchema = createInsertSchema(events, {
   slug: (schema) => schema.min(2, "Slug must be at least 2 characters")
     .regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/, "Slug must contain only lowercase letters, numbers, and hyphens"),
   description: (schema) => schema.min(10, "Description must be at least 10 characters"),
-  startDate: (schema) => schema.refine(date => date > new Date(), { message: "Start date must be in the future" }),
+  startDate: (schema) => schema.refine(date => {
+    const now = new Date();
+    const yesterday = new Date(now.getTime() - 24 * 60 * 60 * 1000);
+    return date >= yesterday;
+  }, { message: "Start date must be today or in the future" }),
   endDate: (schema) => schema.optional().nullable(),
   timezone: (schema) => schema.optional().default('UTC'),
   locationType: (schema) => schema.refine(val => ['online', 'physical', 'hybrid'].includes(val)),

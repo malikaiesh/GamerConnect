@@ -30,11 +30,23 @@ const eventFormSchema = z.object({
   eventType: z.enum(['tournament', 'game_release', 'community', 'maintenance', 'seasonal', 'streaming', 'meetup', 'competition', 'other']),
   status: z.enum(['draft', 'published', 'ongoing', 'completed', 'cancelled']),
   startDate: z.string().min(1, "Start date is required").refine((val) => {
-    return !isNaN(Date.parse(val));
-  }, "Please enter a valid date"),
+    if (isNaN(Date.parse(val))) return false;
+    const startDate = new Date(val);
+    const now = new Date();
+    // Allow dates within the last 24 hours to account for timezone differences
+    const yesterday = new Date(now.getTime() - 24 * 60 * 60 * 1000);
+    return startDate >= yesterday;
+  }, "Start date must be today or in the future"),
   endDate: z.string().optional().refine((val) => {
     return !val || !isNaN(Date.parse(val));
-  }, "Please enter a valid date"),
+  }, "Please enter a valid date").refine((val, ctx) => {
+    if (!val) return true; // Optional field
+    const formData = ctx.parent as EventFormValues;
+    if (!formData.startDate) return true;
+    const startDate = new Date(formData.startDate);
+    const endDate = new Date(val);
+    return endDate > startDate;
+  }, "End date must be after start date"),
   timezone: z.string().default('UTC'),
   locationType: z.enum(['online', 'physical', 'hybrid']),
   locationName: z.string().optional(),
@@ -183,6 +195,19 @@ function EventForm({ event, onClose }: { event?: Event; onClose: () => void }) {
                         placeholder="Enter event title" 
                         {...field}
                         data-testid="input-event-title"
+                        onChange={(e) => {
+                          field.onChange(e);
+                          // Auto-generate slug from title
+                          if (!isEditing && e.target.value) {
+                            const slug = e.target.value
+                              .toLowerCase()
+                              .trim()
+                              .replace(/[^\w\s-]/g, '')
+                              .replace(/[\s_-]+/g, '-')
+                              .replace(/^-+|-+$/g, '');
+                            form.setValue('slug', slug);
+                          }
+                        }}
                       />
                     </FormControl>
                     <FormMessage />
