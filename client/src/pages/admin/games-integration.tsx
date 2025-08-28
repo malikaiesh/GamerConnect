@@ -89,15 +89,22 @@ export default function GamesIntegrationPage() {
 
   const updateSettingsMutation = useMutation({
     mutationFn: async (data: GamesIntegrationValues) => {
+      // Fetch current settings first
+      const currentSettings = await apiRequest('/api/settings');
+      
+      // Merge with new games integration settings
+      const updatedSettings = {
+        ...currentSettings,
+        blogGamesEnabled: data.blogGamesEnabled,
+        paragraph2GamesEnabled: data.paragraph2GamesEnabled,
+        paragraph6GamesEnabled: data.paragraph6GamesEnabled,
+        paragraph8GamesEnabled: data.paragraph8GamesEnabled,
+        paragraph10GamesEnabled: data.paragraph10GamesEnabled,
+      };
+      
       return apiRequest('/api/settings', {
         method: 'PUT',
-        body: {
-          blogGamesEnabled: data.blogGamesEnabled,
-          paragraph2GamesEnabled: data.paragraph2GamesEnabled,
-          paragraph6GamesEnabled: data.paragraph6GamesEnabled,
-          paragraph8GamesEnabled: data.paragraph8GamesEnabled,
-          paragraph10GamesEnabled: data.paragraph10GamesEnabled,
-        }
+        body: updatedSettings
       });
     },
     onSuccess: () => {
