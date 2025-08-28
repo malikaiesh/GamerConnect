@@ -771,8 +771,21 @@ class DatabaseStorage implements IStorage {
   }
 
   async createGame(game: Omit<InsertGame, "createdAt" | "updatedAt">): Promise<Game> {
+    // Generate unique slug if not provided or ensure uniqueness
+    let finalSlug = game.slug;
+    if (!finalSlug && game.title) {
+      finalSlug = await this.createSlugFromTitle(game.title);
+    } else if (finalSlug) {
+      // Check if provided slug is unique, if not make it unique
+      const existing = await db.select().from(games).where(eq(games.slug, finalSlug));
+      if (existing.length > 0) {
+        finalSlug = await this.createSlugFromTitle(game.title || finalSlug);
+      }
+    }
+
     const result = await db.insert(games).values({
       ...game,
+      slug: finalSlug,
       createdAt: new Date(),
       updatedAt: new Date()
     }).returning();
