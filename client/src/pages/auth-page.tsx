@@ -13,7 +13,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
-import { Loader2, Mail, Github, KeyRound } from "lucide-react";
+import { Loader2, Mail, Github, KeyRound, Phone } from "lucide-react";
 import { FaGoogle, FaFacebook, FaGithub, FaDiscord, FaTwitter, FaApple, FaMicrosoft } from "react-icons/fa";
 import { ForgotPasswordForm } from "@/components/auth/forgot-password-form";
 import { SiteSetting, SignupOption } from "@shared/schema";
@@ -131,17 +131,19 @@ export default function AuthPage() {
   };
   
   // Get provider icon
-  const getProviderIcon = (provider: string) => {
+  const getProviderIcon = (provider: string, size: string = 'h-4 w-4') => {
     const iconMap: { [key: string]: React.ReactNode } = {
-      google: <FaGoogle className="mr-2 h-4 w-4" />,
-      facebook: <FaFacebook className="mr-2 h-4 w-4" />,
-      github: <FaGithub className="mr-2 h-4 w-4" />,
-      discord: <FaDiscord className="mr-2 h-4 w-4" />,
-      twitter: <FaTwitter className="mr-2 h-4 w-4" />,
-      apple: <FaApple className="mr-2 h-4 w-4" />,
-      microsoft: <FaMicrosoft className="mr-2 h-4 w-4" />,
+      email: <Mail className={`mr-2 ${size}`} />,
+      phone: <Phone className={`mr-2 ${size}`} />,
+      google: <FaGoogle className={`mr-2 ${size}`} />,
+      facebook: <FaFacebook className={`mr-2 ${size}`} />,
+      github: <FaGithub className={`mr-2 ${size}`} />,
+      discord: <FaDiscord className={`mr-2 ${size}`} />,
+      twitter: <FaTwitter className={`mr-2 ${size}`} />,
+      apple: <FaApple className={`mr-2 ${size}`} />,
+      microsoft: <FaMicrosoft className={`mr-2 ${size}`} />,
     };
-    return iconMap[provider.toLowerCase()] || <Mail className="mr-2 h-4 w-4" />;
+    return iconMap[provider.toLowerCase()] || <Mail className={`mr-2 ${size}`} />;
   };
 
   if (isLoading) {
@@ -198,6 +200,46 @@ export default function AuthPage() {
               <p>Receive notifications about new games</p>
             </div>
           </div>
+          
+          {/* Signup Options */}
+          {enabledSignupOptions.length > 0 && (
+            <div className="mt-8">
+              <h3 className="text-xl font-semibold mb-4">Sign up with:</h3>
+              <div className="grid grid-cols-1 gap-3">
+                {enabledSignupOptions
+                  .sort((a, b) => a.sortOrder - b.sortOrder)
+                  .map((option) => (
+                    <Button 
+                      key={option.id}
+                      type="button" 
+                      variant="outline" 
+                      className="bg-white/10 text-white border-white/30 hover:bg-white/20 justify-start"
+                      onClick={() => {
+                        if (option.provider === 'email') {
+                          // For email, just switch to register tab
+                          setActiveTab('register');
+                        } else if (option.provider === 'phone') {
+                          // Handle phone signup - for now just switch to register
+                          setActiveTab('register');
+                        } else {
+                          // Handle social login
+                          handleSocialLogin(option.provider as 'google' | 'facebook');
+                        }
+                      }}
+                      style={{
+                        borderColor: 'rgba(255, 255, 255, 0.3)',
+                      }}
+                    >
+                      <span style={{ color: option.color }}>
+                        {getProviderIcon(option.provider, 'h-5 w-5')}
+                      </span>
+                      {option.displayName}
+                    </Button>
+                  ))
+                }
+              </div>
+            </div>
+          )}
         </div>
       </div>
 
@@ -305,40 +347,8 @@ export default function AuthPage() {
                         🚀 Auto Login as Admin
                       </Button>
                       
-                      <div className="relative my-4">
-                        <div className="absolute inset-0 flex items-center">
-                          <span className="w-full border-t border-gray-300"></span>
-                        </div>
-                        <div className="relative flex justify-center text-sm">
-                          <span className="bg-gray-800 px-2 text-gray-300">Or continue with</span>
-                        </div>
-                      </div>
-                      
-                      <div className="grid grid-cols-2 gap-4">
-                        {enabledSignupOptions
-                          .filter(option => option.provider !== 'email')
-                          .slice(0, 6) // Limit to 6 providers for clean layout
-                          .map((option) => (
-                            <Button 
-                              key={option.id}
-                              type="button" 
-                              variant="outline" 
-                              className="bg-gray-700 text-white border border-gray-600 hover:bg-gray-600"
-                              onClick={() => handleSocialLogin(option.provider as 'google' | 'facebook')}
-                              style={{
-                                borderColor: option.color,
-                              }}
-                            >
-                              <span style={{ color: option.color }}>
-                                {getProviderIcon(option.provider)}
-                              </span>
-                              {option.displayName}
-                            </Button>
-                          ))
-                        }
-                        {enabledSignupOptions.filter(option => option.provider !== 'email').length === 0 && (
-                          <p className="col-span-2 text-center text-gray-400 text-sm">No social login options enabled</p>
-                        )}
+                      <div className="text-center text-gray-400 text-sm mt-4">
+                        Have social media accounts? Check the signup options on the left!
                       </div>
                     </form>
                   </Form>
@@ -584,40 +594,8 @@ export default function AuthPage() {
                       Create Account
                     </Button>
                     
-                    <div className="relative my-4">
-                      <div className="absolute inset-0 flex items-center">
-                        <span className="w-full border-t border-gray-300"></span>
-                      </div>
-                      <div className="relative flex justify-center text-sm">
-                        <span className="bg-gray-800 px-2 text-gray-300">Or continue with</span>
-                      </div>
-                    </div>
-                    
-                    <div className="grid grid-cols-2 gap-4">
-                      {enabledSignupOptions
-                        .filter(option => option.provider !== 'email')
-                        .slice(0, 6) // Limit to 6 providers for clean layout
-                        .map((option) => (
-                          <Button 
-                            key={option.id}
-                            type="button" 
-                            variant="outline" 
-                            className="bg-gray-700 text-white border border-gray-600 hover:bg-gray-600"
-                            onClick={() => handleSocialLogin(option.provider as 'google' | 'facebook')}
-                            style={{
-                              borderColor: option.color,
-                            }}
-                          >
-                            <span style={{ color: option.color }}>
-                              {getProviderIcon(option.provider)}
-                            </span>
-                            {option.displayName}
-                          </Button>
-                        ))
-                      }
-                      {enabledSignupOptions.filter(option => option.provider !== 'email').length === 0 && (
-                        <p className="col-span-2 text-center text-gray-400 text-sm">No social login options enabled</p>
-                      )}
+                    <div className="text-center text-gray-400 text-sm mt-4">
+                      Have social media accounts? Check the signup options on the left!
                     </div>
                   </form>
                 </Form>
