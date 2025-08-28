@@ -122,9 +122,15 @@ export function BlogForm({ post, onSuccess }: BlogFormProps) {
       };
       
       if (post) {
-        return apiRequest("PUT", `/api/blog/posts/${post.id}`, transformedValues);
+        return apiRequest(`/api/blog/posts/${post.id}`, {
+          method: 'PUT',
+          body: JSON.stringify(transformedValues),
+        });
       } else {
-        return apiRequest("POST", "/api/blog/posts", transformedValues);
+        return apiRequest("/api/blog/posts", {
+          method: 'POST',
+          body: JSON.stringify(transformedValues),
+        });
       }
     },
     onSuccess: () => {
