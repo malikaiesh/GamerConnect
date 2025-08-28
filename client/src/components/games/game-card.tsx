@@ -69,10 +69,9 @@ export function GameCard({
   };
   
   const handleButtonClick = (e: React.MouseEvent) => {
-    if (onClick) {
-      e.preventDefault();
-      onClick();
-    }
+    // Don't prevent default for Play Now button - always navigate to game
+    // The onClick should only be used for card selection, not Play Now button
+    e.stopPropagation(); // Prevent event from bubbling up to card click
   };
   
   return (
