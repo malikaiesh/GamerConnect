@@ -29,8 +29,10 @@ export default function AdminHomepageContent() {
   // Create homepage content mutation
   const createContentMutation = useMutation({
     mutationFn: async (newContent: Partial<HomePageContent>) => {
-      const res = await apiRequest('POST', '/api/homepage-content', newContent);
-      return await res.json();
+      return await apiRequest('/api/homepage-content', {
+        method: 'POST',
+        body: JSON.stringify(newContent),
+      });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/homepage-content'] });
@@ -42,8 +44,10 @@ export default function AdminHomepageContent() {
   // Update homepage content mutation
   const updateContentMutation = useMutation({
     mutationFn: async ({ id, content }: { id: number; content: Partial<HomePageContent> }) => {
-      const res = await apiRequest('PUT', `/api/homepage-content/${id}`, content);
-      return await res.json();
+      return await apiRequest(`/api/homepage-content/${id}`, {
+        method: 'PUT',
+        body: JSON.stringify(content),
+      });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/homepage-content'] });
@@ -56,7 +60,9 @@ export default function AdminHomepageContent() {
   // Delete homepage content mutation
   const deleteContentMutation = useMutation({
     mutationFn: async (id: number) => {
-      await apiRequest('DELETE', `/api/homepage-content/${id}`);
+      return await apiRequest(`/api/homepage-content/${id}`, {
+        method: 'DELETE',
+      });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/homepage-content'] });
