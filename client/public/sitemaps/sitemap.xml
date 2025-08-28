@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <sitemap>
+    <loc>http://localhost:5000/sitemaps/sitemap-games.xml</loc>
+    <lastmod>2025-08-28T11:19:06.848Z</lastmod>
+  </sitemap>
+  <sitemap>
+    <loc>http://localhost:5000/sitemaps/sitemap-pages.xml</loc>
+    <lastmod>2025-08-28T11:19:07.182Z</lastmod>
+  </sitemap>
+  <sitemap>
+    <loc>http://localhost:5000/sitemaps/sitemap-blog.xml</loc>
+    <lastmod>2025-08-28T11:19:16.783Z</lastmod>
+  </sitemap>
+</sitemapindex>

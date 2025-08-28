@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url>
+    <loc>http://localhost:5000/blog/top-10-games-of-2025</loc>
+    <lastmod>2025-08-28T09:21:22.125Z</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>http://localhost:5000/blog/how-to-master-zombie-survival</loc>
+    <lastmod>2025-08-28T09:21:22.165Z</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>http://localhost:5000/blog/indie-game-development-getting-started</loc>
+    <lastmod>2025-08-28T09:21:22.202Z</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+</urlset>

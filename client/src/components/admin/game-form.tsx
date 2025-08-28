@@ -225,9 +225,15 @@ export function GameForm({ game, onSuccess }: GameFormProps) {
       
       // Create new game or update existing one
       if (game) {
-        return apiRequest("PUT", `/api/games/${game.id}`, gameData);
+        return apiRequest(`/api/games/${game.id}`, {
+          method: "PUT",
+          body: JSON.stringify(gameData)
+        });
       } else {
-        return apiRequest("POST", "/api/games", gameData);
+        return apiRequest("/api/games", {
+          method: "POST",
+          body: JSON.stringify(gameData)
+        });
       }
     },
     onSuccess: async () => {

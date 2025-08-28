@@ -105,7 +105,10 @@ export default function GameAdsPage() {
   // Create game ad mutation
   const createGameAdMutation = useMutation({
     mutationFn: async (data: GameAdFormData) => {
-      return await apiRequest('POST', '/api/game-ads', data);
+      return await apiRequest('/api/game-ads', {
+        method: 'POST',
+        body: JSON.stringify(data)
+      });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/game-ads'] });
@@ -128,7 +131,10 @@ export default function GameAdsPage() {
   // Update game ad mutation
   const updateGameAdMutation = useMutation({
     mutationFn: async ({ id, data }: { id: number; data: GameAdFormData }) => {
-      return await apiRequest('PUT', `/api/game-ads/${id}`, data);
+      return await apiRequest(`/api/game-ads/${id}`, {
+        method: 'PUT',
+        body: JSON.stringify(data)
+      });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/game-ads'] });
@@ -152,7 +158,9 @@ export default function GameAdsPage() {
   // Delete game ad mutation
   const deleteGameAdMutation = useMutation({
     mutationFn: async (id: number) => {
-      return await apiRequest('DELETE', `/api/game-ads/${id}`);
+      return await apiRequest(`/api/game-ads/${id}`, {
+        method: 'DELETE'
+      });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/game-ads'] });
@@ -173,7 +181,10 @@ export default function GameAdsPage() {
   // Toggle ad enabled mutation
   const toggleAdMutation = useMutation({
     mutationFn: async ({ id, enabled }: { id: number; enabled: boolean }) => {
-      return await apiRequest('PATCH', `/api/game-ads/${id}/toggle`, { enabled });
+      return await apiRequest(`/api/game-ads/${id}/toggle`, {
+        method: 'PATCH',
+        body: JSON.stringify({ enabled })
+      });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/game-ads'] });
