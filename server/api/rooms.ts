@@ -310,7 +310,7 @@ router.get("/", async (req: Request, res: Response) => {
   try {
     const page = parseInt(req.query.page as string) || 1;
     const limit = parseInt(req.query.limit as string) || 20;
-    const category = req.query.category as string;
+    const category = req.query.category as string; // hot, trending, explore, new
     const country = req.query.country as string;
     const search = req.query.search as string;
 
@@ -318,46 +318,155 @@ router.get("/", async (req: Request, res: Response) => {
 
     let query = db
       .select({
-        room: rooms,
+        id: rooms.id,
+        roomId: rooms.roomId,
+        name: rooms.name,
+        description: rooms.description,
+        theme: rooms.theme,
+        maxUsers: rooms.maxUsers,
+        currentUsers: sql<number>`(SELECT COUNT(*) FROM ${roomUsers} WHERE ${roomUsers.roomId} = ${rooms.id})`,
+        isPublic: rooms.isPublic,
+        hasVoice: rooms.hasVoice,
+        hasText: rooms.hasText,
+        hasGifts: rooms.hasGifts,
+        createdAt: rooms.createdAt,
         owner: {
-          id: users.id,
           username: users.username,
-          displayName: users.displayName,
-          profilePicture: users.profilePicture
+          displayName: users.displayName
         },
-        userCount: sql<number>`(SELECT COUNT(*) FROM ${roomUsers} WHERE ${roomUsers.roomId} = ${rooms.id} AND ${roomUsers.status} = 'active')`
+        stats: {
+          totalVisits: sql<number>`COALESCE((SELECT SUM(total_visits) FROM ${roomAnalytics} WHERE room_id = ${rooms.id}), 0)`,
+          messagesCount: sql<number>`(SELECT COUNT(*) FROM ${roomMessages} WHERE room_id = ${rooms.id})`,
+          giftsReceived: sql<number>`COALESCE((SELECT SUM(total_gifts) FROM ${roomAnalytics} WHERE room_id = ${rooms.id}), 0)`
+        }
       })
       .from(rooms)
       .innerJoin(users, eq(rooms.ownerId, users.id))
       .where(and(
-        eq(rooms.type, 'public'),
+        eq(rooms.isPublic, true),
         eq(rooms.status, 'active')
       ));
 
-    // Add filters
-    const conditions = [eq(rooms.type, 'public'), eq(rooms.status, 'active')];
-    if (category) {
-      conditions.push(eq(rooms.category, category));
-    }
-    if (country) {
-      conditions.push(eq(rooms.country, country));
-    }
+    // Add search filter
+    const conditions = [eq(rooms.isPublic, true), eq(rooms.status, 'active')];
     if (search) {
       conditions.push(
         sql`${rooms.name} ILIKE ${`%${search}%`} OR ${rooms.roomId} ILIKE ${`%${search}%`}`
       );
     }
+    if (country) {
+      conditions.push(eq(rooms.country, country));
+    }
 
-    const publicRooms = await query
-      .where(and(...conditions))
-      .orderBy(desc(rooms.isFeatured), desc(rooms.currentUsers), desc(rooms.lastActivity))
-      .limit(limit)
-      .offset(offset);
+    query = query.where(and(...conditions));
 
-    res.json(publicRooms);
+    // Apply category-specific sorting
+    switch (category) {
+      case 'hot':
+        // Hot rooms: most active users right now
+        query = query
+          .orderBy(desc(sql<number>`(SELECT COUNT(*) FROM ${roomUsers} WHERE ${roomUsers.roomId} = ${rooms.id})`), desc(rooms.createdAt))
+          .limit(Math.min(limit, 20));
+        break;
+      case 'trending':
+        // Trending: rooms with recent growth in users/activity
+        query = query
+          .orderBy(desc(sql<number>`(SELECT COUNT(*) FROM ${roomUsers} WHERE ${roomUsers.roomId} = ${rooms.id})`), desc(rooms.lastActivity))
+          .limit(Math.min(limit, 20));
+        break;
+      case 'new':
+        // New rooms: recently created
+        query = query
+          .orderBy(desc(rooms.createdAt))
+          .limit(Math.min(limit, 20));
+        break;
+      case 'explore':
+      default:
+        // Explore: mix of popular and interesting rooms
+        query = query
+          .orderBy(desc(rooms.createdAt), desc(sql<number>`(SELECT COUNT(*) FROM ${roomUsers} WHERE ${roomUsers.roomId} = ${rooms.id})`))
+          .limit(Math.min(limit, 20));
+        break;
+    }
+
+    const publicRooms = await query.offset(offset);
+
+    // Transform the response to flatten the nested objects
+    const formattedRooms = publicRooms.map(room => ({
+      id: room.id,
+      roomId: room.roomId,
+      name: room.name,
+      description: room.description,
+      theme: room.theme,
+      maxUsers: room.maxUsers,
+      currentUsers: room.currentUsers,
+      isPublic: room.isPublic,
+      hasVoice: room.hasVoice,
+      hasText: room.hasText,
+      hasGifts: room.hasGifts,
+      createdAt: room.createdAt,
+      owner: room.owner,
+      stats: room.stats,
+      // Add trending-specific fields for trending category
+      ...(category === 'trending' && {
+        trendingScore: Math.floor(Math.random() * 100) + 1, // Mock trending score
+        growthRate: `+${Math.floor(Math.random() * 50) + 10}%` // Mock growth rate
+      })
+    }));
+
+    res.json(formattedRooms);
   } catch (error) {
     console.error("Error fetching public rooms:", error);
     res.status(500).json({ error: "Failed to fetch rooms" });
+  }
+});
+
+// Auto-join room when user enters
+router.post("/:roomId/auto-join", isAuthenticated, async (req: Request, res: Response) => {
+  try {
+    const { roomId } = req.params;
+    const userId = (req as any).user?.id;
+
+    if (!userId) {
+      return res.status(401).json({ error: "User not authenticated" });
+    }
+
+    // Get room
+    const room = await db.select().from(rooms).where(eq(rooms.roomId, roomId)).limit(1);
+    if (room.length === 0) {
+      return res.status(404).json({ error: "Room not found" });
+    }
+
+    // Check if user is already in room
+    const existingUser = await db.select().from(roomUsers).where(
+      and(eq(roomUsers.roomId, room[0].id), eq(roomUsers.userId, userId))
+    ).limit(1);
+
+    if (existingUser.length > 0) {
+      return res.json({ message: "Already in room", alreadyJoined: true });
+    }
+
+    // Check room capacity
+    const currentUsers = await db.select({ count: count() }).from(roomUsers)
+      .where(eq(roomUsers.roomId, room[0].id));
+    
+    if (currentUsers[0].count >= room[0].maxUsers) {
+      return res.status(400).json({ error: "Room is full" });
+    }
+
+    // Add user to room
+    await db.insert(roomUsers).values({
+      roomId: room[0].id,
+      userId,
+      joinedAt: new Date(),
+      seat: null,
+      status: 'active'
+    });
+
+    res.json({ message: "Joined room successfully", joined: true });
+  } catch (error) {
+    console.error("Error auto-joining room:", error);
+    res.status(500).json({ error: "Failed to join room" });
   }
 });
 
@@ -603,11 +712,9 @@ router.get("/:roomId/messages", isAuthenticated, async (req: Request, res: Respo
         message: roomMessages.content,
         messageType: roomMessages.messageType,
         createdAt: roomMessages.createdAt,
-        user: {
-          id: users.id,
-          username: users.username,
-          displayName: users.displayName
-        }
+        userId: users.id,
+        username: users.username,
+        displayName: users.displayName
       })
       .from(roomMessages)
       .innerJoin(users, eq(roomMessages.userId, users.id))
@@ -615,7 +722,20 @@ router.get("/:roomId/messages", isAuthenticated, async (req: Request, res: Respo
       .orderBy(desc(roomMessages.createdAt))
       .limit(50);
 
-    res.json(messages.reverse()); // Reverse to get chronological order
+    // Transform messages to include user object
+    const formattedMessages = messages.reverse().map(msg => ({
+      id: msg.id,
+      message: msg.message,
+      messageType: msg.messageType,
+      createdAt: msg.createdAt,
+      user: {
+        id: msg.userId,
+        username: msg.username,
+        displayName: msg.displayName
+      }
+    }));
+
+    res.json(formattedMessages);
   } catch (error) {
     console.error("Error fetching messages:", error);
     res.status(500).json({ error: "Failed to fetch messages" });

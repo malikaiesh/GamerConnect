@@ -119,6 +119,34 @@ export default function RoomInterfacePage() {
     }
   });
 
+  // Auto-join room when component mounts
+  const autoJoinMutation = useMutation({
+    mutationFn: async () => {
+      const response = await fetch(`/api/rooms/${roomId}/auto-join`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' }
+      });
+      if (!response.ok) {
+        throw new Error('Failed to auto-join room');
+      }
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: [`/api/rooms/${roomId}`] });
+      queryClient.invalidateQueries({ queryKey: [`/api/rooms/${roomId}/messages`] });
+    },
+    onError: (error) => {
+      console.error("Auto-join failed:", error);
+    },
+  });
+
+  // Auto-join room on mount
+  useEffect(() => {
+    if (roomId && user) {
+      autoJoinMutation.mutate();
+    }
+  }, [roomId, user]);
+
   // Leave room mutation
   const leaveRoomMutation = useMutation({
     mutationFn: () =>

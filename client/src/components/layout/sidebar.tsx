@@ -1,0 +1,194 @@
+import { Link, useLocation } from "wouter";
+import { useAuth } from "@/hooks/use-auth";
+import { 
+  Home,
+  GamepadIcon, 
+  Users, 
+  UserPlus, 
+  Search,
+  TrendingUp,
+  Star,
+  Zap,
+  PlusCircle,
+  Settings
+} from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+
+export function Sidebar() {
+  const [location] = useLocation();
+  const { user, isAuthenticated } = useAuth();
+
+  const isActive = (path: string) => location === path;
+  const isPathActive = (basePath: string) => location.startsWith(basePath);
+
+  if (!isAuthenticated) return null;
+
+  return (
+    <div className="w-64 bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-800 h-screen fixed left-0 top-0 z-40 flex flex-col">
+      {/* Header */}
+      <div className="p-4 border-b border-gray-200 dark:border-gray-800">
+        <Link href="/user-dashboard">
+          <div className="flex items-center space-x-2 cursor-pointer">
+            <div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-purple-600 rounded-lg flex items-center justify-center">
+              <GamepadIcon className="w-4 h-4 text-white" />
+            </div>
+            <span className="font-semibold text-gray-900 dark:text-white">Gaming Portal</span>
+          </div>
+        </Link>
+      </div>
+
+      {/* Navigation */}
+      <nav className="flex-1 p-4 space-y-2 overflow-y-auto">
+        {/* Dashboard */}
+        <Link href="/user-dashboard">
+          <Button 
+            variant={isActive("/user-dashboard") ? "default" : "ghost"} 
+            className="w-full justify-start"
+            data-testid="nav-dashboard"
+          >
+            <Home className="w-4 h-4 mr-2" />
+            Dashboard
+          </Button>
+        </Link>
+
+        {/* Games Section */}
+        <div className="pt-4">
+          <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-2">Games</h3>
+          <div className="space-y-1">
+            <Link href="/games">
+              <Button 
+                variant={isPathActive("/games") ? "default" : "ghost"} 
+                className="w-full justify-start"
+                data-testid="nav-games"
+              >
+                <GamepadIcon className="w-4 h-4 mr-2" />
+                Website Games
+              </Button>
+            </Link>
+          </div>
+        </div>
+
+        {/* Rooms Section */}
+        <div className="pt-4">
+          <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-2">Rooms</h3>
+          <div className="space-y-1">
+            <Link href="/rooms/my-rooms">
+              <Button 
+                variant={isActive("/rooms/my-rooms") ? "default" : "ghost"} 
+                className="w-full justify-start"
+                data-testid="nav-my-rooms"
+              >
+                <Home className="w-4 h-4 mr-2" />
+                My Rooms
+              </Button>
+            </Link>
+            
+            <Link href="/rooms/hot">
+              <Button 
+                variant={isActive("/rooms/hot") ? "default" : "ghost"} 
+                className="w-full justify-start"
+                data-testid="nav-hot-rooms"
+              >
+                <Zap className="w-4 h-4 mr-2 text-red-500" />
+                Hot Rooms
+                <Badge variant="destructive" className="ml-auto text-xs">🔥</Badge>
+              </Button>
+            </Link>
+            
+            <Link href="/rooms/explore">
+              <Button 
+                variant={isActive("/rooms/explore") ? "default" : "ghost"} 
+                className="w-full justify-start"
+                data-testid="nav-explore-rooms"
+              >
+                <Search className="w-4 h-4 mr-2 text-blue-500" />
+                Explore Rooms
+              </Button>
+            </Link>
+            
+            <Link href="/rooms/trending">
+              <Button 
+                variant={isActive("/rooms/trending") ? "default" : "ghost"} 
+                className="w-full justify-start"
+                data-testid="nav-trending-rooms"
+              >
+                <TrendingUp className="w-4 h-4 mr-2 text-green-500" />
+                Trending Rooms
+              </Button>
+            </Link>
+            
+            <Link href="/rooms/new">
+              <Button 
+                variant={isActive("/rooms/new") ? "default" : "ghost"} 
+                className="w-full justify-start"
+                data-testid="nav-new-rooms"
+              >
+                <Star className="w-4 h-4 mr-2 text-yellow-500" />
+                New Rooms
+              </Button>
+            </Link>
+          </div>
+        </div>
+
+        {/* Social Section */}
+        <div className="pt-4">
+          <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-2">Social</h3>
+          <div className="space-y-1">
+            <Link href="/friends">
+              <Button 
+                variant={isActive("/friends") ? "default" : "ghost"} 
+                className="w-full justify-start"
+                data-testid="nav-friends"
+              >
+                <Users className="w-4 h-4 mr-2" />
+                Find Friends
+              </Button>
+            </Link>
+            
+            <Link href="/friends/requests">
+              <Button 
+                variant={isActive("/friends/requests") ? "default" : "ghost"} 
+                className="w-full justify-start"
+                data-testid="nav-friend-requests"
+              >
+                <UserPlus className="w-4 h-4 mr-2" />
+                Friend Requests
+                <Badge variant="secondary" className="ml-auto text-xs">2</Badge>
+              </Button>
+            </Link>
+          </div>
+        </div>
+      </nav>
+
+      {/* Create Room Button */}
+      <div className="p-4 border-t border-gray-200 dark:border-gray-800">
+        <Link href="/rooms/create">
+          <Button className="w-full" data-testid="button-create-room">
+            <PlusCircle className="w-4 h-4 mr-2" />
+            Create Room
+          </Button>
+        </Link>
+      </div>
+
+      {/* User Info */}
+      <div className="p-4 border-t border-gray-200 dark:border-gray-800">
+        <div className="flex items-center space-x-2">
+          <div className="w-8 h-8 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full flex items-center justify-center">
+            <span className="text-white text-sm font-medium">
+              {user?.username?.charAt(0)?.toUpperCase() || 'U'}
+            </span>
+          </div>
+          <div className="flex-1 min-w-0">
+            <p className="text-sm font-medium text-gray-900 dark:text-white truncate">
+              {user?.displayName || user?.username || 'User'}
+            </p>
+            <p className="text-xs text-gray-500 dark:text-gray-400">
+              Online
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}

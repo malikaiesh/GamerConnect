@@ -106,6 +106,14 @@ const MyRoomsPage = lazy(() => import("@/pages/user-dashboard/my-rooms"));
 // Room pages
 const RoomLobbyPage = lazy(() => import("@/pages/room-lobby"));
 const RoomInterfacePage = lazy(() => import("@/pages/room-interface"));
+const HotRoomsPage = lazy(() => import("@/pages/rooms/hot-rooms"));
+const ExploreRoomsPage = lazy(() => import("@/pages/rooms/explore-rooms"));
+const TrendingRoomsPage = lazy(() => import("@/pages/rooms/trending-rooms"));
+const NewRoomsPage = lazy(() => import("@/pages/rooms/new-rooms"));
+
+// Social pages
+const FriendsPage = lazy(() => import("@/pages/social/friends"));
+const FriendRequestsPage = lazy(() => import("@/pages/social/friend-requests"));
 
 // Login pages  
 const AdminLoginPage = lazy(() => import("@/pages/admin-login"));
@@ -189,6 +197,27 @@ function Router() {
       </Route>
       <Route path="/room/:roomId">
         <Suspense fallback={<LoadingFallback />}><RoomInterfacePage /></Suspense>
+      </Route>
+      <Route path="/rooms/:roomId">
+        <Suspense fallback={<LoadingFallback />}><RoomInterfacePage /></Suspense>
+      </Route>
+      <Route path="/rooms/hot">
+        <Suspense fallback={<LoadingFallback />}><HotRoomsPage /></Suspense>
+      </Route>
+      <Route path="/rooms/explore">
+        <Suspense fallback={<LoadingFallback />}><ExploreRoomsPage /></Suspense>
+      </Route>
+      <Route path="/rooms/trending">
+        <Suspense fallback={<LoadingFallback />}><TrendingRoomsPage /></Suspense>
+      </Route>
+      <Route path="/rooms/new">
+        <Suspense fallback={<LoadingFallback />}><NewRoomsPage /></Suspense>
+      </Route>
+      <Route path="/friends">
+        <Suspense fallback={<LoadingFallback />}><FriendsPage /></Suspense>
+      </Route>
+      <Route path="/friends/requests">
+        <Suspense fallback={<LoadingFallback />}><FriendRequestsPage /></Suspense>
       </Route>
       
       {/* User Dashboard pages */}

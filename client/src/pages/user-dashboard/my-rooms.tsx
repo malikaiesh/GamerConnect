@@ -722,6 +722,7 @@ export default function MyRoomsPage() {
           <RoomForm onSubmit={handleUpdateRoom} isPending={updateRoomMutation.isPending} />
         </DialogContent>
       </Dialog>
+      </div>
     </div>
   );
 }
