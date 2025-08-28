@@ -10,6 +10,13 @@ async function throwIfResNotOk(res: Response) {
     }
     
     if (errorJson && errorJson.message) {
+      // If there are detailed validation errors, include them in the error message
+      if (errorJson.errors && Array.isArray(errorJson.errors) && errorJson.errors.length > 0) {
+        const validationErrors = errorJson.errors
+          .map((err: any) => err.message || JSON.stringify(err))
+          .join('; ');
+        throw new Error(`${errorJson.message}: ${validationErrors}`);
+      }
       throw new Error(errorJson.message);
     } else {
       throw new Error(`HTTP error ${res.status}: ${res.statusText}`);

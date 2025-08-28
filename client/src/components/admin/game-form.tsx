@@ -1,4 +1,5 @@
 import { useState } from "react";
+import React from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -35,6 +36,7 @@ import { Game } from "@shared/schema";
 // Create a schema for game form validation
 const formSchema = z.object({
   title: z.string().min(3, "Title must be at least 3 characters"),
+  slug: z.string().min(3, "Slug must be at least 3 characters"),
   description: z.string().min(10, "Description must be at least 10 characters"),
   category: z.string().min(1, "Category is required"),
   tags: z.string().optional(),
@@ -103,6 +105,7 @@ export function GameForm({ game, onSuccess }: GameFormProps) {
       amazonAppStoreUrl: game.amazonAppStoreUrl || null,
     } : {
       title: "",
+      slug: "",
       description: "",
       category: "",
       tags: "",
@@ -126,6 +129,28 @@ export function GameForm({ game, onSuccess }: GameFormProps) {
     },
     mode: "onChange",
   });
+
+  // Function to generate slug from title
+  const generateSlug = (title: string) => {
+    return title
+      .toLowerCase()
+      .replace(/[^a-z0-9\s-]/g, '') // Remove special characters
+      .trim()
+      .replace(/\s+/g, '-') // Replace spaces with hyphens
+      .replace(/-+/g, '-'); // Replace multiple hyphens with single
+  };
+
+  // Watch title changes to auto-generate slug
+  const watchTitle = form.watch("title");
+  const watchSlug = form.watch("slug");
+
+  // Auto-generate slug when title changes (only if slug is empty)
+  React.useEffect(() => {
+    if (watchTitle && !watchSlug) {
+      const newSlug = generateSlug(watchTitle);
+      form.setValue("slug", newSlug);
+    }
+  }, [watchTitle, watchSlug, form]);
 
   // Query for getting game categories
   const { data: categories = [] } = useQuery({
@@ -348,6 +373,41 @@ export function GameForm({ game, onSuccess }: GameFormProps) {
                     <FormControl>
                       <Input placeholder="Game title" {...field} />
                     </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              
+              {/* Slug */}
+              <FormField
+                control={form.control}
+                name="slug"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>
+                      Slug 
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => {
+                          const title = form.getValues("title");
+                          if (title) {
+                            const newSlug = generateSlug(title);
+                            form.setValue("slug", newSlug);
+                          }
+                        }}
+                        className="ml-2 h-6 px-2 text-xs"
+                      >
+                        Generate from Title
+                      </Button>
+                    </FormLabel>
+                    <FormControl>
+                      <Input placeholder="game-slug" {...field} />
+                    </FormControl>
+                    <FormDescription>
+                      URL-friendly version of the title (used in game URLs)
+                    </FormDescription>
                     <FormMessage />
                   </FormItem>
                 )}
