@@ -130,33 +130,7 @@ export default function TeamAdminPage() {
   // Profile picture upload functions
   const getUploadParameters = async () => {
     try {
-      console.log('Getting upload parameters...');
-      
-      // Try with raw fetch first to debug
-      const rawResponse = await fetch('/api/objects/upload', {
-        method: 'POST',
-        credentials: 'include',
-        headers: {
-          'Content-Type': 'application/json',
-        }
-      });
-      
-      console.log('Raw response status:', rawResponse.status);
-      console.log('Raw response headers:', rawResponse.headers);
-      
-      const responseText = await rawResponse.text();
-      console.log('Raw response text:', responseText);
-      
-      let response;
-      try {
-        response = JSON.parse(responseText);
-      } catch (parseError) {
-        console.error('JSON parse error:', parseError);
-        console.log('Response was not valid JSON:', responseText);
-        throw new Error('Invalid JSON response from server');
-      }
-      
-      console.log('Parsed response:', response);
+      const response = await apiRequest("POST", "/api/objects/upload");
       return {
         method: 'PUT' as const,
         url: response.uploadURL
@@ -185,7 +159,7 @@ export default function TeamAdminPage() {
 
   // Create member mutation
   const createMutation = useMutation({
-    mutationFn: (data: FormData) => apiRequest("POST", "/api/team", data),
+    mutationFn: (data: any) => apiRequest("POST", "/api/team", { body: data }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/team/all"] });
       queryClient.invalidateQueries({ queryKey: ["/api/team"] });
@@ -207,8 +181,8 @@ export default function TeamAdminPage() {
 
   // Update member mutation
   const updateMutation = useMutation({
-    mutationFn: ({ id, data }: { id: number; data: Partial<FormData> }) =>
-      apiRequest("PUT", `/api/team/${id}`, data),
+    mutationFn: ({ id, data }: { id: number; data: any }) =>
+      apiRequest("PUT", `/api/team/${id}`, { body: data }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/team/all"] });
       queryClient.invalidateQueries({ queryKey: ["/api/team"] });
@@ -223,7 +197,7 @@ export default function TeamAdminPage() {
     onError: (error: any) => {
       toast({
         title: "Error",
-        description: error?.message || "Failed to update team member",
+        description: "Failed to update team member",
         variant: "destructive"
       });
     }
@@ -272,7 +246,8 @@ export default function TeamAdminPage() {
     }
   });
 
-  const handleCreate = (data: FormData) => {
+  const handleCreate = (data: any) => {
+    console.log('Creating team member with data:', data);
     createMutation.mutate(data);
   };
 
@@ -296,8 +271,9 @@ export default function TeamAdminPage() {
     setEditDialogOpen(true);
   };
 
-  const handleUpdate = (data: FormData) => {
+  const handleUpdate = (data: any) => {
     if (!selectedMember) return;
+    console.log('Updating team member with data:', data);
     updateMutation.mutate({ id: selectedMember.id, data });
   };
 
