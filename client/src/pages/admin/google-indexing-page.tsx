@@ -1,6 +1,7 @@
 import { useState, useRef } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
+import { AdminLayout } from "@/components/admin/layout";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -309,25 +310,26 @@ export default function GoogleIndexingPage() {
   };
 
   return (
-    <div className="p-6 space-y-6">
-      <div className="flex justify-between items-center">
-        <div>
-          <h1 className="text-3xl font-bold text-card-foreground">Google Indexing</h1>
-          <p className="text-muted-foreground">Submit your content to Google for faster indexing</p>
+    <AdminLayout title="Google Indexing" description="Submit your content to Google for faster indexing">
+      <div className="p-6 space-y-6">
+        <div className="flex justify-between items-center">
+          <div>
+            <h1 className="text-3xl font-bold text-card-foreground">Google Indexing</h1>
+            <p className="text-muted-foreground">Submit your content to Google for faster indexing</p>
+          </div>
+          <Button
+            onClick={() => testConnectionMutation.mutate()}
+            disabled={testConnectionMutation.isPending}
+            variant="outline"
+          >
+            <RefreshCw className={`mr-2 h-4 w-4 ${testConnectionMutation.isPending ? 'animate-spin' : ''}`} />
+            Test Connection
+          </Button>
         </div>
-        <Button
-          onClick={() => testConnectionMutation.mutate()}
-          disabled={testConnectionMutation.isPending}
-          variant="outline"
-        >
-          <RefreshCw className={`mr-2 h-4 w-4 ${testConnectionMutation.isPending ? 'animate-spin' : ''}`} />
-          Test Connection
-        </Button>
-      </div>
 
-      {/* Stats Cards */}
-      {stats && (
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+        {/* Stats Cards */}
+        {stats && (
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">Total Requests</CardTitle>
@@ -368,10 +370,10 @@ export default function GoogleIndexingPage() {
               />
             </CardContent>
           </Card>
-        </div>
-      )}
+          </div>
+        )}
 
-      <Tabs defaultValue="setup" className="w-full">
+        <Tabs defaultValue="setup" className="w-full">
         <TabsList className="grid w-full grid-cols-4">
           <TabsTrigger value="setup" className="flex items-center gap-2">
             <Upload size={16} />
@@ -752,7 +754,8 @@ export default function GoogleIndexingPage() {
             </CardContent>
           </Card>
         </TabsContent>
-      </Tabs>
-    </div>
+        </Tabs>
+      </div>
+    </AdminLayout>
   );
 }
