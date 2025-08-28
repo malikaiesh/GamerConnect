@@ -34,6 +34,7 @@ import backupRestoreRoutes from "./api/backup-restore";
 import objectsRoutes from "./api/objects";
 import { roomsRouter } from "./api/rooms";
 import friendsRouter from "./api/friends";
+import userProfileRouter from "./api/user-profile";
 import { storage } from "./storage";
 import { db } from "../db";
 import { ObjectStorageService, ObjectNotFoundError } from "./objectStorage";
@@ -390,6 +391,7 @@ Sitemap: ${req.protocol}://${req.get('host')}/sitemap.xml`);
   // Room system routes
   app.use('/api/rooms', roomsRouter);
   app.use('/api/friends', friendsRouter);
+  app.use('/api/user', userProfileRouter);
   
   // Quick test route to verify our demo endpoint
   app.post('/api/demo-schemas/test', (req, res) => {

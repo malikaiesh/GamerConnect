@@ -173,21 +173,29 @@ export function Sidebar() {
 
       {/* User Info */}
       <div className="p-4 border-t border-gray-200 dark:border-gray-800">
-        <div className="flex items-center space-x-2">
-          <div className="w-8 h-8 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full flex items-center justify-center">
-            <span className="text-white text-sm font-medium">
-              {user?.username?.charAt(0)?.toUpperCase() || 'U'}
-            </span>
-          </div>
-          <div className="flex-1 min-w-0">
-            <p className="text-sm font-medium text-gray-900 dark:text-white truncate">
-              {user?.displayName || user?.username || 'User'}
-            </p>
-            <p className="text-xs text-gray-500 dark:text-gray-400">
-              Online
-            </p>
-          </div>
-        </div>
+        <Link href="/profile">
+          <Button 
+            variant="ghost" 
+            className="w-full p-2 h-auto justify-start hover:bg-gray-100 dark:hover:bg-gray-800"
+            data-testid="nav-profile"
+          >
+            <div className="flex items-center space-x-2 w-full">
+              <div className="w-8 h-8 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full flex items-center justify-center">
+                <span className="text-white text-sm font-medium">
+                  {user?.username?.charAt(0)?.toUpperCase() || 'U'}
+                </span>
+              </div>
+              <div className="flex-1 min-w-0 text-left">
+                <p className="text-sm font-medium text-gray-900 dark:text-white truncate">
+                  {user?.displayName || user?.username || 'User'}
+                </p>
+                <p className="text-xs text-gray-500 dark:text-gray-400">
+                  View Profile
+                </p>
+              </div>
+            </div>
+          </Button>
+        </Link>
       </div>
     </div>
   );

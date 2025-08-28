@@ -102,6 +102,7 @@ const AdminSecuritySettingsPage = lazy(() => import("@/pages/admin/security/sett
 
 // User Dashboard pages
 const MyRoomsPage = lazy(() => import("@/pages/user-dashboard/my-rooms"));
+const UserProfilePage = lazy(() => import("@/pages/user-profile"));
 
 // Room pages
 const RoomLobbyPage = lazy(() => import("@/pages/room-lobby"));
@@ -225,6 +226,13 @@ function Router() {
         <Suspense fallback={<LoadingFallback />}>
           <ProtectedRoute>
             <MyRoomsPage />
+          </ProtectedRoute>
+        </Suspense>
+      </Route>
+      <Route path="/profile">
+        <Suspense fallback={<LoadingFallback />}>
+          <ProtectedRoute>
+            <UserProfilePage />
           </ProtectedRoute>
         </Suspense>
       </Route>

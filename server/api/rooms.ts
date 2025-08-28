@@ -707,15 +707,7 @@ router.get("/:roomId/messages", isAuthenticated, async (req: Request, res: Respo
 
     // Get recent messages
     const messages = await db
-      .select({
-        id: roomMessages.id,
-        message: roomMessages.content,
-        messageType: roomMessages.messageType,
-        createdAt: roomMessages.createdAt,
-        userId: users.id,
-        username: users.username,
-        displayName: users.displayName
-      })
+      .select()
       .from(roomMessages)
       .innerJoin(users, eq(roomMessages.userId, users.id))
       .where(eq(roomMessages.roomId, room[0].id))
@@ -724,14 +716,14 @@ router.get("/:roomId/messages", isAuthenticated, async (req: Request, res: Respo
 
     // Transform messages to include user object
     const formattedMessages = messages.reverse().map(msg => ({
-      id: msg.id,
-      message: msg.message,
-      messageType: msg.messageType,
-      createdAt: msg.createdAt,
+      id: msg.room_messages.id,
+      message: msg.room_messages.content,
+      messageType: msg.room_messages.messageType,
+      createdAt: msg.room_messages.createdAt,
       user: {
-        id: msg.userId,
-        username: msg.username,
-        displayName: msg.displayName
+        id: msg.users.id,
+        username: msg.users.username,
+        displayName: msg.users.displayName
       }
     }));
 

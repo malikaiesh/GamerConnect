@@ -284,8 +284,16 @@ export default function RoomInterfacePage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-50 via-blue-50 to-indigo-50 dark:from-gray-900 dark:via-blue-900 dark:to-indigo-900">
-      <div className="container mx-auto px-4 py-6">
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-indigo-900 relative overflow-hidden">
+      {/* Lunexa-style animated background */}
+      <div className="absolute inset-0">
+        <div className="absolute top-20 left-20 w-72 h-72 bg-purple-500/20 rounded-full blur-3xl animate-pulse"></div>
+        <div className="absolute top-40 right-32 w-96 h-96 bg-blue-500/20 rounded-full blur-3xl animate-pulse delay-1000"></div>
+        <div className="absolute bottom-32 left-1/3 w-80 h-80 bg-indigo-500/20 rounded-full blur-3xl animate-pulse delay-2000"></div>
+        <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent"></div>
+      </div>
+      
+      <div className="relative z-10 container mx-auto px-4 py-6">
         {/* Room Header */}
         <Card className="mb-6">
           <CardHeader>
@@ -331,7 +339,7 @@ export default function RoomInterfacePage() {
           </CardHeader>
         </Card>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 lg:gap-6">
           {/* Room Seats - Main Area */}
           <div className="lg:col-span-2">
             <Card>
@@ -349,37 +357,75 @@ export default function RoomInterfacePage() {
                 {/* Room Controls */}
                 {currentUserInRoom && (
                   <div className="mt-6 pt-6 border-t">
-                    <div className="flex items-center justify-center gap-4">
-                      <Button
-                        variant={isMicOn ? "default" : "outline"}
-                        size="lg"
-                        className="rounded-full w-12 h-12 p-0"
-                        onClick={handleMicToggle}
-                        disabled={!roomData.room.voiceChatEnabled}
-                      >
-                        {isMicOn ? <Mic className="w-5 h-5" /> : <MicOff className="w-5 h-5" />}
-                      </Button>
-                      <Button
-                        variant={isSpeakerOn ? "default" : "outline"}
-                        size="lg"
-                        className="rounded-full w-12 h-12 p-0"
-                        onClick={handleSpeakerToggle}
-                        disabled={!roomData.room.voiceChatEnabled}
-                      >
-                        {isSpeakerOn ? <Volume2 className="w-5 h-5" /> : <VolumeX className="w-5 h-5" />}
-                      </Button>
-                      {isOwner && (
+                    <div className="flex items-center justify-center gap-3 sm:gap-6 flex-wrap">
+                      {/* Mic Button - Enhanced Yalla Ludo Style */}
+                      <div className="relative">
                         <Button
-                          variant="outline"
+                          variant="ghost"
                           size="lg"
-                          className="rounded-full w-12 h-12 p-0"
-                          onClick={() => navigate(`/my-rooms`)}
+                          className={`relative rounded-full w-16 h-16 p-0 border-2 transition-all duration-200 shadow-lg hover:scale-105 ${
+                            isMicOn 
+                              ? 'bg-gradient-to-r from-green-400 to-emerald-500 border-green-300 text-white shadow-green-200 hover:shadow-green-300' 
+                              : 'bg-gradient-to-r from-red-400 to-rose-500 border-red-300 text-white shadow-red-200 hover:shadow-red-300'
+                          }`}
+                          onClick={handleMicToggle}
+                          disabled={!roomData.room.voiceChatEnabled}
                         >
-                          <Settings className="w-5 h-5" />
+                          {isMicOn ? <Mic className="w-6 h-6" /> : <MicOff className="w-6 h-6" />}
                         </Button>
+                        {/* Pulsing ring for active mic */}
+                        {isMicOn && (
+                          <div className="absolute inset-0 rounded-full border-2 border-green-400 animate-ping opacity-30"></div>
+                        )}
+                        <div className="absolute -bottom-2 left-1/2 transform -translate-x-1/2">
+                          <span className="text-xs font-medium px-2 py-1 bg-black/80 text-white rounded-full">
+                            {isMicOn ? 'ON' : 'OFF'}
+                          </span>
+                        </div>
+                      </div>
+
+                      {/* Speaker Button - Enhanced Style */}
+                      <div className="relative">
+                        <Button
+                          variant="ghost"
+                          size="lg"
+                          className={`relative rounded-full w-16 h-16 p-0 border-2 transition-all duration-200 shadow-lg hover:scale-105 ${
+                            isSpeakerOn 
+                              ? 'bg-gradient-to-r from-blue-400 to-cyan-500 border-blue-300 text-white shadow-blue-200 hover:shadow-blue-300' 
+                              : 'bg-gradient-to-r from-gray-400 to-slate-500 border-gray-300 text-white shadow-gray-200 hover:shadow-gray-300'
+                          }`}
+                          onClick={handleSpeakerToggle}
+                          disabled={!roomData.room.voiceChatEnabled}
+                        >
+                          {isSpeakerOn ? <Volume2 className="w-6 h-6" /> : <VolumeX className="w-6 h-6" />}
+                        </Button>
+                        <div className="absolute -bottom-2 left-1/2 transform -translate-x-1/2">
+                          <span className="text-xs font-medium px-2 py-1 bg-black/80 text-white rounded-full">
+                            {isSpeakerOn ? 'ON' : 'OFF'}
+                          </span>
+                        </div>
+                      </div>
+
+                      {/* Settings Button for Owner */}
+                      {isOwner && (
+                        <div className="relative">
+                          <Button
+                            variant="ghost"
+                            size="lg"
+                            className="relative rounded-full w-16 h-16 p-0 border-2 bg-gradient-to-r from-purple-400 to-violet-500 border-purple-300 text-white shadow-purple-200 hover:shadow-purple-300 transition-all duration-200 shadow-lg hover:scale-105"
+                            onClick={() => navigate(`/my-rooms`)}
+                          >
+                            <Settings className="w-6 h-6" />
+                          </Button>
+                          <div className="absolute -bottom-2 left-1/2 transform -translate-x-1/2">
+                            <span className="text-xs font-medium px-2 py-1 bg-black/80 text-white rounded-full">
+                              ADMIN
+                            </span>
+                          </div>
+                        </div>
                       )}
                     </div>
-                    <div className="text-center text-sm text-muted-foreground mt-2">
+                    <div className="text-center text-sm text-muted-foreground mt-4">
                       {!roomData.room.voiceChatEnabled && "Voice chat disabled"}
                     </div>
                   </div>
