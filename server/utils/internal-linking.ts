@@ -1,7 +1,7 @@
 import { BlogPost } from "@shared/schema";
 import { db } from "../../db";
 import { blogPosts } from "@shared/schema";
-import { eq, and, not, like, desc } from "drizzle-orm";
+import { eq, and, not, like, desc, or } from "drizzle-orm";
 
 // Number of internal links to add per post
 const MAX_INTERNAL_LINKS = 5;
@@ -61,31 +61,29 @@ async function findRelatedPosts(
 ): Promise<BlogPost[]> {
   if (keywords.length === 0) return [];
   
-  // Create a combined SQL condition for all keywords
-  let query = db.select().from(blogPosts).where(
-    and(
-      eq(blogPosts.status, 'published'),
-      // Exclude the current post if we have an ID
-      currentPostId ? not(eq(blogPosts.id, currentPostId)) : undefined
-    )
-  );
-  
   // Find posts with titles containing any of the keywords
   const keywordConditions = keywords.map(keyword => 
     like(blogPosts.title, `%${keyword}%`)
   );
   
-  // Add the conditions to the query
-  query = query.where(keywordConditions[0]);
-  for (let i = 1; i < keywordConditions.length; i++) {
-    query = query.orWhere(keywordConditions[i]);
-  }
+  // Create the base conditions
+  const baseConditions = [
+    eq(blogPosts.status, 'published'),
+    currentPostId ? not(eq(blogPosts.id, currentPostId)) : undefined
+  ].filter(Boolean);
   
-  // Order by published date (newest first) and limit
-  query = query.orderBy(desc(blogPosts.publishedAt)).limit(limit);
+  // Combine all conditions: base conditions AND (keyword1 OR keyword2 OR ...)
+  const whereCondition = and(
+    ...baseConditions,
+    or(...keywordConditions)
+  );
   
   try {
-    return await query;
+    return await db.select()
+      .from(blogPosts)
+      .where(whereCondition)
+      .orderBy(desc(blogPosts.publishedAt))
+      .limit(limit);
   } catch (error) {
     console.error('Error finding related posts:', error);
     return [];
