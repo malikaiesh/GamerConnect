@@ -341,44 +341,40 @@ export function Analytics() {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col gap-4">
-        {/* Quick Filters and Title */}
-        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
-          <div className="flex flex-wrap gap-2">
-            {quickFilters.map((filter) => (
-              <Button
-                key={filter.value}
-                variant={timeframe === filter.value ? "default" : "outline"}
-                size="sm"
-                onClick={() => handleTimeframeChange(filter.value)}
-                data-testid={`filter-${filter.value}`}
-              >
-                {filter.label}
-              </Button>
-            ))}
-          </div>
-          <h2 className="text-2xl font-bold">Analytics Dashboard</h2>
-        </div>
-        
-        {/* Extended Filters and Export */}
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-          <div className="flex gap-2">
-            <Select 
-              value={quickFilters.some(f => f.value === timeframe) ? "" : timeframe} 
-              onValueChange={handleTimeframeChange}
-            >
-              <SelectTrigger className="w-[200px]">
-                <SelectValue placeholder="More options..." />
-              </SelectTrigger>
-              <SelectContent>
-                {extendedTimeframeOptions.map((option) => (
-                  <SelectItem key={option.value} value={option.value}>
-                    {option.label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
+      {/* Quick Filters */}
+      <div className="flex flex-wrap gap-2">
+        {quickFilters.map((filter) => (
+          <Button
+            key={filter.value}
+            variant={timeframe === filter.value ? "default" : "outline"}
+            size="sm"
+            onClick={() => handleTimeframeChange(filter.value)}
+            data-testid={`filter-${filter.value}`}
+          >
+            {filter.label}
+          </Button>
+        ))}
+      </div>
+
+      {/* Title, Extended Options and Export */}
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+        <h2 className="text-2xl font-bold">Analytics Dashboard</h2>
+        <div className="flex gap-2">
+          <Select 
+            value={quickFilters.some(f => f.value === timeframe) ? "" : timeframe} 
+            onValueChange={handleTimeframeChange}
+          >
+            <SelectTrigger className="w-[200px]">
+              <SelectValue placeholder="More options..." />
+            </SelectTrigger>
+            <SelectContent>
+              {extendedTimeframeOptions.map((option) => (
+                <SelectItem key={option.value} value={option.value}>
+                  {option.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
           
           <Dialog open={exportDialogOpen} onOpenChange={setExportDialogOpen}>
             <DialogTrigger asChild>
