@@ -342,9 +342,9 @@ export function Analytics() {
   return (
     <div className="space-y-6">
       {/* Title, Extended Options and Export */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+      <div className="flex flex-row justify-between items-center gap-4">
         <h2 className="text-2xl font-bold">Analytics Dashboard</h2>
-        <div className="flex gap-2">
+        <div className="flex items-center gap-2">
           <Select 
             value={quickFilters.some(f => f.value === timeframe) ? "" : timeframe} 
             onValueChange={handleTimeframeChange}
