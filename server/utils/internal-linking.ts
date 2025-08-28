@@ -19,9 +19,9 @@ function extractTitleKeywords(title: string): string[] {
   // Convert to lowercase and remove special characters
   const cleanTitle = title.toLowerCase().replace(/[^\w\s]/g, '');
   
-  // Split into words and filter out short words (less than 4 characters) and common words
+  // Split into words and filter out short words (less than 3 characters) and common words
   const words = cleanTitle.split(/\s+/).filter(word => 
-    word.length >= 4 && !IGNORED_KEYWORDS.includes(word.toLowerCase())
+    word.length >= 3 && !IGNORED_KEYWORDS.includes(word.toLowerCase())
   );
   
   return [...new Set(words)]; // Remove duplicates
@@ -61,10 +61,18 @@ async function findRelatedPosts(
 ): Promise<BlogPost[]> {
   if (keywords.length === 0) return [];
   
-  // Find posts with titles containing any of the keywords
-  const keywordConditions = keywords.map(keyword => 
+  console.log(`Finding related posts for keywords: ${keywords.join(', ')}`);
+  
+  // Find posts with titles OR content containing any of the keywords
+  const titleConditions = keywords.map(keyword => 
     like(blogPosts.title, `%${keyword}%`)
   );
+  const contentConditions = keywords.map(keyword => 
+    like(blogPosts.content, `%${keyword}%`)
+  );
+  
+  // Combine title and content conditions
+  const allConditions = [...titleConditions, ...contentConditions];
   
   // Create the base conditions
   const baseConditions = [
@@ -72,18 +80,21 @@ async function findRelatedPosts(
     currentPostId ? not(eq(blogPosts.id, currentPostId)) : undefined
   ].filter(Boolean);
   
-  // Combine all conditions: base conditions AND (keyword1 OR keyword2 OR ...)
+  // Combine all conditions: base conditions AND (any keyword match)
   const whereCondition = and(
     ...baseConditions,
-    or(...keywordConditions)
+    or(...allConditions)
   );
   
   try {
-    return await db.select()
+    const results = await db.select()
       .from(blogPosts)
       .where(whereCondition)
       .orderBy(desc(blogPosts.publishedAt))
       .limit(limit);
+      
+    console.log(`Found ${results.length} related posts for current post ${currentPostId}`);
+    return results;
   } catch (error) {
     console.error('Error finding related posts:', error);
     return [];
@@ -92,7 +103,12 @@ async function findRelatedPosts(
 
 // Add internal links to the content
 function addInternalLinks(content: string, relatedPosts: BlogPost[], currentPostId: number | null): string {
-  if (relatedPosts.length === 0) return content;
+  if (relatedPosts.length === 0) {
+    console.log(`No related posts found for post ${currentPostId}`);
+    return content;
+  }
+  
+  console.log(`Adding internal links from ${relatedPosts.length} related posts to post ${currentPostId}`);
   
   let modifiedContent = content;
   let linkCount = 0;
@@ -106,6 +122,7 @@ function addInternalLinks(content: string, relatedPosts: BlogPost[], currentPost
     
     // Get keywords from this post's title
     const keywords = extractTitleKeywords(post.title);
+    console.log(`Trying keywords from "${post.title}": ${keywords.join(', ')}`);
     
     // Try to find each keyword in the content and add a link
     for (const keyword of keywords) {
@@ -120,6 +137,8 @@ function addInternalLinks(content: string, relatedPosts: BlogPost[], currentPost
       
       // Check if keyword exists in the content
       if (regex.test(modifiedContent)) {
+        console.log(`Found keyword "${keyword}" in content, adding link to "${post.title}"`);
+        
         // Create link HTML
         const link = `<a href="/blog/${post.slug}" class="internal-link" title="${post.title}">$1</a>`;
         
@@ -131,6 +150,7 @@ function addInternalLinks(content: string, relatedPosts: BlogPost[], currentPost
     }
   }
   
+  console.log(`Added ${linkCount} internal links to post ${currentPostId}`);
   return modifiedContent;
 }
 
