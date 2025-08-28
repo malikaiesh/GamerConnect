@@ -663,7 +663,16 @@ export const insertBlogPostSchema = createInsertSchema(blogPosts, {
   title: (schema) => schema.min(5, "Title must be at least 5 characters"),
   content: (schema) => schema.min(50, "Content must be at least 50 characters"),
   excerpt: (schema) => schema.min(10, "Excerpt must be at least 10 characters"),
-  featuredImage: (schema) => schema.url("Featured image must be a valid URL")
+  featuredImage: (schema) => schema.url("Featured image must be a valid URL"),
+  authorAvatar: (schema) => schema.optional().nullable().refine((val) => {
+    if (!val) return true; // Allow null/undefined
+    try {
+      new URL(val);
+      return true;
+    } catch {
+      return false;
+    }
+  }, { message: "Author avatar must be a valid URL or left empty" })
 });
 
 export const insertRatingSchema = createInsertSchema(ratings, {

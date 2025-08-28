@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -12,7 +12,7 @@ import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/componen
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2 } from "lucide-react";
+import { Loader2, Upload, X } from "lucide-react";
 import { BasicTextEditor } from "@/components/admin/basic-text-editor";
 
 // Define the form schema using zod
@@ -28,7 +28,15 @@ const formSchema = z.object({
   tags: z.string(),
   status: z.enum(["draft", "published"]),
   author: z.string().min(2, { message: "Author name is required" }),
-  authorAvatar: z.string().url({ message: "Author avatar must be a valid URL" }).optional().nullable(),
+  authorAvatar: z.string().optional().or(z.literal("")).refine((val) => {
+    if (!val || val === "") return true; // Allow empty
+    try {
+      new URL(val);
+      return true;
+    } catch {
+      return false;
+    }
+  }, { message: "Author avatar must be a valid URL or left empty" }),
 });
 
 type FormValues = z.infer<typeof formSchema>;
@@ -42,6 +50,10 @@ export function BlogForm({ post, onSuccess }: BlogFormProps) {
   const [isUploading, setIsUploading] = useState(false);
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  
+  // File input refs
+  const featuredImageInputRef = useRef<HTMLInputElement>(null);
+  const authorAvatarInputRef = useRef<HTMLInputElement>(null);
 
   // Fetch blog categories
   const { data: categories = [] } = useQuery<BlogCategory[]>({
@@ -124,6 +136,44 @@ export function BlogForm({ post, onSuccess }: BlogFormProps) {
     },
   });
 
+  // File upload function
+  const handleFileUpload = async (file: File, fieldName: 'featuredImage' | 'authorAvatar') => {
+    if (!file) return;
+    
+    setIsUploading(true);
+    try {
+      const formData = new FormData();
+      formData.append('image', file);
+      formData.append('folder', 'blog');
+      
+      const response = await fetch('/api/upload/image', {
+        method: 'POST',
+        body: formData,
+        credentials: 'include',
+      });
+      
+      if (!response.ok) {
+        throw new Error('Upload failed');
+      }
+      
+      const data = await response.json();
+      form.setValue(fieldName, data.url);
+      
+      toast({
+        title: "Upload successful",
+        description: `${fieldName === 'featuredImage' ? 'Featured image' : 'Author avatar'} uploaded successfully`,
+      });
+    } catch (error) {
+      toast({
+        title: "Upload failed",
+        description: "Failed to upload image. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsUploading(false);
+    }
+  };
+
   const onSubmit = (values: FormValues) => {
     mutation.mutate(values);
   };
@@ -177,10 +227,55 @@ export function BlogForm({ post, onSuccess }: BlogFormProps) {
               name="featuredImage"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel className="text-foreground">Featured Image URL</FormLabel>
-                  <FormControl>
-                    <Input placeholder="https://example.com/image.jpg" {...field} />
-                  </FormControl>
+                  <FormLabel className="text-foreground">Featured Image</FormLabel>
+                  <div className="space-y-2">
+                    <FormControl>
+                      <Input placeholder="https://example.com/image.jpg" {...field} />
+                    </FormControl>
+                    <div className="flex gap-2">
+                      <input
+                        type="file"
+                        accept="image/*"
+                        ref={featuredImageInputRef}
+                        onChange={(e) => {
+                          const file = e.target.files?.[0];
+                          if (file) handleFileUpload(file, 'featuredImage');
+                        }}
+                        className="hidden"
+                      />
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => featuredImageInputRef.current?.click()}
+                        disabled={isUploading}
+                        className="flex items-center gap-1"
+                      >
+                        <Upload size={16} />
+                        {isUploading ? 'Uploading...' : 'Upload Image'}
+                      </Button>
+                      {field.value && (
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          onClick={() => field.onChange('')}
+                          className="flex items-center gap-1 text-red-600 hover:text-red-700"
+                        >
+                          <X size={16} />
+                          Clear
+                        </Button>
+                      )}
+                    </div>
+                    {field.value && (
+                      <div className="mt-2">
+                        <img src={field.value} alt="Featured" className="max-w-32 h-20 object-cover rounded border" />
+                      </div>
+                    )}
+                  </div>
+                  <FormDescription className="text-muted-foreground">
+                    Enter a URL or upload an image from your computer
+                  </FormDescription>
                   <FormMessage />
                 </FormItem>
               )}
@@ -310,10 +405,55 @@ export function BlogForm({ post, onSuccess }: BlogFormProps) {
                 name="authorAvatar"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="text-foreground">Author Avatar URL (optional)</FormLabel>
-                    <FormControl>
-                      <Input placeholder="https://example.com/avatar.jpg" {...field} value={field.value || ""} />
-                    </FormControl>
+                    <FormLabel className="text-foreground">Author Avatar (optional)</FormLabel>
+                    <div className="space-y-2">
+                      <FormControl>
+                        <Input placeholder="https://example.com/avatar.jpg" {...field} value={field.value || ""} />
+                      </FormControl>
+                      <div className="flex gap-2">
+                        <input
+                          type="file"
+                          accept="image/*"
+                          ref={authorAvatarInputRef}
+                          onChange={(e) => {
+                            const file = e.target.files?.[0];
+                            if (file) handleFileUpload(file, 'authorAvatar');
+                          }}
+                          className="hidden"
+                        />
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          onClick={() => authorAvatarInputRef.current?.click()}
+                          disabled={isUploading}
+                          className="flex items-center gap-1"
+                        >
+                          <Upload size={16} />
+                          {isUploading ? 'Uploading...' : 'Upload Avatar'}
+                        </Button>
+                        {field.value && (
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            onClick={() => field.onChange('')}
+                            className="flex items-center gap-1 text-red-600 hover:text-red-700"
+                          >
+                            <X size={16} />
+                            Clear
+                          </Button>
+                        )}
+                      </div>
+                      {field.value && (
+                        <div className="mt-2">
+                          <img src={field.value} alt="Author Avatar" className="w-12 h-12 object-cover rounded-full border" />
+                        </div>
+                      )}
+                    </div>
+                    <FormDescription className="text-muted-foreground">
+                      Enter a URL or upload an avatar image from your computer
+                    </FormDescription>
                     <FormMessage />
                   </FormItem>
                 )}
