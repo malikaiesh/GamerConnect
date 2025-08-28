@@ -20,7 +20,7 @@ import {
   type Gift,
   type RoomMessage
 } from "@shared/schema";
-import { eq, desc, and, sql, count, gte, sum } from "drizzle-orm";
+import { eq, desc, and, sql, count, gte, sum, asc } from "drizzle-orm";
 import { isAuthenticated, isAdmin } from "../middleware/auth";
 import { z } from "zod";
 import { Request, Response } from "express";
@@ -155,27 +155,33 @@ router.get("/:roomId", async (req: Request, res: Response) => {
     }
 
     // Get current users in room
-    const currentUsers = await db
+    const roomUsersData = await db
       .select({
+        id: roomUsers.id,
+        seatNumber: roomUsers.seatNumber,
+        role: roomUsers.role,
+        isMuted: roomUsers.isMuted,
+        isMicOn: roomUsers.isMicOn,
+        isActive: roomUsers.isActive,
         user: {
           id: users.id,
           username: users.username,
           displayName: users.displayName,
           profilePicture: users.profilePicture
-        },
-        roomUser: roomUsers
+        }
       })
       .from(roomUsers)
       .innerJoin(users, eq(roomUsers.userId, users.id))
       .where(and(
         eq(roomUsers.roomId, roomData[0].room.id),
-        eq(roomUsers.status, 'active')
+        eq(roomUsers.isActive, true)
       ))
-      .orderBy(roomUsers.seatNumber);
+      .orderBy(asc(roomUsers.seatNumber));
 
     res.json({
-      ...roomData[0],
-      currentUsers
+      room: roomData[0].room,
+      owner: roomData[0].owner,
+      users: roomUsersData
     });
   } catch (error) {
     console.error("Error fetching room:", error);
@@ -387,6 +393,232 @@ router.get("/stats/overview", isAuthenticated, isAdmin, async (req: Request, res
   } catch (error) {
     console.error("Error fetching room stats:", error);
     res.status(500).json({ error: "Failed to fetch room statistics" });
+  }
+});
+
+// Join room endpoint
+router.post("/:roomId/join", isAuthenticated, async (req: Request, res: Response) => {
+  try {
+    const { roomId } = req.params;
+    const { seatNumber } = req.body;
+    const userId = (req as any).user?.id;
+
+    if (!userId) {
+      return res.status(401).json({ error: "User not authenticated" });
+    }
+
+    // Get room
+    const room = await db.select().from(rooms).where(eq(rooms.roomId, roomId)).limit(1);
+    if (room.length === 0) {
+      return res.status(404).json({ error: "Room not found" });
+    }
+
+    // Check if user already in room
+    const existingUser = await db.select().from(roomUsers).where(
+      and(eq(roomUsers.roomId, room[0].id), eq(roomUsers.userId, userId))
+    ).limit(1);
+
+    if (existingUser.length > 0) {
+      return res.status(400).json({ error: "Already in room" });
+    }
+
+    // Check room capacity
+    const currentUsers = await db.select({ count: count() }).from(roomUsers)
+      .where(and(eq(roomUsers.roomId, room[0].id), eq(roomUsers.isActive, true)));
+    
+    if (currentUsers[0].count >= room[0].maxSeats) {
+      return res.status(400).json({ error: "Room is full" });
+    }
+
+    // Find available seat if not specified
+    let finalSeatNumber = seatNumber;
+    if (!finalSeatNumber) {
+      const occupiedSeats = await db.select({ seatNumber: roomUsers.seatNumber })
+        .from(roomUsers)
+        .where(and(eq(roomUsers.roomId, room[0].id), eq(roomUsers.isActive, true)));
+      
+      const occupied = occupiedSeats.map(s => s.seatNumber).filter(Boolean);
+      for (let i = 1; i <= room[0].maxSeats; i++) {
+        if (!occupied.includes(i)) {
+          finalSeatNumber = i;
+          break;
+        }
+      }
+    }
+
+    // Check if seat is occupied
+    if (finalSeatNumber) {
+      const seatTaken = await db.select().from(roomUsers).where(
+        and(
+          eq(roomUsers.roomId, room[0].id),
+          eq(roomUsers.seatNumber, finalSeatNumber),
+          eq(roomUsers.isActive, true)
+        )
+      ).limit(1);
+
+      if (seatTaken.length > 0) {
+        return res.status(400).json({ error: "Seat is already taken" });
+      }
+    }
+
+    // Join room
+    await db.insert(roomUsers).values({
+      roomId: room[0].id,
+      userId,
+      seatNumber: finalSeatNumber,
+      role: 'member'
+    });
+
+    // Update room current users count
+    await db.update(rooms)
+      .set({ currentUsers: currentUsers[0].count + 1, lastActivity: new Date() })
+      .where(eq(rooms.id, room[0].id));
+
+    res.json({ message: "Joined room successfully", seatNumber: finalSeatNumber });
+  } catch (error) {
+    console.error("Error joining room:", error);
+    res.status(500).json({ error: "Failed to join room" });
+  }
+});
+
+// Leave room endpoint
+router.post("/:roomId/leave", isAuthenticated, async (req: Request, res: Response) => {
+  try {
+    const { roomId } = req.params;
+    const userId = (req as any).user?.id;
+
+    if (!userId) {
+      return res.status(401).json({ error: "User not authenticated" });
+    }
+
+    // Get room
+    const room = await db.select().from(rooms).where(eq(rooms.roomId, roomId)).limit(1);
+    if (room.length === 0) {
+      return res.status(404).json({ error: "Room not found" });
+    }
+
+    // Remove user from room
+    await db.delete(roomUsers).where(
+      and(eq(roomUsers.roomId, room[0].id), eq(roomUsers.userId, userId))
+    );
+
+    // Update room current users count
+    const currentUsers = await db.select({ count: count() }).from(roomUsers)
+      .where(and(eq(roomUsers.roomId, room[0].id), eq(roomUsers.isActive, true)));
+    
+    await db.update(rooms)
+      .set({ currentUsers: currentUsers[0].count, lastActivity: new Date() })
+      .where(eq(rooms.id, room[0].id));
+
+    res.json({ message: "Left room successfully" });
+  } catch (error) {
+    console.error("Error leaving room:", error);
+    res.status(500).json({ error: "Failed to leave room" });
+  }
+});
+
+// Send message endpoint
+router.post("/:roomId/messages", isAuthenticated, async (req: Request, res: Response) => {
+  try {
+    const { roomId } = req.params;
+    const { message, messageType = 'text' } = req.body;
+    const userId = (req as any).user?.id;
+
+    if (!userId) {
+      return res.status(401).json({ error: "User not authenticated" });
+    }
+
+    if (!message?.trim()) {
+      return res.status(400).json({ error: "Message cannot be empty" });
+    }
+
+    // Get room
+    const room = await db.select().from(rooms).where(eq(rooms.roomId, roomId)).limit(1);
+    if (room.length === 0) {
+      return res.status(404).json({ error: "Room not found" });
+    }
+
+    // Check if user is in room
+    const userInRoom = await db.select().from(roomUsers).where(
+      and(eq(roomUsers.roomId, room[0].id), eq(roomUsers.userId, userId))
+    ).limit(1);
+
+    if (userInRoom.length === 0) {
+      return res.status(403).json({ error: "Must be in room to send messages" });
+    }
+
+    if (!room[0].textChatEnabled) {
+      return res.status(403).json({ error: "Text chat is disabled in this room" });
+    }
+
+    // Create message
+    const [newMessage] = await db.insert(roomMessages).values({
+      roomId: room[0].id,
+      userId,
+      content: message.trim(),
+      messageType
+    }).returning();
+
+    // Update user message count
+    await db.update(roomUsers)
+      .set({ messagesCount: sql`${roomUsers.messagesCount} + 1` })
+      .where(and(eq(roomUsers.roomId, room[0].id), eq(roomUsers.userId, userId)));
+
+    res.status(201).json(newMessage);
+  } catch (error) {
+    console.error("Error sending message:", error);
+    res.status(500).json({ error: "Failed to send message" });
+  }
+});
+
+// Get room messages endpoint
+router.get("/:roomId/messages", isAuthenticated, async (req: Request, res: Response) => {
+  try {
+    const { roomId } = req.params;
+    const userId = (req as any).user?.id;
+
+    if (!userId) {
+      return res.status(401).json({ error: "User not authenticated" });
+    }
+
+    // Get room
+    const room = await db.select().from(rooms).where(eq(rooms.roomId, roomId)).limit(1);
+    if (room.length === 0) {
+      return res.status(404).json({ error: "Room not found" });
+    }
+
+    // Check if user is in room
+    const userInRoom = await db.select().from(roomUsers).where(
+      and(eq(roomUsers.roomId, room[0].id), eq(roomUsers.userId, userId))
+    ).limit(1);
+
+    if (userInRoom.length === 0) {
+      return res.status(403).json({ error: "Must be in room to view messages" });
+    }
+
+    // Get recent messages
+    const messages = await db
+      .select({
+        id: roomMessages.id,
+        message: roomMessages.content,
+        messageType: roomMessages.messageType,
+        createdAt: roomMessages.createdAt,
+        user: {
+          id: users.id,
+          username: users.username,
+          displayName: users.displayName
+        }
+      })
+      .from(roomMessages)
+      .innerJoin(users, eq(roomMessages.userId, users.id))
+      .where(eq(roomMessages.roomId, room[0].id))
+      .orderBy(desc(roomMessages.createdAt))
+      .limit(50);
+
+    res.json(messages.reverse()); // Reverse to get chronological order
+  } catch (error) {
+    console.error("Error fetching messages:", error);
+    res.status(500).json({ error: "Failed to fetch messages" });
   }
 });
 

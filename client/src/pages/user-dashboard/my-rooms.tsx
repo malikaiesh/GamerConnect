@@ -34,7 +34,9 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { Plus, Settings, Users, Lock, Globe, Edit, Trash2, Eye } from "lucide-react";
+import { Plus, Settings, Users, Lock, Globe, Edit, Trash2, Eye, Crown, Play, Clock, MapPin, MessageCircle, Mic, Gift } from "lucide-react";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { useLocation } from "wouter";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { formatDistanceToNow } from "date-fns";
@@ -103,6 +105,7 @@ export default function MyRoomsPage() {
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [selectedRoom, setSelectedRoom] = useState<Room | null>(null);
   const [tagInput, setTagInput] = useState("");
+  const [location, navigate] = useLocation();
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
@@ -247,6 +250,23 @@ export default function MyRoomsPage() {
         return "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300";
       default:
         return "bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-300";
+    }
+  };
+
+  const getThemeGradient = (theme: string) => {
+    switch (theme) {
+      case 'ocean':
+        return 'from-blue-500 via-blue-600 to-cyan-600';
+      case 'sunset':
+        return 'from-orange-500 via-red-500 to-pink-600';
+      case 'forest':
+        return 'from-green-500 via-green-600 to-emerald-600';
+      case 'purple':
+        return 'from-purple-500 via-indigo-500 to-blue-600';
+      case 'galaxy':
+        return 'from-indigo-600 via-purple-600 to-pink-600';
+      default:
+        return 'from-blue-500 via-purple-500 to-indigo-600';
     }
   };
 
@@ -544,102 +564,145 @@ export default function MyRoomsPage() {
       ) : (
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
           {rooms.map((room) => (
-            <Card key={room.room.id} data-testid={`card-room-${room.room.id}`}>
-              <CardHeader>
+            <Card key={room.room.id} className="overflow-hidden group hover:shadow-lg transition-all duration-200" data-testid={`card-room-${room.room.id}`}>
+              {/* Room Header with visual elements */}
+              <div className="relative">
+                <div className={`h-20 bg-gradient-to-br ${getThemeGradient(room.room.backgroundTheme)} flex items-center justify-center`}>
+                  <div className="w-12 h-12 bg-white/20 rounded-lg flex items-center justify-center backdrop-blur-sm">
+                    <Crown className="w-6 h-6 text-white" />
+                  </div>
+                </div>
+                <Badge className={`absolute top-2 right-2 ${getStatusColor(room.room.status)}`}>
+                  {room.room.status}
+                </Badge>
+              </div>
+              
+              <CardHeader className="pb-3">
                 <div className="flex items-center justify-between">
-                  <CardTitle className="flex items-center gap-2">
-                    {room.room.type === 'public' ? <Globe className="h-4 w-4" /> : <Lock className="h-4 w-4" />}
+                  <CardTitle className="flex items-center gap-2 text-lg">
+                    {room.room.type === 'public' ? <Globe className="h-4 w-4 text-green-600" /> : <Lock className="h-4 w-4 text-orange-600" />}
                     {room.room.name}
                   </CardTitle>
-                  <Badge className={getStatusColor(room.room.status)}>
-                    {room.room.status}
-                  </Badge>
                 </div>
-                <div className="text-sm text-muted-foreground">
-                  Room ID: {room.room.roomId}
+                <div className="text-xs text-muted-foreground font-mono">
+                  ID: {room.room.roomId}
                 </div>
+                {room.room.description && (
+                  <p className="text-sm text-muted-foreground line-clamp-2">{room.room.description}</p>
+                )}
               </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  {room.room.description && (
-                    <p className="text-sm text-muted-foreground">{room.room.description}</p>
-                  )}
-                  
-                  <div className="grid gap-2 text-sm">
-                    <div className="flex justify-between">
-                      <span className="text-muted-foreground">Users:</span>
-                      <span>{room.userCount}/{room.room.maxSeats}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-muted-foreground">Category:</span>
-                      <span className="capitalize">{room.room.category}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-muted-foreground">Total Visits:</span>
-                      <span>{room.room.totalVisits}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-muted-foreground">Last Active:</span>
-                      <span>{formatDistanceToNow(new Date(room.room.lastActivity))} ago</span>
+              
+              <CardContent className="space-y-4">
+                {/* Room Stats */}
+                <div className="grid grid-cols-2 gap-4 text-sm">
+                  <div className="flex items-center gap-2">
+                    <Users className="h-4 w-4 text-blue-600" />
+                    <div>
+                      <div className="font-medium">{room.userCount}/{room.room.maxSeats}</div>
+                      <div className="text-xs text-muted-foreground">Users</div>
                     </div>
                   </div>
-
-                  {room.room.tags.length > 0 && (
-                    <div className="flex flex-wrap gap-1">
-                      {room.room.tags.slice(0, 3).map((tag) => (
-                        <Badge key={tag} variant="outline" className="text-xs">
-                          {tag}
-                        </Badge>
-                      ))}
-                      {room.room.tags.length > 3 && (
-                        <Badge variant="outline" className="text-xs">
-                          +{room.room.tags.length - 3} more
-                        </Badge>
-                      )}
+                  <div className="flex items-center gap-2">
+                    <Eye className="h-4 w-4 text-green-600" />
+                    <div>
+                      <div className="font-medium">{room.room.totalVisits}</div>
+                      <div className="text-xs text-muted-foreground">Visits</div>
                     </div>
-                  )}
+                  </div>
+                </div>
 
-                  <div className="flex justify-between pt-4">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => handleEditRoom(room)}
-                      data-testid={`button-edit-${room.room.id}`}
-                    >
-                      <Edit className="h-4 w-4 mr-2" />
-                      Edit
-                    </Button>
-                    <AlertDialog>
-                      <AlertDialogTrigger asChild>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          data-testid={`button-delete-${room.room.id}`}
+                {/* Features */}
+                <div className="flex gap-2">
+                  {room.room.voiceChatEnabled && (
+                    <Badge variant="secondary" className="text-xs">
+                      <Mic className="w-3 h-3 mr-1" />
+                      Voice
+                    </Badge>
+                  )}
+                  {room.room.textChatEnabled && (
+                    <Badge variant="secondary" className="text-xs">
+                      <MessageCircle className="w-3 h-3 mr-1" />
+                      Text
+                    </Badge>
+                  )}
+                  {room.room.giftsEnabled && (
+                    <Badge variant="secondary" className="text-xs">
+                      <Gift className="w-3 h-3 mr-1" />
+                      Gifts
+                    </Badge>
+                  )}
+                </div>
+
+                {/* Tags */}
+                {room.room.tags.length > 0 && (
+                  <div className="flex flex-wrap gap-1">
+                    {room.room.tags.slice(0, 2).map((tag) => (
+                      <Badge key={tag} variant="outline" className="text-xs">
+                        #{tag}
+                      </Badge>
+                    ))}
+                    {room.room.tags.length > 2 && (
+                      <Badge variant="outline" className="text-xs">
+                        +{room.room.tags.length - 2}
+                      </Badge>
+                    )}
+                  </div>
+                )}
+
+                {/* Activity */}
+                <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                  <Clock className="w-3 h-3" />
+                  Active {formatDistanceToNow(new Date(room.room.lastActivity))} ago
+                </div>
+
+                {/* Action buttons */}
+                <div className="flex gap-2 pt-2">
+                  <Button
+                    className="flex-1"
+                    onClick={() => navigate(`/room/${room.room.roomId}`)}
+                    data-testid={`button-enter-${room.room.id}`}
+                  >
+                    <Play className="h-4 w-4 mr-2" />
+                    Enter Room
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => handleEditRoom(room)}
+                    data-testid={`button-edit-${room.room.id}`}
+                  >
+                    <Settings className="h-4 w-4" />
+                  </Button>
+                  <AlertDialog>
+                    <AlertDialogTrigger asChild>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        data-testid={`button-delete-${room.room.id}`}
+                      >
+                        <Trash2 className="h-4 w-4 text-red-500" />
+                      </Button>
+                    </AlertDialogTrigger>
+                    <AlertDialogContent>
+                      <AlertDialogHeader>
+                        <AlertDialogTitle>Delete Room</AlertDialogTitle>
+                        <AlertDialogDescription>
+                          Are you sure you want to delete "{room.room.name}"? This action cannot be undone.
+                          All room data and messages will be permanently removed.
+                        </AlertDialogDescription>
+                      </AlertDialogHeader>
+                      <AlertDialogFooter>
+                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                        <AlertDialogAction
+                          onClick={() => handleDeleteRoom(room.room.roomId)}
+                          className="bg-red-600 hover:bg-red-700"
+                          data-testid={`button-confirm-delete-${room.room.id}`}
                         >
-                          <Trash2 className="h-4 w-4 text-red-500" />
-                        </Button>
-                      </AlertDialogTrigger>
-                      <AlertDialogContent>
-                        <AlertDialogHeader>
-                          <AlertDialogTitle>Delete Room</AlertDialogTitle>
-                          <AlertDialogDescription>
-                            Are you sure you want to delete "{room.room.name}"? This action cannot be undone.
-                            All room data and messages will be permanently removed.
-                          </AlertDialogDescription>
-                        </AlertDialogHeader>
-                        <AlertDialogFooter>
-                          <AlertDialogCancel>Cancel</AlertDialogCancel>
-                          <AlertDialogAction
-                            onClick={() => handleDeleteRoom(room.room.roomId)}
-                            className="bg-red-600 hover:bg-red-700"
-                            data-testid={`button-confirm-delete-${room.room.id}`}
-                          >
-                            Delete Room
-                          </AlertDialogAction>
-                        </AlertDialogFooter>
-                      </AlertDialogContent>
-                    </AlertDialog>
-                  </div>
+                          Delete Room
+                        </AlertDialogAction>
+                      </AlertDialogFooter>
+                    </AlertDialogContent>
+                  </AlertDialog>
                 </div>
               </CardContent>
             </Card>

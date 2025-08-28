@@ -105,6 +105,7 @@ const MyRoomsPage = lazy(() => import("@/pages/user-dashboard/my-rooms"));
 
 // Room pages
 const RoomLobbyPage = lazy(() => import("@/pages/room-lobby"));
+const RoomInterfacePage = lazy(() => import("@/pages/room-interface"));
 
 // Login pages  
 const AdminLoginPage = lazy(() => import("@/pages/admin-login"));
@@ -185,6 +186,9 @@ function Router() {
       {/* Room pages */}
       <Route path="/rooms">
         <Suspense fallback={<LoadingFallback />}><RoomLobbyPage /></Suspense>
+      </Route>
+      <Route path="/room/:roomId">
+        <Suspense fallback={<LoadingFallback />}><RoomInterfacePage /></Suspense>
       </Route>
       
       {/* User Dashboard pages */}
