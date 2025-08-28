@@ -14,9 +14,9 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
 import { Loader2, Mail, Github, KeyRound } from "lucide-react";
-import { FaGoogle, FaFacebook } from "react-icons/fa";
+import { FaGoogle, FaFacebook, FaGithub, FaDiscord, FaTwitter, FaApple, FaMicrosoft } from "react-icons/fa";
 import { ForgotPasswordForm } from "@/components/auth/forgot-password-form";
-import { SiteSetting } from "@shared/schema";
+import { SiteSetting, SignupOption } from "@shared/schema";
 
 // Form validation schemas
 const loginSchema = z.object({
@@ -52,6 +52,11 @@ export default function AuthPage() {
   // Fetch site settings for logo configuration
   const { data: settings } = useQuery<SiteSetting>({
     queryKey: ['/api/settings'],
+  });
+  
+  // Fetch enabled signup options
+  const { data: enabledSignupOptions = [] } = useQuery<SignupOption[]>({
+    queryKey: ['/api/signup-options/enabled'],
   });
 
   // Login form
@@ -123,6 +128,20 @@ export default function AuthPage() {
   // Handle social login
   const handleSocialLogin = (provider: 'google' | 'facebook') => {
     socialLogin(provider);
+  };
+  
+  // Get provider icon
+  const getProviderIcon = (provider: string) => {
+    const iconMap: { [key: string]: React.ReactNode } = {
+      google: <FaGoogle className="mr-2 h-4 w-4" />,
+      facebook: <FaFacebook className="mr-2 h-4 w-4" />,
+      github: <FaGithub className="mr-2 h-4 w-4" />,
+      discord: <FaDiscord className="mr-2 h-4 w-4" />,
+      twitter: <FaTwitter className="mr-2 h-4 w-4" />,
+      apple: <FaApple className="mr-2 h-4 w-4" />,
+      microsoft: <FaMicrosoft className="mr-2 h-4 w-4" />,
+    };
+    return iconMap[provider.toLowerCase()] || <Mail className="mr-2 h-4 w-4" />;
   };
 
   if (isLoading) {
@@ -296,24 +315,30 @@ export default function AuthPage() {
                       </div>
                       
                       <div className="grid grid-cols-2 gap-4">
-                        <Button 
-                          type="button" 
-                          variant="outline" 
-                          className="bg-gray-700 text-white border border-gray-600 hover:bg-gray-600"
-                          onClick={() => handleSocialLogin('google')}
-                        >
-                          <FaGoogle className="mr-2 h-4 w-4 text-red-500" />
-                          Google
-                        </Button>
-                        <Button 
-                          type="button" 
-                          variant="outline" 
-                          className="bg-gray-700 text-white border border-gray-600 hover:bg-gray-600"
-                          onClick={() => handleSocialLogin('facebook')}
-                        >
-                          <FaFacebook className="mr-2 h-4 w-4 text-blue-600" />
-                          Facebook
-                        </Button>
+                        {enabledSignupOptions
+                          .filter(option => option.provider !== 'email')
+                          .slice(0, 6) // Limit to 6 providers for clean layout
+                          .map((option) => (
+                            <Button 
+                              key={option.id}
+                              type="button" 
+                              variant="outline" 
+                              className="bg-gray-700 text-white border border-gray-600 hover:bg-gray-600"
+                              onClick={() => handleSocialLogin(option.provider as 'google' | 'facebook')}
+                              style={{
+                                borderColor: option.color,
+                              }}
+                            >
+                              <span style={{ color: option.color }}>
+                                {getProviderIcon(option.provider)}
+                              </span>
+                              {option.displayName}
+                            </Button>
+                          ))
+                        }
+                        {enabledSignupOptions.filter(option => option.provider !== 'email').length === 0 && (
+                          <p className="col-span-2 text-center text-gray-400 text-sm">No social login options enabled</p>
+                        )}
                       </div>
                     </form>
                   </Form>
@@ -569,24 +594,30 @@ export default function AuthPage() {
                     </div>
                     
                     <div className="grid grid-cols-2 gap-4">
-                      <Button 
-                        type="button" 
-                        variant="outline" 
-                        className="bg-gray-700 text-white border border-gray-600 hover:bg-gray-600"
-                        onClick={() => handleSocialLogin('google')}
-                      >
-                        <FaGoogle className="mr-2 h-4 w-4 text-red-500" />
-                        Google
-                      </Button>
-                      <Button 
-                        type="button" 
-                        variant="outline" 
-                        className="bg-gray-700 text-white border border-gray-600 hover:bg-gray-600"
-                        onClick={() => handleSocialLogin('facebook')}
-                      >
-                        <FaFacebook className="mr-2 h-4 w-4 text-blue-600" />
-                        Facebook
-                      </Button>
+                      {enabledSignupOptions
+                        .filter(option => option.provider !== 'email')
+                        .slice(0, 6) // Limit to 6 providers for clean layout
+                        .map((option) => (
+                          <Button 
+                            key={option.id}
+                            type="button" 
+                            variant="outline" 
+                            className="bg-gray-700 text-white border border-gray-600 hover:bg-gray-600"
+                            onClick={() => handleSocialLogin(option.provider as 'google' | 'facebook')}
+                            style={{
+                              borderColor: option.color,
+                            }}
+                          >
+                            <span style={{ color: option.color }}>
+                              {getProviderIcon(option.provider)}
+                            </span>
+                            {option.displayName}
+                          </Button>
+                        ))
+                      }
+                      {enabledSignupOptions.filter(option => option.provider !== 'email').length === 0 && (
+                        <p className="col-span-2 text-center text-gray-400 text-sm">No social login options enabled</p>
+                      )}
                     </div>
                   </form>
                 </Form>
