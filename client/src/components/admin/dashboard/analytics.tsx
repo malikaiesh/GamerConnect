@@ -2,6 +2,13 @@ import { useEffect, useState, useMemo, memo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Calendar } from "@/components/ui/calendar";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import {
   BarChart,
   Bar,
@@ -17,7 +24,10 @@ import {
   Line,
   CartesianGrid,
 } from "recharts";
-import { Loader2 } from "lucide-react";
+import { Loader2, Download, Calendar as CalendarIcon } from "lucide-react";
+import { format } from "date-fns";
+import { cn } from "@/lib/utils";
+import { useToast } from "@/hooks/use-toast";
 
 interface AnalyticsData {
   pageViews: number;
@@ -45,6 +55,18 @@ interface AnalyticsData {
 // Chart colors
 const COLORS = ['#7e57c2', '#ff5722', '#4caf50', '#2196f3', '#ff9800'];
 const defaultTimeframe = '7days';
+
+// Timeframe options
+const timeframeOptions = [
+  { value: '7days', label: '7 Days' },
+  { value: '30days', label: '30 Days' },
+  { value: '90days', label: '90 Days' },
+  { value: '6months', label: '6 Months' },
+  { value: '1year', label: '1 Year' },
+  { value: '2years', label: '2 Years' },
+  { value: '5years', label: '5 Years' },
+  { value: 'custom', label: 'Custom Range' }
+];
 
 // Memoized chart components for better performance
 const MemoizedStatsCard = memo(({ title, value, description }: { title: string; value: string; description: string }) => (
@@ -148,9 +170,25 @@ const MemoizedLineChart = memo(({ data, title }: { data: Array<any>; title: stri
 
 export function Analytics() {
   const [timeframe, setTimeframe] = useState<string>(defaultTimeframe);
+  const [startDate, setStartDate] = useState<Date | undefined>();
+  const [endDate, setEndDate] = useState<Date | undefined>();
+  const [exportDialogOpen, setExportDialogOpen] = useState(false);
+  const [exportFormat, setExportFormat] = useState('json');
+  const [isExporting, setIsExporting] = useState(false);
+  const { toast } = useToast();
   
-  const { data, isLoading, isError } = useQuery<AnalyticsData>({
-    queryKey: ['/api/analytics', timeframe],
+  // Build query key with custom dates if applicable
+  const queryKey = useMemo(() => {
+    const baseKey = ['/api/analytics', timeframe];
+    if (timeframe === 'custom' && startDate && endDate) {
+      baseKey.push(format(startDate, 'yyyy-MM-dd'), format(endDate, 'yyyy-MM-dd'));
+    }
+    return baseKey;
+  }, [timeframe, startDate, endDate]);
+  
+  const { data, isLoading, isError, refetch } = useQuery<AnalyticsData>({
+    queryKey,
+    enabled: timeframe !== 'custom' || (startDate && endDate),
     staleTime: 5 * 60 * 1000, // 5 minutes
     gcTime: 10 * 60 * 1000, // 10 minutes (replaced cacheTime with gcTime)
     // Initial load only, we'll let the user manually refresh when needed
@@ -158,6 +196,67 @@ export function Analytics() {
     refetchOnWindowFocus: false,
     refetchOnReconnect: false,
   });
+
+  // Handle timeframe change
+  const handleTimeframeChange = (newTimeframe: string) => {
+    setTimeframe(newTimeframe);
+    if (newTimeframe !== 'custom') {
+      setStartDate(undefined);
+      setEndDate(undefined);
+    }
+  };
+
+  // Handle export
+  const handleExport = async () => {
+    setIsExporting(true);
+    try {
+      const params = new URLSearchParams({
+        timeframe,
+        format: exportFormat
+      });
+      
+      if (timeframe === 'custom' && startDate && endDate) {
+        params.append('startDate', format(startDate, 'yyyy-MM-dd'));
+        params.append('endDate', format(endDate, 'yyyy-MM-dd'));
+      }
+      
+      const response = await fetch(`/api/analytics/export?${params}`, {
+        credentials: 'include'
+      });
+      
+      if (!response.ok) {
+        throw new Error('Failed to export data');
+      }
+      
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `analytics_${timeframe}_${format(new Date(), 'yyyy-MM-dd')}.${exportFormat}`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+      
+      toast({ title: 'Export completed successfully!' });
+      setExportDialogOpen(false);
+    } catch (error) {
+      toast({
+        title: 'Export failed',
+        description: 'Failed to export analytics data. Please try again.',
+        variant: 'destructive'
+      });
+    } finally {
+      setIsExporting(false);
+    }
+  };
+
+  // Force refresh for custom date range
+  const handleCustomDateSubmit = () => {
+    if (startDate && endDate) {
+      refetch();
+    }
+  };
 
   // Memoized data transformations to prevent unnecessary recalculations
   const topGamesData = useMemo(() => {
@@ -232,14 +331,147 @@ export function Analytics() {
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <h2 className="text-2xl font-bold">Analytics Dashboard</h2>
-        <Tabs defaultValue={timeframe} onValueChange={setTimeframe} className="w-[400px]">
-          <TabsList className="grid w-full grid-cols-3">
-            <TabsTrigger value="7days">7 Days</TabsTrigger>
-            <TabsTrigger value="30days">30 Days</TabsTrigger>
-            <TabsTrigger value="90days">90 Days</TabsTrigger>
-          </TabsList>
-        </Tabs>
+        <div className="flex gap-2">
+          <Select value={timeframe} onValueChange={handleTimeframeChange}>
+            <SelectTrigger className="w-[200px]">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {timeframeOptions.map((option) => (
+                <SelectItem key={option.value} value={option.value}>
+                  {option.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          
+          <Dialog open={exportDialogOpen} onOpenChange={setExportDialogOpen}>
+            <DialogTrigger asChild>
+              <Button variant="outline" data-testid="export-analytics-button">
+                <Download className="w-4 h-4 mr-2" />
+                Export
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="sm:max-w-md">
+              <DialogHeader>
+                <DialogTitle>Export Analytics Data</DialogTitle>
+                <DialogDescription>
+                  Export your analytics data for the selected time period.
+                </DialogDescription>
+              </DialogHeader>
+              <div className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="format">Export Format</Label>
+                  <Select value={exportFormat} onValueChange={setExportFormat}>
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="json">JSON</SelectItem>
+                      <SelectItem value="csv">CSV</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="text-sm text-muted-foreground">
+                  Current selection: {timeframeOptions.find(opt => opt.value === timeframe)?.label}
+                  {timeframe === 'custom' && startDate && endDate && (
+                    <span> ({format(startDate, 'PPP')} to {format(endDate, 'PPP')})</span>
+                  )}
+                </div>
+              </div>
+              <DialogFooter>
+                <Button
+                  onClick={handleExport}
+                  disabled={isExporting || (timeframe === 'custom' && (!startDate || !endDate))}
+                >
+                  {isExporting ? 'Exporting...' : 'Export Data'}
+                </Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
+        </div>
       </div>
+      
+      {/* Custom Date Range Picker */}
+      {timeframe === 'custom' && (
+        <Card>
+          <CardHeader>
+            <CardTitle>Custom Date Range</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="flex flex-col sm:flex-row gap-4 items-end">
+              <div className="space-y-2">
+                <Label>Start Date</Label>
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button
+                      variant={"outline"}
+                      className={cn(
+                        "w-[240px] justify-start text-left font-normal",
+                        !startDate && "text-muted-foreground"
+                      )}
+                    >
+                      <CalendarIcon className="mr-2 h-4 w-4" />
+                      {startDate ? format(startDate, "PPP") : "Select start date"}
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0" align="start">
+                    <Calendar
+                      mode="single"
+                      selected={startDate}
+                      onSelect={setStartDate}
+                      disabled={(date) => date > new Date() || (endDate && date > endDate)}
+                      initialFocus
+                    />
+                  </PopoverContent>
+                </Popover>
+              </div>
+              
+              <div className="space-y-2">
+                <Label>End Date</Label>
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button
+                      variant={"outline"}
+                      className={cn(
+                        "w-[240px] justify-start text-left font-normal",
+                        !endDate && "text-muted-foreground"
+                      )}
+                    >
+                      <CalendarIcon className="mr-2 h-4 w-4" />
+                      {endDate ? format(endDate, "PPP") : "Select end date"}
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0" align="start">
+                    <Calendar
+                      mode="single"
+                      selected={endDate}
+                      onSelect={setEndDate}
+                      disabled={(date) => date > new Date() || (startDate && date < startDate)}
+                      initialFocus
+                    />
+                  </PopoverContent>
+                </Popover>
+              </div>
+              
+              <Button 
+                onClick={handleCustomDateSubmit}
+                disabled={!startDate || !endDate}
+                data-testid="apply-custom-range-button"
+              >
+                Apply Range
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+      
+      {/* Show message if custom range but no dates selected */}
+      {timeframe === 'custom' && (!startDate || !endDate) && (
+        <div className="text-center py-8 text-muted-foreground">
+          Please select a custom date range to view analytics data.
+        </div>
+      )}
 
       {/* Stats Cards - Using memoized components */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">

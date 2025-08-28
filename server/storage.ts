@@ -204,7 +204,7 @@ export interface IStorage {
   updateSiteSettings(settingsData: Partial<InsertSiteSetting>): Promise<SiteSetting | null>;
   
   // Analytics methods
-  getAnalytics(timeframe: string): Promise<{
+  getAnalytics(timeframe: string, startDate?: string, endDate?: string): Promise<{
     pageViews: number;
     uniqueVisitors: number;
     avgTimeOnSite: number;
@@ -2282,7 +2282,7 @@ class DatabaseStorage implements IStorage {
     }
   }
   
-  async getAnalytics(timeframe: string): Promise<{
+  async getAnalytics(timeframe: string, startDate?: string, endDate?: string): Promise<{
     pageViews: number;
     uniqueVisitors: number;
     avgTimeOnSite: number;
@@ -2293,28 +2293,71 @@ class DatabaseStorage implements IStorage {
     userDevices: { device: string; count: number }[];
   }> {
     try {
-      // Get days to look back based on timeframe
-      let daysToLookBack = 7; // Default to 7 days
-      if (timeframe === '30days') {
-        daysToLookBack = 30;
-      } else if (timeframe === '90days') {
-        daysToLookBack = 90;
+      // Get days to look back based on timeframe or calculate from custom dates
+      let daysToLookBack: number;
+      let dateRange: { start: Date; end: Date };
+      
+      if (timeframe === 'custom' && startDate && endDate) {
+        const start = new Date(startDate);
+        const end = new Date(endDate);
+        const diffTime = Math.abs(end.getTime() - start.getTime());
+        daysToLookBack = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+        dateRange = { start, end };
+      } else {
+        // Predefined timeframes
+        switch (timeframe) {
+          case '30days':
+            daysToLookBack = 30;
+            break;
+          case '90days':
+            daysToLookBack = 90;
+            break;
+          case '6months':
+            daysToLookBack = 180;
+            break;
+          case '1year':
+            daysToLookBack = 365;
+            break;
+          case '2years':
+            daysToLookBack = 730;
+            break;
+          case '5years':
+            daysToLookBack = 1825;
+            break;
+          default: // '7days'
+            daysToLookBack = 7;
+        }
+        
+        const endDate = new Date();
+        const startDate = new Date();
+        startDate.setDate(endDate.getDate() - daysToLookBack);
+        dateRange = { start: startDate, end: endDate };
       }
       
       // For now, return structured mock data that represents what we would get from the database
       // In a real implementation, this would query the analytics table
       
-      // Generate dates for the chart
+      // Generate dates for the chart based on date range
       const dailyVisitors = [];
-      for (let i = 0; i < daysToLookBack; i++) {
-        const date = new Date();
-        date.setDate(date.getDate() - i);
-        const formattedDate = date.toISOString().split('T')[0]; // YYYY-MM-DD
-        dailyVisitors.unshift({
+      const currentDate = new Date(dateRange.start);
+      
+      // For long timeframes (over 90 days), aggregate data by weeks or months
+      const isLongTimeframe = daysToLookBack > 90;
+      const aggregationInterval = daysToLookBack > 365 ? 30 : isLongTimeframe ? 7 : 1; // Monthly for >1 year, weekly for >90 days, daily otherwise
+      
+      while (currentDate <= dateRange.end) {
+        const formattedDate = currentDate.toISOString().split('T')[0]; // YYYY-MM-DD
+        dailyVisitors.push({
           date: formattedDate,
           visitors: Math.floor(Math.random() * 500) + 100 // Random data between 100-600
         });
+        
+        currentDate.setDate(currentDate.getDate() + aggregationInterval);
       }
+      
+      // Adjust mock data multiplier based on timeframe (longer periods = higher numbers)
+      const baseMultiplier = Math.min(Math.max(daysToLookBack / 30, 1), 10);
+      const multiplier = timeframe === 'custom' ? baseMultiplier : daysToLookBack > 90 ? 2 : 1;
       
       // Get top games from actual database
       const topGamesData = await this.getMostPlayedGames(5);
@@ -2326,31 +2369,37 @@ class DatabaseStorage implements IStorage {
         };
       }));
       
-      // Mock data for remaining fields
+      // Mock data for remaining fields - scaled by timeframe multiplier
+      const basePageViews = 15780;
+      const baseUniqueVisitors = 4230;
+      
       return {
-        pageViews: 15780,
-        uniqueVisitors: 4230,
-        avgTimeOnSite: 4.5, // minutes
-        bounceRate: 42.8, // percentage
+        pageViews: Math.round(basePageViews * multiplier),
+        uniqueVisitors: Math.round(baseUniqueVisitors * multiplier),
+        avgTimeOnSite: 4.5, // minutes (remains constant)
+        bounceRate: 42.8, // percentage (remains constant)
         topPages: [
-          { path: '/', views: 4200 },
-          { path: '/games', views: 3100 },
-          { path: '/blog', views: 1800 },
-          { path: '/about', views: 850 },
-          { path: '/contact', views: 450 }
+          { path: '/', views: Math.round(4200 * multiplier) },
+          { path: '/games', views: Math.round(3100 * multiplier) },
+          { path: '/blog', views: Math.round(1800 * multiplier) },
+          { path: '/about', views: Math.round(850 * multiplier) },
+          { path: '/contact', views: Math.round(450 * multiplier) }
         ],
-        topGames: topGames.length > 0 ? topGames : [
-          { name: 'Racing Champions', plays: 3400 },
-          { name: 'Shadow Ninja', plays: 2800 },
-          { name: 'Fantasy Quest', plays: 2300 },
-          { name: 'Cosmic Defender', plays: 1900 },
-          { name: 'Puzzle Master', plays: 1500 }
+        topGames: topGames.length > 0 ? topGames.map(game => ({
+          ...game,
+          plays: Math.round(game.plays * multiplier)
+        })) : [
+          { name: 'Racing Champions', plays: Math.round(3400 * multiplier) },
+          { name: 'Shadow Ninja', plays: Math.round(2800 * multiplier) },
+          { name: 'Fantasy Quest', plays: Math.round(2300 * multiplier) },
+          { name: 'Cosmic Defender', plays: Math.round(1900 * multiplier) },
+          { name: 'Puzzle Master', plays: Math.round(1500 * multiplier) }
         ],
         dailyVisitors,
         userDevices: [
-          { device: 'Desktop', count: 2560 },
-          { device: 'Mobile', count: 1420 },
-          { device: 'Tablet', count: 250 }
+          { device: 'Desktop', count: Math.round(2560 * multiplier) },
+          { device: 'Mobile', count: Math.round(1420 * multiplier) },
+          { device: 'Tablet', count: Math.round(250 * multiplier) }
         ]
       };
     } catch (error) {
