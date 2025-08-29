@@ -340,7 +340,7 @@ router.get("/", async (req: Request, res: Response) => {
           backgroundTheme: rooms.backgroundTheme,
           tags: rooms.tags,
           totalVisits: rooms.totalVisits,
-          totalGiftsReceived: rooms.totalGifts,
+          totalGiftsReceived: rooms.totalGiftsReceived,
           totalGiftValue: rooms.totalGiftValue,
           createdAt: rooms.createdAt,
           lastActivity: rooms.updatedAt

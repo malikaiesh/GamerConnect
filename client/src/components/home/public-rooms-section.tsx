@@ -181,37 +181,39 @@ export function PublicRoomsSection() {
       <div className="container mx-auto px-4">
         <div className="flex justify-between items-center mb-6">
           <h2 className="heading-md">Popular Rooms</h2>
-          <Link href="/rooms" className="text-primary hover:underline flex items-center">
-            View All <i className="ri-arrow-right-line ml-1"></i>
-          </Link>
-        </div>
-        
-        {/* Room Category Tabs */}
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="mb-6">
-          <TabsList className="grid w-full grid-cols-5 mb-6">
-            <TabsTrigger value="hot" className="flex items-center gap-2 text-xs">
-              <Flame className="h-3 w-3" />
-              Hot
-            </TabsTrigger>
-            <TabsTrigger value="trending" className="flex items-center gap-2 text-xs">
-              <TrendingUp className="h-3 w-3" />
-              Trending
-            </TabsTrigger>
-            <TabsTrigger value="new" className="flex items-center gap-2 text-xs">
-              <Sparkles className="h-3 w-3" />
-              New
-            </TabsTrigger>
-            <TabsTrigger value="verified" className="flex items-center gap-2 text-xs">
-              <CheckCircle className="h-3 w-3" />
-              Verified
-            </TabsTrigger>
-            <TabsTrigger value="explore" className="flex items-center gap-2 text-xs">
-              <Compass className="h-3 w-3" />
-              Explore
-            </TabsTrigger>
-          </TabsList>
           
-          <TabsContent value={activeTab}>
+          {/* Room Category Tabs on the right side */}
+          <div className="flex items-center gap-4">
+            <Tabs value={activeTab} onValueChange={setActiveTab}>
+              <TabsList className="grid grid-cols-5">
+                <TabsTrigger value="hot" className="flex items-center gap-1 text-xs px-3 py-1">
+                  <Flame className="h-3 w-3" />
+                  Hot
+                </TabsTrigger>
+                <TabsTrigger value="trending" className="flex items-center gap-1 text-xs px-3 py-1">
+                  <TrendingUp className="h-3 w-3" />
+                  Trending
+                </TabsTrigger>
+                <TabsTrigger value="new" className="flex items-center gap-1 text-xs px-3 py-1">
+                  <Sparkles className="h-3 w-3" />
+                  New
+                </TabsTrigger>
+                <TabsTrigger value="verified" className="flex items-center gap-1 text-xs px-3 py-1">
+                  <CheckCircle className="h-3 w-3" />
+                  Verified
+                </TabsTrigger>
+                <TabsTrigger value="explore" className="flex items-center gap-1 text-xs px-3 py-1">
+                  <Compass className="h-3 w-3" />
+                  Explore
+                </TabsTrigger>
+              </TabsList>
+            </Tabs>
+            
+            <Link href="/rooms" className="text-primary hover:underline flex items-center ml-4">
+              View All <i className="ri-arrow-right-line ml-1"></i>
+            </Link>
+          </div>
+        </div>
             <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
           {rooms.map((room) => (
             <Card key={room.room.id} className="overflow-hidden group hover:shadow-lg transition-all duration-200">
@@ -331,18 +333,17 @@ export function PublicRoomsSection() {
           ))}
             </div>
             
-            {rooms.length > 0 && (
-              <div className="text-center mt-8">
-                <Link href={`/rooms/${activeTab}`}>
-                  <Button variant="outline" size="lg">
-                    View All {activeTab === 'verified' ? 'Verified' : activeTab.charAt(0).toUpperCase() + activeTab.slice(1)} Rooms
-                    <i className="ri-arrow-right-line ml-2"></i>
-                  </Button>
-                </Link>
-              </div>
-            )}
-          </TabsContent>
-        </Tabs>
+        
+        {rooms.length > 0 && (
+          <div className="text-center mt-8">
+            <Link href={`/rooms/${activeTab}`}>
+              <Button variant="outline" size="lg">
+                View All {activeTab === 'verified' ? 'Verified' : activeTab.charAt(0).toUpperCase() + activeTab.slice(1)} Rooms
+                <i className="ri-arrow-right-line ml-2"></i>
+              </Button>
+            </Link>
+          </div>
+        )}
       </div>
     </section>
   );
