@@ -162,7 +162,7 @@ export default function HomePage() {
                   <i className="ri-verified-badge-line mr-2"></i>
                   Get Verified
                 </Link>
-                <Link href="/admin/pricing/plans" className="bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white font-bold py-3 px-6 rounded-lg transition-all shadow-lg flex items-center">
+                <Link href="/pricing-plans" className="bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white font-bold py-3 px-6 rounded-lg transition-all shadow-lg flex items-center">
                   <i className="ri-money-dollar-circle-line mr-2"></i>
                   Pricing Plans
                 </Link>
