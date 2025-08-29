@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { AdminLayout } from "@/components/admin/layout";
+import AdminNavigation from "@/components/admin/navigation";
 import {
   Card,
   CardContent,
@@ -73,8 +73,9 @@ export default function AccountsLocationsPage() {
   };
 
   return (
-    <AdminLayout>
-      <div className="space-y-6">
+    <div className="flex min-h-screen bg-background">
+      <AdminNavigation />
+      <div className="flex-1 p-6 space-y-6">
         <h2 className="text-3xl font-bold tracking-tight">User Locations</h2>
 
         <Card>
@@ -198,6 +199,6 @@ export default function AccountsLocationsPage() {
           </CardContent>
         </Card>
       </div>
-    </AdminLayout>
+    </div>
   );
 }
