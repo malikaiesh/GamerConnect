@@ -34,7 +34,7 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { ApiKey } from '@shared/schema';
 import { apiRequest } from '@/lib/queryClient';
-import { AdminLayout } from '@/components/admin/layout';
+import AdminNavigation from '@/components/admin/navigation';
 
 export default function ApiKeysPage() {
   const { toast } = useToast();
@@ -63,8 +63,7 @@ export default function ApiKeysPage() {
   // Create API key mutation
   const createApiKeyMutation = useMutation({
     mutationFn: async (data: typeof formData) => {
-      const res = await apiRequest('POST', '/api/api-keys', data);
-      return await res.json();
+      return await apiRequest('POST', '/api/api-keys', data);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/api-keys'] });
@@ -86,8 +85,7 @@ export default function ApiKeysPage() {
   // Update API key mutation
   const updateApiKeyMutation = useMutation({
     mutationFn: async ({ id, data }: { id: number; data: Partial<typeof formData> }) => {
-      const res = await apiRequest('PUT', `/api/api-keys/${id}`, data);
-      return await res.json();
+      return await apiRequest('PUT', `/api/api-keys/${id}`, data);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/api-keys'] });
@@ -109,8 +107,7 @@ export default function ApiKeysPage() {
   // Delete API key mutation
   const deleteApiKeyMutation = useMutation({
     mutationFn: async (id: number) => {
-      const res = await apiRequest('DELETE', `/api/api-keys/${id}`);
-      return await res.json();
+      return await apiRequest('DELETE', `/api/api-keys/${id}`);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/api-keys'] });
@@ -215,14 +212,20 @@ export default function ApiKeysPage() {
   };
 
   // Format date
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
+  const formatDate = (dateString: string | Date) => {
+    const date = typeof dateString === 'string' ? new Date(dateString) : dateString;
     return date.toLocaleDateString() + ' ' + date.toLocaleTimeString();
   };
 
   return (
-    <AdminLayout>
-      <Card>
+    <div className="flex min-h-screen bg-background">
+      <AdminNavigation />
+      <div className="flex-1 ml-64 p-6">
+        <div className="mb-6">
+          <h1 className="text-3xl font-bold text-foreground">API Keys</h1>
+          <p className="text-muted-foreground">Manage external service API keys and integrations</p>
+        </div>
+        <Card className="border-border bg-card">
         <CardHeader className="flex flex-row items-center justify-between">
           <div>
             <CardTitle className="text-foreground">API Keys</CardTitle>
@@ -309,7 +312,7 @@ export default function ApiKeysPage() {
 
       {/* Create/Edit API Key Dialog */}
       <Dialog open={openDialog} onOpenChange={setOpenDialog}>
-        <DialogContent className="sm:max-w-[525px] max-h-[90vh] overflow-y-auto">
+        <DialogContent className="sm:max-w-[525px] max-h-[90vh] overflow-y-auto border-border bg-card">
           <DialogHeader>
             <DialogTitle className="text-foreground">
               {dialogMode === 'create' ? 'Add New API Key' : 'Edit API Key'}
@@ -418,6 +421,7 @@ export default function ApiKeysPage() {
           </form>
         </DialogContent>
       </Dialog>
-    </AdminLayout>
+      </div>
+    </div>
   );
 }
