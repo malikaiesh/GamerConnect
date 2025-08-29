@@ -29,7 +29,7 @@ export async function seedVerifiedRooms() {
     // Create verified rooms
     const verifiedRoomsData = [
       {
-        roomId: 'VER001',
+        roomId: 'SA1994181',
         name: 'Elite Gaming Hub',
         description: 'Premium gaming room for verified players only',
         type: 'public' as const,
@@ -53,7 +53,7 @@ export async function seedVerifiedRooms() {
         updatedAt: new Date()
       },
       {
-        roomId: 'VER002',
+        roomId: 'SA1994182',
         name: 'Pro Champions League',
         description: 'Competitive gaming room for tournament players',
         type: 'public' as const,
@@ -77,7 +77,7 @@ export async function seedVerifiedRooms() {
         updatedAt: new Date()
       },
       {
-        roomId: 'VER003',
+        roomId: 'SA1994183',
         name: 'Streamer Lounge',
         description: 'Exclusive room for gaming content creators',
         type: 'public' as const,

@@ -27,14 +27,31 @@ import { Request, Response } from "express";
 
 const router = Router();
 
-// Generate unique room ID
-function generateRoomId(): string {
-  const chars = 'ABCDEFGHIJKLMNPQRSTUVWXYZ123456789'; // Excluded O and 0 for clarity
-  let result = '';
-  for (let i = 0; i < 6; i++) {
-    result += chars.charAt(Math.floor(Math.random() * chars.length));
+// Generate unique room ID with SA prefix and sequential numbering
+async function generateRoomId(): Promise<string> {
+  try {
+    // Get the highest room ID number that starts with SA
+    const latestRoom = await db
+      .select({ roomId: rooms.roomId })
+      .from(rooms)
+      .where(sql`${rooms.roomId} LIKE 'SA%'`)
+      .orderBy(sql`CAST(SUBSTRING(${rooms.roomId}, 3) AS INTEGER) DESC`)
+      .limit(1);
+
+    let nextNumber = 1994181; // Starting number
+    
+    if (latestRoom.length > 0) {
+      const currentNumber = parseInt(latestRoom[0].roomId.substring(2));
+      nextNumber = currentNumber + 1;
+    }
+    
+    return `SA${nextNumber}`;
+  } catch (error) {
+    console.error("Error generating room ID:", error);
+    // Fallback to timestamp-based ID if query fails
+    const timestamp = Date.now().toString().slice(-7);
+    return `SA${timestamp}`;
   }
-  return result;
 }
 
 // Get all rooms for admin (paginated)
@@ -200,15 +217,7 @@ router.post("/", isAuthenticated, async (req: Request, res: Response) => {
     }
 
     // Generate unique room ID
-    let roomId;
-    let isUnique = false;
-    while (!isUnique) {
-      roomId = generateRoomId();
-      const existing = await db.select().from(rooms).where(eq(rooms.roomId, roomId)).limit(1);
-      if (existing.length === 0) {
-        isUnique = true;
-      }
-    }
+    const roomId = await generateRoomId();
 
     const validatedData = insertRoomSchema.parse({
       ...req.body,
