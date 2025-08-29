@@ -13,7 +13,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Separator } from "@/components/ui/separator";
 import { useToast } from "@/hooks/use-toast";
 import { Loader2, BarChart } from "lucide-react";
-import { AdminLayout } from "@/components/admin/layout";
+import AdminNavigation from "@/components/admin/navigation";
 
 const blogAdsSettingsSchema = z.object({
   headerAds: z.string().optional(),
@@ -115,9 +115,14 @@ export default function BlogAdsPage() {
   };
 
   return (
-    <AdminLayout title="Blog Ads">
-      <div className="p-6">
-        <Card>
+    <div className="flex min-h-screen bg-background">
+      <AdminNavigation />
+      <div className="flex-1 ml-64 p-6">
+        <div className="mb-6">
+          <h1 className="text-3xl font-bold text-foreground">Blog Ads</h1>
+          <p className="text-muted-foreground">Configure advertisements displayed on your blog pages</p>
+        </div>
+        <Card className="border-border bg-card">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <BarChart className="h-5 w-5" />
@@ -136,8 +141,8 @@ export default function BlogAdsPage() {
               <Form {...form}>
                 <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
                   {/* Google Ads Integration */}
-                  <div className="bg-muted/40 rounded-lg p-4 border">
-                    <h3 className="text-lg font-medium mb-2">Google AdSense Integration</h3>
+                  <div className="bg-card/50 rounded-lg p-4 border border-border">
+                    <h3 className="text-lg font-medium mb-2 text-foreground">Google AdSense Integration</h3>
                     <p className="text-sm text-muted-foreground mb-4">
                       Configure Google AdSense for automated ad placement in your blog posts
                     </p>
@@ -147,7 +152,7 @@ export default function BlogAdsPage() {
                         control={form.control}
                         name="enableGoogleAds"
                         render={({ field }) => (
-                          <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md p-4 border">
+                          <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md p-4 border border-border">
                             <FormControl>
                               <Checkbox
                                 checked={field.value}
@@ -191,7 +196,7 @@ export default function BlogAdsPage() {
                   
                   {/* Paragraph Position Ads */}
                   <div>
-                    <h3 className="text-lg font-medium mb-4">Paragraph Position Ads</h3>
+                    <h3 className="text-lg font-medium mb-4 text-foreground">Paragraph Position Ads</h3>
                     <p className="text-sm text-muted-foreground mb-6">
                       Insert ads after specific paragraphs in blog post content
                     </p>
@@ -317,7 +322,7 @@ export default function BlogAdsPage() {
                   
                   {/* Standard Blog Ad Positions */}
                   <div>
-                    <h3 className="text-lg font-medium mb-4">Standard Blog Ad Positions</h3>
+                    <h3 className="text-lg font-medium mb-4 text-foreground">Standard Blog Ad Positions</h3>
                     
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                       <FormField
@@ -416,7 +421,7 @@ export default function BlogAdsPage() {
                   
                   {/* Floating Ads */}
                   <div>
-                    <h3 className="text-lg font-medium mb-4">Floating Ads</h3>
+                    <h3 className="text-lg font-medium mb-4 text-foreground">Floating Ads</h3>
                     
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                       <FormField
@@ -479,6 +484,6 @@ export default function BlogAdsPage() {
           </CardContent>
         </Card>
       </div>
-    </AdminLayout>
+    </div>
   );
 }
