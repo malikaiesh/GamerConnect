@@ -117,9 +117,6 @@ const NewRoomsPage = lazy(() => import("@/pages/rooms/new-rooms"));
 const FriendsPage = lazy(() => import("@/pages/social/friends"));
 const FriendRequestsPage = lazy(() => import("@/pages/social/friend-requests"));
 
-// Login pages  
-const AdminLoginPage = lazy(() => import("@/pages/admin-login"));
-const UserLoginPage = lazy(() => import("@/pages/user-login"));
 
 // Admin Helper Navigation
 const AdminHelperNav = () => {
@@ -182,12 +179,6 @@ function Router() {
 
       <Route path="/auth">
         <Suspense fallback={<LoadingFallback />}><AuthPage /></Suspense>
-      </Route>
-      <Route path="/admin-login">
-        <Suspense fallback={<LoadingFallback />}><AdminLoginPage /></Suspense>
-      </Route>
-      <Route path="/user-login">
-        <Suspense fallback={<LoadingFallback />}><UserLoginPage /></Suspense>
       </Route>
       <Route path="/dev-login">
         <Suspense fallback={<LoadingFallback />}><DevLogin /></Suspense>
