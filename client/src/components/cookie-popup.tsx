@@ -72,20 +72,20 @@ export function CookiePopup() {
   };
 
   const themeClasses = {
-    dark: 'bg-gray-800 text-white border-gray-700',
-    light: 'bg-white text-gray-900 border-gray-200'
+    dark: 'bg-card text-card-foreground border-border',
+    light: 'bg-background text-foreground border-border'
   };
 
   const buttonThemeClasses = {
     dark: {
-      accept: 'bg-blue-600 hover:bg-blue-700 text-white',
-      decline: 'bg-gray-600 hover:bg-gray-700 text-white',
-      close: 'text-gray-300 hover:text-white'
+      accept: 'bg-primary hover:bg-primary/90 text-primary-foreground',
+      decline: 'bg-muted hover:bg-muted/90 text-muted-foreground border-border',
+      close: 'text-muted-foreground hover:text-foreground'
     },
     light: {
-      accept: 'bg-blue-600 hover:bg-blue-700 text-white',
-      decline: 'bg-gray-200 hover:bg-gray-300 text-gray-800',
-      close: 'text-gray-500 hover:text-gray-700'
+      accept: 'bg-primary hover:bg-primary/90 text-primary-foreground',
+      decline: 'bg-muted hover:bg-muted/90 text-muted-foreground border-border',
+      close: 'text-muted-foreground hover:text-foreground'
     }
   };
 
@@ -101,7 +101,7 @@ export function CookiePopup() {
           <div className="flex items-start justify-between gap-4">
             <div className="flex-1">
               <div className="flex items-center gap-2 mb-2">
-                <Cookie className="h-5 w-5 text-blue-500" />
+                <Cookie className="h-5 w-5 text-primary" />
                 <h3 className="font-semibold text-lg" data-testid="cookie-title">
                   {settings.cookiePopupTitle}
                 </h3>
@@ -132,9 +132,7 @@ export function CookiePopup() {
                 <Button
                   variant="link"
                   asChild
-                  className={`text-blue-400 hover:text-blue-300 p-0 h-auto ${
-                    settings.cookiePopupTheme === 'light' ? 'text-blue-600 hover:text-blue-800' : ''
-                  }`}
+                  className="text-primary hover:text-primary/80 p-0 h-auto"
                   data-testid="link-learn-more"
                 >
                   <a href={settings.cookieLearnMoreUrl} target="_blank" rel="noopener noreferrer">
