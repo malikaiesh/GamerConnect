@@ -1,5 +1,5 @@
 import { useState } from "react";
-import AdminLayout from "@/components/layout/admin-layout";
+import AdminNavigation from "@/components/admin/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -244,8 +244,9 @@ export default function WebsiteUpdatesPage() {
   };
 
   return (
-    <AdminLayout>
-      <div className="space-y-6">
+    <div className="flex min-h-screen bg-background">
+      <AdminNavigation />
+      <div className="flex-1 p-6 space-y-6">
         {/* Header */}
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
           <div>
@@ -642,6 +643,6 @@ export default function WebsiteUpdatesPage() {
           </DialogContent>
         </Dialog>
       </div>
-    </AdminLayout>
+    </div>
   );
 }

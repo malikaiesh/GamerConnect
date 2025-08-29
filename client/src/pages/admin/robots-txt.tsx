@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import AdminLayout from "@/components/layout/admin-layout";
+import AdminNavigation from "@/components/admin/navigation";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
@@ -120,17 +120,21 @@ export default function RobotsTxtPage() {
 
   if (isLoading) {
     return (
-      <AdminLayout>
-        <div className="flex items-center justify-center h-64">
-          <Loader2 className="w-8 h-8 animate-spin" />
+      <div className="flex min-h-screen bg-background">
+        <AdminNavigation />
+        <div className="flex-1 p-6 space-y-6">
+          <div className="flex items-center justify-center h-64">
+            <Loader2 className="w-8 h-8 animate-spin" />
+          </div>
         </div>
-      </AdminLayout>
+      </div>
     );
   }
 
   return (
-    <AdminLayout>
-      <div className="space-y-6">
+    <div className="flex min-h-screen bg-background">
+      <AdminNavigation />
+      <div className="flex-1 p-6 space-y-6">
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-3xl font-bold tracking-tight">Robots.txt Management</h1>
@@ -329,6 +333,6 @@ export default function RobotsTxtPage() {
           </div>
         </div>
       </div>
-    </AdminLayout>
+    </div>
   );
 }
