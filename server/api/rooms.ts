@@ -36,22 +36,50 @@ async function generateRoomId(prefix?: 'SA' | 'MAB'): Promise<string> {
       prefix = totalRooms[0].count % 2 === 0 ? 'SA' : 'MAB';
     }
     
-    // Get the highest room ID number for the specified prefix
-    const latestRoom = await db
+    // Get ALL room IDs for the specified prefix to find the highest
+    const existingRooms = await db
       .select({ roomId: rooms.roomId })
       .from(rooms)
-      .where(sql`${rooms.roomId} LIKE ${`${prefix}%`}`)
-      .orderBy(sql`CAST(SUBSTRING(${rooms.roomId}, ${prefix.length + 1}) AS INTEGER) DESC`)
-      .limit(1);
+      .where(sql`${rooms.roomId} LIKE ${`${prefix}%`}`);
 
     let nextNumber = 1994181; // Starting number
     
-    if (latestRoom.length > 0) {
-      const currentNumber = parseInt(latestRoom[0].roomId.substring(prefix.length));
-      nextNumber = currentNumber + 1;
+    if (existingRooms.length > 0) {
+      // Extract all numbers and find the maximum
+      const numbers = existingRooms
+        .map(room => {
+          const numStr = room.roomId.substring(prefix.length);
+          const num = parseInt(numStr);
+          return isNaN(num) ? 0 : num;
+        })
+        .filter(num => num >= 1994181); // Only consider valid sequence numbers
+        
+      if (numbers.length > 0) {
+        nextNumber = Math.max(...numbers) + 1;
+      }
     }
     
-    return `${prefix}${nextNumber}`;
+    // Double check uniqueness
+    let attempts = 0;
+    let candidateId = `${prefix}${nextNumber}`;
+    
+    while (attempts < 10) {
+      const existing = await db
+        .select({ roomId: rooms.roomId })
+        .from(rooms)
+        .where(eq(rooms.roomId, candidateId))
+        .limit(1);
+        
+      if (existing.length === 0) {
+        return candidateId;
+      }
+      
+      nextNumber++;
+      candidateId = `${prefix}${nextNumber}`;
+      attempts++;
+    }
+    
+    return candidateId;
   } catch (error) {
     console.error("Error generating room ID:", error);
     // Fallback to timestamp-based ID if query fails

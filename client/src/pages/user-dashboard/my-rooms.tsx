@@ -233,6 +233,14 @@ export default function MyRoomsPage() {
       const currentTags = form.getValues().tags;
       form.setValue("tags", [...currentTags, tagInput.trim()]);
       setTagInput("");
+      
+      // Keep focus on input after adding tag
+      setTimeout(() => {
+        const tagInput = document.querySelector('[data-testid="input-tags"]') as HTMLInputElement;
+        if (tagInput) {
+          tagInput.focus();
+        }
+      }, 50);
     }
   };
 
@@ -476,7 +484,7 @@ export default function MyRoomsPage() {
 
         <div className="space-y-4">
           <Label>Tags</Label>
-          <div className="flex gap-2" style={{ scrollMarginTop: '10px' }}>
+          <div className="flex gap-2">
             <Input
               placeholder="Add tags..."
               value={tagInput}
@@ -487,21 +495,25 @@ export default function MyRoomsPage() {
                   addTag();
                 }
               }}
+              onInput={(e) => {
+                // Prevent any scrolling during input
+                e.preventDefault();
+              }}
+              onClick={(e) => {
+                e.stopPropagation();
+              }}
               onFocus={(e) => {
-                // Prevent auto-scroll when focusing
+                e.stopPropagation();
+                // Prevent automatic scrolling
+                const currentScrollTop = e.target.closest('[role="dialog"]')?.scrollTop;
                 setTimeout(() => {
-                  const container = e.target.closest('[role="dialog"]');
-                  if (container) {
-                    const rect = e.target.getBoundingClientRect();
-                    const containerRect = container.getBoundingClientRect();
-                    if (rect.bottom > containerRect.bottom || rect.top < containerRect.top) {
-                      e.target.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'nearest' });
-                    }
+                  const dialog = e.target.closest('[role="dialog"]');
+                  if (dialog && currentScrollTop !== undefined) {
+                    dialog.scrollTop = currentScrollTop;
                   }
-                }, 10);
+                }, 0);
               }}
               data-testid="input-tags"
-              style={{ scrollMarginTop: '20px' }}
             />
             <Button type="button" onClick={addTag} data-testid="button-add-tag">Add</Button>
           </div>
@@ -558,8 +570,13 @@ export default function MyRoomsPage() {
           <DialogContent 
             className="max-w-2xl max-h-[90vh] overflow-y-auto"
             style={{ 
-              scrollBehavior: 'smooth',
-              overscrollBehavior: 'contain'
+              scrollBehavior: 'auto',
+              overscrollBehavior: 'contain',
+              overflowAnchor: 'none'
+            }}
+            onScroll={(e) => {
+              // Prevent unwanted scroll events from propagating
+              e.stopPropagation();
             }}
           >
             <DialogHeader>
