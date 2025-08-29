@@ -14,7 +14,8 @@ export default function AdminNavigation() {
     settings: false,
     adManager: true,
     payments: false,
-    pricing: false
+    pricing: false,
+    verification: false
   });
   const [location] = useLocation();
   const { logoutMutation, user } = useAuth();
@@ -190,19 +191,55 @@ export default function AdminNavigation() {
               Rooms
             </Link>
           </li>
-          <li>
-            <Link
-              href="/admin/verification"
+          {/* Verification Section */}
+          <li className="space-y-1">
+            <button
+              onClick={(e) => toggleSubMenu('verification', e)}
               className={cn(
-                "flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all",
-                isActive("/admin/verification")
+                "flex items-center justify-between w-full gap-3 px-3 py-2.5 rounded-lg transition-all",
+                (isActive("/admin/verification")) || expandedSubMenus.verification
                   ? "bg-primary/15 text-primary shadow-sm"
                   : "text-card-foreground hover:bg-primary/10 hover:text-primary"
               )}
             >
-              <Shield size={18} className="text-primary opacity-80" />
-              Verification Tool
-            </Link>
+              <div className="flex items-center gap-3">
+                <Shield size={18} className="text-primary opacity-80" />
+                <span>Verification</span>
+              </div>
+              {expandedSubMenus.verification ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
+            </button>
+            {expandedSubMenus.verification && (
+              <ul className="ml-6 space-y-1">
+                <li>
+                  <Link
+                    href="/admin/verification"
+                    className={cn(
+                      "flex items-center gap-3 px-3 py-2 rounded-lg transition-all text-sm",
+                      isActive("/admin/verification")
+                        ? "bg-primary/15 text-primary shadow-sm"
+                        : "text-card-foreground hover:bg-primary/10 hover:text-primary"
+                    )}
+                  >
+                    <Shield size={16} className="text-primary opacity-60" />
+                    Verification Tool
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    href="/admin/verification-requests"
+                    className={cn(
+                      "flex items-center gap-3 px-3 py-2 rounded-lg transition-all text-sm",
+                      isActive("/admin/verification-requests")
+                        ? "bg-primary/15 text-primary shadow-sm"
+                        : "text-card-foreground hover:bg-primary/10 hover:text-primary"
+                    )}
+                  >
+                    <FileDigit size={16} className="text-primary opacity-60" />
+                    Verification Requests
+                  </Link>
+                </li>
+              </ul>
+            )}
           </li>
           
           {/* Payments Section */}
