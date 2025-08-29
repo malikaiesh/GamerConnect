@@ -318,37 +318,48 @@ router.get("/", async (req: Request, res: Response) => {
 
     let query = db
       .select({
-        id: rooms.id,
-        roomId: rooms.roomId,
-        name: rooms.name,
-        description: rooms.description,
-        theme: rooms.theme,
-        maxUsers: rooms.maxUsers,
-        currentUsers: sql<number>`(SELECT COUNT(*) FROM ${roomUsers} WHERE ${roomUsers.roomId} = ${rooms.id})`,
-        isPublic: rooms.isPublic,
-        hasVoice: rooms.hasVoice,
-        hasText: rooms.hasText,
-        hasGifts: rooms.hasGifts,
-        createdAt: rooms.createdAt,
-        owner: {
-          username: users.username,
-          displayName: users.displayName
-        },
-        stats: {
+        room: {
+          id: rooms.id,
+          roomId: rooms.roomId,
+          name: rooms.name,
+          description: rooms.description,
+          type: rooms.type,
+          status: rooms.status,
+          maxSeats: rooms.maxSeats,
+          currentUsers: rooms.currentUsers,
+          category: rooms.category,
+          country: rooms.country,
+          language: rooms.language,
+          isLocked: rooms.isLocked,
+          isFeatured: rooms.isFeatured,
+          voiceChatEnabled: rooms.voiceChatEnabled,
+          textChatEnabled: rooms.textChatEnabled,
+          giftsEnabled: rooms.giftsEnabled,
+          backgroundTheme: rooms.backgroundTheme,
+          tags: rooms.tags,
           totalVisits: sql<number>`COALESCE((SELECT SUM(total_visits) FROM ${roomAnalytics} WHERE room_id = ${rooms.id}), 0)`,
-          messagesCount: sql<number>`(SELECT COUNT(*) FROM ${roomMessages} WHERE room_id = ${rooms.id})`,
-          giftsReceived: sql<number>`COALESCE((SELECT SUM(total_gifts) FROM ${roomAnalytics} WHERE room_id = ${rooms.id}), 0)`
+          totalGiftsReceived: sql<number>`COALESCE((SELECT SUM(total_gifts) FROM ${roomAnalytics} WHERE room_id = ${rooms.id}), 0)`,
+          totalGiftValue: sql<number>`COALESCE((SELECT SUM(gift_value) FROM ${roomAnalytics} WHERE room_id = ${rooms.id}), 0)`,
+          createdAt: rooms.createdAt,
+          lastActivity: rooms.updatedAt
+        },
+        userCount: sql<number>`(SELECT COUNT(*) FROM ${roomUsers} WHERE ${roomUsers.roomId} = ${rooms.id})`,
+        owner: {
+          id: users.id,
+          username: users.username,
+          displayName: users.displayName,
+          profilePicture: users.profilePicture
         }
       })
       .from(rooms)
       .innerJoin(users, eq(rooms.ownerId, users.id))
       .where(and(
-        eq(rooms.isPublic, true),
+        eq(rooms.type, 'public'),
         eq(rooms.status, 'active')
       ));
 
     // Add search filter
-    const conditions = [eq(rooms.isPublic, true), eq(rooms.status, 'active')];
+    const conditions = [eq(rooms.type, 'public'), eq(rooms.status, 'active')];
     if (search) {
       conditions.push(
         sql`${rooms.name} ILIKE ${`%${search}%`} OR ${rooms.roomId} ILIKE ${`%${search}%`}`
@@ -371,7 +382,7 @@ router.get("/", async (req: Request, res: Response) => {
       case 'trending':
         // Trending: rooms with recent growth in users/activity
         query = query
-          .orderBy(desc(sql<number>`(SELECT COUNT(*) FROM ${roomUsers} WHERE ${roomUsers.roomId} = ${rooms.id})`), desc(rooms.lastActivity))
+          .orderBy(desc(sql<number>`(SELECT COUNT(*) FROM ${roomUsers} WHERE ${roomUsers.roomId} = ${rooms.id})`), desc(rooms.updatedAt))
           .limit(Math.min(limit, 20));
         break;
       case 'new':
@@ -391,30 +402,22 @@ router.get("/", async (req: Request, res: Response) => {
 
     const publicRooms = await query.offset(offset);
 
-    // Transform the response to flatten the nested objects
-    const formattedRooms = publicRooms.map(room => ({
-      id: room.id,
-      roomId: room.roomId,
-      name: room.name,
-      description: room.description,
-      theme: room.theme,
-      maxUsers: room.maxUsers,
-      currentUsers: room.currentUsers,
-      isPublic: room.isPublic,
-      hasVoice: room.hasVoice,
-      hasText: room.hasText,
-      hasGifts: room.hasGifts,
-      createdAt: room.createdAt,
-      owner: room.owner,
-      stats: room.stats,
-      // Add trending-specific fields for trending category
-      ...(category === 'trending' && {
-        trendingScore: Math.floor(Math.random() * 100) + 1, // Mock trending score
-        growthRate: `+${Math.floor(Math.random() * 50) + 10}%` // Mock growth rate
-      })
-    }));
+    // Return the properly structured response
+    const totalCount = await db.select({ count: count() }).from(rooms)
+      .where(and(
+        eq(rooms.type, 'public'),
+        eq(rooms.status, 'active')
+      ));
 
-    res.json(formattedRooms);
+    res.json({
+      rooms: publicRooms,
+      pagination: {
+        page,
+        limit,
+        total: totalCount[0]?.count || 0,
+        hasMore: publicRooms.length === limit
+      }
+    });
   } catch (error) {
     console.error("Error fetching public rooms:", error);
     res.status(500).json({ error: "Failed to fetch rooms" });

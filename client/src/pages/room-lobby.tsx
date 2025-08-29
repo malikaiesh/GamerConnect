@@ -55,16 +55,16 @@ export default function RoomLobbyPage() {
       pages: number;
     };
   }>({
-    queryKey: ["/api/rooms/public", currentPage, searchTerm, categoryFilter, languageFilter, activeTab],
+    queryKey: ["/api/rooms", currentPage, searchTerm, categoryFilter, languageFilter, activeTab],
     queryFn: () => {
       const params = new URLSearchParams({
         page: currentPage.toString(),
         search: searchTerm,
-        category: categoryFilter,
-        language: languageFilter,
-        filter: activeTab,
+        ...(categoryFilter && categoryFilter !== "all" && { category: categoryFilter }),
+        ...(languageFilter && languageFilter !== "all" && { language: languageFilter }),
+        category: activeTab === "all" ? "" : activeTab,
       });
-      return fetch(`/api/rooms/public?${params}`).then(res => res.json());
+      return fetch(`/api/rooms?${params}`).then(res => res.json());
     }
   });
 
@@ -145,7 +145,7 @@ export default function RoomLobbyPage() {
                   <SelectValue placeholder="All Categories" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">All Categories</SelectItem>
+                  <SelectItem value="all">All Categories</SelectItem>
                   <SelectItem value="general">General</SelectItem>
                   <SelectItem value="gaming">Gaming</SelectItem>
                   <SelectItem value="music">Music</SelectItem>
@@ -161,7 +161,7 @@ export default function RoomLobbyPage() {
                   <SelectValue placeholder="All Languages" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">All Languages</SelectItem>
+                  <SelectItem value="all">All Languages</SelectItem>
                   <SelectItem value="en">English</SelectItem>
                   <SelectItem value="es">Spanish</SelectItem>
                   <SelectItem value="fr">French</SelectItem>
@@ -179,8 +179,8 @@ export default function RoomLobbyPage() {
                 variant="outline" 
                 onClick={() => {
                   setSearchTerm("");
-                  setCategoryFilter("");
-                  setLanguageFilter("");
+                  setCategoryFilter("all");
+                  setLanguageFilter("all");
                 }}
                 data-testid="button-clear-filters"
               >
