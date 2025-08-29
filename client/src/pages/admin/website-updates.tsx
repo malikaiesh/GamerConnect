@@ -220,10 +220,10 @@ export default function WebsiteUpdatesPage() {
 
   const getPriorityBadge = (priority: string) => {
     const colors = {
-      low: 'bg-green-100 text-green-800',
-      medium: 'bg-yellow-100 text-yellow-800',
-      high: 'bg-orange-100 text-orange-800',
-      critical: 'bg-red-100 text-red-800'
+      low: 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900/20 dark:text-emerald-400',
+      medium: 'bg-amber-100 text-amber-800 dark:bg-amber-900/20 dark:text-amber-400',
+      high: 'bg-orange-100 text-orange-800 dark:bg-orange-900/20 dark:text-orange-400',
+      critical: 'bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-400'
     };
     
     return (
