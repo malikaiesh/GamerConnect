@@ -174,17 +174,9 @@ export default function HomePage() {
                 <Link href="/rooms" className="bg-secondary hover:bg-secondary/90 text-secondary-foreground font-bold py-3 px-6 rounded-lg transition-colors shadow-lg">
                   Join Rooms
                 </Link>
-                <Link href="/categories" className="bg-accent hover:bg-accent/90 text-accent-foreground font-bold py-3 px-6 rounded-lg transition-colors shadow-lg">
-                  Browse Categories
-                </Link>
-                <Link href="/events" className="bg-muted hover:bg-muted/90 text-muted-foreground font-bold py-3 px-6 rounded-lg transition-colors shadow-lg" data-testid="hero-events-button">
+                <Link href="/events" className="bg-gradient-to-r from-orange-600 to-orange-700 hover:from-orange-700 hover:to-orange-800 text-white font-bold py-3 px-6 rounded-lg transition-all shadow-lg" data-testid="hero-events-button">
                   Gaming Events
                 </Link>
-                <RandomGameButton 
-                  variant="outline" 
-                  size="lg"
-                  className="border-white/20 text-white hover:bg-white/10"
-                />
               </div>
             </div>
             <div className="md:w-1/2 relative">
