@@ -26,7 +26,11 @@ export default function AdminNavigation() {
     logoutMutation.mutate();
   };
   
-  const toggleSubMenu = (menuName: string) => {
+  const toggleSubMenu = (menuName: string, event?: React.MouseEvent) => {
+    if (event) {
+      event.preventDefault();
+      event.stopPropagation();
+    }
     setExpandedSubMenus(prev => ({
       ...prev,
       [menuName]: !prev[menuName]
@@ -312,7 +316,7 @@ export default function AdminNavigation() {
           </li>
           <li className="space-y-1">
             <button
-              onClick={() => toggleSubMenu('adManager')}
+              onClick={(e) => toggleSubMenu('adManager', e)}
               className={cn(
                 "flex items-center justify-between w-full gap-3 px-3 py-2.5 rounded-lg transition-all",
                 (isActive("/admin/home-ads") || isActive("/admin/blog-ads") || isActive("/admin/games-ads")) || expandedSubMenus.adManager
@@ -421,7 +425,7 @@ export default function AdminNavigation() {
 
           <li className="space-y-1">
             <button
-              onClick={() => toggleSubMenu('pushNotifications')}
+              onClick={(e) => toggleSubMenu('pushNotifications', e)}
               className={cn(
                 "flex items-center justify-between w-full gap-3 px-3 py-2.5 rounded-lg transition-all",
                 isActive("/admin/push-notifications") || expandedSubMenus.pushNotifications
@@ -557,7 +561,7 @@ export default function AdminNavigation() {
 
           <li className="space-y-1">
             <button
-              onClick={() => toggleSubMenu('adminUsers')}
+              onClick={(e) => toggleSubMenu('adminUsers', e)}
               className={cn(
                 "flex items-center justify-between w-full gap-3 px-3 py-2.5 rounded-lg transition-all",
                 isActive("/admin/security") || expandedSubMenus.adminUsers
@@ -638,7 +642,7 @@ export default function AdminNavigation() {
 
           <li className="space-y-1">
             <button
-              onClick={() => toggleSubMenu('accounts')}
+              onClick={(e) => toggleSubMenu('accounts', e)}
               className={cn(
                 "flex items-center justify-between w-full gap-3 px-3 py-2.5 rounded-lg transition-all",
                 isActive("/admin/accounts") || expandedSubMenus.accounts
@@ -703,7 +707,7 @@ export default function AdminNavigation() {
           </li>
           <li className="space-y-1">
             <button
-              onClick={() => toggleSubMenu('settings')}
+              onClick={(e) => toggleSubMenu('settings', e)}
               className={cn(
                 "flex items-center justify-between w-full gap-3 px-3 py-2.5 rounded-lg transition-all",
                 isActive("/admin/settings") || expandedSubMenus.settings
