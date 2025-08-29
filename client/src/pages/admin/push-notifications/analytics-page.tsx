@@ -57,7 +57,7 @@ export default function PushNotificationAnalyticsPage() {
       ) : (
         <>
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4 mb-6">
-            <Card className="overflow-hidden border-0 shadow-md bg-gradient-to-br from-indigo-500/10 to-purple-500/5">
+            <Card className="overflow-hidden border-border bg-card shadow-md">
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <CardTitle className="text-sm font-medium">Total Subscribers</CardTitle>
                 <svg
@@ -87,7 +87,7 @@ export default function PushNotificationAnalyticsPage() {
               </CardContent>
             </Card>
             
-            <Card className="overflow-hidden border-0 shadow-md bg-gradient-to-br from-blue-500/10 to-cyan-500/5">
+            <Card className="overflow-hidden border-border bg-card shadow-md">
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <CardTitle className="text-sm font-medium">Active Subscribers</CardTitle>
                 <svg
@@ -117,7 +117,7 @@ export default function PushNotificationAnalyticsPage() {
               </CardContent>
             </Card>
             
-            <Card className="overflow-hidden border-0 shadow-md bg-gradient-to-br from-purple-500/10 to-pink-500/5">
+            <Card className="overflow-hidden border-border bg-card shadow-md">
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <CardTitle className="text-sm font-medium">Campaigns Sent</CardTitle>
                 <svg
@@ -142,7 +142,7 @@ export default function PushNotificationAnalyticsPage() {
               </CardContent>
             </Card>
             
-            <Card className="overflow-hidden border-0 shadow-md bg-gradient-to-br from-emerald-500/10 to-teal-500/5">
+            <Card className="overflow-hidden border-border bg-card shadow-md">
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <CardTitle className="text-sm font-medium">Average CTR</CardTitle>
                 <svg

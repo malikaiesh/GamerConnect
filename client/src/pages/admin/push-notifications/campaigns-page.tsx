@@ -245,7 +245,7 @@ export default function PushNotificationCampaignsPage() {
           
           {confirmSend && (
             <div className="space-y-4 py-2">
-              <div className="rounded-md border p-4 bg-gray-50 dark:bg-gray-800">
+              <div className="rounded-md border border-border p-4 bg-card">
                 <h3 className="font-medium">{confirmSend.name}</h3>
                 <p className="text-sm text-muted-foreground mt-1">Title: {confirmSend.title}</p>
                 <p className="text-sm text-muted-foreground">Message: {confirmSend.message}</p>

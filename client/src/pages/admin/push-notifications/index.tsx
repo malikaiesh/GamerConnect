@@ -213,14 +213,14 @@ export default function PushNotificationsPage() {
 
               {previewNotification && (
                 <div className="mt-4">
-                  <div className={`p-4 rounded-lg border ${
+                  <div className={`p-4 rounded-lg border border-border ${
                     previewNotification.type === "toast" 
-                      ? "bg-white dark:bg-gray-800" 
+                      ? "bg-card" 
                       : previewNotification.type === "banner"
-                      ? "bg-blue-50 dark:bg-blue-900 border-blue-200 dark:border-blue-800"
+                      ? "bg-card border-primary/20"
                       : previewNotification.type === "modal"
-                      ? "bg-white dark:bg-gray-800 shadow-lg"
-                      : ""
+                      ? "bg-card shadow-lg"
+                      : "bg-card"
                   }`}>
                     <h3 className="font-medium text-lg text-foreground">{previewNotification.title}</h3>
                     <p className="text-muted-foreground mt-1">{previewNotification.message}</p>

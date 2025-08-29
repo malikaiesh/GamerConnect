@@ -18,19 +18,19 @@ export function AdminLayout({ children, title, description, actions }: AdminLayo
   }
 
   return (
-    <div className="flex min-h-screen bg-gray-100 dark:bg-gray-950">
+    <div className="flex min-h-screen bg-background">
       <AdminNavigation />
       <div className="flex-1 max-w-full overflow-auto">
         {title && (
-          <div className="bg-white dark:bg-gray-800 shadow-sm">
+          <div className="bg-card shadow-sm border-b border-border">
             <div className="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
               <div className="flex justify-between items-start">
                 <div>
-                  <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">
+                  <h1 className="text-2xl font-bold text-foreground">
                     {title}
                   </h1>
                   {description && (
-                    <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">
+                    <p className="mt-2 text-sm text-muted-foreground">
                       {description}
                     </p>
                   )}
