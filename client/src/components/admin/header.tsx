@@ -21,7 +21,16 @@ export default function AdminHeader() {
       <div className="container mx-auto flex flex-wrap items-center justify-between">
         <div className="flex items-center mr-6">
           <span className="font-semibold text-lg mr-2">Admin</span>
-          <span className="text-sm text-gray-300">Logged in as {user.username}</span>
+          <div className="flex items-center gap-1 text-sm text-gray-300">
+            <span>Logged in as {user.username}</span>
+            {user.isVerified && (
+              <div className="inline-flex items-center justify-center bg-blue-500 text-white rounded-full w-3 h-3 flex-shrink-0">
+                <svg className="w-1.5 h-1.5" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                </svg>
+              </div>
+            )}
+          </div>
         </div>
         
         <nav className="flex items-center space-x-1">
