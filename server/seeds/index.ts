@@ -3,6 +3,7 @@ import { seedGameCategories } from './game-categories';
 import { seedBlogCategories } from './blog-categories';
 import { seedBlogPosts } from './blog-posts';
 import { seedPaymentGateways } from './payment-gateways';
+import { seedPricingPlans } from './pricing-plans';
 import { seedStaticPages } from './static-pages';
 import { seedTeamMembers } from './team-members';
 import { seedEvents } from './events';
@@ -25,7 +26,8 @@ export async function runSeeds() {
     await seedEvents(); // Run events since it depends on users table
     await seedVerifiedRooms(); // Run after verified users are created
     await seedHeroImages(); // Add hero images seeding
-    await seedPaymentGateways(); // Add payment gateways seeding
+    await seedPaymentGateways();
+    await seedPricingPlans(); // Add payment gateways seeding
     await seedBlogPosts(); // Run this last since it depends on blog categories
     console.log('✅ All seeds completed successfully');
   } catch (error) {

@@ -52,6 +52,17 @@ import {
   getUserTransactions,
   createPaymentTransaction
 } from "./api/payment-transactions";
+
+import {
+  getPricingPlans,
+  getPricingPlansByType,
+  getPricingPlan,
+  createPricingPlan,
+  updatePricingPlan,
+  deletePricingPlan,
+  updatePlanStatus,
+  bulkUpdatePricing
+} from "./api/pricing-plans";
 import { storage } from "./storage";
 import { db } from "../db";
 import { ObjectStorageService, ObjectNotFoundError } from "./objectStorage";
@@ -289,6 +300,16 @@ Sitemap: ${req.protocol}://${req.get('host')}/sitemap.xml`);
   app.post('/api/admin/payment-transactions/:id/refund', isAuthenticated, isAdmin, refundPaymentTransaction);
   app.get('/api/admin/users/:userId/transactions', isAuthenticated, isAdmin, getUserTransactions);
   app.post('/api/admin/payment-transactions', isAuthenticated, isAdmin, createPaymentTransaction);
+
+  // Pricing Plans Routes
+  app.get('/api/admin/pricing-plans', isAuthenticated, isAdmin, getPricingPlans);
+  app.get('/api/pricing-plans/type/:type', getPricingPlansByType); // Public endpoint for frontend
+  app.get('/api/admin/pricing-plans/:id', isAuthenticated, isAdmin, getPricingPlan);
+  app.post('/api/admin/pricing-plans', isAuthenticated, isAdmin, createPricingPlan);
+  app.put('/api/admin/pricing-plans/:id', isAuthenticated, isAdmin, updatePricingPlan);
+  app.delete('/api/admin/pricing-plans/:id', isAuthenticated, isAdmin, deletePricingPlan);
+  app.patch('/api/admin/pricing-plans/:id/status', isAuthenticated, isAdmin, updatePlanStatus);
+  app.post('/api/admin/pricing-plans/bulk-update', isAuthenticated, isAdmin, bulkUpdatePricing);
   
   // Register image upload API routes
   const imageUploadRoutes = await import('./api/image-upload');

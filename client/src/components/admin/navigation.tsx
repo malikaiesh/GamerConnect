@@ -2,7 +2,7 @@ import { Link, useLocation } from "wouter";
 import { useAuth } from "@/hooks/use-auth";
 import { useQuery } from "@tanstack/react-query";
 import { cn } from "@/lib/utils";
-import { Gamepad2, Book, Settings, LayoutDashboard, FileText, LogOut, Home, FileSymlink, Key, ImageIcon, Map, Code, BarChart, Files, Bell, Users, Send, Activity, BarChart3, UserRound, UserPlus, MapPin, Shield, Lock, KeyRound, AlertTriangle, FileDigit, Clock, ExternalLink, Bot, Rocket, ChevronDown, ChevronRight, Target, Ban as Advertisement, Calendar, Cloud, Archive, CreditCard, Wallet, Receipt } from "lucide-react";
+import { Gamepad2, Book, Settings, LayoutDashboard, FileText, LogOut, Home, FileSymlink, Key, ImageIcon, Map, Code, BarChart, Files, Bell, Users, Send, Activity, BarChart3, UserRound, UserPlus, MapPin, Shield, Lock, KeyRound, AlertTriangle, FileDigit, Clock, ExternalLink, Bot, Rocket, ChevronDown, ChevronRight, Target, Ban as Advertisement, Calendar, Cloud, Archive, CreditCard, Wallet, Receipt, Gem, Star, Crown } from "lucide-react";
 import { useState } from "react";
 import { SiteSetting } from "@shared/schema";
 
@@ -13,7 +13,8 @@ export default function AdminNavigation() {
     adminUsers: false,
     settings: false,
     adManager: true,
-    payments: false
+    payments: false,
+    pricing: false
   });
   const [location] = useLocation();
   const { logoutMutation, user } = useAuth();
@@ -249,6 +250,99 @@ export default function AdminNavigation() {
                   >
                     <Receipt size={16} className="text-primary opacity-60" />
                     Transactions
+                  </Link>
+                </li>
+              </ul>
+            )}
+          </li>
+          
+          {/* Pricing Plans Section */}
+          <li className="space-y-1">
+            <button
+              onClick={(e) => toggleSubMenu('pricing', e)}
+              className={cn(
+                "flex items-center justify-between w-full gap-3 px-3 py-2.5 rounded-lg transition-all",
+                (isActive("/admin/pricing")) || expandedSubMenus.pricing
+                  ? "bg-primary/15 text-primary shadow-sm"
+                  : "text-card-foreground hover:bg-primary/10 hover:text-primary"
+              )}
+            >
+              <div className="flex items-center gap-3">
+                <Gem size={18} className="text-primary opacity-80" />
+                <span>Pricing Plans</span>
+              </div>
+              {expandedSubMenus.pricing ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
+            </button>
+            {expandedSubMenus.pricing && (
+              <ul className="ml-6 space-y-1">
+                <li>
+                  <Link
+                    href="/admin/pricing/plans"
+                    className={cn(
+                      "flex items-center gap-3 px-3 py-2 rounded-lg transition-all text-sm",
+                      isActive("/admin/pricing/plans")
+                        ? "bg-primary/15 text-primary shadow-sm"
+                        : "text-card-foreground hover:bg-primary/10 hover:text-primary"
+                    )}
+                  >
+                    <Settings size={16} className="text-primary opacity-60" />
+                    Manage Plans
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    href="/admin/pricing/subscriptions"
+                    className={cn(
+                      "flex items-center gap-3 px-3 py-2 rounded-lg transition-all text-sm",
+                      isActive("/admin/pricing/subscriptions")
+                        ? "bg-primary/15 text-primary shadow-sm"
+                        : "text-card-foreground hover:bg-primary/10 hover:text-primary"
+                    )}
+                  >
+                    <Users size={16} className="text-primary opacity-60" />
+                    User Subscriptions
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    href="/admin/pricing/diamonds"
+                    className={cn(
+                      "flex items-center gap-3 px-3 py-2 rounded-lg transition-all text-sm",
+                      isActive("/admin/pricing/diamonds")
+                        ? "bg-primary/15 text-primary shadow-sm"
+                        : "text-card-foreground hover:bg-primary/10 hover:text-primary"
+                    )}
+                  >
+                    <Gem size={16} className="text-primary opacity-60" />
+                    Diamond Packs
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    href="/admin/pricing/verification"
+                    className={cn(
+                      "flex items-center gap-3 px-3 py-2 rounded-lg transition-all text-sm",
+                      isActive("/admin/pricing/verification")
+                        ? "bg-primary/15 text-primary shadow-sm"
+                        : "text-card-foreground hover:bg-primary/10 hover:text-primary"
+                    )}
+                  >
+                    <Crown size={16} className="text-primary opacity-60" />
+                    Verification Plans
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    href="/admin/pricing/rooms"
+                    className={cn(
+                      "flex items-center gap-3 px-3 py-2 rounded-lg transition-all text-sm",
+                      isActive("/admin/pricing/rooms")
+                        ? "bg-primary/15 text-primary shadow-sm"
+                        : "text-card-foreground hover:bg-primary/10 hover:text-primary"
+                    )}
+                  >
+                    <MapPin size={16} className="text-primary opacity-60" />
+                    Room Creation
                   </Link>
                 </li>
               </ul>

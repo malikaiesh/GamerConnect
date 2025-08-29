@@ -82,6 +82,12 @@ export const paymentCurrencyEnum = pgEnum('payment_currency', ['USD', 'EUR', 'GB
 export const transactionStatusEnum = pgEnum('transaction_status', ['pending', 'processing', 'completed', 'failed', 'cancelled', 'refunded']);
 export const giftAnimationEnum = pgEnum('gift_animation', ['default', 'sparkle', 'confetti', 'fireworks']);
 
+// Pricing Plan Enums
+export const planTypeEnum = pgEnum('plan_type', ['diamonds', 'verification', 'room_creation', 'premium_features']);
+export const planStatusEnum = pgEnum('plan_status', ['active', 'inactive', 'archived']);
+export const planDurationEnum = pgEnum('plan_duration', ['one_time', 'monthly', '6_months', 'yearly', 'lifetime']);
+export const subscriptionStatusEnum = pgEnum('subscription_status', ['active', 'cancelled', 'expired', 'pending', 'suspended']);
+
 // Roles table
 export const roles = pgTable('roles', {
   id: serial('id').primaryKey(),
@@ -2086,8 +2092,136 @@ export const insertPaymentTransactionSchema = createInsertSchema(paymentTransact
   transactionId: (schema) => schema.min(10, "Transaction ID must be at least 10 characters")
 });
 
+// Pricing Plans Table
+export const pricingPlans = pgTable('pricing_plans', {
+  id: serial('id').primaryKey(),
+  name: text('name').notNull(), // e.g., "100 Diamonds", "1 Month Verification"
+  displayName: text('display_name').notNull(), // User-friendly name
+  planType: planTypeEnum('plan_type').notNull(),
+  duration: planDurationEnum('duration').notNull(),
+  
+  // Pricing details
+  price: integer('price').notNull(), // In cents/smallest currency unit
+  currency: paymentCurrencyEnum('currency').notNull().default('USD'),
+  originalPrice: integer('original_price'), // For showing discounts
+  
+  // Plan details
+  diamondAmount: integer('diamond_amount'), // For diamond plans
+  verificationDuration: integer('verification_duration'), // In days for verification plans
+  roomCreationLimit: integer('room_creation_limit'), // Number of rooms user can create
+  isPopular: boolean('is_popular').default(false),
+  
+  // Status and ordering
+  status: planStatusEnum('status').default('active').notNull(),
+  sortOrder: integer('sort_order').default(0).notNull(),
+  
+  // Features and benefits
+  features: json('features').$type<string[]>(), // Array of feature descriptions
+  description: text('description'),
+  shortDescription: text('short_description'),
+  
+  // Metadata
+  metadata: json('metadata').$type<{
+    color?: string;
+    badge?: string;
+    icon?: string;
+    category?: string;
+    tags?: string[];
+    additionalData?: Record<string, any>;
+  }>(),
+  
+  // Audit fields
+  createdBy: integer('created_by').references(() => users.id).notNull(),
+  updatedBy: integer('updated_by').references(() => users.id).notNull(),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+  updatedAt: timestamp('updated_at').defaultNow().notNull()
+});
+
+// User Subscriptions Table
+export const userSubscriptions = pgTable('user_subscriptions', {
+  id: serial('id').primaryKey(),
+  userId: integer('user_id').references(() => users.id).notNull(),
+  planId: integer('plan_id').references(() => pricingPlans.id).notNull(),
+  transactionId: integer('transaction_id').references(() => paymentTransactions.id),
+  
+  // Subscription details
+  status: subscriptionStatusEnum('status').default('pending').notNull(),
+  startDate: timestamp('start_date').notNull(),
+  endDate: timestamp('end_date'), // Null for lifetime plans
+  autoRenew: boolean('auto_renew').default(false),
+  
+  // Usage tracking for applicable plans
+  diamondsReceived: integer('diamonds_received').default(0),
+  diamondsUsed: integer('diamonds_used').default(0),
+  roomsCreated: integer('rooms_created').default(0),
+  
+  // Metadata
+  metadata: json('metadata').$type<{
+    giftedBy?: number; // User ID who gifted this subscription
+    discountApplied?: number; // Discount percentage applied
+    promoCode?: string;
+    notes?: string;
+    additionalData?: Record<string, any>;
+  }>(),
+  
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+  updatedAt: timestamp('updated_at').defaultNow().notNull()
+});
+
+// Pricing Plans Relations
+export const pricingPlansRelations = relations(pricingPlans, ({ one, many }) => ({
+  createdByUser: one(users, {
+    fields: [pricingPlans.createdBy],
+    references: [users.id]
+  }),
+  updatedByUser: one(users, {
+    fields: [pricingPlans.updatedBy],
+    references: [users.id]
+  }),
+  subscriptions: many(userSubscriptions)
+}));
+
+// User Subscriptions Relations
+export const userSubscriptionsRelations = relations(userSubscriptions, ({ one }) => ({
+  user: one(users, {
+    fields: [userSubscriptions.userId],
+    references: [users.id]
+  }),
+  plan: one(pricingPlans, {
+    fields: [userSubscriptions.planId],
+    references: [pricingPlans.id]
+  }),
+  transaction: one(paymentTransactions, {
+    fields: [userSubscriptions.transactionId],
+    references: [paymentTransactions.id]
+  })
+}));
+
+// Pricing Plan Validation Schemas
+export const insertPricingPlanSchema = createInsertSchema(pricingPlans, {
+  name: (schema) => schema.min(3, "Plan name must be at least 3 characters").max(100, "Plan name must be less than 100 characters"),
+  displayName: (schema) => schema.min(3, "Display name must be at least 3 characters").max(150, "Display name must be less than 150 characters"),
+  price: (schema) => schema.min(0, "Price cannot be negative"),
+  originalPrice: (schema) => schema.optional().nullable(),
+  diamondAmount: (schema) => schema.optional().nullable(),
+  verificationDuration: (schema) => schema.optional().nullable(),
+  roomCreationLimit: (schema) => schema.optional().nullable(),
+  sortOrder: (schema) => schema.min(0, "Sort order cannot be negative")
+});
+
+export const insertUserSubscriptionSchema = createInsertSchema(userSubscriptions, {
+  startDate: (schema) => schema,
+  endDate: (schema) => schema.optional().nullable()
+});
+
 // Payment Gateway Type Exports
 export type PaymentGateway = typeof paymentGateways.$inferSelect;
 export type InsertPaymentGateway = z.infer<typeof insertPaymentGatewaySchema>;
 export type PaymentTransaction = typeof paymentTransactions.$inferSelect;
 export type InsertPaymentTransaction = z.infer<typeof insertPaymentTransactionSchema>;
+
+// Pricing Plan Type Exports
+export type PricingPlan = typeof pricingPlans.$inferSelect;
+export type InsertPricingPlan = z.infer<typeof insertPricingPlanSchema>;
+export type UserSubscription = typeof userSubscriptions.$inferSelect;
+export type InsertUserSubscription = z.infer<typeof insertUserSubscriptionSchema>;
