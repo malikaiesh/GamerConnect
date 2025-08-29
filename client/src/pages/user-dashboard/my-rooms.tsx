@@ -273,7 +273,7 @@ export default function MyRoomsPage() {
 
   const RoomForm = ({ onSubmit, isPending }: { onSubmit: (data: RoomFormData) => void; isPending: boolean }) => (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6" style={{ position: 'relative' }}>
         <div className="grid gap-4 md:grid-cols-2">
           <FormField
             control={form.control}
@@ -476,13 +476,32 @@ export default function MyRoomsPage() {
 
         <div className="space-y-4">
           <Label>Tags</Label>
-          <div className="flex gap-2">
+          <div className="flex gap-2" style={{ scrollMarginTop: '10px' }}>
             <Input
               placeholder="Add tags..."
               value={tagInput}
               onChange={(e) => setTagInput(e.target.value)}
-              onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), addTag())}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') {
+                  e.preventDefault();
+                  addTag();
+                }
+              }}
+              onFocus={(e) => {
+                // Prevent auto-scroll when focusing
+                setTimeout(() => {
+                  const container = e.target.closest('[role="dialog"]');
+                  if (container) {
+                    const rect = e.target.getBoundingClientRect();
+                    const containerRect = container.getBoundingClientRect();
+                    if (rect.bottom > containerRect.bottom || rect.top < containerRect.top) {
+                      e.target.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'nearest' });
+                    }
+                  }
+                }, 10);
+              }}
               data-testid="input-tags"
+              style={{ scrollMarginTop: '20px' }}
             />
             <Button type="button" onClick={addTag} data-testid="button-add-tag">Add</Button>
           </div>
@@ -536,7 +555,13 @@ export default function MyRoomsPage() {
               Create Room
             </Button>
           </DialogTrigger>
-          <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogContent 
+            className="max-w-2xl max-h-[90vh] overflow-y-auto"
+            style={{ 
+              scrollBehavior: 'smooth',
+              overscrollBehavior: 'contain'
+            }}
+          >
             <DialogHeader>
               <DialogTitle>Create New Room</DialogTitle>
               <DialogDescription>
