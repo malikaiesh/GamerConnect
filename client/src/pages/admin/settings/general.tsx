@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import AdminLayout from "@/components/layout/admin-layout";
+import AdminNavigation from "@/components/admin/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -336,17 +336,19 @@ export default function GeneralSettingsPage() {
 
   if (isLoading) {
     return (
-      <AdminLayout>
-        <div className="p-6 flex items-center justify-center min-h-screen">
+      <div className="flex min-h-screen bg-background">
+        <AdminNavigation />
+        <div className="flex-1 p-6 flex items-center justify-center">
           <Loader2 className="h-8 w-8 animate-spin text-primary" />
         </div>
-      </AdminLayout>
+      </div>
     );
   }
 
   return (
-    <AdminLayout>
-      <div className="p-6">
+    <div className="flex min-h-screen bg-background">
+      <AdminNavigation />
+      <div className="flex-1 p-6 space-y-6">
         <div className="flex justify-between items-center mb-6">
           <h1 className="text-2xl font-bold tracking-tight">General Settings</h1>
         </div>
@@ -877,6 +879,6 @@ export default function GeneralSettingsPage() {
           </form>
         </Form>
       </div>
-    </AdminLayout>
+    </div>
   );
 }
