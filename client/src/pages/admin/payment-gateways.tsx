@@ -462,7 +462,145 @@ export default function PaymentGatewaysPage() {
           </DialogHeader>
           <Form {...editForm}>
             <form onSubmit={editForm.handleSubmit(onEditSubmit)} className="space-y-4">
-              {/* Same form fields as create form */}
+              <div className="grid grid-cols-2 gap-4">
+                <FormField
+                  control={editForm.control}
+                  name="name"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Gateway Name</FormLabel>
+                      <FormControl>
+                        <Input placeholder="e.g., stripe-main" {...field} data-testid="input-edit-name" />
+                      </FormControl>
+                      <FormDescription>Unique identifier for this gateway</FormDescription>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={editForm.control}
+                  name="displayName"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Display Name</FormLabel>
+                      <FormControl>
+                        <Input placeholder="e.g., Stripe" {...field} data-testid="input-edit-display-name" />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <FormField
+                  control={editForm.control}
+                  name="gatewayType"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Gateway Type</FormLabel>
+                      <Select onValueChange={field.onChange} value={field.value}>
+                        <FormControl>
+                          <SelectTrigger data-testid="select-edit-gateway-type">
+                            <SelectValue placeholder="Select gateway" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          <SelectItem value="stripe">Stripe</SelectItem>
+                          <SelectItem value="paypal">PayPal</SelectItem>
+                          <SelectItem value="razorpay">Razorpay</SelectItem>
+                          <SelectItem value="square">Square</SelectItem>
+                          <SelectItem value="2checkout">2Checkout</SelectItem>
+                          <SelectItem value="braintree">Braintree</SelectItem>
+                          <SelectItem value="authorize_net">Authorize.Net</SelectItem>
+                          <SelectItem value="manual">Manual Payment</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={editForm.control}
+                  name="methodType"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Method Type</FormLabel>
+                      <Select onValueChange={field.onChange} value={field.value}>
+                        <FormControl>
+                          <SelectTrigger data-testid="select-edit-method-type">
+                            <SelectValue placeholder="Select method" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          <SelectItem value="automated">Automated</SelectItem>
+                          <SelectItem value="manual">Manual</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+
+              <FormField
+                control={editForm.control}
+                name="description"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Description</FormLabel>
+                    <FormControl>
+                      <Textarea placeholder="Gateway description..." {...field} data-testid="textarea-edit-description" />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <div className="grid grid-cols-2 gap-4">
+                <FormField
+                  control={editForm.control}
+                  name="minimumAmount"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Minimum Amount (cents)</FormLabel>
+                      <FormControl>
+                        <Input type="number" {...field} onChange={e => field.onChange(Number(e.target.value))} data-testid="input-edit-minimum-amount" />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={editForm.control}
+                  name="processingFee"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Processing Fee (%)</FormLabel>
+                      <FormControl>
+                        <Input type="number" step="0.01" {...field} onChange={e => field.onChange(Number(e.target.value) * 100)} data-testid="input-edit-processing-fee" />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+
+              <div className="flex items-center space-x-2">
+                <FormField
+                  control={editForm.control}
+                  name="isTestMode"
+                  render={({ field }) => (
+                    <FormItem className="flex flex-row items-center space-x-3 space-y-0">
+                      <FormControl>
+                        <Switch checked={field.value} onCheckedChange={field.onChange} data-testid="switch-edit-test-mode" />
+                      </FormControl>
+                      <FormLabel>Test Mode</FormLabel>
+                    </FormItem>
+                  )}
+                />
+              </div>
+
               <div className="flex justify-end space-x-2">
                 <Button type="button" variant="outline" onClick={() => setIsEditModalOpen(false)}>
                   Cancel
