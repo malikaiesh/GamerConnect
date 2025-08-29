@@ -73,6 +73,13 @@ export const roomStatusEnum = pgEnum('room_status', ['active', 'inactive', 'main
 export const roomUserRoleEnum = pgEnum('room_user_role', ['owner', 'manager', 'member', 'guest']);
 export const roomUserStatusEnum = pgEnum('room_user_status', ['active', 'muted', 'kicked', 'banned']);
 export const giftTypeEnum = pgEnum('gift_type', ['flower', 'car', 'diamond', 'crown', 'castle', 'ring', 'heart']);
+
+// Payment Gateway Enums
+export const paymentGatewayTypeEnum = pgEnum('payment_gateway_type', ['stripe', 'paypal', 'razorpay', 'flutterwave', 'mollie', 'square', 'adyen', '2checkout', 'braintree', 'authorize_net', 'manual']);
+export const paymentStatusEnum = pgEnum('payment_status', ['enabled', 'disabled', 'maintenance']);
+export const paymentMethodTypeEnum = pgEnum('payment_method_type', ['automated', 'manual']);
+export const paymentCurrencyEnum = pgEnum('payment_currency', ['USD', 'EUR', 'GBP', 'INR', 'NGN', 'KES', 'ZAR', 'GHS', 'UGX', 'TZS', 'CAD', 'AUD', 'BTC', 'ETH', 'USDT']);
+export const transactionStatusEnum = pgEnum('transaction_status', ['pending', 'processing', 'completed', 'failed', 'cancelled', 'refunded']);
 export const giftAnimationEnum = pgEnum('gift_animation', ['default', 'sparkle', 'confetti', 'fireworks']);
 
 // Roles table
@@ -1954,3 +1961,133 @@ export type UserRelationship = typeof userRelationships.$inferSelect;
 export type InsertUserRelationship = z.infer<typeof insertUserRelationshipSchema>;
 export type RoomAnalytics = typeof roomAnalytics.$inferSelect;
 export type InsertRoomAnalytics = z.infer<typeof insertRoomAnalyticsSchema>;
+
+// Payment Gateway Tables
+export const paymentGateways = pgTable('payment_gateways', {
+  id: serial('id').primaryKey(),
+  name: text('name').notNull().unique(),
+  displayName: text('display_name').notNull(),
+  gatewayType: paymentGatewayTypeEnum('gateway_type').notNull(),
+  methodType: paymentMethodTypeEnum('method_type').notNull(),
+  status: paymentStatusEnum('status').default('disabled').notNull(),
+  description: text('description'),
+  logo: text('logo'), // Logo URL or path
+  sortOrder: integer('sort_order').default(0).notNull(),
+  isTestMode: boolean('is_test_mode').default(true).notNull(),
+  supportedCurrencies: paymentCurrencyEnum('supported_currencies').array().notNull(),
+  minimumAmount: integer('minimum_amount').default(100), // In cents/smallest unit
+  maximumAmount: integer('maximum_amount'), // In cents/smallest unit
+  processingFee: integer('processing_fee').default(0), // Percentage * 100 (250 = 2.5%)
+  
+  // API Configuration (JSON for flexibility)
+  apiConfiguration: json('api_configuration').$type<{
+    apiKey?: string;
+    secretKey?: string;
+    publicKey?: string;
+    merchantId?: string;
+    webhookSecret?: string;
+    sandboxApiKey?: string;
+    sandboxSecretKey?: string;
+    customSettings?: Record<string, any>;
+  }>(),
+  
+  // Manual payment method specific fields
+  paymentInstructions: text('payment_instructions'), // For manual methods
+  accountDetails: json('account_details').$type<{
+    bankName?: string;
+    accountNumber?: string;
+    routingNumber?: string;
+    swiftCode?: string;
+    beneficiaryName?: string;
+    cryptoAddress?: string;
+    qrCode?: string;
+    additionalInfo?: string;
+  }>(),
+  
+  createdBy: integer('created_by').references(() => users.id).notNull(),
+  updatedBy: integer('updated_by').references(() => users.id),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+  updatedAt: timestamp('updated_at').defaultNow().notNull()
+});
+
+export const paymentTransactions = pgTable('payment_transactions', {
+  id: serial('id').primaryKey(),
+  transactionId: text('transaction_id').notNull().unique(),
+  gatewayId: integer('gateway_id').references(() => paymentGateways.id).notNull(),
+  userId: integer('user_id').references(() => users.id).notNull(),
+  amount: integer('amount').notNull(), // In cents/smallest unit
+  currency: paymentCurrencyEnum('currency').notNull(),
+  status: transactionStatusEnum('status').default('pending').notNull(),
+  gatewayTransactionId: text('gateway_transaction_id'), // External payment gateway transaction ID
+  gatewayResponse: json('gateway_response').$type<Record<string, any>>(), // Full response from gateway
+  failureReason: text('failure_reason'),
+  refundedAmount: integer('refunded_amount').default(0), // In cents/smallest unit
+  
+  // Manual payment verification
+  paymentProof: text('payment_proof'), // File path to uploaded proof
+  verificationNotes: text('verification_notes'),
+  verifiedBy: integer('verified_by').references(() => users.id),
+  verifiedAt: timestamp('verified_at'),
+  
+  // Metadata for context
+  metadata: json('metadata').$type<{
+    productId?: string;
+    productType?: string;
+    description?: string;
+    customerIP?: string;
+    userAgent?: string;
+    additionalData?: Record<string, any>;
+  }>(),
+  
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+  updatedAt: timestamp('updated_at').defaultNow().notNull()
+});
+
+// Payment Gateway Relations
+export const paymentGatewaysRelations = relations(paymentGateways, ({ one, many }) => ({
+  createdByUser: one(users, {
+    fields: [paymentGateways.createdBy],
+    references: [users.id]
+  }),
+  updatedByUser: one(users, {
+    fields: [paymentGateways.updatedBy],
+    references: [users.id]
+  }),
+  transactions: many(paymentTransactions)
+}));
+
+export const paymentTransactionsRelations = relations(paymentTransactions, ({ one }) => ({
+  gateway: one(paymentGateways, {
+    fields: [paymentTransactions.gatewayId],
+    references: [paymentGateways.id]
+  }),
+  user: one(users, {
+    fields: [paymentTransactions.userId],
+    references: [users.id]
+  }),
+  verifiedByUser: one(users, {
+    fields: [paymentTransactions.verifiedBy],
+    references: [users.id]
+  })
+}));
+
+// Payment Gateway Validation Schemas
+export const insertPaymentGatewaySchema = createInsertSchema(paymentGateways, {
+  name: (schema) => schema.min(3, "Gateway name must be at least 3 characters").max(50, "Gateway name must be less than 50 characters"),
+  displayName: (schema) => schema.min(3, "Display name must be at least 3 characters").max(100, "Display name must be less than 100 characters"),
+  minimumAmount: (schema) => schema.min(1, "Minimum amount must be at least 1"),
+  maximumAmount: (schema) => schema.optional().nullable(),
+  processingFee: (schema) => schema.min(0, "Processing fee cannot be negative").max(10000, "Processing fee cannot exceed 100%"),
+  supportedCurrencies: (schema) => schema.min(1, "At least one currency must be supported")
+});
+
+export const insertPaymentTransactionSchema = createInsertSchema(paymentTransactions, {
+  amount: (schema) => schema.min(1, "Amount must be greater than 0"),
+  transactionId: (schema) => schema.min(10, "Transaction ID must be at least 10 characters")
+});
+
+// Payment Gateway Type Exports
+export type PaymentGateway = typeof paymentGateways.$inferSelect;
+export type InsertPaymentGateway = z.infer<typeof insertPaymentGatewaySchema>;
+export type PaymentTransaction = typeof paymentTransactions.$inferSelect;
+export type InsertPaymentTransaction = z.infer<typeof insertPaymentTransactionSchema>;

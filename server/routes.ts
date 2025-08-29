@@ -36,6 +36,22 @@ import { roomsRouter } from "./api/rooms";
 import friendsRouter from "./api/friends";
 import userProfileRouter from "./api/user-profile";
 import verificationRouter from "./api/verification";
+import { 
+  getPaymentGateways, 
+  createPaymentGateway, 
+  updatePaymentGateway, 
+  updatePaymentGatewayStatus, 
+  deletePaymentGateway,
+  getPaymentGatewayById 
+} from "./api/payment-gateways";
+import { 
+  getPaymentTransactions, 
+  getPaymentTransactionById, 
+  verifyPaymentTransaction, 
+  refundPaymentTransaction,
+  getUserTransactions,
+  createPaymentTransaction
+} from "./api/payment-transactions";
 import { storage } from "./storage";
 import { db } from "../db";
 import { ObjectStorageService, ObjectNotFoundError } from "./objectStorage";
@@ -257,6 +273,22 @@ Sitemap: ${req.protocol}://${req.get('host')}/sitemap.xml`);
   registerSitemapRoutes(app);
   registerUserRoutes(app);
   registerCategoryRoutes(app);
+  
+  // Payment Gateway Routes
+  app.get('/api/admin/payment-gateways', isAuthenticated, isAdmin, getPaymentGateways);
+  app.post('/api/admin/payment-gateways', isAuthenticated, isAdmin, createPaymentGateway);
+  app.get('/api/admin/payment-gateways/:id', isAuthenticated, isAdmin, getPaymentGatewayById);
+  app.put('/api/admin/payment-gateways/:id', isAuthenticated, isAdmin, updatePaymentGateway);
+  app.patch('/api/admin/payment-gateways/:id/status', isAuthenticated, isAdmin, updatePaymentGatewayStatus);
+  app.delete('/api/admin/payment-gateways/:id', isAuthenticated, isAdmin, deletePaymentGateway);
+  
+  // Payment Transaction Routes
+  app.get('/api/admin/payment-transactions', isAuthenticated, isAdmin, getPaymentTransactions);
+  app.get('/api/admin/payment-transactions/:id', isAuthenticated, isAdmin, getPaymentTransactionById);
+  app.patch('/api/admin/payment-transactions/:id/verify', isAuthenticated, isAdmin, verifyPaymentTransaction);
+  app.post('/api/admin/payment-transactions/:id/refund', isAuthenticated, isAdmin, refundPaymentTransaction);
+  app.get('/api/admin/users/:userId/transactions', isAuthenticated, isAdmin, getUserTransactions);
+  app.post('/api/admin/payment-transactions', isAuthenticated, isAdmin, createPaymentTransaction);
   
   // Register image upload API routes
   const imageUploadRoutes = await import('./api/image-upload');

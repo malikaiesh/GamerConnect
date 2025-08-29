@@ -2,7 +2,7 @@ import { Link, useLocation } from "wouter";
 import { useAuth } from "@/hooks/use-auth";
 import { useQuery } from "@tanstack/react-query";
 import { cn } from "@/lib/utils";
-import { Gamepad2, Book, Settings, LayoutDashboard, FileText, LogOut, Home, FileSymlink, Key, ImageIcon, Map, Code, BarChart, Files, Bell, Users, Send, Activity, BarChart3, UserRound, UserPlus, MapPin, Shield, Lock, KeyRound, AlertTriangle, FileDigit, Clock, ExternalLink, Bot, Rocket, ChevronDown, ChevronRight, Target, Ban as Advertisement, Calendar, Cloud, Archive } from "lucide-react";
+import { Gamepad2, Book, Settings, LayoutDashboard, FileText, LogOut, Home, FileSymlink, Key, ImageIcon, Map, Code, BarChart, Files, Bell, Users, Send, Activity, BarChart3, UserRound, UserPlus, MapPin, Shield, Lock, KeyRound, AlertTriangle, FileDigit, Clock, ExternalLink, Bot, Rocket, ChevronDown, ChevronRight, Target, Ban as Advertisement, Calendar, Cloud, Archive, CreditCard, Wallet, Receipt } from "lucide-react";
 import { useState } from "react";
 import { SiteSetting } from "@shared/schema";
 
@@ -12,7 +12,8 @@ export default function AdminNavigation() {
     accounts: false,
     adminUsers: false,
     settings: false,
-    adManager: true
+    adManager: true,
+    payments: false
   });
   const [location] = useLocation();
   const { logoutMutation, user } = useAuth();
@@ -201,6 +202,57 @@ export default function AdminNavigation() {
               <Shield size={18} className="text-primary opacity-80" />
               Verification Tool
             </Link>
+          </li>
+          
+          {/* Payments Section */}
+          <li className="space-y-1">
+            <button
+              onClick={(e) => toggleSubMenu('payments', e)}
+              className={cn(
+                "flex items-center justify-between w-full gap-3 px-3 py-2.5 rounded-lg transition-all",
+                (isActive("/admin/payments")) || expandedSubMenus.payments
+                  ? "bg-primary/15 text-primary shadow-sm"
+                  : "text-card-foreground hover:bg-primary/10 hover:text-primary"
+              )}
+            >
+              <div className="flex items-center gap-3">
+                <CreditCard size={18} className="text-primary opacity-80" />
+                <span>Payments</span>
+              </div>
+              {expandedSubMenus.payments ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
+            </button>
+            {expandedSubMenus.payments && (
+              <ul className="ml-6 space-y-1">
+                <li>
+                  <Link
+                    href="/admin/payments/gateways"
+                    className={cn(
+                      "flex items-center gap-3 px-3 py-2 rounded-lg transition-all text-sm",
+                      isActive("/admin/payments/gateways")
+                        ? "bg-primary/15 text-primary shadow-sm"
+                        : "text-card-foreground hover:bg-primary/10 hover:text-primary"
+                    )}
+                  >
+                    <Wallet size={16} className="text-primary opacity-60" />
+                    Payment Gateways
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    href="/admin/payments/transactions"
+                    className={cn(
+                      "flex items-center gap-3 px-3 py-2 rounded-lg transition-all text-sm",
+                      isActive("/admin/payments/transactions")
+                        ? "bg-primary/15 text-primary shadow-sm"
+                        : "text-card-foreground hover:bg-primary/10 hover:text-primary"
+                    )}
+                  >
+                    <Receipt size={16} className="text-primary opacity-60" />
+                    Transactions
+                  </Link>
+                </li>
+              </ul>
+            )}
           </li>
           <li>
             <Link
