@@ -2,6 +2,7 @@ import { Request, Response } from 'express';
 import { db } from '../db';
 import { pricingPlans, insertPricingPlanSchema, type InsertPricingPlan } from '@shared/schema';
 import { eq, desc, and, sql } from 'drizzle-orm';
+import { z } from 'zod';
 
 // Get all pricing plans
 export const getPricingPlans = async (req: Request, res: Response) => {
@@ -73,6 +74,12 @@ export const createPricingPlan = async (req: Request, res: Response) => {
     res.status(201).json(newPlan);
   } catch (error) {
     console.error('Error creating pricing plan:', error);
+    if (error instanceof z.ZodError) {
+      return res.status(400).json({ 
+        error: 'Validation error', 
+        details: error.errors.map(e => ({ field: e.path.join('.'), message: e.message }))
+      });
+    }
     if (error instanceof Error && error.message.includes('validation')) {
       return res.status(400).json({ error: error.message });
     }
@@ -109,6 +116,12 @@ export const updatePricingPlan = async (req: Request, res: Response) => {
     res.json(updatedPlan);
   } catch (error) {
     console.error('Error updating pricing plan:', error);
+    if (error instanceof z.ZodError) {
+      return res.status(400).json({ 
+        error: 'Validation error', 
+        details: error.errors.map(e => ({ field: e.path.join('.'), message: e.message }))
+      });
+    }
     if (error instanceof Error && error.message.includes('validation')) {
       return res.status(400).json({ error: error.message });
     }
