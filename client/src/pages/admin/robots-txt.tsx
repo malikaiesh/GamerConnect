@@ -233,7 +233,7 @@ export default function RobotsTxtPage() {
                   </div>
                   <div className="flex items-center justify-between">
                     <span className="text-sm text-muted-foreground">Status:</span>
-                    <span className="text-sm text-green-600 font-medium">Active</span>
+                    <span className="text-sm text-emerald-500 font-medium">Active</span>
                   </div>
                   <div className="flex items-center justify-between">
                     <span className="text-sm text-muted-foreground">Size:</span>
