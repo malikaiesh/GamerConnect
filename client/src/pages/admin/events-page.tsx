@@ -772,25 +772,24 @@ export default function EventsPage() {
 
   if (!user) {
     return (
-      <div className="flex items-center justify-center h-screen">
+      <div className="flex items-center justify-center h-screen bg-background">
         <div className="text-center">
-          <h1 className="text-2xl font-bold mb-4">Access Denied</h1>
-          <p>You need to be logged in to access this page.</p>
+          <h1 className="text-2xl font-bold mb-4 text-foreground">Access Denied</h1>
+          <p className="text-muted-foreground">You need to be logged in to access this page.</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="flex h-screen bg-gray-50 dark:bg-gray-900">
+    <div className="flex min-h-screen bg-background">
       <AdminNavigation />
-      <div className="flex-1 flex flex-col overflow-hidden">
-        <main className="flex-1 overflow-x-hidden overflow-y-auto bg-gray-50 dark:bg-gray-900">
-          <div className="container mx-auto px-6 py-8">
-            <div className="flex justify-between items-center mb-8">
+      <div className="flex-1 p-6 space-y-6">
+        <div className="space-y-6">
+            <div className="flex justify-between items-center">
               <div>
-                <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Events Management</h1>
-                <p className="text-gray-600 dark:text-gray-300 mt-2">
+                <h1 className="text-3xl font-bold text-foreground">Events Management</h1>
+                <p className="text-muted-foreground mt-2">
                   Manage gaming tournaments, community events, and more
                 </p>
               </div>
@@ -821,28 +820,28 @@ export default function EventsPage() {
             {isLoading ? (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {[...Array(6)].map((_, i) => (
-                  <Card key={i} className="animate-pulse">
+                  <Card key={i} className="animate-pulse border-border bg-card">
                     <CardHeader className="space-y-2">
-                      <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-3/4"></div>
-                      <div className="h-3 bg-gray-200 dark:bg-gray-700 rounded w-1/2"></div>
+                      <div className="h-4 bg-muted rounded w-3/4"></div>
+                      <div className="h-3 bg-muted rounded w-1/2"></div>
                     </CardHeader>
                     <CardContent>
                       <div className="space-y-2">
-                        <div className="h-3 bg-gray-200 dark:bg-gray-700 rounded"></div>
-                        <div className="h-3 bg-gray-200 dark:bg-gray-700 rounded w-5/6"></div>
+                        <div className="h-3 bg-muted rounded"></div>
+                        <div className="h-3 bg-muted rounded w-5/6"></div>
                       </div>
                     </CardContent>
                   </Card>
                 ))}
               </div>
             ) : events?.length === 0 ? (
-              <Card>
+              <Card className="border-border bg-card">
                 <CardContent className="text-center py-12">
-                  <Calendar className="h-12 w-12 mx-auto text-gray-400 mb-4" />
-                  <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
+                  <Calendar className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
+                  <h3 className="text-lg font-medium text-foreground mb-2">
                     No events yet
                   </h3>
-                  <p className="text-gray-600 dark:text-gray-300 mb-4">
+                  <p className="text-muted-foreground mb-4">
                     Get started by creating your first gaming event or tournament.
                   </p>
                   <Button onClick={handleCreate} data-testid="button-create-first-event">
@@ -854,7 +853,7 @@ export default function EventsPage() {
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {events?.map((event: Event) => (
-                  <Card key={event.id} className="hover:shadow-lg transition-shadow">
+                  <Card key={event.id} className="hover:shadow-lg transition-shadow border-border bg-card">
                     <CardHeader>
                       <div className="flex items-start justify-between">
                         <div className="flex-1">
@@ -879,14 +878,14 @@ export default function EventsPage() {
                     </CardHeader>
                     <CardContent>
                       <div className="space-y-3">
-                        <div className="flex items-center text-sm text-gray-600 dark:text-gray-300">
+                        <div className="flex items-center text-sm text-muted-foreground">
                           <Clock className="h-4 w-4 mr-2" />
                           <span data-testid={`text-start-date-${event.id}`}>
                             {formatDate(event.startDate)}
                           </span>
                         </div>
                         
-                        <div className="flex items-center text-sm text-gray-600 dark:text-gray-300">
+                        <div className="flex items-center text-sm text-muted-foreground">
                           <MapPin className="h-4 w-4 mr-2" />
                           <span data-testid={`text-location-${event.id}`}>
                             {event.locationType === 'online' ? 'Online Event' : 
@@ -895,7 +894,7 @@ export default function EventsPage() {
                         </div>
 
                         {event.registrationEnabled && (
-                          <div className="flex items-center text-sm text-gray-600 dark:text-gray-300">
+                          <div className="flex items-center text-sm text-muted-foreground">
                             <Users className="h-4 w-4 mr-2" />
                             <span data-testid={`text-participants-${event.id}`}>
                               {event.currentParticipants}
@@ -904,7 +903,7 @@ export default function EventsPage() {
                           </div>
                         )}
 
-                        <p className="text-sm text-gray-600 dark:text-gray-300 line-clamp-2" data-testid={`text-description-${event.id}`}>
+                        <p className="text-sm text-muted-foreground line-clamp-2" data-testid={`text-description-${event.id}`}>
                           {event.description}
                         </p>
                       </div>
@@ -941,8 +940,7 @@ export default function EventsPage() {
                 ))}
               </div>
             )}
-          </div>
-        </main>
+        </div>
       </div>
     </div>
   );
