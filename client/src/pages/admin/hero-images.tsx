@@ -10,12 +10,14 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
+import { ObjectUploader } from "@/components/ObjectUploader";
 import { useToast } from "@/hooks/use-toast";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { apiRequest } from "@/lib/queryClient";
 import type { HeroImage } from "@shared/schema";
+import type { UploadResult } from "@uppy/core";
 
 const heroImageSchema = z.object({
   title: z.string().min(1, "Title is required"),
@@ -254,17 +256,34 @@ export default function AdminHeroImages() {
     setDraggedItem(null);
   };
 
-  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
+  // File upload handlers
+  const getUploadParameters = async () => {
+    try {
+      const response = await apiRequest("/api/objects/upload", { method: "POST" });
+      return {
+        method: 'PUT' as const,
+        url: response.uploadURL
+      };
+    } catch (error) {
+      console.error('Error getting upload parameters:', error);
+      toast({
+        title: "Error",
+        description: "Failed to get upload URL",
+        variant: "destructive"
+      });
+      throw error;
+    }
+  };
 
-    const formData = new FormData();
-    formData.append('image', file);
-
-    // Upload image logic would go here
-    // For now, we'll use a placeholder path
-    const imagePath = `/uploads/hero/${file.name}`;
-    form.setValue('imagePath', imagePath);
+  const handleUploadComplete = (result: UploadResult<Record<string, unknown>, Record<string, unknown>>) => {
+    if (result.successful && result.successful[0] && result.successful[0].uploadURL) {
+      // Set the uploaded image URL to the form
+      form.setValue('imagePath', result.successful[0].uploadURL);
+      toast({
+        title: "Success",
+        description: "Hero image uploaded successfully"
+      });
+    }
   };
 
   if (isLoading) {
@@ -349,20 +368,55 @@ export default function AdminHeroImages() {
                     <FormItem>
                       <FormLabel>Image</FormLabel>
                       <FormControl>
-                        <div className="space-y-2">
-                          <Input {...field} placeholder="Image path" data-testid="input-image-path" />
-                          <div className="flex items-center gap-2">
-                            <Input
-                              type="file"
-                              accept="image/*"
-                              onChange={handleImageUpload}
-                              className="flex-1"
-                              data-testid="input-image-upload"
+                        <div className="space-y-3">
+                          {/* Upload Button */}
+                          <ObjectUploader
+                            maxNumberOfFiles={1}
+                            maxFileSize={10485760} // 10MB
+                            onGetUploadParameters={getUploadParameters}
+                            onComplete={handleUploadComplete}
+                            buttonClassName="w-full"
+                          >
+                            <div className="flex items-center gap-2">
+                              <Upload className="h-4 w-4" />
+                              <span>Upload Hero Image</span>
+                            </div>
+                          </ObjectUploader>
+                          
+                          {/* Current Image Preview */}
+                          {field.value && (
+                            <div className="flex items-center gap-3 p-3 bg-muted/50 rounded-lg">
+                              <img 
+                                src={field.value} 
+                                alt="Hero image preview" 
+                                className="w-16 h-16 object-cover rounded-lg"
+                              />
+                              <div className="flex-1 text-sm">
+                                <p className="text-foreground">Hero image uploaded</p>
+                                <p className="text-muted-foreground truncate">{field.value}</p>
+                              </div>
+                              <Button
+                                type="button"
+                                variant="outline"
+                                size="sm"
+                                onClick={() => form.setValue('imagePath', '')}
+                              >
+                                Remove
+                              </Button>
+                            </div>
+                          )}
+                          
+                          {/* Manual URL Input (as fallback) */}
+                          <div className="space-y-2">
+                            <Input 
+                              placeholder="Or enter image URL manually" 
+                              {...field} 
+                              data-testid="input-image-path"
+                              className="focus:ring-2 focus:ring-primary/20"
                             />
-                            <Button type="button" variant="outline" size="sm">
-                              <Upload className="h-4 w-4 mr-1" />
-                              Upload
-                            </Button>
+                            <p className="text-xs text-muted-foreground">
+                              Upload an image file or enter a URL manually
+                            </p>
                           </div>
                         </div>
                       </FormControl>
