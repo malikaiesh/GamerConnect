@@ -190,41 +190,41 @@ export function PublicRoomsSection() {
               </Button>
             </Link>
           </div>
-          <Tabs value={activeTab} onValueChange={setActiveTab} className="mb-4">
-            <TabsList className="grid grid-cols-5 w-full bg-card border border-border">
+          <Tabs value={activeTab} onValueChange={setActiveTab} className="mb-6">
+            <TabsList className="grid grid-cols-5 w-full bg-card/50 border border-border/50 rounded-lg p-1">
               <TabsTrigger 
                 value="hot" 
-                className="flex flex-col items-center gap-1 text-[10px] px-2 py-2 hover:bg-primary/10 hover:text-primary data-[state=active]:bg-primary data-[state=active]:text-primary-foreground transition-colors"
+                className="flex flex-col items-center gap-1 text-[11px] font-medium px-2 py-3 hover:bg-primary/15 hover:text-primary data-[state=active]:bg-primary data-[state=active]:text-white data-[state=active]:shadow-md transition-all duration-300 rounded-md"
               >
-                <Flame className="h-3 w-3" />
+                <Flame className="h-4 w-4" />
                 Hot
               </TabsTrigger>
               <TabsTrigger 
                 value="trending" 
-                className="flex flex-col items-center gap-1 text-[10px] px-2 py-2 hover:bg-primary/10 hover:text-primary data-[state=active]:bg-primary data-[state=active]:text-primary-foreground transition-colors"
+                className="flex flex-col items-center gap-1 text-[11px] font-medium px-2 py-3 hover:bg-primary/15 hover:text-primary data-[state=active]:bg-primary data-[state=active]:text-white data-[state=active]:shadow-md transition-all duration-300 rounded-md"
               >
-                <TrendingUp className="h-3 w-3" />
+                <TrendingUp className="h-4 w-4" />
                 Trend
               </TabsTrigger>
               <TabsTrigger 
                 value="new" 
-                className="flex flex-col items-center gap-1 text-[10px] px-2 py-2 hover:bg-primary/10 hover:text-primary data-[state=active]:bg-primary data-[state=active]:text-primary-foreground transition-colors"
+                className="flex flex-col items-center gap-1 text-[11px] font-medium px-2 py-3 hover:bg-primary/15 hover:text-primary data-[state=active]:bg-primary data-[state=active]:text-white data-[state=active]:shadow-md transition-all duration-300 rounded-md"
               >
-                <Sparkles className="h-3 w-3" />
+                <Sparkles className="h-4 w-4" />
                 New
               </TabsTrigger>
               <TabsTrigger 
                 value="verified" 
-                className="flex flex-col items-center gap-1 text-[10px] px-2 py-2 hover:bg-primary/10 hover:text-primary data-[state=active]:bg-primary data-[state=active]:text-primary-foreground transition-colors"
+                className="flex flex-col items-center gap-1 text-[11px] font-medium px-2 py-3 hover:bg-primary/15 hover:text-primary data-[state=active]:bg-primary data-[state=active]:text-white data-[state=active]:shadow-md transition-all duration-300 rounded-md"
               >
-                <CheckCircle className="h-3 w-3" />
+                <CheckCircle className="h-4 w-4" />
                 Verify
               </TabsTrigger>
               <TabsTrigger 
                 value="explore" 
-                className="flex flex-col items-center gap-1 text-[10px] px-2 py-2 hover:bg-primary/10 hover:text-primary data-[state=active]:bg-primary data-[state=active]:text-primary-foreground transition-colors"
+                className="flex flex-col items-center gap-1 text-[11px] font-medium px-2 py-3 hover:bg-primary/15 hover:text-primary data-[state=active]:bg-primary data-[state=active]:text-white data-[state=active]:shadow-md transition-all duration-300 rounded-md"
               >
-                <Compass className="h-3 w-3" />
+                <Compass className="h-4 w-4" />
                 More
               </TabsTrigger>
             </TabsList>
@@ -238,40 +238,40 @@ export function PublicRoomsSection() {
           {/* Room Category Tabs on the right side */}
           <div className="flex items-center gap-4">
             <Tabs value={activeTab} onValueChange={setActiveTab}>
-              <TabsList className="grid grid-cols-5 bg-card border border-border">
+              <TabsList className="grid grid-cols-5 bg-card/50 border border-border/50 rounded-lg p-1">
                 <TabsTrigger 
                   value="hot" 
-                  className="flex items-center gap-1 text-xs px-3 py-1 hover:bg-primary/10 hover:text-primary data-[state=active]:bg-primary data-[state=active]:text-primary-foreground transition-colors"
+                  className="flex items-center gap-2 text-sm font-medium px-4 py-2 hover:bg-primary/15 hover:text-primary data-[state=active]:bg-primary data-[state=active]:text-white data-[state=active]:shadow-md transition-all duration-300 rounded-md"
                 >
-                  <Flame className="h-3 w-3" />
+                  <Flame className="h-4 w-4" />
                   Hot
                 </TabsTrigger>
                 <TabsTrigger 
                   value="trending" 
-                  className="flex items-center gap-1 text-xs px-3 py-1 hover:bg-primary/10 hover:text-primary data-[state=active]:bg-primary data-[state=active]:text-primary-foreground transition-colors"
+                  className="flex items-center gap-2 text-sm font-medium px-4 py-2 hover:bg-primary/15 hover:text-primary data-[state=active]:bg-primary data-[state=active]:text-white data-[state=active]:shadow-md transition-all duration-300 rounded-md"
                 >
-                  <TrendingUp className="h-3 w-3" />
+                  <TrendingUp className="h-4 w-4" />
                   Trending
                 </TabsTrigger>
                 <TabsTrigger 
                   value="new" 
-                  className="flex items-center gap-1 text-xs px-3 py-1 hover:bg-primary/10 hover:text-primary data-[state=active]:bg-primary data-[state=active]:text-primary-foreground transition-colors"
+                  className="flex items-center gap-2 text-sm font-medium px-4 py-2 hover:bg-primary/15 hover:text-primary data-[state=active]:bg-primary data-[state=active]:text-white data-[state=active]:shadow-md transition-all duration-300 rounded-md"
                 >
-                  <Sparkles className="h-3 w-3" />
+                  <Sparkles className="h-4 w-4" />
                   New
                 </TabsTrigger>
                 <TabsTrigger 
                   value="verified" 
-                  className="flex items-center gap-1 text-xs px-3 py-1 hover:bg-primary/10 hover:text-primary data-[state=active]:bg-primary data-[state=active]:text-primary-foreground transition-colors"
+                  className="flex items-center gap-2 text-sm font-medium px-4 py-2 hover:bg-primary/15 hover:text-primary data-[state=active]:bg-primary data-[state=active]:text-white data-[state=active]:shadow-md transition-all duration-300 rounded-md"
                 >
-                  <CheckCircle className="h-3 w-3" />
+                  <CheckCircle className="h-4 w-4" />
                   Verified
                 </TabsTrigger>
                 <TabsTrigger 
                   value="explore" 
-                  className="flex items-center gap-1 text-xs px-3 py-1 hover:bg-primary/10 hover:text-primary data-[state=active]:bg-primary data-[state=active]:text-primary-foreground transition-colors"
+                  className="flex items-center gap-2 text-sm font-medium px-4 py-2 hover:bg-primary/15 hover:text-primary data-[state=active]:bg-primary data-[state=active]:text-white data-[state=active]:shadow-md transition-all duration-300 rounded-md"
                 >
-                  <Compass className="h-3 w-3" />
+                  <Compass className="h-4 w-4" />
                   Explore
                 </TabsTrigger>
               </TabsList>
@@ -286,7 +286,7 @@ export function PublicRoomsSection() {
             </Link>
           </div>
         </div>
-            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+            <div className="grid gap-4 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
           {rooms.map((room) => (
             <Card key={room.room.id} className="overflow-hidden group hover:shadow-lg transition-all duration-200">
               {/* Room Header with theme background */}
@@ -299,6 +299,11 @@ export function PublicRoomsSection() {
                     <Badge className="absolute top-2 left-2 bg-accent text-accent-foreground">
                       Featured
                     </Badge>
+                  )}
+                  {room.owner.isVerified && (
+                    <div className="absolute top-2 right-12 bg-blue-500 text-white rounded-full p-1.5 shadow-lg">
+                      <CheckCircle className="w-4 h-4" fill="currentColor" />
+                    </div>
                   )}
                 </div>
                 <Badge className={`absolute top-2 right-2 ${getStatusColor(room.room.status)}`}>
@@ -321,6 +326,11 @@ export function PublicRoomsSection() {
                 )}
                 <div className="flex items-center gap-2 text-xs text-muted-foreground">
                   <span>by {room.owner.displayName || room.owner.username}</span>
+                  {room.owner.isVerified && (
+                    <div className="inline-flex items-center bg-blue-500 text-white rounded-full p-1">
+                      <CheckCircle className="w-3 h-3" fill="currentColor" />
+                    </div>
+                  )}
                 </div>
               </CardHeader>
               
@@ -374,9 +384,11 @@ export function PublicRoomsSection() {
                       </Badge>
                     ))}
                     {room.owner.isVerified && (
-                      <Badge className="bg-primary/10 text-primary border border-primary/20 text-xs">
-                        <CheckCircle className="w-3 h-3 mr-1" />
-                        Verified Owner
+                      <Badge className="bg-blue-50 text-blue-600 border border-blue-200 text-xs flex items-center gap-1">
+                        <div className="inline-flex items-center justify-center bg-blue-500 text-white rounded-full w-4 h-4">
+                          <CheckCircle className="w-3 h-3" fill="currentColor" />
+                        </div>
+                        Verified
                       </Badge>
                     )}
                     {room.room.tags.length > 2 && (
