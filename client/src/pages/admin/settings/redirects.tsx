@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import AdminLayout from "@/components/layout/admin-layout";
+import AdminNavigation from "@/components/admin/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -207,8 +207,9 @@ export default function RedirectsPage() {
   };
 
   return (
-    <AdminLayout>
-      <div className="p-6">
+    <div className="flex min-h-screen bg-background">
+      <AdminNavigation />
+      <div className="flex-1 p-6 space-y-6">
         <div className="flex justify-between items-center mb-6">
           <h1 className="text-2xl font-bold tracking-tight text-foreground">URL Redirects</h1>
           <Button onClick={() => setIsCreateDialogOpen(true)}>
@@ -620,6 +621,6 @@ export default function RedirectsPage() {
           </DialogContent>
         </Dialog>
       </div>
-    </AdminLayout>
+    </div>
   );
 }
