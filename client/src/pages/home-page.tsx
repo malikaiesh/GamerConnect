@@ -14,6 +14,7 @@ import { RandomGameButton } from '@/components/home/random-game-button';
 import { RandomGameSection } from '@/components/games/random-game-section';
 import { HomeAd } from '@/components/ads/home-ad';
 import { HeroSlider } from '@/components/HeroSlider';
+import { PublicRoomsSection } from '@/components/home/public-rooms-section';
 import { Game, BlogPost, PushNotification as PushNotificationType } from '@shared/schema';
 import { apiRequest } from '@/lib/queryClient';
 
@@ -160,10 +161,13 @@ export default function HomePage() {
                 <Link href="/games" className="bg-primary hover:bg-primary/90 text-primary-foreground font-bold py-3 px-6 rounded-lg transition-colors shadow-lg">
                   Play Now
                 </Link>
-                <Link href="/categories" className="bg-secondary hover:bg-secondary/90 text-secondary-foreground font-bold py-3 px-6 rounded-lg transition-colors shadow-lg">
+                <Link href="/rooms" className="bg-secondary hover:bg-secondary/90 text-secondary-foreground font-bold py-3 px-6 rounded-lg transition-colors shadow-lg">
+                  Join Rooms
+                </Link>
+                <Link href="/categories" className="bg-accent hover:bg-accent/90 text-accent-foreground font-bold py-3 px-6 rounded-lg transition-colors shadow-lg">
                   Browse Categories
                 </Link>
-                <Link href="/events" className="bg-accent hover:bg-accent/90 text-accent-foreground font-bold py-3 px-6 rounded-lg transition-colors shadow-lg" data-testid="hero-events-button">
+                <Link href="/events" className="bg-muted hover:bg-muted/90 text-muted-foreground font-bold py-3 px-6 rounded-lg transition-colors shadow-lg" data-testid="hero-events-button">
                   Gaming Events
                 </Link>
                 <RandomGameButton 
@@ -212,6 +216,9 @@ export default function HomePage() {
       
       {/* Ad Below Featured Games */}
       <HomeAd position="below_featured" />
+      
+      {/* Public Rooms Section */}
+      <PublicRoomsSection />
       
       {/* Random Game Banner */}
       <section className="py-8 bg-background">
