@@ -179,7 +179,60 @@ export function PublicRoomsSection() {
   return (
     <section className="py-10 bg-background">
       <div className="container mx-auto px-4">
-        <div className="flex justify-between items-center mb-6">
+        {/* Mobile Layout */}
+        <div className="block md:hidden">
+          <div className="flex justify-between items-center mb-4">
+            <h2 className="heading-md">Popular Rooms</h2>
+            <Link href="/rooms">
+              <Button variant="outline" size="sm" className="bg-primary/5 hover:bg-primary hover:text-primary-foreground border-primary/20 hover:border-primary transition-all duration-300 shadow-sm hover:shadow-md">
+                <Eye className="h-3 w-3 mr-1" />
+                View All
+              </Button>
+            </Link>
+          </div>
+          <Tabs value={activeTab} onValueChange={setActiveTab} className="mb-4">
+            <TabsList className="grid grid-cols-5 w-full bg-card border border-border">
+              <TabsTrigger 
+                value="hot" 
+                className="flex flex-col items-center gap-1 text-[10px] px-2 py-2 hover:bg-primary/10 hover:text-primary data-[state=active]:bg-primary data-[state=active]:text-primary-foreground transition-colors"
+              >
+                <Flame className="h-3 w-3" />
+                Hot
+              </TabsTrigger>
+              <TabsTrigger 
+                value="trending" 
+                className="flex flex-col items-center gap-1 text-[10px] px-2 py-2 hover:bg-primary/10 hover:text-primary data-[state=active]:bg-primary data-[state=active]:text-primary-foreground transition-colors"
+              >
+                <TrendingUp className="h-3 w-3" />
+                Trend
+              </TabsTrigger>
+              <TabsTrigger 
+                value="new" 
+                className="flex flex-col items-center gap-1 text-[10px] px-2 py-2 hover:bg-primary/10 hover:text-primary data-[state=active]:bg-primary data-[state=active]:text-primary-foreground transition-colors"
+              >
+                <Sparkles className="h-3 w-3" />
+                New
+              </TabsTrigger>
+              <TabsTrigger 
+                value="verified" 
+                className="flex flex-col items-center gap-1 text-[10px] px-2 py-2 hover:bg-primary/10 hover:text-primary data-[state=active]:bg-primary data-[state=active]:text-primary-foreground transition-colors"
+              >
+                <CheckCircle className="h-3 w-3" />
+                Verify
+              </TabsTrigger>
+              <TabsTrigger 
+                value="explore" 
+                className="flex flex-col items-center gap-1 text-[10px] px-2 py-2 hover:bg-primary/10 hover:text-primary data-[state=active]:bg-primary data-[state=active]:text-primary-foreground transition-colors"
+              >
+                <Compass className="h-3 w-3" />
+                More
+              </TabsTrigger>
+            </TabsList>
+          </Tabs>
+        </div>
+
+        {/* Desktop Layout */}
+        <div className="hidden md:flex justify-between items-center mb-6">
           <h2 className="heading-md">Popular Rooms</h2>
           
           {/* Room Category Tabs on the right side */}
@@ -224,8 +277,12 @@ export function PublicRoomsSection() {
               </TabsList>
             </Tabs>
             
-            <Link href="/rooms" className="text-primary hover:underline flex items-center ml-4">
-              View All <i className="ri-arrow-right-line ml-1"></i>
+            <Link href="/rooms">
+              <Button variant="outline" className="bg-primary/5 hover:bg-primary hover:text-primary-foreground border-primary/20 hover:border-primary transition-all duration-300 shadow-sm hover:shadow-md">
+                <Eye className="h-4 w-4 mr-2" />
+                View All
+                <i className="ri-arrow-right-line ml-2"></i>
+              </Button>
             </Link>
           </div>
         </div>
@@ -352,9 +409,14 @@ export function PublicRoomsSection() {
         {rooms.length > 0 && (
           <div className="text-center mt-8">
             <Link href="/rooms">
-              <Button variant="outline" size="lg">
+              <Button 
+                variant="outline" 
+                size="lg" 
+                className="bg-gradient-to-r from-primary/10 to-accent/10 hover:from-primary hover:to-accent hover:text-primary-foreground border-primary/30 hover:border-primary transition-all duration-500 shadow-lg hover:shadow-xl hover:scale-105 px-8 py-3"
+              >
+                <Eye className="h-5 w-5 mr-2" />
                 View All Rooms
-                <i className="ri-arrow-right-line ml-2"></i>
+                <i className="ri-arrow-right-line ml-2 transition-transform group-hover:translate-x-1"></i>
               </Button>
             </Link>
           </div>
