@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import AdminLayout from "@/components/layout/admin-layout";
+import AdminNavigation from "@/components/admin/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -165,20 +165,24 @@ export default function GamesIntegrationPage() {
 
   if (isLoading) {
     return (
-      <AdminLayout>
-        <div className="flex items-center justify-center h-64">
-          <Loader2 className="w-8 h-8 animate-spin" />
+      <div className="flex min-h-screen bg-background">
+        <AdminNavigation />
+        <div className="flex-1 p-6">
+          <div className="flex items-center justify-center h-64">
+            <Loader2 className="w-8 h-8 animate-spin text-foreground" />
+          </div>
         </div>
-      </AdminLayout>
+      </div>
     );
   }
 
   return (
-    <AdminLayout>
-      <div className="space-y-6">
+    <div className="flex min-h-screen bg-background">
+      <AdminNavigation />
+      <div className="flex-1 p-6 space-y-6">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-3xl font-bold tracking-tight">Games Integration</h1>
+            <h1 className="text-3xl font-bold tracking-tight text-foreground">Games Integration</h1>
             <p className="text-muted-foreground">
               Configure how games are displayed within blog articles and content
             </p>
@@ -192,13 +196,13 @@ export default function GamesIntegrationPage() {
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
             
             {/* Main Configuration */}
-            <Card>
+            <Card className="border-border bg-card">
               <CardHeader>
-                <CardTitle className="flex items-center gap-2">
+                <CardTitle className="flex items-center gap-2 text-foreground">
                   <Settings className="w-5 h-5" />
                   Integration Settings
                 </CardTitle>
-                <CardDescription>
+                <CardDescription className="text-muted-foreground">
                   Configure how games appear in your blog articles
                 </CardDescription>
               </CardHeader>
@@ -207,10 +211,10 @@ export default function GamesIntegrationPage() {
                   control={form.control}
                   name="blogGamesEnabled"
                   render={({ field }) => (
-                    <FormItem className="flex flex-row items-center justify-between p-4 border rounded-md">
+                    <FormItem className="flex flex-row items-center justify-between p-4 border border-border bg-background rounded-md">
                       <div className="space-y-0.5">
-                        <FormLabel className="text-base">Enable Blog Games Integration</FormLabel>
-                        <FormDescription>
+                        <FormLabel className="text-base text-foreground">Enable Blog Games Integration</FormLabel>
+                        <FormDescription className="text-muted-foreground">
                           Show featured games within blog articles at specific paragraph positions
                         </FormDescription>
                       </div>
@@ -229,10 +233,10 @@ export default function GamesIntegrationPage() {
                     control={form.control}
                     name="showGameRatings"
                     render={({ field }) => (
-                      <FormItem className="flex flex-row items-center justify-between p-4 border rounded-md">
+                      <FormItem className="flex flex-row items-center justify-between p-4 border border-border bg-background rounded-md">
                         <div className="space-y-0.5">
-                          <FormLabel>Show Game Ratings</FormLabel>
-                          <FormDescription>
+                          <FormLabel className="text-foreground">Show Game Ratings</FormLabel>
+                          <FormDescription className="text-muted-foreground">
                             Display star ratings for games
                           </FormDescription>
                         </div>
@@ -250,10 +254,10 @@ export default function GamesIntegrationPage() {
                     control={form.control}
                     name="showPlayCounts"
                     render={({ field }) => (
-                      <FormItem className="flex flex-row items-center justify-between p-4 border rounded-md">
+                      <FormItem className="flex flex-row items-center justify-between p-4 border border-border bg-background rounded-md">
                         <div className="space-y-0.5">
-                          <FormLabel>Show Play Counts</FormLabel>
-                          <FormDescription>
+                          <FormLabel className="text-foreground">Show Play Counts</FormLabel>
+                          <FormDescription className="text-muted-foreground">
                             Display how many times games have been played
                           </FormDescription>
                         </div>
@@ -271,13 +275,13 @@ export default function GamesIntegrationPage() {
             </Card>
 
             {/* Display Options */}
-            <Card>
+            <Card className="border-border bg-card">
               <CardHeader>
-                <CardTitle className="flex items-center gap-2">
+                <CardTitle className="flex items-center gap-2 text-foreground">
                   <Eye className="w-5 h-5" />
                   Display Options
                 </CardTitle>
-                <CardDescription>
+                <CardDescription className="text-muted-foreground">
                   Customize how games appear to your readers
                 </CardDescription>
               </CardHeader>
@@ -287,10 +291,10 @@ export default function GamesIntegrationPage() {
                     control={form.control}
                     name="showGameCategories"
                     render={({ field }) => (
-                      <FormItem className="flex flex-row items-center justify-between p-4 border rounded-md">
+                      <FormItem className="flex flex-row items-center justify-between p-4 border border-border bg-background rounded-md">
                         <div className="space-y-0.5">
-                          <FormLabel>Show Game Categories</FormLabel>
-                          <FormDescription>
+                          <FormLabel className="text-foreground">Show Game Categories</FormLabel>
+                          <FormDescription className="text-muted-foreground">
                             Display category badges on game cards
                           </FormDescription>
                         </div>
@@ -308,10 +312,10 @@ export default function GamesIntegrationPage() {
                     control={form.control}
                     name="autoRotateGames"
                     render={({ field }) => (
-                      <FormItem className="flex flex-row items-center justify-between p-4 border rounded-md">
+                      <FormItem className="flex flex-row items-center justify-between p-4 border border-border bg-background rounded-md">
                         <div className="space-y-0.5">
-                          <FormLabel>Auto-Rotate Games</FormLabel>
-                          <FormDescription>
+                          <FormLabel className="text-foreground">Auto-Rotate Games</FormLabel>
+                          <FormDescription className="text-muted-foreground">
                             Show different games at each position
                           </FormDescription>
                         </div>
@@ -329,13 +333,13 @@ export default function GamesIntegrationPage() {
             </Card>
 
             {/* Individual Paragraph Controls */}
-            <Card>
+            <Card className="border-border bg-card">
               <CardHeader>
-                <CardTitle className="flex items-center gap-2">
+                <CardTitle className="flex items-center gap-2 text-foreground">
                   <BarChart3 className="w-5 h-5" />
                   Paragraph Position Controls
                 </CardTitle>
-                <CardDescription>
+                <CardDescription className="text-muted-foreground">
                   Enable or disable games at specific paragraph positions in blog articles
                 </CardDescription>
               </CardHeader>
@@ -345,10 +349,10 @@ export default function GamesIntegrationPage() {
                     control={form.control}
                     name="paragraph2GamesEnabled"
                     render={({ field }) => (
-                      <FormItem className="flex flex-row items-center justify-between p-4 border rounded-md bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-950/20 dark:to-indigo-950/20">
+                      <FormItem className="flex flex-row items-center justify-between p-4 border border-border rounded-md bg-gradient-to-r from-primary/10 to-primary/5">
                         <div className="space-y-0.5">
-                          <FormLabel className="text-blue-700 dark:text-blue-300 font-semibold">Paragraph 2 Games</FormLabel>
-                          <FormDescription>
+                          <FormLabel className="text-primary font-semibold">Paragraph 2 Games</FormLabel>
+                          <FormDescription className="text-muted-foreground">
                             Show games after the 2nd paragraph in each section
                           </FormDescription>
                         </div>
@@ -366,10 +370,10 @@ export default function GamesIntegrationPage() {
                     control={form.control}
                     name="paragraph6GamesEnabled"
                     render={({ field }) => (
-                      <FormItem className="flex flex-row items-center justify-between p-4 border rounded-md bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-950/20 dark:to-emerald-950/20">
+                      <FormItem className="flex flex-row items-center justify-between p-4 border border-border rounded-md bg-gradient-to-r from-primary/8 to-primary/4">
                         <div className="space-y-0.5">
-                          <FormLabel className="text-green-700 dark:text-green-300 font-semibold">Paragraph 6 Games</FormLabel>
-                          <FormDescription>
+                          <FormLabel className="text-primary font-semibold">Paragraph 6 Games</FormLabel>
+                          <FormDescription className="text-muted-foreground">
                             Show games after the 6th paragraph in articles
                           </FormDescription>
                         </div>
@@ -387,10 +391,10 @@ export default function GamesIntegrationPage() {
                     control={form.control}
                     name="paragraph8GamesEnabled"
                     render={({ field }) => (
-                      <FormItem className="flex flex-row items-center justify-between p-4 border rounded-md bg-gradient-to-r from-purple-50 to-violet-50 dark:from-purple-950/20 dark:to-violet-950/20">
+                      <FormItem className="flex flex-row items-center justify-between p-4 border border-border rounded-md bg-gradient-to-r from-primary/6 to-primary/3">
                         <div className="space-y-0.5">
-                          <FormLabel className="text-purple-700 dark:text-purple-300 font-semibold">Paragraph 8 Games</FormLabel>
-                          <FormDescription>
+                          <FormLabel className="text-primary font-semibold">Paragraph 8 Games</FormLabel>
+                          <FormDescription className="text-muted-foreground">
                             Show games after the 8th paragraph in articles
                           </FormDescription>
                         </div>
@@ -408,10 +412,10 @@ export default function GamesIntegrationPage() {
                     control={form.control}
                     name="paragraph10GamesEnabled"
                     render={({ field }) => (
-                      <FormItem className="flex flex-row items-center justify-between p-4 border rounded-md bg-gradient-to-r from-orange-50 to-red-50 dark:from-orange-950/20 dark:to-red-950/20">
+                      <FormItem className="flex flex-row items-center justify-between p-4 border border-border rounded-md bg-gradient-to-r from-primary/4 to-primary/2">
                         <div className="space-y-0.5">
-                          <FormLabel className="text-orange-700 dark:text-orange-300 font-semibold">Paragraph 10 Games</FormLabel>
-                          <FormDescription>
+                          <FormLabel className="text-primary font-semibold">Paragraph 10 Games</FormLabel>
+                          <FormDescription className="text-muted-foreground">
                             Show games after the 10th paragraph in articles
                           </FormDescription>
                         </div>
@@ -427,7 +431,7 @@ export default function GamesIntegrationPage() {
                 </div>
                 <div className="mt-6 p-4 bg-muted/50 rounded-lg">
                   <p className="text-sm text-muted-foreground">
-                    💡 <strong>Pro Tip:</strong> Games rotate automatically to provide variety across different blog articles.
+                    💡 <strong className="text-foreground">Pro Tip:</strong> Games rotate automatically to provide variety across different blog articles.
                     Each enabled position shows a different featured game to keep content fresh and engaging for your readers.
                   </p>
                 </div>
@@ -448,6 +452,6 @@ export default function GamesIntegrationPage() {
           </form>
         </Form>
       </div>
-    </AdminLayout>
+    </div>
   );
 }
