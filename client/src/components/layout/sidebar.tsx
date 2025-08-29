@@ -10,10 +10,12 @@ import {
   Star,
   Zap,
   PlusCircle,
-  Settings
+  Settings,
+  Palette
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { ThemeSwitcher } from "@/components/layout/theme-switcher";
 
 export function Sidebar() {
   const [location] = useLocation();
@@ -25,15 +27,15 @@ export function Sidebar() {
   if (!isAuthenticated) return null;
 
   return (
-    <div className="w-64 bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-800 h-screen fixed left-0 top-0 z-40 flex flex-col">
+    <div className="w-64 bg-card text-card-foreground border-r border-border h-screen fixed left-0 top-0 z-40 flex flex-col">
       {/* Header */}
-      <div className="p-4 border-b border-gray-200 dark:border-gray-800">
+      <div className="p-4 border-b border-border">
         <Link href="/user-dashboard">
           <div className="flex items-center space-x-2 cursor-pointer">
-            <div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-purple-600 rounded-lg flex items-center justify-center">
-              <GamepadIcon className="w-4 h-4 text-white" />
+            <div className="w-8 h-8 bg-gradient-to-r from-primary to-primary/80 rounded-lg flex items-center justify-center">
+              <GamepadIcon className="w-4 h-4 text-primary-foreground" />
             </div>
-            <span className="font-semibold text-gray-900 dark:text-white">Gaming Portal</span>
+            <span className="font-semibold text-foreground">Gaming Portal</span>
           </div>
         </Link>
       </div>
@@ -54,7 +56,7 @@ export function Sidebar() {
 
         {/* Games Section */}
         <div className="pt-4">
-          <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-2">Games</h3>
+          <h3 className="text-sm font-medium text-muted-foreground mb-2">Games</h3>
           <div className="space-y-1">
             <Link href="/games">
               <Button 
@@ -71,7 +73,7 @@ export function Sidebar() {
 
         {/* Rooms Section */}
         <div className="pt-4">
-          <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-2">Rooms</h3>
+          <h3 className="text-sm font-medium text-muted-foreground mb-2">Rooms</h3>
           <div className="space-y-1">
             <Link href="/rooms/my-rooms">
               <Button 
@@ -90,7 +92,7 @@ export function Sidebar() {
                 className="w-full justify-start"
                 data-testid="nav-hot-rooms"
               >
-                <Zap className="w-4 h-4 mr-2 text-red-500" />
+                <Zap className="w-4 h-4 mr-2 text-destructive" />
                 Hot Rooms
                 <Badge variant="destructive" className="ml-auto text-xs">🔥</Badge>
               </Button>
@@ -102,7 +104,7 @@ export function Sidebar() {
                 className="w-full justify-start"
                 data-testid="nav-explore-rooms"
               >
-                <Search className="w-4 h-4 mr-2 text-blue-500" />
+                <Search className="w-4 h-4 mr-2 text-primary" />
                 Explore Rooms
               </Button>
             </Link>
@@ -113,7 +115,7 @@ export function Sidebar() {
                 className="w-full justify-start"
                 data-testid="nav-trending-rooms"
               >
-                <TrendingUp className="w-4 h-4 mr-2 text-green-500" />
+                <TrendingUp className="w-4 h-4 mr-2 text-primary" />
                 Trending Rooms
               </Button>
             </Link>
@@ -124,7 +126,7 @@ export function Sidebar() {
                 className="w-full justify-start"
                 data-testid="nav-new-rooms"
               >
-                <Star className="w-4 h-4 mr-2 text-yellow-500" />
+                <Star className="w-4 h-4 mr-2 text-accent" />
                 New Rooms
               </Button>
             </Link>
@@ -133,7 +135,7 @@ export function Sidebar() {
 
         {/* Social Section */}
         <div className="pt-4">
-          <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-2">Social</h3>
+          <h3 className="text-sm font-medium text-muted-foreground mb-2">Social</h3>
           <div className="space-y-1">
             <Link href="/friends">
               <Button 
@@ -161,8 +163,16 @@ export function Sidebar() {
         </div>
       </nav>
 
+      {/* Theme Switcher */}
+      <div className="p-4 border-t border-border">
+        <div className="flex items-center justify-between mb-3">
+          <h3 className="text-sm font-medium text-muted-foreground">Theme</h3>
+          <ThemeSwitcher />
+        </div>
+      </div>
+
       {/* Create Room Button */}
-      <div className="p-4 border-t border-gray-200 dark:border-gray-800">
+      <div className="p-4 border-t border-border">
         <Link href="/rooms/create">
           <Button className="w-full" data-testid="button-create-room">
             <PlusCircle className="w-4 h-4 mr-2" />
@@ -172,24 +182,24 @@ export function Sidebar() {
       </div>
 
       {/* User Info */}
-      <div className="p-4 border-t border-gray-200 dark:border-gray-800">
+      <div className="p-4 border-t border-border">
         <Link href="/profile">
           <Button 
             variant="ghost" 
-            className="w-full p-2 h-auto justify-start hover:bg-gray-100 dark:hover:bg-gray-800"
+            className="w-full p-2 h-auto justify-start hover:bg-muted/50"
             data-testid="nav-profile"
           >
             <div className="flex items-center space-x-2 w-full">
-              <div className="w-8 h-8 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full flex items-center justify-center">
-                <span className="text-white text-sm font-medium">
+              <div className="w-8 h-8 bg-gradient-to-r from-primary to-primary/80 rounded-full flex items-center justify-center">
+                <span className="text-primary-foreground text-sm font-medium">
                   {user?.username?.charAt(0)?.toUpperCase() || 'U'}
                 </span>
               </div>
               <div className="flex-1 min-w-0 text-left">
-                <p className="text-sm font-medium text-gray-900 dark:text-white truncate">
+                <p className="text-sm font-medium text-foreground truncate">
                   {user?.displayName || user?.username || 'User'}
                 </p>
-                <p className="text-xs text-gray-500 dark:text-gray-400">
+                <p className="text-xs text-muted-foreground">
                   View Profile
                 </p>
               </div>
