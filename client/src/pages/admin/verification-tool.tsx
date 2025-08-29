@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import AdminNavigation from "@/components/admin/navigation";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -207,11 +208,13 @@ export default function VerificationTool() {
   };
 
   return (
-    <div className="p-6 space-y-6">
-      <div className="flex items-center space-x-2">
-        <Shield className="w-6 h-6" />
-        <h1 className="text-2xl font-bold">Verification Tool</h1>
-      </div>
+    <div className="flex min-h-screen bg-gray-50 dark:bg-gray-950">
+      <AdminNavigation />
+      <div className="flex-1 ml-64 p-6 space-y-6">
+        <div className="flex items-center space-x-2">
+          <Shield className="w-6 h-6" />
+          <h1 className="text-2xl font-bold">Verification Tool</h1>
+        </div>
 
       {/* Statistics Cards */}
       {stats && (
@@ -520,6 +523,7 @@ export default function VerificationTool() {
           </Card>
         </TabsContent>
       </Tabs>
+      </div>
     </div>
   );
 }
