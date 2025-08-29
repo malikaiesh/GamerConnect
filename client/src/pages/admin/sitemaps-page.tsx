@@ -6,7 +6,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "@/hooks/use-toast";
-import { AdminLayout } from "@/components/admin/layout";
+import AdminNavigation from "@/components/admin/navigation";
 import { Switch } from "@/components/ui/switch";
 import { format } from "date-fns";
 import { apiRequest, queryClient } from "@/lib/queryClient";
@@ -139,8 +139,9 @@ export default function SitemapsPage() {
   };
 
   return (
-    <AdminLayout>
-      <div className="p-6">
+    <div className="flex min-h-screen bg-background">
+      <AdminNavigation />
+      <div className="flex-1 ml-64 p-6">
         <div className="flex items-center justify-between mb-6">
           <div>
             <h1 className="text-3xl font-bold tracking-tight text-foreground">Sitemaps</h1>
@@ -167,7 +168,7 @@ export default function SitemapsPage() {
           </Button>
         </div>
 
-        <Card>
+        <Card className="border-border bg-card">
           <CardHeader>
             <CardTitle className="text-foreground">Sitemap Configuration</CardTitle>
             <CardDescription className="text-muted-foreground">
@@ -251,7 +252,7 @@ export default function SitemapsPage() {
               </Table>
             )}
           </CardContent>
-          <CardFooter className="flex justify-between bg-muted/50 p-4 text-sm text-muted-foreground">
+          <CardFooter className="flex justify-between bg-card/50 border-t border-border p-4 text-sm text-muted-foreground">
             <div>
               <p>XML sitemaps help search engines like Google find and index your content.</p>
               <p>The main sitemap index links to all other sitemaps.</p>
@@ -262,6 +263,6 @@ export default function SitemapsPage() {
           </CardFooter>
         </Card>
       </div>
-    </AdminLayout>
+    </div>
   );
 }
