@@ -157,6 +157,16 @@ export default function HomePage() {
               <p className="text-lg md:text-xl mb-6 text-white/90">
                 Discover thousands of immersive games across all genres. No downloads required - play instantly in your browser!
               </p>
+              <div className="flex flex-wrap gap-4 mb-4">
+                <Link href="/verification" className="bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-bold py-3 px-6 rounded-lg transition-all shadow-lg flex items-center">
+                  <i className="ri-verified-badge-line mr-2"></i>
+                  Get Verified
+                </Link>
+                <Link href="/admin/pricing/plans" className="bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white font-bold py-3 px-6 rounded-lg transition-all shadow-lg flex items-center">
+                  <i className="ri-money-dollar-circle-line mr-2"></i>
+                  Pricing Plans
+                </Link>
+              </div>
               <div className="flex flex-wrap gap-4">
                 <Link href="/games" className="bg-primary hover:bg-primary/90 text-primary-foreground font-bold py-3 px-6 rounded-lg transition-colors shadow-lg">
                   Play Now
