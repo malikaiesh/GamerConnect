@@ -223,6 +223,13 @@ function Router() {
       </Route>
       
       {/* User Dashboard pages */}
+      <Route path="/user-dashboard">
+        <Suspense fallback={<LoadingFallback />}>
+          <ProtectedRoute>
+            <MyRoomsPage />
+          </ProtectedRoute>
+        </Suspense>
+      </Route>
       <Route path="/my-rooms">
         <Suspense fallback={<LoadingFallback />}>
           <ProtectedRoute>
