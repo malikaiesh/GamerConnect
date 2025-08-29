@@ -7,7 +7,7 @@ const DEFAULT_HERO_IMAGES = [
   {
     title: 'High-Speed Gaming',
     description: 'Experience the thrill of fast-paced racing games',
-    imagePath: 'https://storage.googleapis.com/repl-objects-621a5d4f-bb47-405b-9e45-75e1cc7fa806/.private/uploads/car.png',
+    imagePath: '/uploads/hero/car.png',
     linkUrl: '/games?category=racing',
     linkText: 'Play Racing Games',
     isActive: true,

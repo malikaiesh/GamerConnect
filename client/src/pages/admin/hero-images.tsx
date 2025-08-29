@@ -280,28 +280,31 @@ export default function AdminHeroImages() {
     }
 
     try {
-      // Get upload parameters
-      const response = await apiRequest("/api/objects/upload", { method: "POST" });
-      
-      // Upload file directly
-      const uploadResponse = await fetch(response.uploadURL, {
-        method: 'PUT',
-        body: file,
-        headers: {
-          'Content-Type': file.type,
-        },
+      // Create FormData for proper file upload
+      const formData = new FormData();
+      formData.append('image', file);
+
+      // Upload to local server endpoint
+      const response = await fetch('/api/upload-image', {
+        method: 'POST',
+        body: formData,
       });
 
-      if (uploadResponse.ok) {
-        // Set the uploaded image URL to the form
-        form.setValue('imagePath', response.uploadURL);
-        toast({
-          title: "Success",
-          description: "Hero image uploaded successfully"
-        });
-      } else {
+      if (!response.ok) {
         throw new Error('Upload failed');
       }
+
+      const result = await response.json();
+      
+      // Set the uploaded image URL to the form (use the optimized WebP version if available)
+      const imageUrl = result.location || result.webpPath || result.path;
+      form.setValue('imagePath', imageUrl);
+      
+      toast({
+        title: "Success",
+        description: "Hero image uploaded successfully"
+      });
+
     } catch (error) {
       console.error('Upload error:', error);
       toast({
