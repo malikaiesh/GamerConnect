@@ -496,8 +496,8 @@ export default function MyRoomsPage() {
                 }
               }}
               onInput={(e) => {
-                // Prevent any scrolling during input
-                e.preventDefault();
+                // Don't prevent default for onInput - this breaks typing
+                e.stopPropagation();
               }}
               onClick={(e) => {
                 e.stopPropagation();
