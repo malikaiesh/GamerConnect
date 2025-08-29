@@ -5,7 +5,7 @@ import { Request, Response, NextFunction } from 'express';
  */
 export function isAuthenticated(req: Request, res: Response, next: NextFunction) {
   if (!req.isAuthenticated()) {
-    return res.status(401).json({ message: 'Authentication required' });
+    return res.status(401).json({ message: 'Not authenticated' });
   }
   next();
 }
@@ -15,7 +15,7 @@ export function isAuthenticated(req: Request, res: Response, next: NextFunction)
  */
 export function isAdmin(req: Request, res: Response, next: NextFunction) {
   if (!req.isAuthenticated()) {
-    return res.status(401).json({ message: 'Authentication required' });
+    return res.status(401).json({ message: 'Not authenticated' });
   }
   
   // Check for admin privileges using both camelCase and snake_case field names

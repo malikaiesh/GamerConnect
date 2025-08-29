@@ -167,7 +167,7 @@ export function setupAuth(app: Express) {
       maxAge: 1000 * 60 * 60 * 24 * 7, // 1 week
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
-      sameSite: 'strict' // CSRF protection
+      sameSite: process.env.NODE_ENV === "production" ? 'strict' : 'lax' // CSRF protection, more permissive in dev
     }
   };
 
