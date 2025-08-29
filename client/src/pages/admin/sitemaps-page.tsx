@@ -141,7 +141,7 @@ export default function SitemapsPage() {
   return (
     <div className="flex min-h-screen bg-background">
       <AdminNavigation />
-      <div className="flex-1 ml-64 p-6">
+      <div className="flex-1 p-6 space-y-6">
         <div className="flex items-center justify-between mb-6">
           <div>
             <h1 className="text-3xl font-bold tracking-tight text-foreground">Sitemaps</h1>

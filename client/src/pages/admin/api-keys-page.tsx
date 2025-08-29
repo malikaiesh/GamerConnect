@@ -220,7 +220,7 @@ export default function ApiKeysPage() {
   return (
     <div className="flex min-h-screen bg-background">
       <AdminNavigation />
-      <div className="flex-1 ml-64 p-6">
+      <div className="flex-1 p-6 space-y-6">
         <div className="mb-6">
           <h1 className="text-3xl font-bold text-foreground">API Keys</h1>
           <p className="text-muted-foreground">Manage external service API keys and integrations</p>
