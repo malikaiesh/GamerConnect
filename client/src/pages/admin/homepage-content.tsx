@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { AdminLayout } from "@/components/admin/layout";
+import AdminNavigation from "@/components/admin/navigation";
 import { HomepageContentForm } from "@/components/admin/homepage-content-form";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
@@ -106,10 +106,14 @@ export default function AdminHomepageContent() {
   const inactiveContents = contents.filter(content => content.status === 'inactive');
 
   return (
-    <AdminLayout title="Homepage Content Management">
-      <div className="container mx-auto py-6">
+    <div className="flex min-h-screen bg-background">
+      <AdminNavigation />
+      <div className="flex-1 p-6">
         <div className="flex justify-between items-center mb-6">
-          <h1 className="text-3xl font-bold text-foreground">Homepage Content Management</h1>
+          <div>
+            <h1 className="text-3xl font-bold text-foreground">Homepage Content Management</h1>
+            <p className="text-muted-foreground">Manage content displayed on your homepage</p>
+          </div>
           <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
             <DialogTrigger asChild>
               <Button className="flex items-center gap-2">
@@ -146,9 +150,11 @@ export default function AdminHomepageContent() {
 
             <TabsContent value="active">
               {activeContents.length === 0 ? (
-                <div className="text-center py-8 bg-muted/30 rounded-md">
-                  No active content found. Create content and set it as active to display on the homepage.
-                </div>
+                <Card className="border-border bg-card">
+                  <CardContent className="text-center py-8">
+                    <p className="text-muted-foreground">No active content found. Create content and set it as active to display on the homepage.</p>
+                  </CardContent>
+                </Card>
               ) : (
                 <div className="grid grid-cols-1 gap-6">
                   {activeContents.map((content) => (
@@ -171,9 +177,11 @@ export default function AdminHomepageContent() {
 
             <TabsContent value="inactive">
               {inactiveContents.length === 0 ? (
-                <div className="text-center py-8 bg-muted/30 rounded-md">
-                  No inactive content found.
-                </div>
+                <Card className="border-border bg-card">
+                  <CardContent className="text-center py-8">
+                    <p className="text-muted-foreground">No inactive content found.</p>
+                  </CardContent>
+                </Card>
               ) : (
                 <div className="grid grid-cols-1 gap-6">
                   {inactiveContents.map((content) => (
@@ -238,7 +246,7 @@ export default function AdminHomepageContent() {
           </AlertDialogContent>
         </AlertDialog>
       </div>
-    </AdminLayout>
+    </div>
   );
 }
 
@@ -250,8 +258,8 @@ interface ContentCardProps {
 
 function ContentCard({ content, onEdit, onDelete }: ContentCardProps) {
   return (
-    <Card className="bg-background border-0">
-      <CardHeader className="bg-background border-0">
+    <Card className="border-border bg-card">
+      <CardHeader>
         <div className="flex items-center justify-between">
           <div>
             <CardTitle className="text-foreground">{content.title}</CardTitle>
@@ -262,7 +270,7 @@ function ContentCard({ content, onEdit, onDelete }: ContentCardProps) {
           </Badge>
         </div>
       </CardHeader>
-      <CardContent className="bg-background">
+      <CardContent>
         <div className="max-h-40 overflow-y-auto prose prose-sm dark:prose-invert">
           {content.content.split('\n\n').slice(0, 3).map((paragraph, idx) => (
             <p key={idx} className="mb-2 text-muted-foreground">{paragraph}</p>
@@ -272,7 +280,7 @@ function ContentCard({ content, onEdit, onDelete }: ContentCardProps) {
           )}
         </div>
       </CardContent>
-      <CardFooter className="flex justify-end gap-2 bg-background border-0">
+      <CardFooter className="flex justify-end gap-2">
         <Button variant="outline" size="sm" onClick={onEdit} className="flex items-center gap-1">
           <Edit size={16} />
           Edit
