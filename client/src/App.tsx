@@ -405,6 +405,26 @@ function Router() {
           <Suspense fallback={<LoadingFallback />}><AdminPricingPlansPage /></Suspense>
         </ProtectedRoute>
       </Route>
+      <Route path="/admin/pricing/subscriptions">
+        <ProtectedRoute adminOnly={true}>
+          <Suspense fallback={<LoadingFallback />}><AdminPricingPlansPage /></Suspense>
+        </ProtectedRoute>
+      </Route>
+      <Route path="/admin/pricing/diamonds">
+        <ProtectedRoute adminOnly={true}>
+          <Suspense fallback={<LoadingFallback />}><AdminPricingPlansPage /></Suspense>
+        </ProtectedRoute>
+      </Route>
+      <Route path="/admin/pricing/verification">
+        <ProtectedRoute adminOnly={true}>
+          <Suspense fallback={<LoadingFallback />}><AdminPricingPlansPage /></Suspense>
+        </ProtectedRoute>
+      </Route>
+      <Route path="/admin/pricing/rooms">
+        <ProtectedRoute adminOnly={true}>
+          <Suspense fallback={<LoadingFallback />}><AdminPricingPlansPage /></Suspense>
+        </ProtectedRoute>
+      </Route>
       <Route path="/admin/settings">
         <ProtectedRoute adminOnly={true}>
           <Suspense fallback={<LoadingFallback />}><AdminSettings /></Suspense>
