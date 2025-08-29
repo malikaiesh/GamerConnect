@@ -28,7 +28,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
-import AdminLayout from "@/components/layout/admin-layout";
+import AdminNavigation from "@/components/admin/navigation";
 import type { GameAd } from "@shared/schema";
 import { insertGameAdSchema } from "@shared/schema";
 
@@ -270,29 +270,33 @@ export default function GameAdsPage() {
 
   if (isLoading) {
     return (
-      <div className="p-6">
-        <div className="animate-pulse space-y-4">
-          <div className="h-8 bg-gray-200 dark:bg-gray-700 rounded w-1/4"></div>
-          <div className="h-32 bg-gray-200 dark:bg-gray-700 rounded"></div>
+      <div className="flex min-h-screen bg-background">
+        <AdminNavigation />
+        <div className="flex-1 p-6">
+          <div className="animate-pulse space-y-4">
+            <div className="h-8 bg-muted rounded w-1/4"></div>
+            <div className="h-32 bg-muted rounded"></div>
+          </div>
         </div>
       </div>
     );
   }
 
   return (
-    <AdminLayout>
-      <div className="p-6 space-y-6">
+    <div className="flex min-h-screen bg-background">
+      <AdminNavigation />
+      <div className="flex-1 p-6 space-y-6">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Games Ads</h1>
-          <p className="text-gray-600 dark:text-gray-400">
+          <h1 className="text-3xl font-bold text-foreground">Games Ads</h1>
+          <p className="text-muted-foreground">
             Manage advertisement placements on game pages
           </p>
         </div>
         <Button 
           onClick={handleCreateAd} 
           size="lg" 
-          className="bg-blue-600 hover:bg-blue-700 text-white"
+          className="bg-primary hover:bg-primary/90 text-primary-foreground"
           data-testid="button-add-game-ad-header"
         >
           <Plus className="w-5 h-5 mr-2" />
@@ -309,7 +313,7 @@ export default function GameAdsPage() {
 
         <TabsContent value="overview" className="space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <Card>
+            <Card className="border-border bg-card">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <Target className="w-5 h-5" />
@@ -324,7 +328,7 @@ export default function GameAdsPage() {
               </CardContent>
             </Card>
 
-            <Card>
+            <Card className="border-border bg-card">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <Eye className="w-5 h-5" />
@@ -339,7 +343,7 @@ export default function GameAdsPage() {
               </CardContent>
             </Card>
 
-            <Card>
+            <Card className="border-border bg-card">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <MousePointer className="w-5 h-5" />
@@ -355,7 +359,7 @@ export default function GameAdsPage() {
             </Card>
           </div>
 
-          <Card>
+          <Card className="border-border bg-card">
             <CardHeader>
               <CardTitle>Ad Position Distribution</CardTitle>
               <CardDescription>Number of ads by position</CardDescription>
@@ -378,7 +382,7 @@ export default function GameAdsPage() {
 
         <TabsContent value="ads" className="space-y-6">
           <div className="flex justify-between items-center">
-            <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Manage Game Ads</h2>
+            <h2 className="text-2xl font-bold text-foreground">Manage Game Ads</h2>
             <Button 
               onClick={handleCreateAd} 
               variant="outline"
@@ -391,11 +395,11 @@ export default function GameAdsPage() {
 
           <div className="grid grid-cols-1 gap-6">
             {gameAds.length === 0 ? (
-              <Card>
+              <Card className="border-border bg-card">
                 <CardContent className="flex flex-col items-center justify-center py-12">
                   <FileText className="w-12 h-12 text-gray-400 mb-4" />
-                  <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">No game ads found</h3>
-                  <p className="text-gray-600 dark:text-gray-400 text-center mb-4">
+                  <h3 className="text-lg font-medium text-foreground mb-2">No game ads found</h3>
+                  <p className="text-muted-foreground text-center mb-4">
                     Create your first game ad to start displaying advertisements on game pages.
                   </p>
                   <Button onClick={handleCreateAd}>
@@ -448,40 +452,40 @@ export default function GameAdsPage() {
                     <div className="space-y-2">
                       {ad.imageUrl && (
                         <div>
-                          <span className="text-sm font-medium text-gray-600 dark:text-gray-400">Image: </span>
+                          <span className="text-sm font-medium text-muted-foreground">Image: </span>
                           <span className="text-sm">{ad.imageUrl}</span>
                         </div>
                       )}
                       {ad.targetUrl && (
                         <div>
-                          <span className="text-sm font-medium text-gray-600 dark:text-gray-400">Target URL: </span>
+                          <span className="text-sm font-medium text-muted-foreground">Target URL: </span>
                           <span className="text-sm">{ad.targetUrl}</span>
                         </div>
                       )}
                       {ad.adCode && (
                         <div>
-                          <span className="text-sm font-medium text-gray-600 dark:text-gray-400">
+                          <span className="text-sm font-medium text-muted-foreground">
                             {ad.isGoogleAd ? 'Google Ad Code' : 'Custom Code'}: 
                           </span>
-                          <div className="mt-1 p-2 bg-gray-100 dark:bg-gray-800 rounded text-xs font-mono max-h-20 overflow-y-auto">
+                          <div className="mt-1 p-2 bg-muted rounded text-xs font-mono max-h-20 overflow-y-auto">
                             {ad.adCode}
                           </div>
                         </div>
                       )}
                       <div className="grid grid-cols-3 gap-4 mt-4 pt-4 border-t">
                         <div className="text-center">
-                          <div className="text-2xl font-bold text-blue-600">{ad.impressionCount}</div>
-                          <div className="text-xs text-gray-600 dark:text-gray-400">Impressions</div>
+                          <div className="text-2xl font-bold text-primary">{ad.impressionCount}</div>
+                          <div className="text-xs text-muted-foreground">Impressions</div>
                         </div>
                         <div className="text-center">
-                          <div className="text-2xl font-bold text-green-600">{ad.clickCount}</div>
-                          <div className="text-xs text-gray-600 dark:text-gray-400">Clicks</div>
+                          <div className="text-2xl font-bold text-primary">{ad.clickCount}</div>
+                          <div className="text-xs text-muted-foreground">Clicks</div>
                         </div>
                         <div className="text-center">
-                          <div className="text-2xl font-bold text-purple-600">
+                          <div className="text-2xl font-bold text-primary">
                             {ad.impressionCount > 0 ? ((ad.clickCount / ad.impressionCount) * 100).toFixed(2) : '0.00'}%
                           </div>
-                          <div className="text-xs text-gray-600 dark:text-gray-400">CTR</div>
+                          <div className="text-xs text-muted-foreground">CTR</div>
                         </div>
                       </div>
                     </div>
@@ -494,7 +498,7 @@ export default function GameAdsPage() {
 
         <TabsContent value="analytics" className="space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <Card>
+            <Card className="border-border bg-card">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <Eye className="w-5 h-5" />
@@ -511,7 +515,7 @@ export default function GameAdsPage() {
               </CardContent>
             </Card>
 
-            <Card>
+            <Card className="border-border bg-card">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <MousePointer className="w-5 h-5" />
@@ -528,7 +532,7 @@ export default function GameAdsPage() {
               </CardContent>
             </Card>
 
-            <Card>
+            <Card className="border-border bg-card">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <TrendingUp className="w-5 h-5" />
@@ -550,7 +554,7 @@ export default function GameAdsPage() {
             </Card>
           </div>
 
-          <Card>
+          <Card className="border-border bg-card">
             <CardHeader>
               <CardTitle>Ad Performance</CardTitle>
               <CardDescription>
@@ -561,29 +565,29 @@ export default function GameAdsPage() {
               <div className="space-y-4">
                 {gameAds.length === 0 ? (
                   <div className="text-center py-8">
-                    <p className="text-gray-500 dark:text-gray-400">No ads to analyze</p>
+                    <p className="text-muted-foreground">No ads to analyze</p>
                   </div>
                 ) : (
                   gameAds.map((ad) => (
                     <div key={ad.id} className="flex items-center justify-between p-4 border rounded-lg">
                       <div>
                         <h4 className="font-medium">{ad.name}</h4>
-                        <p className="text-sm text-gray-600 dark:text-gray-400">{getPositionLabel(ad.position)}</p>
+                        <p className="text-sm text-muted-foreground">{getPositionLabel(ad.position)}</p>
                       </div>
                       <div className="grid grid-cols-3 gap-4 text-center">
                         <div>
-                          <div className="text-lg font-semibold text-blue-600">{ad.impressionCount}</div>
-                          <div className="text-xs text-gray-600 dark:text-gray-400">Impressions</div>
+                          <div className="text-lg font-semibold text-primary">{ad.impressionCount}</div>
+                          <div className="text-xs text-muted-foreground">Impressions</div>
                         </div>
                         <div>
-                          <div className="text-lg font-semibold text-green-600">{ad.clickCount}</div>
-                          <div className="text-xs text-gray-600 dark:text-gray-400">Clicks</div>
+                          <div className="text-lg font-semibold text-primary">{ad.clickCount}</div>
+                          <div className="text-xs text-muted-foreground">Clicks</div>
                         </div>
                         <div>
-                          <div className="text-lg font-semibold text-purple-600">
+                          <div className="text-lg font-semibold text-primary">
                             {ad.impressionCount > 0 ? ((ad.clickCount / ad.impressionCount) * 100).toFixed(2) : '0.00'}%
                           </div>
-                          <div className="text-xs text-gray-600 dark:text-gray-400">CTR</div>
+                          <div className="text-xs text-muted-foreground">CTR</div>
                         </div>
                       </div>
                     </div>
@@ -854,6 +858,6 @@ export default function GameAdsPage() {
         </DialogContent>
       </Dialog>
       </div>
-    </AdminLayout>
+    </div>
   );
 }
