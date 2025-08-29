@@ -12,7 +12,7 @@ import { Progress } from "@/components/ui/progress";
 import { Separator } from "@/components/ui/separator";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useToast } from "@/hooks/use-toast";
-import { AdminLayout } from "@/components/admin/layout";
+import AdminNavigation from "@/components/admin/navigation";
 import { formatDistance } from "date-fns";
 import {
   Dialog,
@@ -104,11 +104,11 @@ const formatFileSize = (bytes?: number): string => {
 
 const getStatusColor = (status: string): string => {
   switch (status) {
-    case 'completed': return 'text-green-600 bg-green-100';
-    case 'in_progress': return 'text-blue-600 bg-blue-100';
-    case 'failed': return 'text-red-600 bg-red-100';
-    case 'cancelled': return 'text-gray-600 bg-gray-100';
-    default: return 'text-yellow-600 bg-yellow-100';
+    case 'completed': return 'text-primary bg-primary/10';
+    case 'in_progress': return 'text-primary bg-primary/10';
+    case 'failed': return 'text-destructive bg-destructive/10';
+    case 'cancelled': return 'text-muted-foreground bg-muted';
+    default: return 'text-secondary-foreground bg-secondary';
   }
 };
 
@@ -329,11 +329,12 @@ export default function BackupRestorePage() {
   const configs = configsData?.configs || [];
 
   return (
-    <AdminLayout>
-      <div className="space-y-6" data-testid="backup-restore-page">
+    <div className="flex min-h-screen bg-background">
+      <AdminNavigation />
+      <div className="flex-1 p-6 space-y-6" data-testid="backup-restore-page">
         <div className="flex items-center justify-between">
           <div>
-            <h2 className="text-3xl font-bold tracking-tight" data-testid="page-title">Backup & Restore</h2>
+            <h2 className="text-3xl font-bold tracking-tight text-foreground" data-testid="page-title">Backup & Restore</h2>
             <p className="text-muted-foreground">
               Manage your website backups and restore operations
             </p>
@@ -500,7 +501,7 @@ export default function BackupRestorePage() {
           </TabsList>
 
           <TabsContent value="backups" className="space-y-4">
-            <Card>
+            <Card className="border-border bg-card">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <Archive className="w-5 h-5" />
@@ -594,7 +595,7 @@ export default function BackupRestorePage() {
                               </DropdownMenuItem>
                               <DropdownMenuSeparator />
                               <DropdownMenuItem 
-                                className="text-red-600"
+                                className="text-destructive"
                                 onClick={() => deleteBackupMutation.mutate(backup.id)}
                               >
                                 <Trash2 className="w-4 h-4 mr-2" />
@@ -612,7 +613,7 @@ export default function BackupRestorePage() {
           </TabsContent>
 
           <TabsContent value="restores" className="space-y-4">
-            <Card>
+            <Card className="border-border bg-card">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <Upload className="w-5 h-5" />
@@ -692,7 +693,7 @@ export default function BackupRestorePage() {
           </TabsContent>
 
           <TabsContent value="settings" className="space-y-4">
-            <Card>
+            <Card className="border-border bg-card">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <Settings className="w-5 h-5" />
@@ -765,12 +766,12 @@ export default function BackupRestorePage() {
                   </div>
                 </div>
               </div>
-              <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3">
+              <div className="bg-secondary/30 border border-border rounded-lg p-3">
                 <div className="flex items-start gap-2">
-                  <AlertTriangle className="w-4 h-4 text-yellow-600 mt-0.5" />
+                  <AlertTriangle className="w-4 h-4 text-destructive mt-0.5" />
                   <div className="text-sm">
-                    <p className="font-medium text-yellow-800">Important</p>
-                    <p className="text-yellow-700">
+                    <p className="font-medium text-foreground">Important</p>
+                    <p className="text-muted-foreground">
                       This will replace your current website data. Make sure you have a recent backup.
                     </p>
                   </div>
@@ -790,6 +791,6 @@ export default function BackupRestorePage() {
           </DialogContent>
         </Dialog>
       </div>
-    </AdminLayout>
+    </div>
   );
 }
