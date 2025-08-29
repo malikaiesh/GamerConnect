@@ -1,9 +1,11 @@
+import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Link } from "wouter";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Users, Crown, Globe, Lock, Eye, Mic, MessageCircle, Gift, Play } from "lucide-react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Users, Crown, Globe, Lock, Eye, Mic, MessageCircle, Gift, Play, CheckCircle, TrendingUp, Flame, Sparkles, Compass } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 
 interface Room {
@@ -38,6 +40,7 @@ interface Room {
     username: string;
     displayName: string | null;
     profilePicture: string | null;
+    isVerified: boolean;
   };
 }
 
@@ -52,12 +55,39 @@ interface RoomsResponse {
 }
 
 export function PublicRoomsSection() {
-  // Fetch public rooms with limit for home page
+  const [activeTab, setActiveTab] = useState("hot");
+  
+  // Fetch rooms based on active category
   const { data: roomsData, isLoading } = useQuery<RoomsResponse>({
-    queryKey: ['/api/rooms', { page: 1, limit: 6, type: 'public' }],
+    queryKey: ['/api/rooms', { page: 1, limit: 6, category: activeTab }],
+    queryFn: () => {
+      const params = new URLSearchParams({
+        page: "1",
+        limit: "6",
+        category: activeTab,
+      });
+      return fetch(`/api/rooms?${params}`).then(res => res.json());
+    }
   });
 
   const rooms = roomsData?.rooms || [];
+  
+  const getCategoryIcon = (category: string) => {
+    switch (category) {
+      case 'hot':
+        return <Flame className="h-4 w-4" />;
+      case 'trending':
+        return <TrendingUp className="h-4 w-4" />;
+      case 'new':
+        return <Sparkles className="h-4 w-4" />;
+      case 'verified':
+        return <CheckCircle className="h-4 w-4" />;
+      case 'explore':
+        return <Compass className="h-4 w-4" />;
+      default:
+        return <Users className="h-4 w-4" />;
+    }
+  };
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -156,7 +186,33 @@ export function PublicRoomsSection() {
           </Link>
         </div>
         
-        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+        {/* Room Category Tabs */}
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="mb-6">
+          <TabsList className="grid w-full grid-cols-5 mb-6">
+            <TabsTrigger value="hot" className="flex items-center gap-2 text-xs">
+              <Flame className="h-3 w-3" />
+              Hot
+            </TabsTrigger>
+            <TabsTrigger value="trending" className="flex items-center gap-2 text-xs">
+              <TrendingUp className="h-3 w-3" />
+              Trending
+            </TabsTrigger>
+            <TabsTrigger value="new" className="flex items-center gap-2 text-xs">
+              <Sparkles className="h-3 w-3" />
+              New
+            </TabsTrigger>
+            <TabsTrigger value="verified" className="flex items-center gap-2 text-xs">
+              <CheckCircle className="h-3 w-3" />
+              Verified
+            </TabsTrigger>
+            <TabsTrigger value="explore" className="flex items-center gap-2 text-xs">
+              <Compass className="h-3 w-3" />
+              Explore
+            </TabsTrigger>
+          </TabsList>
+          
+          <TabsContent value={activeTab}>
+            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
           {rooms.map((room) => (
             <Card key={room.room.id} className="overflow-hidden group hover:shadow-lg transition-all duration-200">
               {/* Room Header with theme background */}
@@ -243,6 +299,12 @@ export function PublicRoomsSection() {
                         #{tag}
                       </Badge>
                     ))}
+                    {room.owner.isVerified && (
+                      <Badge className="bg-primary/10 text-primary border border-primary/20 text-xs">
+                        <CheckCircle className="w-3 h-3 mr-1" />
+                        Verified Owner
+                      </Badge>
+                    )}
                     {room.room.tags.length > 2 && (
                       <Badge variant="outline" className="text-xs">
                         +{room.room.tags.length - 2}
@@ -267,18 +329,20 @@ export function PublicRoomsSection() {
               </CardContent>
             </Card>
           ))}
-        </div>
-        
-        {rooms.length > 0 && (
-          <div className="text-center mt-8">
-            <Link href="/rooms">
-              <Button variant="outline" size="lg">
-                View All Rooms
-                <i className="ri-arrow-right-line ml-2"></i>
-              </Button>
-            </Link>
-          </div>
-        )}
+            </div>
+            
+            {rooms.length > 0 && (
+              <div className="text-center mt-8">
+                <Link href={`/rooms/${activeTab}`}>
+                  <Button variant="outline" size="lg">
+                    View All {activeTab === 'verified' ? 'Verified' : activeTab.charAt(0).toUpperCase() + activeTab.slice(1)} Rooms
+                    <i className="ri-arrow-right-line ml-2"></i>
+                  </Button>
+                </Link>
+              </div>
+            )}
+          </TabsContent>
+        </Tabs>
       </div>
     </section>
   );

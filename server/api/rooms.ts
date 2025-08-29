@@ -55,7 +55,8 @@ router.get("/admin", isAuthenticated, isAdmin, async (req: Request, res: Respons
           id: users.id,
           username: users.username,
           displayName: users.displayName,
-          profilePicture: users.profilePicture
+          profilePicture: users.profilePicture,
+          isVerified: users.isVerified
         }
       })
       .from(rooms)
@@ -142,7 +143,8 @@ router.get("/:roomId", async (req: Request, res: Response) => {
           id: users.id,
           username: users.username,
           displayName: users.displayName,
-          profilePicture: users.profilePicture
+          profilePicture: users.profilePicture,
+          isVerified: users.isVerified
         }
       })
       .from(rooms)
@@ -337,9 +339,9 @@ router.get("/", async (req: Request, res: Response) => {
           giftsEnabled: rooms.giftsEnabled,
           backgroundTheme: rooms.backgroundTheme,
           tags: rooms.tags,
-          totalVisits: sql<number>`COALESCE((SELECT SUM(total_visits) FROM ${roomAnalytics} WHERE room_id = ${rooms.id}), 0)`,
-          totalGiftsReceived: sql<number>`COALESCE((SELECT SUM(total_gifts) FROM ${roomAnalytics} WHERE room_id = ${rooms.id}), 0)`,
-          totalGiftValue: sql<number>`COALESCE((SELECT SUM(gift_value) FROM ${roomAnalytics} WHERE room_id = ${rooms.id}), 0)`,
+          totalVisits: rooms.totalVisits,
+          totalGiftsReceived: rooms.totalGifts,
+          totalGiftValue: rooms.totalGiftValue,
           createdAt: rooms.createdAt,
           lastActivity: rooms.updatedAt
         },
@@ -348,7 +350,8 @@ router.get("/", async (req: Request, res: Response) => {
           id: users.id,
           username: users.username,
           displayName: users.displayName,
-          profilePicture: users.profilePicture
+          profilePicture: users.profilePicture,
+          isVerified: users.isVerified
         }
       })
       .from(rooms)
@@ -389,6 +392,13 @@ router.get("/", async (req: Request, res: Response) => {
         // New rooms: recently created
         query = query
           .orderBy(desc(rooms.createdAt))
+          .limit(Math.min(limit, 20));
+        break;
+      case 'verified':
+        // Verified rooms: only show rooms where owner is verified
+        query = query
+          .where(and(...conditions, eq(users.isVerified, true)))
+          .orderBy(desc(rooms.isFeatured), desc(sql<number>`(SELECT COUNT(*) FROM ${roomUsers} WHERE ${roomUsers.roomId} = ${rooms.id})`), desc(rooms.createdAt))
           .limit(Math.min(limit, 20));
         break;
       case 'explore':
