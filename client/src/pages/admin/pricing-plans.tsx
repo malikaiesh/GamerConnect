@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useLocation } from "wouter";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -42,8 +43,24 @@ export default function AdminPricingPlans() {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingPlan, setEditingPlan] = useState<PricingPlan | null>(null);
   const [selectedPlanType, setSelectedPlanType] = useState<string>('all');
+  const [location] = useLocation();
   const { toast } = useToast();
   const queryClient = useQueryClient();
+
+  // Auto-filter based on route
+  useEffect(() => {
+    if (location.includes('/admin/pricing/diamonds')) {
+      setSelectedPlanType('diamonds');
+    } else if (location.includes('/admin/pricing/verification')) {
+      setSelectedPlanType('verification');
+    } else if (location.includes('/admin/pricing/rooms')) {
+      setSelectedPlanType('room_creation');
+    } else if (location.includes('/admin/pricing/subscriptions')) {
+      setSelectedPlanType('premium_features');
+    } else if (location.includes('/admin/pricing/plans')) {
+      setSelectedPlanType('all');
+    }
+  }, [location]);
 
   // Fetch pricing plans
   const { data: plans = [], isLoading } = useQuery({
@@ -176,13 +193,45 @@ export default function AdminPricingPlans() {
     }).format(price / 100);
   };
 
+  // Get page title and description based on current route
+  const getPageInfo = () => {
+    if (location.includes('/admin/pricing/diamonds')) {
+      return {
+        title: 'Diamond Packages',
+        description: 'Manage diamond purchase packages and pricing'
+      };
+    } else if (location.includes('/admin/pricing/verification')) {
+      return {
+        title: 'Verification Plans',
+        description: 'Manage user verification badge plans and pricing'
+      };
+    } else if (location.includes('/admin/pricing/rooms')) {
+      return {
+        title: 'Room Creation Plans',
+        description: 'Manage room creation packages and limits'
+      };
+    } else if (location.includes('/admin/pricing/subscriptions')) {
+      return {
+        title: 'Premium Subscriptions',
+        description: 'Manage premium feature subscription plans'
+      };
+    } else {
+      return {
+        title: 'Pricing Plans Management',
+        description: 'Manage all pricing plans including diamonds, verification, and room creation'
+      };
+    }
+  };
+
+  const pageInfo = getPageInfo();
+
   return (
     <AdminLayout>
       <div className="p-6">
       <div className="flex justify-between items-center mb-6">
         <div>
-          <h1 className="text-3xl font-bold">Pricing Plans Management</h1>
-          <p className="text-muted-foreground">Manage diamonds, verification, and room creation pricing plans</p>
+          <h1 className="text-3xl font-bold">{pageInfo.title}</h1>
+          <p className="text-muted-foreground">{pageInfo.description}</p>
         </div>
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
           <DialogTrigger asChild>
