@@ -97,6 +97,7 @@ const AdminProfilePage = lazy(() => import("@/pages/admin/accounts/profile"));
 const AdminPaymentGatewaysPage = lazy(() => import("@/pages/admin/payment-gateways"));
 const AdminPaymentTransactionsPage = lazy(() => import("@/pages/admin/payment-transactions"));
 const AdminPricingPlansPage = lazy(() => import("@/pages/admin/pricing-plans"));
+const AdminVerificationRequestsPage = lazy(() => import("@/pages/admin/verification-requests"));
 
 // Admin image upload demo
 const AdminImageUploadDemo = lazy(() => import("@/pages/admin/image-upload-demo"));
@@ -121,6 +122,10 @@ const NewRoomsPage = lazy(() => import("@/pages/rooms/new-rooms"));
 // Social pages
 const FriendsPage = lazy(() => import("@/pages/social/friends"));
 const FriendRequestsPage = lazy(() => import("@/pages/social/friend-requests"));
+
+// Public pricing and verification pages
+const PricingPlansPage = lazy(() => import("@/pages/pricing-plans"));
+const VerificationPage = lazy(() => import("@/pages/verification"));
 
 
 // Admin Helper Navigation
@@ -267,6 +272,14 @@ function Router() {
       <Route path="/faq">
         <Suspense fallback={<LoadingFallback />}><FAQPage /></Suspense>
       </Route>
+      
+      {/* Public pricing and verification pages */}
+      <Route path="/pricing-plans">
+        <Suspense fallback={<LoadingFallback />}><PricingPlansPage /></Suspense>
+      </Route>
+      <Route path="/verification">
+        <Suspense fallback={<LoadingFallback />}><VerificationPage /></Suspense>
+      </Route>
       <Route path="/events">
         <Suspense fallback={<LoadingFallback />}><EventsPage /></Suspense>
       </Route>
@@ -388,6 +401,11 @@ function Router() {
       <Route path="/admin/verification">
         <ProtectedRoute adminOnly={true}>
           <Suspense fallback={<LoadingFallback />}><VerificationTool /></Suspense>
+        </ProtectedRoute>
+      </Route>
+      <Route path="/admin/verification-requests">
+        <ProtectedRoute adminOnly={true}>
+          <Suspense fallback={<LoadingFallback />}><AdminVerificationRequestsPage /></Suspense>
         </ProtectedRoute>
       </Route>
       <Route path="/admin/payments/gateways">

@@ -88,6 +88,10 @@ export const planStatusEnum = pgEnum('plan_status', ['active', 'inactive', 'arch
 export const planDurationEnum = pgEnum('plan_duration', ['one_time', 'monthly', '6_months', 'yearly', 'lifetime']);
 export const subscriptionStatusEnum = pgEnum('subscription_status', ['active', 'cancelled', 'expired', 'pending', 'suspended']);
 
+// Verification Request Enums
+export const verificationRequestTypeEnum = pgEnum('verification_request_type', ['user', 'room']);
+export const verificationRequestStatusEnum = pgEnum('verification_request_status', ['pending', 'approved', 'rejected', 'under_review']);
+
 // Roles table
 export const roles = pgTable('roles', {
   id: serial('id').primaryKey(),
@@ -2168,6 +2172,57 @@ export const userSubscriptions = pgTable('user_subscriptions', {
   updatedAt: timestamp('updated_at').defaultNow().notNull()
 });
 
+// Verification Requests Table
+export const verificationRequests = pgTable('verification_requests', {
+  id: serial('id').primaryKey(),
+  
+  // Request details
+  requestType: verificationRequestTypeEnum('request_type').notNull(),
+  status: verificationRequestStatusEnum('status').default('pending').notNull(),
+  
+  // User or Room details
+  userId: integer('user_id').references(() => users.id),
+  username: text('username'),
+  roomId: integer('room_id').references(() => rooms.id),
+  roomIdText: text('room_id_text'), // The actual room ID string (like SA1994181)
+  
+  // Supporting documents/info
+  documents: json('documents').$type<{
+    identityProof?: string;
+    gameplayProof?: string;
+    socialProof?: string;
+    additionalFiles?: string[];
+  }>(),
+  
+  // Request information
+  reason: text('reason').notNull(),
+  additionalInfo: text('additional_info'),
+  
+  // Payment related
+  pricingPlanId: integer('pricing_plan_id').references(() => pricingPlans.id),
+  paymentTransactionId: integer('payment_transaction_id').references(() => paymentTransactions.id),
+  paymentStatus: text('payment_status').default('pending'), // 'pending', 'paid', 'failed'
+  
+  // Admin review details
+  reviewedBy: integer('reviewed_by').references(() => users.id),
+  reviewedAt: timestamp('reviewed_at'),
+  reviewNotes: text('review_notes'),
+  adminFeedback: text('admin_feedback'),
+  
+  // Metadata
+  metadata: json('metadata').$type<{
+    ipAddress?: string;
+    userAgent?: string;
+    submissionSource?: string;
+    priority?: 'low' | 'normal' | 'high';
+    tags?: string[];
+    additionalData?: Record<string, any>;
+  }>(),
+  
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+  updatedAt: timestamp('updated_at').defaultNow().notNull()
+});
+
 // Pricing Plans Relations
 export const pricingPlansRelations = relations(pricingPlans, ({ one, many }) => ({
   createdByUser: one(users, {
@@ -2197,6 +2252,30 @@ export const userSubscriptionsRelations = relations(userSubscriptions, ({ one })
   })
 }));
 
+// Verification Requests Relations
+export const verificationRequestsRelations = relations(verificationRequests, ({ one }) => ({
+  user: one(users, {
+    fields: [verificationRequests.userId],
+    references: [users.id]
+  }),
+  room: one(rooms, {
+    fields: [verificationRequests.roomId],
+    references: [rooms.id]
+  }),
+  pricingPlan: one(pricingPlans, {
+    fields: [verificationRequests.pricingPlanId],
+    references: [pricingPlans.id]
+  }),
+  paymentTransaction: one(paymentTransactions, {
+    fields: [verificationRequests.paymentTransactionId],
+    references: [paymentTransactions.id]
+  }),
+  reviewedByUser: one(users, {
+    fields: [verificationRequests.reviewedBy],
+    references: [users.id]
+  })
+}));
+
 // Pricing Plan Validation Schemas
 export const insertPricingPlanSchema = createInsertSchema(pricingPlans, {
   name: (schema) => schema.min(3, "Plan name must be at least 3 characters").max(100, "Plan name must be less than 100 characters"),
@@ -2214,6 +2293,14 @@ export const insertUserSubscriptionSchema = createInsertSchema(userSubscriptions
   endDate: (schema) => schema.optional().nullable()
 });
 
+// Verification Requests Validation Schema
+export const insertVerificationRequestSchema = createInsertSchema(verificationRequests, {
+  reason: (schema) => schema.min(10, "Reason must be at least 10 characters").max(500, "Reason must be less than 500 characters"),
+  additionalInfo: (schema) => schema.optional().nullable(),
+  username: (schema) => schema.optional().nullable(),
+  roomIdText: (schema) => schema.optional().nullable()
+});
+
 // Payment Gateway Type Exports
 export type PaymentGateway = typeof paymentGateways.$inferSelect;
 export type InsertPaymentGateway = z.infer<typeof insertPaymentGatewaySchema>;
@@ -2225,3 +2312,7 @@ export type PricingPlan = typeof pricingPlans.$inferSelect;
 export type InsertPricingPlan = z.infer<typeof insertPricingPlanSchema>;
 export type UserSubscription = typeof userSubscriptions.$inferSelect;
 export type InsertUserSubscription = z.infer<typeof insertUserSubscriptionSchema>;
+
+// Verification Request Type Exports
+export type VerificationRequest = typeof verificationRequests.$inferSelect;
+export type InsertVerificationRequest = z.infer<typeof insertVerificationRequestSchema>;

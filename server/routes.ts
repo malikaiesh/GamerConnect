@@ -63,6 +63,22 @@ import {
   updatePlanStatus,
   bulkUpdatePricing
 } from "./api/pricing-plans";
+
+// Import verification request APIs
+import { 
+  getVerificationRequests,
+  getVerificationRequest,
+  createVerificationRequest,
+  updateVerificationRequestStatus,
+  deleteVerificationRequest,
+  getVerificationStats
+} from "./api/verification-requests";
+import { 
+  getPublicPricingPlans,
+  getPublicPricingPlansByType,
+  getPublicPricingPlan
+} from "./api/pricing-plans-public";
+
 import { storage } from "./storage";
 import { db } from "../db";
 import { ObjectStorageService, ObjectNotFoundError } from "./objectStorage";
@@ -310,6 +326,18 @@ Sitemap: ${req.protocol}://${req.get('host')}/sitemap.xml`);
   app.delete('/api/admin/pricing-plans/:id', isAuthenticated, isAdmin, deletePricingPlan);
   app.patch('/api/admin/pricing-plans/:id/status', isAuthenticated, isAdmin, updatePlanStatus);
   app.post('/api/admin/pricing-plans/bulk-update', isAuthenticated, isAdmin, bulkUpdatePricing);
+
+  // Public pricing plans routes
+  app.get('/api/pricing-plans/public', getPublicPricingPlans);
+  app.get('/api/pricing-plans/:id/public', getPublicPricingPlan);
+
+  // Verification requests routes
+  app.get('/api/admin/verification-requests', isAuthenticated, isAdmin, getVerificationRequests);
+  app.get('/api/admin/verification-requests/stats', isAuthenticated, isAdmin, getVerificationStats);
+  app.get('/api/admin/verification-requests/:id', isAuthenticated, isAdmin, getVerificationRequest);
+  app.put('/api/admin/verification-requests/:id/status', isAuthenticated, isAdmin, updateVerificationRequestStatus);
+  app.delete('/api/admin/verification-requests/:id', isAuthenticated, isAdmin, deleteVerificationRequest);
+  app.post('/api/verification-requests', createVerificationRequest); // Public route
   
   // Register image upload API routes
   const imageUploadRoutes = await import('./api/image-upload');
