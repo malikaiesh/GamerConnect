@@ -254,8 +254,8 @@ export default function AdminHeroImages() {
     setDraggedItem(null);
   };
 
-  // File upload handlers
-  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  // Local upload handler
+  const handleLocalUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
@@ -302,7 +302,7 @@ export default function AdminHeroImages() {
       
       toast({
         title: "Success",
-        description: "Hero image uploaded successfully"
+        description: "Hero image uploaded successfully (Local Storage)"
       });
 
     } catch (error) {
@@ -310,6 +310,82 @@ export default function AdminHeroImages() {
       toast({
         title: "Error",
         description: "Failed to upload image",
+        variant: "destructive"
+      });
+    }
+  };
+
+  // Cloud upload handlers
+  const getUploadParameters = async () => {
+    try {
+      const response = await apiRequest("/api/objects/upload", { method: "POST" });
+      return {
+        method: 'PUT' as const,
+        url: response.uploadURL
+      };
+    } catch (error) {
+      console.error('Error getting upload parameters:', error);
+      toast({
+        title: "Error",
+        description: "Failed to get upload URL",
+        variant: "destructive"
+      });
+      throw error;
+    }
+  };
+
+  const handleCloudUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    // Validate file type
+    if (!file.type.startsWith('image/')) {
+      toast({
+        title: "Error",
+        description: "Please select an image file",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    // Validate file size (10MB max)
+    if (file.size > 10485760) {
+      toast({
+        title: "Error", 
+        description: "Image must be smaller than 10MB",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    try {
+      // Get upload parameters
+      const params = await getUploadParameters();
+      
+      // Upload file directly to cloud
+      const uploadResponse = await fetch(params.url, {
+        method: 'PUT',
+        body: file,
+        headers: {
+          'Content-Type': file.type,
+        },
+      });
+
+      if (uploadResponse.ok) {
+        // Set the uploaded image URL to the form
+        form.setValue('imagePath', params.url);
+        toast({
+          title: "Success",
+          description: "Hero image uploaded successfully (Cloud Storage)"
+        });
+      } else {
+        throw new Error('Cloud upload failed');
+      }
+    } catch (error) {
+      console.error('Cloud upload error:', error);
+      toast({
+        title: "Error",
+        description: "Failed to upload to cloud storage",
         variant: "destructive"
       });
     }
@@ -398,24 +474,49 @@ export default function AdminHeroImages() {
                       <FormLabel>Image</FormLabel>
                       <FormControl>
                         <div className="space-y-3">
-                          {/* Upload Button */}
-                          <div className="flex items-center gap-2">
-                            <input
-                              type="file"
-                              accept="image/*"
-                              onChange={handleImageUpload}
-                              className="hidden"
-                              id="hero-image-upload"
-                            />
-                            <Button
-                              type="button"
-                              variant="outline"
-                              className="w-full"
-                              onClick={() => document.getElementById('hero-image-upload')?.click()}
-                            >
-                              <Upload className="h-4 w-4 mr-2" />
-                              Upload Hero Image
-                            </Button>
+                          {/* Upload Options */}
+                          <div className="grid grid-cols-2 gap-2">
+                            {/* Local Upload */}
+                            <div>
+                              <input
+                                type="file"
+                                accept="image/*"
+                                onChange={handleLocalUpload}
+                                className="hidden"
+                                id="hero-local-upload"
+                              />
+                              <Button
+                                type="button"
+                                variant="outline"
+                                className="w-full h-auto flex-col gap-1 py-3"
+                                onClick={() => document.getElementById('hero-local-upload')?.click()}
+                              >
+                                <Upload className="h-4 w-4" />
+                                <span className="text-xs">Local Storage</span>
+                                <span className="text-xs text-muted-foreground">Optimized + AI Alt Text</span>
+                              </Button>
+                            </div>
+
+                            {/* Cloud Upload */}
+                            <div>
+                              <input
+                                type="file"
+                                accept="image/*"
+                                onChange={handleCloudUpload}
+                                className="hidden"
+                                id="hero-cloud-upload"
+                              />
+                              <Button
+                                type="button"
+                                variant="outline"
+                                className="w-full h-auto flex-col gap-1 py-3"
+                                onClick={() => document.getElementById('hero-cloud-upload')?.click()}
+                              >
+                                <Upload className="h-4 w-4" />
+                                <span className="text-xs">Cloud Storage</span>
+                                <span className="text-xs text-muted-foreground">Direct cloud upload</span>
+                              </Button>
+                            </div>
                           </div>
                           
                           {/* Image Preview */}
