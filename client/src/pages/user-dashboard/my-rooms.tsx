@@ -244,30 +244,30 @@ export default function MyRoomsPage() {
   const getStatusColor = (status: string) => {
     switch (status) {
       case "active":
-        return "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300";
+        return "bg-primary/10 text-primary border border-primary/20";
       case "inactive":
-        return "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300";
+        return "bg-destructive/10 text-destructive border border-destructive/20";
       case "maintenance":
-        return "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300";
+        return "bg-muted text-muted-foreground border border-border";
       default:
-        return "bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-300";
+        return "bg-muted text-muted-foreground border border-border";
     }
   };
 
   const getThemeGradient = (theme: string) => {
     switch (theme) {
       case 'ocean':
-        return 'from-blue-500 via-blue-600 to-cyan-600';
+        return 'from-primary/80 via-primary to-primary/60';
       case 'sunset':
-        return 'from-orange-500 via-red-500 to-pink-600';
+        return 'from-primary/70 via-accent/80 to-primary/90';
       case 'forest':
-        return 'from-green-500 via-green-600 to-emerald-600';
+        return 'from-primary/60 via-primary/80 to-primary';
       case 'purple':
-        return 'from-purple-500 via-indigo-500 to-blue-600';
+        return 'from-primary via-primary/80 to-accent/70';
       case 'galaxy':
-        return 'from-indigo-600 via-purple-600 to-pink-600';
+        return 'from-primary/90 via-accent/60 to-primary/70';
       default:
-        return 'from-blue-500 via-purple-500 to-indigo-600';
+        return 'from-primary via-primary/80 to-accent/60';
     }
   };
 
@@ -515,7 +515,7 @@ export default function MyRoomsPage() {
   );
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-950 flex">
+    <div className="min-h-screen bg-background flex">
       <Sidebar />
       
       {/* Main Content */}
@@ -586,7 +586,7 @@ export default function MyRoomsPage() {
               <CardHeader className="pb-3">
                 <div className="flex items-center justify-between">
                   <CardTitle className="flex items-center gap-2 text-lg">
-                    {room.room.type === 'public' ? <Globe className="h-4 w-4 text-green-600" /> : <Lock className="h-4 w-4 text-orange-600" />}
+                    {room.room.type === 'public' ? <Globe className="h-4 w-4 text-primary" /> : <Lock className="h-4 w-4 text-muted-foreground" />}
                     {room.room.name}
                   </CardTitle>
                 </div>
@@ -602,14 +602,14 @@ export default function MyRoomsPage() {
                 {/* Room Stats */}
                 <div className="grid grid-cols-2 gap-4 text-sm">
                   <div className="flex items-center gap-2">
-                    <Users className="h-4 w-4 text-blue-600" />
+                    <Users className="h-4 w-4 text-primary" />
                     <div>
                       <div className="font-medium">{room.userCount}/{room.room.maxSeats}</div>
                       <div className="text-xs text-muted-foreground">Users</div>
                     </div>
                   </div>
                   <div className="flex items-center gap-2">
-                    <Eye className="h-4 w-4 text-green-600" />
+                    <Eye className="h-4 w-4 text-primary" />
                     <div>
                       <div className="font-medium">{room.room.totalVisits}</div>
                       <div className="text-xs text-muted-foreground">Visits</div>
@@ -686,7 +686,7 @@ export default function MyRoomsPage() {
                         size="sm"
                         data-testid={`button-delete-${room.room.id}`}
                       >
-                        <Trash2 className="h-4 w-4 text-red-500" />
+                        <Trash2 className="h-4 w-4 text-destructive" />
                       </Button>
                     </AlertDialogTrigger>
                     <AlertDialogContent>
@@ -701,7 +701,7 @@ export default function MyRoomsPage() {
                         <AlertDialogCancel>Cancel</AlertDialogCancel>
                         <AlertDialogAction
                           onClick={() => handleDeleteRoom(room.room.roomId)}
-                          className="bg-red-600 hover:bg-red-700"
+                          className="bg-destructive hover:bg-destructive/90"
                           data-testid={`button-confirm-delete-${room.room.id}`}
                         >
                           Delete Room
