@@ -312,8 +312,8 @@ export function PublicRoomsSection() {
                     {room.room.type === 'public' ? <Globe className="h-4 w-4 text-primary" /> : <Lock className="h-4 w-4 text-muted-foreground" />}
                     {room.room.name}
                     {room.owner.isVerified && (
-                      <div className="inline-flex items-center justify-center w-5 h-5 flex-shrink-0 ml-1.5 relative">
-                        <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none">
+                      <div className="inline-flex items-center justify-center w-7 h-7 flex-shrink-0 ml-2 relative">
+                        <svg className="w-7 h-7 drop-shadow-md" viewBox="0 0 24 24" fill="none">
                           <path d="M12 2L13.09 5.26L16 4L15.74 7.26L19 8.35L16.74 10.74L19 12.65L15.74 13.26L16 17L13.09 15.74L12 19L10.91 15.74L8 17L8.26 13.74L5 12.65L8.26 10.26L5 8.35L8.26 7.74L8 4L10.91 5.26L12 2Z" fill="url(#verifyGradient)" stroke="#1565C0" strokeWidth="0.5"/>
                           <path d="M9 11.5L11 13.5L15 9.5" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
                           <defs>
@@ -390,8 +390,8 @@ export function PublicRoomsSection() {
                     ))}
                     {room.owner.isVerified && (
                       <Badge className="bg-blue-50 text-blue-600 border border-blue-200 text-xs flex items-center gap-1">
-                        <div className="inline-flex items-center justify-center w-5 h-5 flex-shrink-0 relative">
-                          <svg className="w-5 h-5 drop-shadow-sm" viewBox="0 0 24 24" fill="none">
+                        <div className="inline-flex items-center justify-center w-6 h-6 flex-shrink-0 relative">
+                          <svg className="w-6 h-6 drop-shadow-md" viewBox="0 0 24 24" fill="none">
                             <path d="M12 2L13.09 5.26L16 4L15.74 7.26L19 8.35L16.74 10.74L19 12.65L15.74 13.26L16 17L13.09 15.74L12 19L10.91 15.74L8 17L8.26 13.74L5 12.65L8.26 10.26L5 8.35L8.26 7.74L8 4L10.91 5.26L12 2Z" fill="url(#verifyGradientTag)" stroke="#1565C0" strokeWidth="0.5"/>
                             <path d="M9 11.5L11 13.5L15 9.5" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
                             <defs>
