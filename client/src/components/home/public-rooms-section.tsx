@@ -185,24 +185,39 @@ export function PublicRoomsSection() {
           {/* Room Category Tabs on the right side */}
           <div className="flex items-center gap-4">
             <Tabs value={activeTab} onValueChange={setActiveTab}>
-              <TabsList className="grid grid-cols-5">
-                <TabsTrigger value="hot" className="flex items-center gap-1 text-xs px-3 py-1">
+              <TabsList className="grid grid-cols-5 bg-card border border-border">
+                <TabsTrigger 
+                  value="hot" 
+                  className="flex items-center gap-1 text-xs px-3 py-1 hover:bg-primary/10 hover:text-primary data-[state=active]:bg-primary data-[state=active]:text-primary-foreground transition-colors"
+                >
                   <Flame className="h-3 w-3" />
                   Hot
                 </TabsTrigger>
-                <TabsTrigger value="trending" className="flex items-center gap-1 text-xs px-3 py-1">
+                <TabsTrigger 
+                  value="trending" 
+                  className="flex items-center gap-1 text-xs px-3 py-1 hover:bg-primary/10 hover:text-primary data-[state=active]:bg-primary data-[state=active]:text-primary-foreground transition-colors"
+                >
                   <TrendingUp className="h-3 w-3" />
                   Trending
                 </TabsTrigger>
-                <TabsTrigger value="new" className="flex items-center gap-1 text-xs px-3 py-1">
+                <TabsTrigger 
+                  value="new" 
+                  className="flex items-center gap-1 text-xs px-3 py-1 hover:bg-primary/10 hover:text-primary data-[state=active]:bg-primary data-[state=active]:text-primary-foreground transition-colors"
+                >
                   <Sparkles className="h-3 w-3" />
                   New
                 </TabsTrigger>
-                <TabsTrigger value="verified" className="flex items-center gap-1 text-xs px-3 py-1">
+                <TabsTrigger 
+                  value="verified" 
+                  className="flex items-center gap-1 text-xs px-3 py-1 hover:bg-primary/10 hover:text-primary data-[state=active]:bg-primary data-[state=active]:text-primary-foreground transition-colors"
+                >
                   <CheckCircle className="h-3 w-3" />
                   Verified
                 </TabsTrigger>
-                <TabsTrigger value="explore" className="flex items-center gap-1 text-xs px-3 py-1">
+                <TabsTrigger 
+                  value="explore" 
+                  className="flex items-center gap-1 text-xs px-3 py-1 hover:bg-primary/10 hover:text-primary data-[state=active]:bg-primary data-[state=active]:text-primary-foreground transition-colors"
+                >
                   <Compass className="h-3 w-3" />
                   Explore
                 </TabsTrigger>
@@ -336,9 +351,9 @@ export function PublicRoomsSection() {
         
         {rooms.length > 0 && (
           <div className="text-center mt-8">
-            <Link href={`/rooms/${activeTab}`}>
+            <Link href="/rooms">
               <Button variant="outline" size="lg">
-                View All {activeTab === 'verified' ? 'Verified' : activeTab.charAt(0).toUpperCase() + activeTab.slice(1)} Rooms
+                View All Rooms
                 <i className="ri-arrow-right-line ml-2"></i>
               </Button>
             </Link>
