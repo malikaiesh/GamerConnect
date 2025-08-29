@@ -17,6 +17,7 @@ import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { Edit, Trash2, Plus, Eye, EyeOff, Star, Gem, Crown, MapPin } from "lucide-react";
 import { PricingPlan, InsertPricingPlan } from "@shared/schema";
+import { AdminLayout } from "@/components/admin/layout";
 
 const planFormSchema = z.object({
   name: z.string().min(3).max(100),
@@ -176,7 +177,8 @@ export default function AdminPricingPlans() {
   };
 
   return (
-    <div className="container mx-auto p-6">
+    <AdminLayout>
+      <div className="p-6">
       <div className="flex justify-between items-center mb-6">
         <div>
           <h1 className="text-3xl font-bold">Pricing Plans Management</h1>
@@ -638,6 +640,7 @@ export default function AdminPricingPlans() {
           )}
         </CardContent>
       </Card>
-    </div>
+      </div>
+    </AdminLayout>
   );
 }
