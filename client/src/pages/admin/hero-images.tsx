@@ -62,7 +62,7 @@ export default function AdminHeroImages() {
   // Create mutation
   const createMutation = useMutation({
     mutationFn: async (data: HeroImageFormData) => {
-      return await apiRequest('POST', '/api/hero-images', data);
+      return await apiRequest('/api/hero-images', { method: 'POST', body: data });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/hero-images'] });
@@ -85,7 +85,7 @@ export default function AdminHeroImages() {
   // Update mutation
   const updateMutation = useMutation({
     mutationFn: async ({ id, data }: { id: number; data: Partial<HeroImageFormData> }) => {
-      return await apiRequest('PUT', `/api/hero-images/${id}`, data);
+      return await apiRequest(`/api/hero-images/${id}`, { method: 'PUT', body: data });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/hero-images'] });
@@ -109,7 +109,7 @@ export default function AdminHeroImages() {
   // Toggle status mutation
   const toggleMutation = useMutation({
     mutationFn: async (id: number) => {
-      return await apiRequest('PATCH', `/api/hero-images/${id}/toggle`, {});
+      return await apiRequest(`/api/hero-images/${id}/toggle`, { method: 'PATCH', body: {} });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/hero-images'] });
@@ -130,7 +130,7 @@ export default function AdminHeroImages() {
   // Delete mutation
   const deleteMutation = useMutation({
     mutationFn: async (id: number) => {
-      return await apiRequest('DELETE', `/api/hero-images/${id}`, {});
+      return await apiRequest(`/api/hero-images/${id}`, { method: 'DELETE' });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/hero-images'] });
@@ -151,7 +151,7 @@ export default function AdminHeroImages() {
   // Reorder mutation
   const reorderMutation = useMutation({
     mutationFn: async (imageIds: number[]) => {
-      return await apiRequest('POST', '/api/hero-images/reorder', { imageIds });
+      return await apiRequest('/api/hero-images/reorder', { method: 'POST', body: { imageIds } });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/hero-images'] });
