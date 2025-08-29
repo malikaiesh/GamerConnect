@@ -112,7 +112,7 @@ export function setupSecurity(app: Express) {
   app.use(sanitizeRequest);
   
   // Rate limiting for authentication endpoints
-  app.use('/api/auth/login', authRateLimit);
+  app.use('/api/login', authRateLimit);
   app.use('/api/register', authRateLimit);
   app.use('/api/auth/reset-password', authRateLimit);
   

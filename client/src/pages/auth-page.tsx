@@ -94,7 +94,7 @@ export default function AuthPage() {
   // Login mutation
   const loginMutation = useMutation({
     mutationFn: async (values: LoginValues) => {
-      return await apiRequest('/api/auth/login', {
+      return await apiRequest('/api/login', {
         method: 'POST',
         body: JSON.stringify(values)
       });
@@ -118,7 +118,7 @@ export default function AuthPage() {
   // Register mutation
   const registerMutation = useMutation({
     mutationFn: async (values: RegisterValues) => {
-      return await apiRequest('/api/auth/register', {
+      return await apiRequest('/api/register', {
         method: 'POST',
         body: JSON.stringify(values)
       });
