@@ -1,7 +1,7 @@
 import { useState, useRef } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
-import { AdminLayout } from "@/components/admin/layout";
+import AdminNavigation from "@/components/admin/navigation";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -310,11 +310,12 @@ export default function GoogleIndexingPage() {
   };
 
   return (
-    <AdminLayout title="Google Indexing" description="Submit your content to Google for faster indexing">
-      <div className="p-6 space-y-6">
+    <div className="flex min-h-screen bg-background">
+      <AdminNavigation />
+      <div className="flex-1 p-6 space-y-6">
         <div className="flex justify-between items-center">
           <div>
-            <h1 className="text-3xl font-bold text-card-foreground">Google Indexing</h1>
+            <h1 className="text-3xl font-bold text-foreground">Google Indexing</h1>
             <p className="text-muted-foreground">Submit your content to Google for faster indexing</p>
           </div>
           <Button
@@ -330,7 +331,7 @@ export default function GoogleIndexingPage() {
         {/* Stats Cards */}
         {stats && (
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-          <Card>
+          <Card className="border-border bg-card">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">Total Requests</CardTitle>
               <Cloud className="h-4 w-4 text-muted-foreground" />
@@ -339,25 +340,25 @@ export default function GoogleIndexingPage() {
               <div className="text-2xl font-bold">{stats.totalRequests}</div>
             </CardContent>
           </Card>
-          <Card>
+          <Card className="border-border bg-card">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">Successful</CardTitle>
               <CheckCircle className="h-4 w-4 text-green-500" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-green-600">{stats.successfulRequests}</div>
+              <div className="text-2xl font-bold text-primary">{stats.successfulRequests}</div>
             </CardContent>
           </Card>
-          <Card>
+          <Card className="border-border bg-card">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">Failed</CardTitle>
               <XCircle className="h-4 w-4 text-red-500" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-red-600">{stats.failedRequests}</div>
+              <div className="text-2xl font-bold text-destructive">{stats.failedRequests}</div>
             </CardContent>
           </Card>
-          <Card>
+          <Card className="border-border bg-card">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">Quota Used</CardTitle>
               <Info className="h-4 w-4 text-muted-foreground" />
@@ -395,7 +396,7 @@ export default function GoogleIndexingPage() {
 
         {/* Setup Tab */}
         <TabsContent value="setup" className="space-y-4">
-          <Card>
+          <Card className="border-border bg-card">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Cloud className="h-5 w-5" />
@@ -452,7 +453,7 @@ export default function GoogleIndexingPage() {
         <TabsContent value="submit" className="space-y-4">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             {/* Content URLs Selection */}
-            <Card>
+            <Card className="border-border bg-card">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <Globe className="h-5 w-5" />
@@ -525,7 +526,7 @@ export default function GoogleIndexingPage() {
 
             {/* Manual URL Submission */}
             <div className="space-y-4">
-              <Card>
+              <Card className="border-border bg-card">
                 <CardHeader>
                   <CardTitle>Submit Single URL</CardTitle>
                   <CardDescription>
@@ -554,7 +555,7 @@ export default function GoogleIndexingPage() {
                 </CardContent>
               </Card>
 
-              <Card>
+              <Card className="border-border bg-card">
                 <CardHeader>
                   <CardTitle>Bulk URL Submission</CardTitle>
                   <CardDescription>
@@ -588,7 +589,7 @@ export default function GoogleIndexingPage() {
 
         {/* History Tab */}
         <TabsContent value="history" className="space-y-4">
-          <Card>
+          <Card className="border-border bg-card">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <History className="h-5 w-5" />
@@ -625,7 +626,7 @@ export default function GoogleIndexingPage() {
                                 href={request.url} 
                                 target="_blank" 
                                 rel="noopener noreferrer"
-                                className="text-blue-600 hover:underline flex items-center gap-1 truncate"
+                                className="text-primary hover:underline flex items-center gap-1 truncate"
                               >
                                 <span className="truncate">{request.url}</span>
                                 <ExternalLink size={12} />
@@ -665,7 +666,7 @@ export default function GoogleIndexingPage() {
 
         {/* Settings Tab */}
         <TabsContent value="settings" className="space-y-4">
-          <Card>
+          <Card className="border-border bg-card">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Settings className="h-5 w-5" />
@@ -756,6 +757,6 @@ export default function GoogleIndexingPage() {
         </TabsContent>
         </Tabs>
       </div>
-    </AdminLayout>
+    </div>
   );
 }
