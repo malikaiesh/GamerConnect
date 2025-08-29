@@ -312,11 +312,18 @@ export function PublicRoomsSection() {
                     {room.room.type === 'public' ? <Globe className="h-4 w-4 text-primary" /> : <Lock className="h-4 w-4 text-muted-foreground" />}
                     {room.room.name}
                     {room.owner.isVerified && (
-                      <div className="inline-flex items-center justify-center bg-gradient-to-b from-[#1877F2] to-[#166FE5] text-white rounded-sm w-4 h-4 flex-shrink-0 ml-1.5 shadow-lg border border-[#1877F2] relative overflow-hidden">
-                        <div className="absolute inset-0 bg-gradient-to-t from-transparent to-white opacity-20"></div>
-                        <svg className="w-3 h-3 relative z-10" fill="currentColor" viewBox="0 0 20 20">
-                          <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                      <div className="inline-flex items-center justify-center w-5 h-5 flex-shrink-0 ml-1.5 relative">
+                        <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none">
+                          <path d="M12 2L13.09 5.26L16 4L15.74 7.26L19 8.35L16.74 10.74L19 12.65L15.74 13.26L16 17L13.09 15.74L12 19L10.91 15.74L8 17L8.26 13.74L5 12.65L8.26 10.26L5 8.35L8.26 7.74L8 4L10.91 5.26L12 2Z" fill="url(#verifyGradient)" stroke="#1565C0" strokeWidth="0.5"/>
+                          <path d="M9 11.5L11 13.5L15 9.5" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                          <defs>
+                            <linearGradient id="verifyGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+                              <stop offset="0%" stopColor="#1877F2" />
+                              <stop offset="100%" stopColor="#166FE5" />
+                            </linearGradient>
+                          </defs>
                         </svg>
+                        <div className="absolute inset-0 bg-gradient-to-t from-transparent to-white opacity-20 rounded-full"></div>
                       </div>
                     )}
                   </CardTitle>
