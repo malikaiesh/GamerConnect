@@ -3,7 +3,7 @@ import { useQuery, useMutation } from "@tanstack/react-query";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import AdminLayout from "@/components/layout/admin-layout";
+import AdminNavigation from "@/components/admin/navigation";
 import {
   Dialog,
   DialogContent,
@@ -333,15 +333,19 @@ export default function HomeAdsPage() {
   };
 
   return (
-    <AdminLayout>
-      <div className="space-y-6">
+    <div className="flex min-h-screen bg-background">
+      <AdminNavigation />
+      <div className="flex-1 p-6 space-y-6">
         <div className="flex justify-between items-center">
-          <h1 className="text-2xl font-bold text-foreground">Home Ads</h1>
+          <div>
+            <h1 className="text-3xl font-bold text-foreground">Home Ads</h1>
+            <p className="text-muted-foreground">Manage advertisements displayed on your homepage</p>
+          </div>
           <div className="flex items-center space-x-2">
             <Button 
               variant="outline" 
               onClick={handleToggleAllAds}
-              className={`${allAdsEnabled ? 'bg-green-100 hover:bg-green-200 dark:bg-green-900/20 dark:hover:bg-green-900/30' : 'bg-red-100 hover:bg-red-200 dark:bg-red-900/20 dark:hover:bg-red-900/30'}`}
+              className={`${allAdsEnabled ? 'bg-primary/10 hover:bg-primary/20' : 'bg-destructive/10 hover:bg-destructive/20'}`}
               disabled={toggleAllAdsMutation.isPending || homeAds.length === 0}
             >
               {toggleAllAdsMutation.isPending ? (
@@ -351,12 +355,12 @@ export default function HomeAdsPage() {
                 </>
               ) : allAdsEnabled ? (
                 <>
-                  <ToggleRight className="mr-2 h-4 w-4 text-green-600 dark:text-green-400" />
+                  <ToggleRight className="mr-2 h-4 w-4 text-primary" />
                   All Ads ON
                 </>
               ) : (
                 <>
-                  <ToggleLeft className="mr-2 h-4 w-4 text-red-600 dark:text-red-400" />
+                  <ToggleLeft className="mr-2 h-4 w-4 text-destructive" />
                   All Ads OFF
                 </>
               )}
@@ -569,11 +573,11 @@ export default function HomeAdsPage() {
             <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
           </div>
         ) : error ? (
-          <div className="bg-red-50 dark:bg-red-900/20 p-4 rounded-md text-red-600 dark:text-red-400 text-center">
+          <div className="bg-destructive/10 p-4 rounded-md text-destructive text-center">
             Error loading home ads: {error instanceof Error ? error.message : 'Unknown error'}
           </div>
         ) : homeAds.length === 0 ? (
-          <div className="bg-muted p-8 rounded-md text-center">
+          <div className="bg-card border border-border p-8 rounded-md text-center">
             <p className="text-muted-foreground mb-4">No home ads found</p>
             <Button onClick={() => setIsAddDialogOpen(true)}>
               <Plus className="mr-2 h-4 w-4" />
@@ -581,7 +585,7 @@ export default function HomeAdsPage() {
             </Button>
           </div>
         ) : (
-          <div className="bg-background rounded-md border shadow-sm">
+          <div className="bg-card border border-border rounded-md shadow-sm">
             <Table>
               <TableHeader>
                 <TableRow>
@@ -609,15 +613,15 @@ export default function HomeAdsPage() {
                       </TableCell>
                       <TableCell>
                         {ad.isGoogleAd ? (
-                          <span className="px-2 py-1 rounded-full bg-blue-100 text-blue-800 text-xs dark:bg-blue-900/30 dark:text-blue-400">
+                          <span className="px-2 py-1 rounded-full bg-primary/20 text-primary text-xs">
                             Google Ad
                           </span>
                         ) : ad.imageUrl ? (
-                          <span className="px-2 py-1 rounded-full bg-purple-100 text-purple-800 text-xs dark:bg-purple-900/30 dark:text-purple-400">
+                          <span className="px-2 py-1 rounded-full bg-secondary/50 text-secondary-foreground text-xs">
                             Banner
                           </span>
                         ) : (
-                          <span className="px-2 py-1 rounded-full bg-amber-100 text-amber-800 text-xs dark:bg-amber-900/30 dark:text-amber-400">
+                          <span className="px-2 py-1 rounded-full bg-muted text-muted-foreground text-xs">
                             HTML/JS
                           </span>
                         )}
@@ -625,8 +629,8 @@ export default function HomeAdsPage() {
                       <TableCell>
                         <span className={`px-2 py-1 rounded-full text-xs ${
                           ad.status === "active"
-                            ? "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400"
-                            : "bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-400"
+                            ? "bg-primary/20 text-primary"
+                            : "bg-muted text-muted-foreground"
                         }`}>
                           {ad.status.charAt(0).toUpperCase() + ad.status.slice(1)}
                         </span>
@@ -636,7 +640,7 @@ export default function HomeAdsPage() {
                           variant="ghost"
                           size="icon"
                           onClick={() => handleToggleAd(ad.id, ad.adEnabled)}
-                          className={ad.adEnabled ? "text-green-600 dark:text-green-400" : "text-red-600 dark:text-red-400"}
+                          className={ad.adEnabled ? "text-primary" : "text-destructive"}
                         >
                           {ad.adEnabled ? <ToggleRight className="h-5 w-5" /> : <ToggleLeft className="h-5 w-5" />}
                         </Button>
@@ -657,7 +661,7 @@ export default function HomeAdsPage() {
                             variant="ghost"
                             size="icon"
                             onClick={() => handleDeleteClick(ad)}
-                            className="text-red-600 hover:text-red-700 dark:text-red-500 dark:hover:text-red-400"
+                            className="text-destructive hover:text-destructive/80"
                           >
                             <Trash2 className="h-4 w-4" />
                           </Button>
@@ -671,7 +675,7 @@ export default function HomeAdsPage() {
                                 href={ad.targetUrl}
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                className="text-blue-600 hover:text-blue-700 dark:text-blue-500 dark:hover:text-blue-400"
+                                className="text-primary hover:text-primary/80"
                               >
                                 <ExternalLink className="h-4 w-4" />
                               </a>
@@ -878,6 +882,6 @@ export default function HomeAdsPage() {
           </Form>
         </DialogContent>
       </Dialog>
-    </AdminLayout>
+    </div>
   );
 }
