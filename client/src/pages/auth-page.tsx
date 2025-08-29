@@ -4,7 +4,9 @@ import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useAuth } from "@/hooks/use-auth";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation } from "@tanstack/react-query";
+import { apiRequest, queryClient } from "@/lib/queryClient";
+import { toast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -46,7 +48,7 @@ type RegisterValues = z.infer<typeof registerSchema>;
 export default function AuthPage() {
   const [activeTab, setActiveTab] = useState<string>("login");
   const [showForgotPassword, setShowForgotPassword] = useState(false);
-  const { user, loginMutation, registerMutation, socialLogin, isLoading } = useAuth();
+  const { user, isLoading } = useAuth();
   const [location, navigate] = useLocation();
   
   // Fetch site settings for logo configuration
@@ -88,6 +90,54 @@ export default function AuthPage() {
   //     navigate("/");
   //   }
   // }, [user, navigate]);
+
+  // Login mutation
+  const loginMutation = useMutation({
+    mutationFn: async (values: LoginValues) => {
+      return await apiRequest('/api/auth/login', {
+        method: 'POST',
+        body: JSON.stringify(values)
+      });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/user'] });
+      toast({
+        title: "Login successful",
+        description: "Welcome back!"
+      });
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Login failed",
+        description: error.message,
+        variant: "destructive"
+      });
+    }
+  });
+
+  // Register mutation
+  const registerMutation = useMutation({
+    mutationFn: async (values: RegisterValues) => {
+      return await apiRequest('/api/auth/register', {
+        method: 'POST',
+        body: JSON.stringify(values)
+      });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/user'] });
+      toast({
+        title: "Registration successful",
+        description: "Welcome to Gaming Portal!"
+      });
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Registration failed",
+        description: error.message,
+        variant: "destructive"
+      });
+    }
+  });
 
   // Handle login form submission
   const onLoginSubmit = (values: LoginValues) => {

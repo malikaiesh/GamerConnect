@@ -12,7 +12,9 @@ import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Separator } from "@/components/ui/separator";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, BarChart } from "lucide-react";
+import { Loader2, BarChart, Settings, TrendingUp, Eye, MousePointer, Target } from "lucide-react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Badge } from "@/components/ui/badge";
 import AdminNavigation from "@/components/admin/navigation";
 
 const blogAdsSettingsSchema = z.object({
@@ -120,9 +122,121 @@ export default function BlogAdsPage() {
       <div className="flex-1 ml-64 p-6">
         <div className="mb-6">
           <h1 className="text-3xl font-bold text-foreground">Blog Ads</h1>
-          <p className="text-muted-foreground">Configure advertisements displayed on your blog pages</p>
+          <p className="text-muted-foreground">Manage advertisements displayed on your blog pages</p>
         </div>
-        <Card className="border-border bg-card">
+        
+        <Tabs defaultValue="overview" className="space-y-6">
+          <TabsList>
+            <TabsTrigger value="overview">Overview</TabsTrigger>
+            <TabsTrigger value="settings">Ad Settings</TabsTrigger>
+            <TabsTrigger value="analytics">Analytics</TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="overview" className="space-y-6">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <Card className="border-border bg-card">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Target className="w-5 h-5" />
+                    Active Ad Positions
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold text-primary">8</div>
+                  <p className="text-xs text-muted-foreground">Configured positions</p>
+                </CardContent>
+              </Card>
+
+              <Card className="border-border bg-card">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Eye className="w-5 h-5" />
+                    Google AdSense
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold text-primary">
+                    {settings?.enableGoogleAds ? 'Enabled' : 'Disabled'}
+                  </div>
+                  <p className="text-xs text-muted-foreground">Integration status</p>
+                </CardContent>
+              </Card>
+
+              <Card className="border-border bg-card">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <MousePointer className="w-5 h-5" />
+                    Ad Types
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold text-primary">5</div>
+                  <p className="text-xs text-muted-foreground">Different ad types</p>
+                </CardContent>
+              </Card>
+            </div>
+
+            <Card className="border-border bg-card">
+              <CardHeader>
+                <CardTitle>Ad Position Overview</CardTitle>
+                <CardDescription>Current advertisement configuration across blog pages</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm font-medium">Header Ads</span>
+                    <Badge variant={settings?.headerAds ? "default" : "outline"}>
+                      {settings?.headerAds ? 'Configured' : 'Not Set'}
+                    </Badge>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm font-medium">Paragraph Position Ads</span>
+                    <Badge variant="default">4 positions</Badge>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm font-medium">Sidebar Ads</span>
+                    <Badge variant={settings?.sidebarAds ? "default" : "outline"}>
+                      {settings?.sidebarAds ? 'Configured' : 'Not Set'}
+                    </Badge>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm font-medium">Footer Ads</span>
+                    <Badge variant={settings?.footerAds ? "default" : "outline"}>
+                      {settings?.footerAds ? 'Configured' : 'Not Set'}
+                    </Badge>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm font-medium">Floating Ads</span>
+                    <Badge variant="secondary">2 positions</Badge>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="analytics" className="space-y-6">
+            <Card className="border-border bg-card">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <TrendingUp className="w-5 h-5" />
+                  Blog Ad Analytics
+                </CardTitle>
+                <CardDescription>
+                  Performance metrics for blog advertisements
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="text-center py-8 text-muted-foreground">
+                  <TrendingUp className="w-12 h-12 mx-auto mb-4 opacity-50" />
+                  <p className="text-lg font-medium mb-2">Analytics Coming Soon</p>
+                  <p className="text-sm">Detailed performance metrics will be available in future updates</p>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="settings">
+            <Card className="border-border bg-card">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <BarChart className="h-5 w-5" />
@@ -482,7 +596,9 @@ export default function BlogAdsPage() {
               </Form>
             )}
           </CardContent>
-        </Card>
+            </Card>
+          </TabsContent>
+        </Tabs>
       </div>
     </div>
   );
