@@ -26,7 +26,7 @@ export async function seedVerifiedRooms() {
       return;
     }
 
-    // Create verified rooms
+    // Create verified rooms with both SA and MAB prefixes
     const verifiedRoomsData = [
       {
         roomId: 'SA1994181',
@@ -53,7 +53,7 @@ export async function seedVerifiedRooms() {
         updatedAt: new Date()
       },
       {
-        roomId: 'SA1994182',
+        roomId: 'MAB1994181',
         name: 'Pro Champions League',
         description: 'Competitive gaming room for tournament players',
         type: 'public' as const,
@@ -77,7 +77,7 @@ export async function seedVerifiedRooms() {
         updatedAt: new Date()
       },
       {
-        roomId: 'SA1994183',
+        roomId: 'SA1994182',
         name: 'Streamer Lounge',
         description: 'Exclusive room for gaming content creators',
         type: 'public' as const,
@@ -97,6 +97,30 @@ export async function seedVerifiedRooms() {
         totalGiftsReceived: 45,
         totalGiftValue: 920.00,
         ownerId: verifiedUsers[2]?.id || verifiedUsers[0].id,
+        createdAt: new Date(),
+        updatedAt: new Date()
+      },
+      {
+        roomId: 'MAB1994182',
+        name: 'Gaming Arena',
+        description: 'High-energy gaming arena for competitive players',
+        type: 'public' as const,
+        status: 'active' as const,
+        maxSeats: 12,
+        currentUsers: 0,
+        category: 'arena',
+        language: 'English',
+        isLocked: false,
+        isFeatured: true,
+        voiceChatEnabled: true,
+        textChatEnabled: true,
+        giftsEnabled: true,
+        backgroundTheme: 'neon',
+        tags: ['arena', 'competitive', 'gaming'],
+        totalVisits: 420,
+        totalGiftsReceived: 55,
+        totalGiftValue: 1150.00,
+        ownerId: verifiedUsers[0].id,
         createdAt: new Date(),
         updatedAt: new Date()
       }

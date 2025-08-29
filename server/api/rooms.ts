@@ -27,30 +27,37 @@ import { Request, Response } from "express";
 
 const router = Router();
 
-// Generate unique room ID with SA prefix and sequential numbering
-async function generateRoomId(): Promise<string> {
+// Generate unique room ID with SA or MAB prefix and sequential numbering
+async function generateRoomId(prefix?: 'SA' | 'MAB'): Promise<string> {
   try {
-    // Get the highest room ID number that starts with SA
+    // Alternate between SA and MAB if no prefix specified
+    if (!prefix) {
+      const totalRooms = await db.select({ count: count() }).from(rooms);
+      prefix = totalRooms[0].count % 2 === 0 ? 'SA' : 'MAB';
+    }
+    
+    // Get the highest room ID number for the specified prefix
     const latestRoom = await db
       .select({ roomId: rooms.roomId })
       .from(rooms)
-      .where(sql`${rooms.roomId} LIKE 'SA%'`)
-      .orderBy(sql`CAST(SUBSTRING(${rooms.roomId}, 3) AS INTEGER) DESC`)
+      .where(sql`${rooms.roomId} LIKE ${`${prefix}%`}`)
+      .orderBy(sql`CAST(SUBSTRING(${rooms.roomId}, ${prefix.length + 1}) AS INTEGER) DESC`)
       .limit(1);
 
     let nextNumber = 1994181; // Starting number
     
     if (latestRoom.length > 0) {
-      const currentNumber = parseInt(latestRoom[0].roomId.substring(2));
+      const currentNumber = parseInt(latestRoom[0].roomId.substring(prefix.length));
       nextNumber = currentNumber + 1;
     }
     
-    return `SA${nextNumber}`;
+    return `${prefix}${nextNumber}`;
   } catch (error) {
     console.error("Error generating room ID:", error);
     // Fallback to timestamp-based ID if query fails
     const timestamp = Date.now().toString().slice(-7);
-    return `SA${timestamp}`;
+    const fallbackPrefix = prefix || 'SA';
+    return `${fallbackPrefix}${timestamp}`;
   }
 }
 
