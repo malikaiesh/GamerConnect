@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { AdminLayout } from "@/components/admin/layout";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -132,19 +133,19 @@ export default function PaymentTransactionsPage() {
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center h-64">
-        <div className="animate-spin w-8 h-8 border-4 border-primary border-t-transparent rounded-full"></div>
-      </div>
+      <AdminLayout title="Payment Transactions" description="Monitor and manage payment transactions">
+        <div className="flex items-center justify-center h-64">
+          <div className="animate-spin w-8 h-8 border-4 border-primary border-t-transparent rounded-full"></div>
+        </div>
+      </AdminLayout>
     );
   }
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-foreground">Payment Transactions</h1>
-          <p className="text-muted-foreground">Monitor and manage payment transactions</p>
-        </div>
+    <AdminLayout 
+      title="Payment Transactions" 
+      description="Monitor and manage payment transactions"
+      actions={
         <div className="flex items-center space-x-2">
           <Button variant="outline" onClick={() => queryClient.invalidateQueries({ queryKey: ["/api/admin/payment-transactions"] })} data-testid="button-refresh">
             <RefreshCw className="w-4 h-4 mr-2" />
@@ -155,7 +156,9 @@ export default function PaymentTransactionsPage() {
             Export
           </Button>
         </div>
-      </div>
+      }
+    >
+      <div className="space-y-6">
 
       {/* Filters */}
       <Card className="p-4">
@@ -441,6 +444,7 @@ export default function PaymentTransactionsPage() {
           )}
         </DialogContent>
       </Dialog>
-    </div>
+      </div>
+    </AdminLayout>
   );
 }

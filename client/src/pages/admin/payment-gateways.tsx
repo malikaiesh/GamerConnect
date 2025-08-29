@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { AdminLayout } from "@/components/admin/layout";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -194,21 +195,21 @@ export default function PaymentGatewaysPage() {
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center h-64">
-        <div className="animate-spin w-8 h-8 border-4 border-primary border-t-transparent rounded-full"></div>
-      </div>
+      <AdminLayout title="Payment Gateways" description="Manage your payment processing methods">
+        <div className="flex items-center justify-center h-64">
+          <div className="animate-spin w-8 h-8 border-4 border-primary border-t-transparent rounded-full"></div>
+        </div>
+      </AdminLayout>
     );
   }
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-foreground">Payment Gateways</h1>
-          <p className="text-muted-foreground">Manage your payment processing methods</p>
-        </div>
-        <Dialog open={isCreateModalOpen} onOpenChange={setIsCreateModalOpen}>
-          <DialogTrigger asChild>
+    <AdminLayout title="Payment Gateways" description="Manage your payment processing methods">
+      <div className="space-y-6">
+        <div className="flex items-center justify-between">
+          <div></div>
+          <Dialog open={isCreateModalOpen} onOpenChange={setIsCreateModalOpen}>
+            <DialogTrigger asChild>
             <Button data-testid="button-create-gateway">
               <Plus className="w-4 h-4 mr-2" />
               Add Gateway
@@ -472,8 +473,9 @@ export default function PaymentGatewaysPage() {
               </div>
             </form>
           </Form>
-        </DialogContent>
-      </Dialog>
-    </div>
+          </DialogContent>
+        </Dialog>
+      </div>
+    </AdminLayout>
   );
 }
