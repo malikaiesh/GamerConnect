@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Header } from "@/components/layout/header";
+import { AdminLayout } from "@/components/admin/layout";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -107,7 +107,7 @@ export default function VerificationRequestsPage() {
   // Update verification request status
   const updateRequestMutation = useMutation({
     mutationFn: async ({ id, data }: { id: number; data: any }) => {
-      return apiRequest('PUT', `/api/admin/verification-requests/${id}/status`, data);
+      return apiRequest(`/api/admin/verification-requests/${id}/status`, { method: 'PUT', body: data });
     },
     onSuccess: () => {
       toast({
@@ -176,14 +176,11 @@ export default function VerificationRequestsPage() {
   const requests = requestsData?.requests || [];
 
   return (
-    <div className="min-h-screen flex flex-col bg-background">
-      <Header />
-      
-      <div className="flex-1 container mx-auto px-4 py-8">
-        <div className="mb-8">
-          <h1 className="heading-lg mb-2">Verification Requests</h1>
-          <p className="text-muted-foreground">Manage user and room verification requests from the community.</p>
-        </div>
+    <AdminLayout 
+      title="Verification Requests" 
+      description="Manage user and room verification requests from the community"
+    >
+      <div className="p-6 space-y-6">
 
         {/* Statistics Cards */}
         {stats && (
@@ -486,6 +483,7 @@ export default function VerificationRequestsPage() {
           )}
         </DialogContent>
       </Dialog>
-    </div>
+      </div>
+    </AdminLayout>
   );
 }
