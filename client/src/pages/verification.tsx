@@ -66,7 +66,7 @@ export default function VerificationPage() {
 
   const submitVerificationRequest = useMutation({
     mutationFn: async (data: VerificationFormData) => {
-      return apiRequest('POST', '/api/verification-requests', data);
+      return apiRequest('/api/verification-requests', { method: 'POST', body: data });
     },
     onSuccess: () => {
       toast({
