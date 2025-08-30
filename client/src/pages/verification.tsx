@@ -13,7 +13,8 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
-import { Shield, User, Home, FileText, DollarSign, CheckCircle2, AlertCircle } from "lucide-react";
+import { Shield, User, Home, FileText, DollarSign, CheckCircle2, AlertCircle, CreditCard, Upload, FileImage } from "lucide-react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import type { PricingPlan } from "@shared/schema";
 
 const verificationFormSchema = z.object({
@@ -27,6 +28,10 @@ const verificationFormSchema = z.object({
   pricingPlanId: z.number({
     required_error: "Please select a pricing plan",
   }),
+  paymentMethod: z.enum(['international', 'local'], {
+    required_error: "Please select a payment method",
+  }),
+  paymentScreenshot: z.string().optional(),
 }).refine(
   (data) => {
     if (data.requestType === 'user' && !data.username) {
@@ -35,10 +40,13 @@ const verificationFormSchema = z.object({
     if (data.requestType === 'room' && !data.roomIdText) {
       return false;
     }
+    if (data.paymentMethod === 'local' && !data.paymentScreenshot) {
+      return false;
+    }
     return true;
   },
   {
-    message: "Username is required for user verification, Room ID is required for room verification",
+    message: "Username is required for user verification, Room ID is required for room verification, Payment screenshot is required for local payment",
     path: ["username"],
   }
 );
@@ -47,6 +55,10 @@ type VerificationFormData = z.infer<typeof verificationFormSchema>;
 
 export default function VerificationPage() {
   const [requestType, setRequestType] = useState<'user' | 'room'>('user');
+  const [paymentMethod, setPaymentMethod] = useState<'international' | 'local'>('international');
+  const [paymentDialogOpen, setPaymentDialogOpen] = useState(false);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [uploadedImageUrl, setUploadedImageUrl] = useState<string>('');
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
@@ -61,8 +73,50 @@ export default function VerificationPage() {
       requestType: 'user',
       reason: '',
       additionalInfo: '',
+      paymentMethod: 'international',
     }
   });
+
+  // File upload handler
+  const handleFileUpload = async (file: File) => {
+    const formData = new FormData();
+    formData.append('file', file);
+    
+    try {
+      const response = await fetch('/api/upload', {
+        method: 'POST',
+        body: formData,
+      });
+      
+      if (!response.ok) {
+        throw new Error('Failed to upload file');
+      }
+      
+      const result = await response.json();
+      setUploadedImageUrl(result.url);
+      form.setValue('paymentScreenshot', result.url);
+      
+      toast({
+        title: "File Uploaded",
+        description: "Payment screenshot uploaded successfully.",
+      });
+    } catch (error) {
+      toast({
+        title: "Upload Failed",
+        description: "Failed to upload payment screenshot. Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handlePaymentMethodChange = (method: 'international' | 'local') => {
+    setPaymentMethod(method);
+    form.setValue('paymentMethod', method);
+    if (method === 'international') {
+      form.setValue('paymentScreenshot', '');
+      setUploadedImageUrl('');
+    }
+  };
 
   const submitVerificationRequest = useMutation({
     mutationFn: async (data: VerificationFormData) => {
@@ -85,7 +139,24 @@ export default function VerificationPage() {
   });
 
   const onSubmit = (data: VerificationFormData) => {
-    submitVerificationRequest.mutate(data);
+    if (data.paymentMethod === 'international') {
+      // For international payments, open payment dialog
+      setPaymentDialogOpen(true);
+    } else {
+      // For local payments, submit directly (payment screenshot already uploaded)
+      submitVerificationRequest.mutate(data);
+    }
+  };
+
+  const handleInternationalPayment = async () => {
+    // Process international payment here (Stripe/PayPal integration)
+    // For now, we'll simulate payment completion
+    const formData = form.getValues();
+    submitVerificationRequest.mutate({
+      ...formData,
+      paymentScreenshot: 'international_payment_completed'
+    });
+    setPaymentDialogOpen(false);
   };
 
   const selectedPlan = verificationPlans.find(plan => plan.id === form.watch('pricingPlanId'));
@@ -292,13 +363,139 @@ export default function VerificationPage() {
                           )}
                         />
 
+                        {/* Payment Method Selection */}
+                        <FormField
+                          control={form.control}
+                          name="paymentMethod"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Payment Method *</FormLabel>
+                              <FormControl>
+                                <RadioGroup
+                                  value={field.value}
+                                  onValueChange={(value) => {
+                                    field.onChange(value);
+                                    setPaymentMethod(value as 'international' | 'local');
+                                  }}
+                                  className="grid grid-cols-1 md:grid-cols-2 gap-4"
+                                  data-testid="payment-method-selection"
+                                >
+                                  <div className="relative">
+                                    <RadioGroupItem value="international" id="international" className="peer sr-only" />
+                                    <label
+                                      htmlFor="international"
+                                      className="flex flex-col items-center justify-between rounded-lg border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground peer-checked:border-primary cursor-pointer"
+                                    >
+                                      <CreditCard className="h-6 w-6 mb-2" />
+                                      <div className="text-center">
+                                        <div className="font-medium">International Payment</div>
+                                        <div className="text-sm text-muted-foreground">Stripe/PayPal</div>
+                                      </div>
+                                    </label>
+                                  </div>
+                                  <div className="relative">
+                                    <RadioGroupItem value="local" id="local" className="peer sr-only" />
+                                    <label
+                                      htmlFor="local"
+                                      className="flex flex-col items-center justify-between rounded-lg border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground peer-checked:border-primary cursor-pointer"
+                                    >
+                                      <FileImage className="h-6 w-6 mb-2" />
+                                      <div className="text-center">
+                                        <div className="font-medium">Local Payment</div>
+                                        <div className="text-sm text-muted-foreground">Bank Transfer + Screenshot</div>
+                                      </div>
+                                    </label>
+                                  </div>
+                                </RadioGroup>
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+
+                        {/* Payment Screenshot Upload for Local Payment */}
+                        {paymentMethod === 'local' && (
+                          <div className="space-y-4">
+                            <div className="p-4 border rounded-lg bg-muted/50">
+                              <h4 className="font-medium mb-2">Local Payment Instructions</h4>
+                              <p className="text-sm text-muted-foreground mb-3">
+                                Please transfer the payment amount to our local account and upload the screenshot of your payment receipt below.
+                              </p>
+                              <div className="text-sm">
+                                <strong>Bank Details:</strong><br />
+                                Account Name: Gaming Platform<br />
+                                Account Number: 1234567890<br />
+                                Bank: Local Bank<br />
+                                Reference: Your Username + "verification"
+                              </div>
+                            </div>
+                            
+                            <FormField
+                              control={form.control}
+                              name="paymentScreenshot"
+                              render={({ field }) => (
+                                <FormItem>
+                                  <FormLabel>Payment Screenshot *</FormLabel>
+                                  <FormControl>
+                                    <div className="space-y-4">
+                                      <div className="flex items-center justify-center w-full">
+                                        <label
+                                          htmlFor="payment-screenshot"
+                                          className="flex flex-col items-center justify-center w-full h-32 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-gray-50 dark:hover:bg-bray-800 dark:bg-gray-700 hover:bg-gray-100 dark:border-gray-600 dark:hover:border-gray-500 dark:hover:bg-gray-600"
+                                        >
+                                          <div className="flex flex-col items-center justify-center pt-5 pb-6">
+                                            <Upload className="w-8 h-8 mb-2 text-gray-500 dark:text-gray-400" />
+                                            <p className="mb-2 text-sm text-gray-500 dark:text-gray-400">
+                                              <span className="font-semibold">Click to upload</span> payment screenshot
+                                            </p>
+                                            <p className="text-xs text-gray-500 dark:text-gray-400">PNG, JPG or JPEG (MAX. 5MB)</p>
+                                          </div>
+                                          <input
+                                            id="payment-screenshot"
+                                            type="file"
+                                            className="hidden"
+                                            accept="image/*"
+                                            onChange={(e) => {
+                                              const file = e.target.files?.[0];
+                                              if (file) {
+                                                setSelectedFile(file);
+                                                // Simulate file upload - in real app this would upload to server
+                                                const url = URL.createObjectURL(file);
+                                                setUploadedImageUrl(url);
+                                                field.onChange(url);
+                                              }
+                                            }}
+                                            data-testid="payment-screenshot-upload"
+                                          />
+                                        </label>
+                                      </div>
+                                      {uploadedImageUrl && (
+                                        <div className="mt-4">
+                                          <p className="text-sm font-medium mb-2">Uploaded Screenshot:</p>
+                                          <img 
+                                            src={uploadedImageUrl} 
+                                            alt="Payment Screenshot" 
+                                            className="max-w-full h-auto max-h-48 rounded-lg border"
+                                          />
+                                        </div>
+                                      )}
+                                    </div>
+                                  </FormControl>
+                                  <FormMessage />
+                                </FormItem>
+                              )}
+                            />
+                          </div>
+                        )}
+
                         <Button 
                           type="submit" 
                           className="w-full" 
                           disabled={submitVerificationRequest.isPending}
                           data-testid="submit-verification-request"
                         >
-                          {submitVerificationRequest.isPending ? 'Submitting...' : 'Submit Verification Request'}
+                          {submitVerificationRequest.isPending ? 'Submitting...' : 
+                           paymentMethod === 'international' ? 'Proceed to Payment' : 'Submit Verification Request'}
                         </Button>
                       </form>
                     </Form>
@@ -412,6 +609,100 @@ export default function VerificationPage() {
           </div>
         </div>
       </section>
+
+      {/* Payment Dialog for International Payments */}
+      <Dialog open={paymentDialogOpen} onOpenChange={setPaymentDialogOpen}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <CreditCard className="h-5 w-5" />
+              Complete Payment
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            {selectedPlan && (
+              <div className="p-4 border rounded-lg bg-muted/50">
+                <h4 className="font-medium mb-2">Payment Summary</h4>
+                <div className="space-y-2 text-sm">
+                  <div className="flex justify-between">
+                    <span>Plan:</span>
+                    <span>{selectedPlan.displayName}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>Amount:</span>
+                    <span className="font-medium">{formatPrice(selectedPlan.price, selectedPlan.currency)}</span>
+                  </div>
+                  {selectedPlan.verificationDuration && (
+                    <div className="flex justify-between">
+                      <span>Duration:</span>
+                      <span>{selectedPlan.verificationDuration} days</span>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+
+            <div className="space-y-3">
+              <h4 className="font-medium">Select Payment Method</h4>
+              <div className="grid gap-3">
+                <Button
+                  variant="outline"
+                  className="flex items-center justify-center gap-2 h-12"
+                  onClick={() => {
+                    toast({
+                      title: "Payment Processing",
+                      description: "Redirecting to payment processor...",
+                    });
+                    // In a real app, this would redirect to actual payment processor
+                    setTimeout(() => {
+                      const formData = form.getValues();
+                      submitVerificationRequest.mutate({
+                        ...formData,
+                        paymentScreenshot: 'international_payment_completed'
+                      });
+                      setPaymentDialogOpen(false);
+                    }, 2000);
+                  }}
+                  data-testid="pay-with-stripe"
+                >
+                  <CreditCard className="h-4 w-4" />
+                  Pay with Credit Card
+                </Button>
+                
+                <Button
+                  variant="outline"
+                  className="flex items-center justify-center gap-2 h-12"
+                  onClick={() => {
+                    toast({
+                      title: "Payment Processing",
+                      description: "Redirecting to digital wallet...",
+                    });
+                    // In a real app, this would redirect to PayPal or other wallet
+                    setTimeout(() => {
+                      const formData = form.getValues();
+                      submitVerificationRequest.mutate({
+                        ...formData,
+                        paymentScreenshot: 'digital_wallet_payment_completed'
+                      });
+                      setPaymentDialogOpen(false);
+                    }, 2000);
+                  }}
+                  data-testid="pay-with-wallet"
+                >
+                  <DollarSign className="h-4 w-4" />
+                  Pay with Digital Wallet
+                </Button>
+              </div>
+            </div>
+
+            <div className="flex gap-2 pt-4">
+              <Button variant="outline" onClick={() => setPaymentDialogOpen(false)} className="flex-1">
+                Cancel
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
