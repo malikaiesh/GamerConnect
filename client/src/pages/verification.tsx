@@ -233,9 +233,9 @@ export default function VerificationPage() {
                                   </SelectTrigger>
                                   <SelectContent>
                                     {loadingPlans ? (
-                                      <SelectItem value="">Loading plans...</SelectItem>
+                                      <SelectItem value="loading" disabled>Loading plans...</SelectItem>
                                     ) : verificationPlans.length === 0 ? (
-                                      <SelectItem value="">No verification plans available</SelectItem>
+                                      <SelectItem value="no-plans" disabled>No verification plans available</SelectItem>
                                     ) : (
                                       verificationPlans.map((plan) => (
                                         <SelectItem key={plan.id} value={plan.id.toString()}>
