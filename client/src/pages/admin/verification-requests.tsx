@@ -483,7 +483,6 @@ export default function VerificationRequestsPage() {
           )}
         </DialogContent>
       </Dialog>
-      </div>
     </AdminLayout>
   );
 }
