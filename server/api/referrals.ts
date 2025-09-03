@@ -546,6 +546,27 @@ router.post('/admin/settings', isAuthenticated, isAdmin, async (req, res) => {
   }
 });
 
+// Delete referral setting (Admin only)
+router.delete('/admin/settings/:settingKey', isAuthenticated, isAdmin, async (req, res) => {
+  try {
+    const { settingKey } = req.params;
+
+    const deletedSetting = await db
+      .delete(referralSettings)
+      .where(eq(referralSettings.settingKey, settingKey))
+      .returning();
+
+    if (deletedSetting.length === 0) {
+      return res.status(404).json({ error: 'Setting not found' });
+    }
+
+    res.json({ success: true, message: 'Setting deleted successfully' });
+  } catch (error) {
+    console.error('Error deleting referral setting:', error);
+    res.status(500).json({ error: 'Failed to delete setting' });
+  }
+});
+
 // Manage payouts (Admin only)
 router.get('/admin/payouts', isAuthenticated, isAdmin, async (req, res) => {
   try {

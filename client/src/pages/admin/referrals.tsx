@@ -8,7 +8,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from '@/components/ui/dialog';
 import { useToast } from '@/hooks/use-toast';
 import { apiRequest } from '@/lib/queryClient';
 import { 
@@ -30,7 +30,11 @@ import {
   Clock,
   AlertCircle,
   Eye,
-  ExternalLink
+  ExternalLink,
+  Plus,
+  Edit,
+  Trash2,
+  Save
 } from 'lucide-react';
 import { format } from 'date-fns';
 
@@ -41,6 +45,8 @@ export default function ReferralsPage() {
   const [newSettingValue, setNewSettingValue] = useState('');
   const [newSettingType, setNewSettingType] = useState('string');
   const [newSettingDescription, setNewSettingDescription] = useState('');
+  const [editingSetting, setEditingSetting] = useState<any>(null);
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   
   const { toast } = useToast();
   const queryClient = useQueryClient();
@@ -81,16 +87,41 @@ export default function ReferralsPage() {
       queryClient.invalidateQueries({ queryKey: [`/api/referrals/admin/settings`] });
       toast({
         title: 'Success',
-        description: 'Setting updated successfully'
+        description: editingSetting ? 'Setting updated successfully' : 'Setting created successfully'
       });
       setNewSettingKey('');
       setNewSettingValue('');
       setNewSettingDescription('');
+      setEditingSetting(null);
+      setIsEditDialogOpen(false);
     },
     onError: () => {
       toast({
         title: 'Error',
-        description: 'Failed to update setting',
+        description: 'Failed to save setting',
+        variant: 'destructive'
+      });
+    }
+  });
+
+  // Delete setting mutation
+  const deleteSettingMutation = useMutation({
+    mutationFn: async (settingKey: string) => {
+      return apiRequest(`/api/referrals/admin/settings/${settingKey}`, {
+        method: 'DELETE'
+      });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: [`/api/referrals/admin/settings`] });
+      toast({
+        title: 'Success',
+        description: 'Setting deleted successfully'
+      });
+    },
+    onError: () => {
+      toast({
+        title: 'Error',
+        description: 'Failed to delete setting',
         variant: 'destructive'
       });
     }
@@ -143,6 +174,30 @@ export default function ReferralsPage() {
     });
   };
 
+  const handleEditSetting = (setting: any) => {
+    setEditingSetting(setting);
+    setNewSettingKey(setting.settingKey);
+    setNewSettingValue(setting.settingValue);
+    setNewSettingType(setting.settingType);
+    setNewSettingDescription(setting.description || '');
+    setIsEditDialogOpen(true);
+  };
+
+  const handleDeleteSetting = (settingKey: string) => {
+    if (confirm('Are you sure you want to delete this setting? This action cannot be undone.')) {
+      deleteSettingMutation.mutate(settingKey);
+    }
+  };
+
+  const resetForm = () => {
+    setNewSettingKey('');
+    setNewSettingValue('');
+    setNewSettingType('string');
+    setNewSettingDescription('');
+    setEditingSetting(null);
+    setIsEditDialogOpen(false);
+  };
+
   const getStatusBadge = (status: string) => {
     const statusConfig = {
       pending: { color: 'bg-yellow-100 text-yellow-800 border-yellow-200', icon: Clock },
@@ -185,10 +240,11 @@ export default function ReferralsPage() {
       </div>
 
       <Tabs defaultValue="overview" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-5">
+        <TabsList className="grid w-full grid-cols-6">
           <TabsTrigger value="overview">Overview</TabsTrigger>
           <TabsTrigger value="referrals">All Referrals</TabsTrigger>
           <TabsTrigger value="payouts">Payouts</TabsTrigger>
+          <TabsTrigger value="offers">Referral Offers</TabsTrigger>
           <TabsTrigger value="settings">Settings</TabsTrigger>
           <TabsTrigger value="leaderboard">Leaderboard</TabsTrigger>
         </TabsList>
@@ -450,100 +506,191 @@ export default function ReferralsPage() {
           </Card>
         </TabsContent>
 
-        {/* Settings Tab */}
-        <TabsContent value="settings">
-          <div className="grid gap-6 lg:grid-cols-2">
-            <Card>
-              <CardHeader>
-                <CardTitle>Current Settings</CardTitle>
-                <CardDescription>Referral system configuration</CardDescription>
-              </CardHeader>
-              <CardContent>
-                {settingsLoading ? (
-                  <div className="text-center py-8">Loading settings...</div>
-                ) : (
-                  <div className="space-y-3">
-                    {settings?.map((setting: any) => (
-                      <div key={setting.id} className="flex justify-between items-center p-3 bg-muted/50 rounded-lg">
-                        <div>
-                          <p className="font-medium">{setting.settingKey.replace(/_/g, ' ')}</p>
-                          <p className="text-sm text-muted-foreground">{setting.description}</p>
+        {/* Referral Offers Tab */}
+        <TabsContent value="offers">
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between">
+              <div>
+                <CardTitle>Referral Offers Management</CardTitle>
+                <CardDescription>Create, edit, and delete referral reward offers</CardDescription>
+              </div>
+              <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
+                <DialogTrigger asChild>
+                  <Button onClick={() => resetForm()} data-testid="button-add-offer">
+                    <Plus size={16} className="mr-2" />
+                    Add New Offer
+                  </Button>
+                </DialogTrigger>
+                <DialogContent className="sm:max-w-[500px]">
+                  <DialogHeader>
+                    <DialogTitle>
+                      {editingSetting ? 'Edit Referral Offer' : 'Create New Referral Offer'}
+                    </DialogTitle>
+                  </DialogHeader>
+                  <div className="grid gap-4 py-4">
+                    <div className="grid gap-2">
+                      <Label htmlFor="edit-setting-key">Offer Name (Key)</Label>
+                      <Input
+                        id="edit-setting-key"
+                        placeholder="e.g., welcome_bonus_reward"
+                        value={newSettingKey}
+                        onChange={(e) => setNewSettingKey(e.target.value)}
+                        disabled={!!editingSetting}
+                        data-testid="input-edit-setting-key"
+                      />
+                    </div>
+                    <div className="grid gap-2">
+                      <Label htmlFor="edit-setting-value">Reward Value</Label>
+                      <Input
+                        id="edit-setting-value"
+                        placeholder="e.g., 1000 (for $10.00)"
+                        value={newSettingValue}
+                        onChange={(e) => setNewSettingValue(e.target.value)}
+                        data-testid="input-edit-setting-value"
+                      />
+                    </div>
+                    <div className="grid gap-2">
+                      <Label htmlFor="edit-setting-type">Value Type</Label>
+                      <Select value={newSettingType} onValueChange={setNewSettingType}>
+                        <SelectTrigger data-testid="select-edit-setting-type">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="number">Number (Currency in cents)</SelectItem>
+                          <SelectItem value="string">Text</SelectItem>
+                          <SelectItem value="boolean">True/False</SelectItem>
+                          <SelectItem value="json">JSON Object</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="grid gap-2">
+                      <Label htmlFor="edit-setting-description">Description</Label>
+                      <Textarea
+                        id="edit-setting-description"
+                        placeholder="Describe this referral offer..."
+                        value={newSettingDescription}
+                        onChange={(e) => setNewSettingDescription(e.target.value)}
+                        data-testid="textarea-edit-setting-description"
+                      />
+                    </div>
+                  </div>
+                  <DialogFooter>
+                    <Button variant="outline" onClick={() => setIsEditDialogOpen(false)}>
+                      Cancel
+                    </Button>
+                    <Button 
+                      onClick={handleUpdateSetting} 
+                      disabled={updateSettingMutation.isPending}
+                      data-testid="button-save-offer"
+                    >
+                      <Save size={16} className="mr-2" />
+                      {updateSettingMutation.isPending ? 'Saving...' : editingSetting ? 'Update Offer' : 'Create Offer'}
+                    </Button>
+                  </DialogFooter>
+                </DialogContent>
+              </Dialog>
+            </CardHeader>
+            <CardContent>
+              {settingsLoading ? (
+                <div className="text-center py-8">Loading referral offers...</div>
+              ) : (
+                <div className="space-y-3">
+                  {settings?.map((setting: any) => (
+                    <div key={setting.id} className="flex items-center justify-between p-4 border rounded-lg bg-card">
+                      <div className="flex-1">
+                        <div className="flex items-center gap-3">
+                          <Gift className="h-5 w-5 text-primary" />
+                          <div>
+                            <p className="font-semibold text-lg capitalize">
+                              {setting.settingKey.replace(/_/g, ' ')}
+                            </p>
+                            <p className="text-sm text-muted-foreground">{setting.description}</p>
+                          </div>
                         </div>
+                      </div>
+                      <div className="flex items-center gap-4">
                         <div className="text-right">
-                          <p className="font-medium">
+                          <div className="text-2xl font-bold text-green-600">
                             {setting.settingType === 'number' && setting.settingKey.includes('reward') 
                               ? formatCurrency(parseInt(setting.settingValue) || 0)
                               : setting.settingValue}
-                          </p>
+                          </div>
                           <Badge variant="outline" className="text-xs">
                             {setting.settingType}
                           </Badge>
                         </div>
+                        <div className="flex gap-2">
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => handleEditSetting(setting)}
+                            data-testid={`button-edit-${setting.settingKey}`}
+                          >
+                            <Edit size={14} className="mr-1" />
+                            Edit
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="destructive"
+                            onClick={() => handleDeleteSetting(setting.settingKey)}
+                            disabled={deleteSettingMutation.isPending}
+                            data-testid={`button-delete-${setting.settingKey}`}
+                          >
+                            <Trash2 size={14} className="mr-1" />
+                            Delete
+                          </Button>
+                        </div>
                       </div>
-                    )) || <p className="text-muted-foreground">No settings found</p>}
-                  </div>
-                )}
-              </CardContent>
-            </Card>
+                    </div>
+                  )) || <p className="text-muted-foreground text-center py-8">No referral offers found</p>}
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </TabsContent>
 
+        {/* Settings Tab */}
+        <TabsContent value="settings">
+          <div className="grid gap-6">
             <Card>
               <CardHeader>
-                <CardTitle>Update Setting</CardTitle>
-                <CardDescription>Modify referral system configuration</CardDescription>
+                <CardTitle>System Configuration</CardTitle>
+                <CardDescription>Advanced referral system settings and configurations</CardDescription>
               </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="setting-key">Setting Key</Label>
-                  <Input
-                    id="setting-key"
-                    placeholder="e.g., registration_reward"
-                    value={newSettingKey}
-                    onChange={(e) => setNewSettingKey(e.target.value)}
-                    data-testid="input-setting-key"
-                  />
+              <CardContent>
+                <div className="grid gap-6 md:grid-cols-2">
+                  <div className="space-y-4">
+                    <h4 className="font-semibold text-lg">Tier Configuration</h4>
+                    {settings?.filter((s: any) => s.settingKey.includes('tier_')).map((setting: any) => (
+                      <div key={setting.id} className="flex justify-between items-center p-3 bg-muted/30 rounded-lg">
+                        <span className="font-medium">{setting.settingKey.replace(/_/g, ' ')}</span>
+                        <div className="flex items-center gap-2">
+                          <span className="font-mono">{setting.settingValue}</span>
+                          <Button size="sm" variant="ghost" onClick={() => handleEditSetting(setting)}>
+                            <Edit size={12} />
+                          </Button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                  
+                  <div className="space-y-4">
+                    <h4 className="font-semibold text-lg">System Limits</h4>
+                    {settings?.filter((s: any) => s.settingKey.includes('max_') || s.settingKey.includes('min_')).map((setting: any) => (
+                      <div key={setting.id} className="flex justify-between items-center p-3 bg-muted/30 rounded-lg">
+                        <span className="font-medium">{setting.settingKey.replace(/_/g, ' ')}</span>
+                        <div className="flex items-center gap-2">
+                          <span className="font-mono">
+                            {setting.settingKey.includes('amount') ? formatCurrency(parseInt(setting.settingValue)) : setting.settingValue}
+                          </span>
+                          <Button size="sm" variant="ghost" onClick={() => handleEditSetting(setting)}>
+                            <Edit size={12} />
+                          </Button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
                 </div>
-                <div className="space-y-2">
-                  <Label htmlFor="setting-value">Value</Label>
-                  <Input
-                    id="setting-value"
-                    placeholder="e.g., 500"
-                    value={newSettingValue}
-                    onChange={(e) => setNewSettingValue(e.target.value)}
-                    data-testid="input-setting-value"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="setting-type">Type</Label>
-                  <Select value={newSettingType} onValueChange={setNewSettingType}>
-                    <SelectTrigger data-testid="select-setting-type">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="string">String</SelectItem>
-                      <SelectItem value="number">Number</SelectItem>
-                      <SelectItem value="boolean">Boolean</SelectItem>
-                      <SelectItem value="json">JSON</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="setting-description">Description</Label>
-                  <Textarea
-                    id="setting-description"
-                    placeholder="Brief description of this setting"
-                    value={newSettingDescription}
-                    onChange={(e) => setNewSettingDescription(e.target.value)}
-                    data-testid="textarea-setting-description"
-                  />
-                </div>
-                <Button 
-                  onClick={handleUpdateSetting} 
-                  disabled={updateSettingMutation.isPending}
-                  className="w-full"
-                  data-testid="button-update-setting"
-                >
-                  {updateSettingMutation.isPending ? 'Updating...' : 'Update Setting'}
-                </Button>
               </CardContent>
             </Card>
           </div>
