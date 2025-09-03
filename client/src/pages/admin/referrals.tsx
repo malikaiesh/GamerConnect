@@ -12,6 +12,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, Dialog
 import { useToast } from '@/hooks/use-toast';
 import { apiRequest } from '@/lib/queryClient';
 import AdminNavigation from '@/components/admin/navigation';
+import { Link } from 'wouter';
 import { 
   Target, 
   Users, 
@@ -237,10 +238,18 @@ export default function ReferralsPage() {
             <h1 className="text-3xl font-bold text-foreground">Referral System</h1>
             <p className="text-muted-foreground">Manage referral codes, rewards, and analytics</p>
           </div>
-          <Button variant="outline">
-            <Download size={16} className="mr-2" />
-            Export Data
-          </Button>
+          <div className="flex gap-3">
+            <Button variant="outline" asChild>
+              <Link href="/admin/payout-methods">
+                <CreditCard size={16} className="mr-2" />
+                Payout Methods
+              </Link>
+            </Button>
+            <Button variant="outline">
+              <Download size={16} className="mr-2" />
+              Export Data
+            </Button>
+          </div>
         </div>
 
         <Tabs defaultValue="overview" className="space-y-6">

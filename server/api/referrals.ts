@@ -9,17 +9,23 @@ import {
   referralPayouts,
   referralAnalytics,
   referralMilestones,
+  payoutMethods,
+  userPayoutPreferences,
   insertReferralCodeSchema,
   insertReferralSchema,
   insertReferralRewardSchema,
   insertReferralPayoutSchema,
+  insertPayoutMethodSchema,
+  insertUserPayoutPreferenceSchema,
   type ReferralCode,
   type Referral,
   type ReferralReward,
   type ReferralSetting,
   type ReferralPayout,
   type ReferralAnalytics,
-  type ReferralMilestone
+  type ReferralMilestone,
+  type PayoutMethod,
+  type UserPayoutPreference
 } from '@shared/schema';
 import { eq, sql, desc, and, sum, count } from 'drizzle-orm';
 import { isAuthenticated, isAdmin } from '../middleware/auth';
@@ -678,6 +684,258 @@ router.get('/public/offers', async (req, res) => {
   } catch (error) {
     console.error('Error fetching public offers:', error);
     res.status(500).json({ error: 'Failed to fetch offers' });
+  }
+});
+
+// ===== PAYOUT METHODS ADMIN ENDPOINTS =====
+
+// Get all payout methods (admin)
+router.get('/admin/payout-methods', isAuthenticated, isAdmin, async (req, res) => {
+  try {
+    const methods = await db
+      .select()
+      .from(payoutMethods)
+      .orderBy(payoutMethods.displayOrder, payoutMethods.name);
+    
+    res.json(methods);
+  } catch (error) {
+    console.error('Error fetching payout methods:', error);
+    res.status(500).json({ error: 'Failed to fetch payout methods' });
+  }
+});
+
+// Create payout method (admin)
+router.post('/admin/payout-methods', isAuthenticated, isAdmin, async (req, res) => {
+  try {
+    const validatedData = insertPayoutMethodSchema.parse(req.body);
+    
+    const [newMethod] = await db
+      .insert(payoutMethods)
+      .values(validatedData)
+      .returning();
+    
+    res.status(201).json(newMethod);
+  } catch (error) {
+    console.error('Error creating payout method:', error);
+    res.status(500).json({ error: 'Failed to create payout method' });
+  }
+});
+
+// Update payout method (admin)
+router.put('/admin/payout-methods/:id', isAuthenticated, isAdmin, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const updateData = req.body;
+    
+    const [updatedMethod] = await db
+      .update(payoutMethods)
+      .set({ ...updateData, updatedAt: new Date() })
+      .where(eq(payoutMethods.id, parseInt(id)))
+      .returning();
+
+    if (!updatedMethod) {
+      return res.status(404).json({ error: 'Payout method not found' });
+    }
+    
+    res.json(updatedMethod);
+  } catch (error) {
+    console.error('Error updating payout method:', error);
+    res.status(500).json({ error: 'Failed to update payout method' });
+  }
+});
+
+// Delete payout method (admin)
+router.delete('/admin/payout-methods/:id', isAuthenticated, isAdmin, async (req, res) => {
+  try {
+    const { id } = req.params;
+    
+    // Check if any users are using this payout method
+    const usageCount = await db
+      .select({ count: count() })
+      .from(userPayoutPreferences)
+      .where(eq(userPayoutPreferences.payoutMethodId, parseInt(id)));
+
+    if (usageCount[0]?.count > 0) {
+      return res.status(400).json({ 
+        error: 'Cannot delete payout method that is currently being used by users' 
+      });
+    }
+    
+    const [deletedMethod] = await db
+      .delete(payoutMethods)
+      .where(eq(payoutMethods.id, parseInt(id)))
+      .returning();
+
+    if (!deletedMethod) {
+      return res.status(404).json({ error: 'Payout method not found' });
+    }
+    
+    res.json({ message: 'Payout method deleted successfully' });
+  } catch (error) {
+    console.error('Error deleting payout method:', error);
+    res.status(500).json({ error: 'Failed to delete payout method' });
+  }
+});
+
+// ===== USER PAYOUT PREFERENCES ENDPOINTS =====
+
+// Get available payout methods for users
+router.get('/payout-methods', async (req, res) => {
+  try {
+    const methods = await db
+      .select({
+        id: payoutMethods.id,
+        method: payoutMethods.method,
+        name: payoutMethods.name,
+        description: payoutMethods.description,
+        icon: payoutMethods.icon,
+        minimumAmount: payoutMethods.minimumAmount,
+        processingFee: payoutMethods.processingFee,
+        processingTime: payoutMethods.processingTime,
+        requiredFields: payoutMethods.requiredFields,
+        instructions: payoutMethods.instructions
+      })
+      .from(payoutMethods)
+      .where(eq(payoutMethods.isEnabled, true))
+      .orderBy(payoutMethods.displayOrder, payoutMethods.name);
+    
+    res.json(methods);
+  } catch (error) {
+    console.error('Error fetching available payout methods:', error);
+    res.status(500).json({ error: 'Failed to fetch payout methods' });
+  }
+});
+
+// Get user's payout preferences
+router.get('/my-payout-preferences', isAuthenticated, async (req, res) => {
+  try {
+    const userId = (req as any).user.id;
+    
+    const preferences = await db
+      .select({
+        id: userPayoutPreferences.id,
+        payoutDetails: userPayoutPreferences.payoutDetails,
+        isDefault: userPayoutPreferences.isDefault,
+        isVerified: userPayoutPreferences.isVerified,
+        verifiedAt: userPayoutPreferences.verifiedAt,
+        createdAt: userPayoutPreferences.createdAt,
+        updatedAt: userPayoutPreferences.updatedAt,
+        payoutMethod: {
+          id: payoutMethods.id,
+          method: payoutMethods.method,
+          name: payoutMethods.name,
+          description: payoutMethods.description,
+          icon: payoutMethods.icon,
+          minimumAmount: payoutMethods.minimumAmount,
+          processingFee: payoutMethods.processingFee,
+          processingTime: payoutMethods.processingTime,
+          requiredFields: payoutMethods.requiredFields,
+          instructions: payoutMethods.instructions
+        }
+      })
+      .from(userPayoutPreferences)
+      .leftJoin(payoutMethods, eq(userPayoutPreferences.payoutMethodId, payoutMethods.id))
+      .where(eq(userPayoutPreferences.userId, userId))
+      .orderBy(desc(userPayoutPreferences.isDefault), userPayoutPreferences.createdAt);
+    
+    res.json(preferences);
+  } catch (error) {
+    console.error('Error fetching user payout preferences:', error);
+    res.status(500).json({ error: 'Failed to fetch payout preferences' });
+  }
+});
+
+// Create/update user payout preference
+router.post('/my-payout-preferences', isAuthenticated, async (req, res) => {
+  try {
+    const userId = (req as any).user.id;
+    const { payoutMethodId, payoutDetails, isDefault } = req.body;
+    
+    // Validate that payout method exists and is enabled
+    const [method] = await db
+      .select()
+      .from(payoutMethods)
+      .where(and(
+        eq(payoutMethods.id, payoutMethodId),
+        eq(payoutMethods.isEnabled, true)
+      ));
+
+    if (!method) {
+      return res.status(400).json({ error: 'Invalid or disabled payout method' });
+    }
+
+    // If setting as default, remove default from other preferences
+    if (isDefault) {
+      await db
+        .update(userPayoutPreferences)
+        .set({ isDefault: false })
+        .where(eq(userPayoutPreferences.userId, userId));
+    }
+
+    // Check if preference already exists for this method
+    const [existingPreference] = await db
+      .select()
+      .from(userPayoutPreferences)
+      .where(and(
+        eq(userPayoutPreferences.userId, userId),
+        eq(userPayoutPreferences.payoutMethodId, payoutMethodId)
+      ));
+
+    let preference;
+    if (existingPreference) {
+      // Update existing preference
+      [preference] = await db
+        .update(userPayoutPreferences)
+        .set({
+          payoutDetails,
+          isDefault: isDefault || false,
+          isVerified: false, // Reset verification when details change
+          updatedAt: new Date()
+        })
+        .where(eq(userPayoutPreferences.id, existingPreference.id))
+        .returning();
+    } else {
+      // Create new preference
+      [preference] = await db
+        .insert(userPayoutPreferences)
+        .values({
+          userId,
+          payoutMethodId,
+          payoutDetails,
+          isDefault: isDefault || false
+        })
+        .returning();
+    }
+    
+    res.status(201).json(preference);
+  } catch (error) {
+    console.error('Error saving payout preference:', error);
+    res.status(500).json({ error: 'Failed to save payout preference' });
+  }
+});
+
+// Delete user payout preference
+router.delete('/my-payout-preferences/:id', isAuthenticated, async (req, res) => {
+  try {
+    const userId = (req as any).user.id;
+    const { id } = req.params;
+    
+    const [deletedPreference] = await db
+      .delete(userPayoutPreferences)
+      .where(and(
+        eq(userPayoutPreferences.id, parseInt(id)),
+        eq(userPayoutPreferences.userId, userId)
+      ))
+      .returning();
+
+    if (!deletedPreference) {
+      return res.status(404).json({ error: 'Payout preference not found' });
+    }
+    
+    res.json({ message: 'Payout preference deleted successfully' });
+  } catch (error) {
+    console.error('Error deleting payout preference:', error);
+    res.status(500).json({ error: 'Failed to delete payout preference' });
   }
 });
 

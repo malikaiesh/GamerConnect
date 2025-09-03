@@ -102,7 +102,7 @@ export const referralRewardTypeEnum = pgEnum('referral_reward_type', ['registrat
 export const referralRewardStatusEnum = pgEnum('referral_reward_status', ['pending', 'approved', 'paid', 'cancelled']);
 export const referralTierEnum = pgEnum('referral_tier', ['tier_1', 'tier_2', 'tier_3']);
 export const referralCodeStatusEnum = pgEnum('referral_code_status', ['active', 'inactive', 'expired']);
-export const payoutMethodEnum = pgEnum('payout_method', ['paypal', 'bank_transfer', 'crypto', 'store_credit', 'gift_card']);
+export const payoutMethodEnum = pgEnum('payout_method', ['paypal', 'binance', 'payoneer', 'bank_transfer', 'crypto', 'store_credit', 'gift_card', 'wise']);
 export const payoutStatusEnum = pgEnum('payout_status', ['pending', 'processing', 'completed', 'failed', 'cancelled']);
 
 // Roles table
@@ -2393,6 +2393,62 @@ export const referralMilestones = pgTable('referral_milestones', {
   updatedAt: timestamp('updated_at').defaultNow().notNull()
 });
 
+// Payout Methods table for admin management
+export const payoutMethods = pgTable('payout_methods', {
+  id: serial('id').primaryKey(),
+  method: payoutMethodEnum('method').notNull().unique(),
+  name: text('name').notNull(),
+  description: text('description'),
+  icon: text('icon'), // Icon class or URL
+  isEnabled: boolean('is_enabled').default(true).notNull(),
+  minimumAmount: integer('minimum_amount').default(1000).notNull(), // $10.00
+  processingFee: integer('processing_fee').default(0).notNull(), // Fee in cents
+  processingTime: text('processing_time').default('1-3 business days'), // Processing time description
+  requiredFields: json('required_fields').$type<{
+    fields: Array<{
+      name: string;
+      label: string;
+      type: 'text' | 'email' | 'number';
+      required: boolean;
+      placeholder?: string;
+      validation?: string;
+    }>;
+  }>().notNull(),
+  instructions: text('instructions'), // Additional instructions for users
+  displayOrder: integer('display_order').default(0).notNull(),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+  updatedAt: timestamp('updated_at').defaultNow().notNull()
+});
+
+// User Payout Preferences table  
+export const userPayoutPreferences = pgTable('user_payout_preferences', {
+  id: serial('id').primaryKey(),
+  userId: integer('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
+  payoutMethodId: integer('payout_method_id').notNull().references(() => payoutMethods.id, { onDelete: 'cascade' }),
+  payoutDetails: json('payout_details').$type<{
+    paypal_email?: string;
+    binance_email?: string;
+    binance_uid?: string;
+    payoneer_email?: string;
+    bank_account_number?: string;
+    bank_routing_number?: string;
+    bank_name?: string;
+    crypto_address?: string;
+    crypto_network?: string;
+    wise_email?: string;
+    [key: string]: string | undefined;
+  }>().notNull(),
+  isDefault: boolean('is_default').default(false).notNull(),
+  isVerified: boolean('is_verified').default(false).notNull(),
+  verifiedAt: timestamp('verified_at'),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+  updatedAt: timestamp('updated_at').defaultNow().notNull()
+}, (table) => {
+  return {
+    userMethodIdx: uniqueIndex('user_method_idx').on(table.userId, table.payoutMethodId)
+  };
+});
+
 // Pricing Plans Relations
 export const pricingPlansRelations = relations(pricingPlans, ({ one, many }) => ({
   createdByUser: one(users, {
@@ -2558,6 +2614,21 @@ export const referralMilestonesRelations = relations(referralMilestones, ({ one 
   })
 }));
 
+export const payoutMethodsRelations = relations(payoutMethods, ({ many }) => ({
+  userPreferences: many(userPayoutPreferences)
+}));
+
+export const userPayoutPreferencesRelations = relations(userPayoutPreferences, ({ one }) => ({
+  user: one(users, {
+    fields: [userPayoutPreferences.userId],
+    references: [users.id]
+  }),
+  payoutMethod: one(payoutMethods, {
+    fields: [userPayoutPreferences.payoutMethodId],
+    references: [payoutMethods.id]
+  })
+}));
+
 // ===== REFERRAL SYSTEM VALIDATION SCHEMAS =====
 
 export const insertReferralCodeSchema = createInsertSchema(referralCodes, {
@@ -2605,4 +2676,17 @@ export type InsertReferralPayout = z.infer<typeof insertReferralPayoutSchema>;
 export type ReferralAnalytics = typeof referralAnalytics.$inferSelect;
 export type ReferralMilestone = typeof referralMilestones.$inferSelect;
 export type InsertReferralMilestone = z.infer<typeof insertReferralMilestoneSchema>;
+
+export const insertPayoutMethodSchema = createInsertSchema(payoutMethods, {
+  name: (schema) => schema.min(1, "Payout method name is required"),
+  minimumAmount: (schema) => schema.min(100, "Minimum amount must be at least $1.00")
+}).omit({ id: true, createdAt: true, updatedAt: true });
+
+export const insertUserPayoutPreferenceSchema = createInsertSchema(userPayoutPreferences, {
+}).omit({ id: true, createdAt: true, updatedAt: true });
+
+export type PayoutMethod = typeof payoutMethods.$inferSelect;
+export type InsertPayoutMethod = z.infer<typeof insertPayoutMethodSchema>;
+export type UserPayoutPreference = typeof userPayoutPreferences.$inferSelect;
+export type InsertUserPayoutPreference = z.infer<typeof insertUserPayoutPreferenceSchema>;
 
