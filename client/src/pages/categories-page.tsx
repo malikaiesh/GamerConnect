@@ -1,5 +1,6 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
+import { useRoute, useLocation } from 'wouter';
 import { Header } from '@/components/layout/header';
 import { Footer } from '@/components/layout/footer';
 import { GameGrid } from '@/components/games/game-grid';
@@ -8,6 +9,8 @@ import { Game, GameCategory } from '@shared/schema';
 import { fetcher } from '@/lib/queryClient';
 
 export default function CategoriesPage() {
+  const [location, setLocation] = useLocation();
+  const [match, params] = useRoute('/games/category/:categorySlug');
   const [activeCategory, setActiveCategory] = useState<GameCategory | null>(null);
   
   // Fetch all categories
@@ -22,6 +25,22 @@ export default function CategoriesPage() {
     queryFn: () => fetcher('/api/categories/featured'),
   });
   
+  // Effect to set active category based on URL parameter
+  useEffect(() => {
+    if (match && params?.categorySlug && categories.length > 0) {
+      const category = categories.find(cat => 
+        cat.slug === params.categorySlug || 
+        cat.name.toLowerCase().replace(/\s+/g, '-') === params.categorySlug
+      );
+      if (category) {
+        setActiveCategory(category);
+      }
+    } else if (!match) {
+      // If not on a category route, clear active category
+      setActiveCategory(null);
+    }
+  }, [match, params?.categorySlug, categories]);
+
   // Fetch games based on selected category
   const { data: gamesData, isLoading: loadingGames } = useQuery<{games: Game[], pagination: any}>({
     queryKey: ['/api/games/popular', { category: activeCategory?.name }],
@@ -80,7 +99,10 @@ export default function CategoriesPage() {
               categories.map((category) => (
                 <button
                   key={category.id}
-                  onClick={() => setActiveCategory(category)}
+                  onClick={() => {
+                    const categorySlug = category.slug || category.name.toLowerCase().replace(/\s+/g, '-');
+                    setLocation(`/games/category/${categorySlug}`);
+                  }}
                   className="group outline-none focus:outline-none"
                 >
                   <div className={`relative bg-card/50 backdrop-blur-sm rounded-xl overflow-hidden shadow-md transition-all duration-500 hover:scale-105 hover:shadow-xl ${activeCategory?.id === category.id ? 'ring-2 ring-primary shadow-lg shadow-primary/20' : 'hover:ring-1 hover:ring-primary/50'}`}>
@@ -119,7 +141,7 @@ export default function CategoriesPage() {
             <div className="flex justify-between items-center mb-6">
               <h2 className="heading-md">{activeCategory.name} Games</h2>
               <button 
-                onClick={() => setActiveCategory(null)}
+                onClick={() => setLocation('/categories')}
                 className="text-primary hover:underline flex items-center"
               >
                 <i className="ri-arrow-left-line mr-1"></i> All Categories
