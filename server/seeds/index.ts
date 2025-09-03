@@ -1,4 +1,5 @@
 import { seedSignupOptions } from './signup-options';
+import { seedSiteSettings } from './site-settings';
 import { seedGameCategories } from './game-categories';
 import { seedBlogCategories } from './blog-categories';
 import { seedBlogPosts } from './blog-posts';
@@ -21,6 +22,7 @@ export async function runSeeds() {
   try {
     // Run all seeds in proper order
     await seedSignupOptions();
+    await seedSiteSettings(); // Add site settings seeding early since other features depend on it
     await seedGameCategories();
     await seedBlogCategories();
     await seedStaticPages();
