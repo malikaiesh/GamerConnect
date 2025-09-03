@@ -106,6 +106,11 @@ export function Footer() {
                   Blog
                 </Link>
               </li>
+              <li>
+                <Link href="/refer-earn" className="text-gray-400 hover:text-white transition-colors">
+                  🎯 Refer & Earn
+                </Link>
+              </li>
             </ul>
           </div>
           

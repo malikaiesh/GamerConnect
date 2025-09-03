@@ -660,4 +660,25 @@ router.patch('/admin/payouts/:id', isAuthenticated, isAdmin, async (req, res) =>
   }
 });
 
+// Public API - Get available referral offers for public display
+router.get('/public/offers', async (req, res) => {
+  try {
+    const offers = await db
+      .select()
+      .from(referralSettings)
+      .where(eq(referralSettings.isActive, true));
+    
+    // Transform to key-value pairs for easy access
+    const offersObj = offers.reduce((acc: any, setting) => {
+      acc[setting.settingKey] = setting.settingValue;
+      return acc;
+    }, {});
+    
+    res.json(offersObj);
+  } catch (error) {
+    console.error('Error fetching public offers:', error);
+    res.status(500).json({ error: 'Failed to fetch offers' });
+  }
+});
+
 export { router as referralRouter };

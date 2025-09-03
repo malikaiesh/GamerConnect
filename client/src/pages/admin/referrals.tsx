@@ -11,6 +11,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from '@/components/ui/dialog';
 import { useToast } from '@/hooks/use-toast';
 import { apiRequest } from '@/lib/queryClient';
+import AdminLayout from '@/components/layout/admin-layout';
 import { 
   Target, 
   Users, 
@@ -227,7 +228,8 @@ export default function ReferralsPage() {
   };
 
   return (
-    <div className="space-y-6 p-6">
+    <AdminLayout>
+      <div className="space-y-6 p-6">
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold text-foreground">Referral System</h1>
@@ -735,6 +737,7 @@ export default function ReferralsPage() {
           </Card>
         </TabsContent>
       </Tabs>
-    </div>
+      </div>
+    </AdminLayout>
   );
 }

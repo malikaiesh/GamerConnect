@@ -128,6 +128,7 @@ const FriendRequestsPage = lazy(() => import("@/pages/social/friend-requests"));
 // Public pricing and verification pages
 const PricingPlansPage = lazy(() => import("@/pages/pricing-plans"));
 const VerificationPage = lazy(() => import("@/pages/verification"));
+const ReferEarnPage = lazy(() => import("@/pages/refer-earn"));
 
 
 // Admin Helper Navigation
@@ -281,6 +282,9 @@ function Router() {
       </Route>
       <Route path="/verification">
         <Suspense fallback={<LoadingFallback />}><VerificationPage /></Suspense>
+      </Route>
+      <Route path="/refer-earn">
+        <Suspense fallback={<LoadingFallback />}><ReferEarnPage /></Suspense>
       </Route>
       <Route path="/events">
         <Suspense fallback={<LoadingFallback />}><EventsPage /></Suspense>
