@@ -189,6 +189,9 @@ function Router() {
       <Route path="/top-games">
         <Suspense fallback={<LoadingFallback />}><TopGamesPage /></Suspense>
       </Route>
+      <Route path="/new-games">
+        <Suspense fallback={<LoadingFallback />}><CategoriesPage /></Suspense>
+      </Route>
 
       <Route path="/auth">
         <Suspense fallback={<LoadingFallback />}><AuthPage /></Suspense>
