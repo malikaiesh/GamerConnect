@@ -5,6 +5,8 @@ import { Badge } from '@/components/ui/badge';
 import { apiRequest } from '@/lib/queryClient';
 import { useAuth } from '@/hooks/use-auth';
 import { Link } from 'wouter';
+import { Header } from '@/components/layout/header';
+import { Footer } from '@/components/layout/footer';
 import { 
   Gift, 
   DollarSign, 
@@ -87,8 +89,10 @@ export default function ReferEarnPage() {
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-primary/5 via-background to-secondary/5">
-      <div className="container mx-auto px-4 py-12">
+    <div className="min-h-screen flex flex-col">
+      <Header />
+      <main className="flex-grow bg-gradient-to-br from-primary/5 via-background to-secondary/5">
+        <div className="container mx-auto px-4 py-12">
         {/* Hero Section */}
         <div className="text-center mb-12">
           <div className="inline-flex items-center justify-center w-16 h-16 bg-primary/10 rounded-full mb-6">
@@ -190,7 +194,7 @@ export default function ReferEarnPage() {
               </p>
               <div className="flex justify-center gap-4">
                 {isAuthenticated ? (
-                  <Link href="/dashboard">
+                  <Link href="/admin/dashboard">
                     <Button size="lg" className="px-8" data-testid="button-get-started">
                       <Target className="mr-2 h-5 w-5" />
                       Go to Dashboard
@@ -254,7 +258,9 @@ export default function ReferEarnPage() {
             </Card>
           </div>
         </div>
-      </div>
+        </div>
+      </main>
+      <Footer />
     </div>
   );
 }
