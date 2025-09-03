@@ -1,4 +1,4 @@
-import { pgTable, text, serial, integer, boolean, timestamp, json, pgEnum, uniqueIndex } from 'drizzle-orm/pg-core';
+import { pgTable, text, serial, integer, boolean, timestamp, json, pgEnum, uniqueIndex, date, index, decimal, varchar, unique } from 'drizzle-orm/pg-core';
 import { createInsertSchema, createSelectSchema } from 'drizzle-zod';
 import { relations } from 'drizzle-orm';
 import { z } from 'zod';
@@ -104,6 +104,15 @@ export const referralTierEnum = pgEnum('referral_tier', ['tier_1', 'tier_2', 'ti
 export const referralCodeStatusEnum = pgEnum('referral_code_status', ['active', 'inactive', 'expired']);
 export const payoutMethodEnum = pgEnum('payout_method', ['paypal', 'binance', 'payoneer', 'bank_transfer', 'crypto', 'store_credit', 'gift_card', 'wise']);
 export const payoutStatusEnum = pgEnum('payout_status', ['pending', 'processing', 'completed', 'failed', 'cancelled']);
+
+// Revenue tracking enums
+export const revenueCategoryEnum = pgEnum('revenue_category', [
+  'subscriptions', 'advertising', 'games', 'in_app_purchases', 'referrals', 
+  'partnerships', 'premium_features', 'virtual_currency', 'merchandise', 
+  'verification_fees', 'room_hosting', 'tournaments', 'donations', 'other'
+]);
+export const revenueStatusEnum = pgEnum('revenue_status', ['pending', 'completed', 'failed', 'refunded', 'disputed']);
+export const revenueFrequencyEnum = pgEnum('revenue_frequency', ['one_time', 'daily', 'weekly', 'monthly', 'quarterly', 'yearly']);
 
 // Roles table
 export const roles = pgTable('roles', {
@@ -2449,6 +2458,143 @@ export const userPayoutPreferences = pgTable('user_payout_preferences', {
   };
 });
 
+// ===== REVENUE TRACKING SYSTEM =====
+
+// Revenue Sources table - Different revenue streams
+export const revenueSources = pgTable('revenue_sources', {
+  id: serial('id').primaryKey(),
+  name: text('name').notNull().unique(),
+  category: revenueCategoryEnum('category').notNull(),
+  description: text('description'),
+  isActive: boolean('is_active').default(true).notNull(),
+  trackingEnabled: boolean('tracking_enabled').default(true).notNull(),
+  automaticTracking: boolean('automatic_tracking').default(false).notNull(), // Auto-track from integrations
+  integrationId: text('integration_id'), // External service ID (Stripe, PayPal, etc.)
+  integrationData: json('integration_data').$type<{
+    webhook_url?: string;
+    api_endpoint?: string;
+    credentials?: Record<string, string>;
+    mapping?: Record<string, string>;
+  }>(),
+  displayOrder: integer('display_order').default(0).notNull(),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+  updatedAt: timestamp('updated_at').defaultNow().notNull()
+});
+
+// Revenue Transactions table - Individual revenue events
+export const revenueTransactions = pgTable('revenue_transactions', {
+  id: serial('id').primaryKey(),
+  revenueSourceId: integer('revenue_source_id').notNull().references(() => revenueSources.id),
+  userId: integer('user_id').references(() => users.id), // User who generated revenue (optional)
+  transactionId: text('transaction_id').unique(), // External transaction ID
+  amount: integer('amount').notNull(), // Amount in cents
+  currency: text('currency').default('USD').notNull(),
+  grossAmount: integer('gross_amount'), // Before fees
+  fees: integer('fees').default(0).notNull(), // Processing fees
+  netAmount: integer('net_amount'), // After fees
+  status: revenueStatusEnum('status').default('pending').notNull(),
+  description: text('description').notNull(),
+  metadata: json('metadata').$type<{
+    payment_method?: string;
+    subscription_id?: string;
+    product_id?: string;
+    game_id?: string;
+    referral_id?: string;
+    campaign_id?: string;
+    customer_data?: Record<string, any>;
+    [key: string]: any;
+  }>(),
+  processedAt: timestamp('processed_at'),
+  refundedAt: timestamp('refunded_at'),
+  refundAmount: integer('refund_amount').default(0),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+  updatedAt: timestamp('updated_at').defaultNow().notNull()
+}, (table) => {
+  return {
+    sourceIdIdx: index('rev_trans_source_idx').on(table.revenueSourceId),
+    userIdIdx: index('rev_trans_user_idx').on(table.userId),
+    statusIdx: index('rev_trans_status_idx').on(table.status),
+    dateIdx: index('rev_trans_date_idx').on(table.createdAt),
+    amountIdx: index('rev_trans_amount_idx').on(table.amount)
+  };
+});
+
+// Revenue Goals table - Target setting and tracking
+export const revenueGoals = pgTable('revenue_goals', {
+  id: serial('id').primaryKey(),
+  name: text('name').notNull(),
+  description: text('description'),
+  targetAmount: integer('target_amount').notNull(), // Target amount in cents
+  currentAmount: integer('current_amount').default(0).notNull(),
+  revenueSourceId: integer('revenue_source_id').references(() => revenueSources.id), // Specific source or null for overall
+  startDate: timestamp('start_date').notNull(),
+  endDate: timestamp('end_date').notNull(),
+  frequency: revenueFrequencyEnum('frequency').notNull(),
+  isActive: boolean('is_active').default(true).notNull(),
+  isAchieved: boolean('is_achieved').default(false).notNull(),
+  achievedAt: timestamp('achieved_at'),
+  progressPercentage: integer('progress_percentage').default(0).notNull(),
+  createdBy: integer('created_by').references(() => users.id),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+  updatedAt: timestamp('updated_at').defaultNow().notNull()
+});
+
+// Revenue Analytics table - Aggregated data for performance
+export const revenueAnalytics = pgTable('revenue_analytics', {
+  id: serial('id').primaryKey(),
+  date: date('date').notNull(), // Daily aggregation
+  revenueSourceId: integer('revenue_source_id').references(() => revenueSources.id), // null for overall analytics
+  totalRevenue: integer('total_revenue').default(0).notNull(),
+  totalTransactions: integer('total_transactions').default(0).notNull(),
+  averageTransaction: integer('average_transaction').default(0).notNull(),
+  successfulTransactions: integer('successful_transactions').default(0).notNull(),
+  failedTransactions: integer('failed_transactions').default(0).notNull(),
+  refundedAmount: integer('refunded_amount').default(0).notNull(),
+  grossRevenue: integer('gross_revenue').default(0).notNull(),
+  fees: integer('fees').default(0).notNull(),
+  netRevenue: integer('net_revenue').default(0).notNull(),
+  uniqueUsers: integer('unique_users').default(0).notNull(),
+  conversionRate: integer('conversion_rate').default(0).notNull(), // In basis points (0.01% = 1)
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+  updatedAt: timestamp('updated_at').defaultNow().notNull()
+}, (table) => {
+  return {
+    dateIdx: uniqueIndex('rev_analytics_date_idx').on(table.date, table.revenueSourceId),
+    sourceIdx: index('rev_analytics_source_idx').on(table.revenueSourceId),
+    revenueIdx: index('rev_analytics_revenue_idx').on(table.totalRevenue)
+  };
+});
+
+// Revenue Reports table - Saved reports and exports
+export const revenueReports = pgTable('revenue_reports', {
+  id: serial('id').primaryKey(),
+  name: text('name').notNull(),
+  description: text('description'),
+  reportType: text('report_type').notNull(), // daily, weekly, monthly, quarterly, yearly, custom
+  filters: json('filters').$type<{
+    date_range?: { start: string; end: string };
+    revenue_sources?: number[];
+    categories?: string[];
+    status?: string[];
+    min_amount?: number;
+    max_amount?: number;
+  }>(),
+  reportData: json('report_data').$type<{
+    summary?: Record<string, any>;
+    charts?: Array<Record<string, any>>;
+    tables?: Array<Record<string, any>>;
+    metadata?: Record<string, any>;
+  }>(),
+  generatedBy: integer('generated_by').references(() => users.id),
+  isScheduled: boolean('is_scheduled').default(false).notNull(),
+  scheduleFrequency: revenueFrequencyEnum('schedule_frequency'),
+  nextGeneration: timestamp('next_generation'),
+  lastGenerated: timestamp('last_generated'),
+  isPublic: boolean('is_public').default(false).notNull(),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+  updatedAt: timestamp('updated_at').defaultNow().notNull()
+});
+
 // Pricing Plans Relations
 export const pricingPlansRelations = relations(pricingPlans, ({ one, many }) => ({
   createdByUser: one(users, {
@@ -2629,6 +2775,50 @@ export const userPayoutPreferencesRelations = relations(userPayoutPreferences, (
   })
 }));
 
+// ===== REVENUE TRACKING RELATIONS =====
+
+export const revenueSourcesRelations = relations(revenueSources, ({ many }) => ({
+  transactions: many(revenueTransactions),
+  goals: many(revenueGoals),
+  analytics: many(revenueAnalytics)
+}));
+
+export const revenueTransactionsRelations = relations(revenueTransactions, ({ one }) => ({
+  revenueSource: one(revenueSources, {
+    fields: [revenueTransactions.revenueSourceId],
+    references: [revenueSources.id]
+  }),
+  user: one(users, {
+    fields: [revenueTransactions.userId],
+    references: [users.id]
+  })
+}));
+
+export const revenueGoalsRelations = relations(revenueGoals, ({ one }) => ({
+  revenueSource: one(revenueSources, {
+    fields: [revenueGoals.revenueSourceId],
+    references: [revenueSources.id]
+  }),
+  createdByUser: one(users, {
+    fields: [revenueGoals.createdBy],
+    references: [users.id]
+  })
+}));
+
+export const revenueAnalyticsRelations = relations(revenueAnalytics, ({ one }) => ({
+  revenueSource: one(revenueSources, {
+    fields: [revenueAnalytics.revenueSourceId],
+    references: [revenueSources.id]
+  })
+}));
+
+export const revenueReportsRelations = relations(revenueReports, ({ one }) => ({
+  generatedByUser: one(users, {
+    fields: [revenueReports.generatedBy],
+    references: [users.id]
+  })
+}));
+
 // ===== REFERRAL SYSTEM VALIDATION SCHEMAS =====
 
 export const insertReferralCodeSchema = createInsertSchema(referralCodes, {
@@ -2689,4 +2879,47 @@ export type PayoutMethod = typeof payoutMethods.$inferSelect;
 export type InsertPayoutMethod = z.infer<typeof insertPayoutMethodSchema>;
 export type UserPayoutPreference = typeof userPayoutPreferences.$inferSelect;
 export type InsertUserPayoutPreference = z.infer<typeof insertUserPayoutPreferenceSchema>;
+
+// ===== REVENUE TRACKING VALIDATION SCHEMAS =====
+
+export const insertRevenueSourceSchema = createInsertSchema(revenueSources, {
+  name: (schema) => schema.min(1, "Revenue source name is required").max(100, "Name must be less than 100 characters"),
+  description: (schema) => schema.optional()
+}).omit({ id: true, createdAt: true, updatedAt: true });
+
+export const insertRevenueTransactionSchema = createInsertSchema(revenueTransactions, {
+  amount: (schema) => schema.min(1, "Amount must be greater than 0"),
+  currency: (schema) => schema.length(3, "Currency must be 3 characters").default("USD"),
+  description: (schema) => schema.min(1, "Description is required")
+}).omit({ id: true, createdAt: true, updatedAt: true });
+
+export const insertRevenueGoalSchema = createInsertSchema(revenueGoals, {
+  name: (schema) => schema.min(1, "Goal name is required").max(100, "Name must be less than 100 characters"),
+  targetAmount: (schema) => schema.min(100, "Target amount must be at least $1.00"),
+  startDate: (schema) => schema,
+  endDate: (schema) => schema
+}).omit({ id: true, currentAmount: true, isAchieved: true, progressPercentage: true, createdAt: true, updatedAt: true });
+
+export const insertRevenueAnalyticsSchema = createInsertSchema(revenueAnalytics, {
+  date: (schema) => schema,
+  totalRevenue: (schema) => schema.min(0, "Revenue cannot be negative")
+}).omit({ id: true, createdAt: true, updatedAt: true });
+
+export const insertRevenueReportSchema = createInsertSchema(revenueReports, {
+  name: (schema) => schema.min(1, "Report name is required").max(100, "Name must be less than 100 characters"),
+  reportType: (schema) => schema.min(1, "Report type is required")
+}).omit({ id: true, lastGenerated: true, createdAt: true, updatedAt: true });
+
+// ===== REVENUE TRACKING TYPE EXPORTS =====
+
+export type RevenueSource = typeof revenueSources.$inferSelect;
+export type InsertRevenueSource = z.infer<typeof insertRevenueSourceSchema>;
+export type RevenueTransaction = typeof revenueTransactions.$inferSelect;
+export type InsertRevenueTransaction = z.infer<typeof insertRevenueTransactionSchema>;
+export type RevenueGoal = typeof revenueGoals.$inferSelect;
+export type InsertRevenueGoal = z.infer<typeof insertRevenueGoalSchema>;
+export type RevenueAnalytics = typeof revenueAnalytics.$inferSelect;
+export type InsertRevenueAnalytics = z.infer<typeof insertRevenueAnalyticsSchema>;
+export type RevenueReport = typeof revenueReports.$inferSelect;
+export type InsertRevenueReport = z.infer<typeof insertRevenueReportSchema>;
 

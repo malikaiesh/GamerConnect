@@ -245,6 +245,12 @@ export default function ReferralsPage() {
                 Payout Methods
               </Link>
             </Button>
+            <Button variant="outline" asChild>
+              <Link href="/admin/revenue">
+                <BarChart3 size={16} className="mr-2" />
+                Revenue Tracking
+              </Link>
+            </Button>
             <Button variant="outline">
               <Download size={16} className="mr-2" />
               Export Data

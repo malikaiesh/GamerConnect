@@ -101,6 +101,7 @@ const AdminVerificationRequestsPage = lazy(() => import("@/pages/admin/verificat
 const AdminWebmasterToolsPage = lazy(() => import("@/pages/admin/webmaster-tools"));
 const AdminReferralsPage = lazy(() => import("@/pages/admin/referrals"));
 const AdminPayoutMethodsPage = lazy(() => import("@/pages/admin/payout-methods"));
+const AdminRevenuePage = lazy(() => import("@/pages/admin/revenue"));
 
 // Admin image upload demo
 const AdminImageUploadDemo = lazy(() => import("@/pages/admin/image-upload-demo"));
@@ -431,6 +432,11 @@ function Router() {
       <Route path="/admin/payout-methods">
         <ProtectedRoute adminOnly={true}>
           <Suspense fallback={<LoadingFallback />}><AdminPayoutMethodsPage /></Suspense>
+        </ProtectedRoute>
+      </Route>
+      <Route path="/admin/revenue">
+        <ProtectedRoute adminOnly={true}>
+          <Suspense fallback={<LoadingFallback />}><AdminRevenuePage /></Suspense>
         </ProtectedRoute>
       </Route>
       <Route path="/admin/payments/gateways">

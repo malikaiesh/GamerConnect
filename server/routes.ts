@@ -64,6 +64,7 @@ import {
 } from "./api/payment-transactions";
 
 import { referralRouter } from "./api/referrals";
+import { revenueRouter } from "./api/revenue";
 
 import {
   getPricingPlans,
@@ -370,6 +371,7 @@ Sitemap: ${req.protocol}://${req.get('host')}/sitemap.xml`);
   
   // Register referral system routes
   app.use('/api/referrals', referralRouter);
+  app.use('/api/revenue', revenueRouter);
   
   // Register additional push notifications analytics endpoint
   app.get('/api/push-notifications-analytics', isAuthenticated, isAdmin, async (req, res) => {
