@@ -25,20 +25,11 @@ export function useShortLink() {
     setIsGenerating(true);
     
     try {
-      const response = await apiRequest('/api/short-links/generate', {
+      // apiRequest already handles the JSON parsing and error handling
+      const data = await apiRequest('/api/short-links/generate', {
         method: 'POST',
-        body: JSON.stringify(params),
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        body: params,
       });
-
-      if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.message || 'Failed to generate short link');
-      }
-
-      const data = await response.json();
       
       if (data.success) {
         const linkData: ShortLinkData = {
