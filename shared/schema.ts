@@ -96,6 +96,15 @@ export const verificationRequestStatusEnum = pgEnum('verification_request_status
 export const webmasterToolStatusEnum = pgEnum('webmaster_tool_status', ['active', 'inactive']);
 export const webmasterVerificationStatusEnum = pgEnum('webmaster_verification_status', ['pending', 'verified', 'failed', 'not_verified']);
 
+// Referral System Enums
+export const referralStatusEnum = pgEnum('referral_status', ['pending', 'confirmed', 'cancelled', 'expired']);
+export const referralRewardTypeEnum = pgEnum('referral_reward_type', ['registration', 'first_game', 'profile_complete', 'subscription', 'activity_bonus', 'milestone', 'recurring_commission']);
+export const referralRewardStatusEnum = pgEnum('referral_reward_status', ['pending', 'approved', 'paid', 'cancelled']);
+export const referralTierEnum = pgEnum('referral_tier', ['tier_1', 'tier_2', 'tier_3']);
+export const referralCodeStatusEnum = pgEnum('referral_code_status', ['active', 'inactive', 'expired']);
+export const payoutMethodEnum = pgEnum('payout_method', ['paypal', 'bank_transfer', 'crypto', 'store_credit', 'gift_card']);
+export const payoutStatusEnum = pgEnum('payout_status', ['pending', 'processing', 'completed', 'failed', 'cancelled']);
+
 // Roles table
 export const roles = pgTable('roles', {
   id: serial('id').primaryKey(),
@@ -564,7 +573,14 @@ export const usersRelations = relations(users, ({ many, one }) => ({
     fields: [users.roleId],
     references: [roles.id]
   }),
-  sessions: many(userSessions)
+  sessions: many(userSessions),
+  referralCodes: many(referralCodes),
+  referralsAsReferrer: many(referrals, { relationName: 'referrer' }),
+  referralsAsReferred: many(referrals, { relationName: 'referred' }),
+  referralRewards: many(referralRewards),
+  referralPayouts: many(referralPayouts),
+  referralAnalytics: many(referralAnalytics),
+  referralMilestones: many(referralMilestones)
 }));
 
 export const userSessionsRelations = relations(userSessions, ({ one }) => ({
@@ -2251,6 +2267,132 @@ export const webmasterTools = pgTable('webmaster_tools', {
   updatedAt: timestamp('updated_at').defaultNow().notNull()
 });
 
+// ===== REFERRAL SYSTEM TABLES =====
+
+// Referral Codes table - stores unique referral codes for users
+export const referralCodes = pgTable('referral_codes', {
+  id: serial('id').primaryKey(),
+  userId: integer('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
+  code: text('code').notNull().unique(),
+  status: referralCodeStatusEnum('status').default('active').notNull(),
+  isDefault: boolean('is_default').default(false).notNull(),
+  clickCount: integer('click_count').default(0).notNull(),
+  conversionCount: integer('conversion_count').default(0).notNull(),
+  totalEarnings: integer('total_earnings').default(0).notNull(),
+  expiresAt: timestamp('expires_at'),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+  updatedAt: timestamp('updated_at').defaultNow().notNull()
+});
+
+// Referrals table - tracks referral relationships
+export const referrals = pgTable('referrals', {
+  id: serial('id').primaryKey(),
+  referrerId: integer('referrer_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
+  referredUserId: integer('referred_user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
+  referralCodeId: integer('referral_code_id').notNull().references(() => referralCodes.id, { onDelete: 'cascade' }),
+  tier: referralTierEnum('tier').default('tier_1').notNull(),
+  status: referralStatusEnum('status').default('pending').notNull(),
+  confirmedAt: timestamp('confirmed_at'),
+  ipAddress: text('ip_address'),
+  userAgent: text('user_agent'),
+  deviceFingerprint: text('device_fingerprint'),
+  source: text('source'),
+  totalEarnings: integer('total_earnings').default(0).notNull(),
+  lifetimeValue: integer('lifetime_value').default(0).notNull(),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+  updatedAt: timestamp('updated_at').defaultNow().notNull()
+}, (table) => {
+  return {
+    referrerReferredIdx: uniqueIndex('referrer_referred_idx').on(table.referrerId, table.referredUserId)
+  };
+});
+
+// Referral Rewards table - tracks individual reward transactions
+export const referralRewards = pgTable('referral_rewards', {
+  id: serial('id').primaryKey(),
+  referralId: integer('referral_id').notNull().references(() => referrals.id, { onDelete: 'cascade' }),
+  referrerId: integer('referrer_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
+  rewardType: referralRewardTypeEnum('reward_type').notNull(),
+  amount: integer('amount').notNull(),
+  tier: referralTierEnum('tier').notNull(),
+  status: referralRewardStatusEnum('status').default('pending').notNull(),
+  description: text('description'),
+  metadata: json('metadata').$type<{
+    subscription_id?: number;
+    milestone_count?: number;
+    activity_points?: number;
+    original_amount?: number;
+  }>(),
+  processedAt: timestamp('processed_at'),
+  expiresAt: timestamp('expires_at'),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+  updatedAt: timestamp('updated_at').defaultNow().notNull()
+});
+
+// Referral Settings table
+export const referralSettings = pgTable('referral_settings', {
+  id: serial('id').primaryKey(),
+  settingKey: text('setting_key').notNull().unique(),
+  settingValue: text('setting_value').notNull(),
+  settingType: text('setting_type').notNull(),
+  description: text('description'),
+  isActive: boolean('is_active').default(true).notNull(),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+  updatedAt: timestamp('updated_at').defaultNow().notNull()
+});
+
+// Referral Payouts table
+export const referralPayouts = pgTable('referral_payouts', {
+  id: serial('id').primaryKey(),
+  userId: integer('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
+  amount: integer('amount').notNull(),
+  method: payoutMethodEnum('method').notNull(),
+  status: payoutStatusEnum('status').default('pending').notNull(),
+  payoutDetails: json('payout_details').$type<{
+    paypal_email?: string;
+    bank_account?: string;
+    crypto_address?: string;
+    transaction_id?: string;
+    processing_fee?: number;
+  }>(),
+  processedAt: timestamp('processed_at'),
+  completedAt: timestamp('completed_at'),
+  failureReason: text('failure_reason'),
+  adminNotes: text('admin_notes'),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+  updatedAt: timestamp('updated_at').defaultNow().notNull()
+});
+
+// Referral Analytics table
+export const referralAnalytics = pgTable('referral_analytics', {
+  id: serial('id').primaryKey(),
+  userId: integer('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
+  date: timestamp('date').notNull(),
+  clicks: integer('clicks').default(0).notNull(),
+  signups: integer('signups').default(0).notNull(),
+  conversions: integer('conversions').default(0).notNull(),
+  earnings: integer('earnings').default(0).notNull(),
+  tier1Referrals: integer('tier1_referrals').default(0).notNull(),
+  tier2Referrals: integer('tier2_referrals').default(0).notNull(),
+  tier3Referrals: integer('tier3_referrals').default(0).notNull(),
+  createdAt: timestamp('created_at').defaultNow().notNull()
+});
+
+// Referral Milestones table
+export const referralMilestones = pgTable('referral_milestones', {
+  id: serial('id').primaryKey(),
+  userId: integer('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
+  milestoneType: text('milestone_type').notNull(),
+  targetValue: integer('target_value').notNull(),
+  currentValue: integer('current_value').default(0).notNull(),
+  isCompleted: boolean('is_completed').default(false).notNull(),
+  rewardAmount: integer('reward_amount').default(0).notNull(),
+  completedAt: timestamp('completed_at'),
+  nextMilestone: integer('next_milestone'),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+  updatedAt: timestamp('updated_at').defaultNow().notNull()
+});
+
 // Pricing Plans Relations
 export const pricingPlansRelations = relations(pricingPlans, ({ one, many }) => ({
   createdByUser: one(users, {
@@ -2355,3 +2497,112 @@ export const insertWebmasterToolSchema = createInsertSchema(webmasterTools, {
 // Webmaster Tools Type Exports
 export type WebmasterTool = typeof webmasterTools.$inferSelect;
 export type InsertWebmasterTool = z.infer<typeof insertWebmasterToolSchema>;
+
+// ===== REFERRAL SYSTEM RELATIONS =====
+
+export const referralCodesRelations = relations(referralCodes, ({ one, many }) => ({
+  user: one(users, {
+    fields: [referralCodes.userId],
+    references: [users.id]
+  }),
+  referrals: many(referrals)
+}));
+
+export const referralsRelations = relations(referrals, ({ one, many }) => ({
+  referrer: one(users, {
+    fields: [referrals.referrerId],
+    references: [users.id],
+    relationName: 'referrer'
+  }),
+  referredUser: one(users, {
+    fields: [referrals.referredUserId],
+    references: [users.id],
+    relationName: 'referred'
+  }),
+  referralCode: one(referralCodes, {
+    fields: [referrals.referralCodeId],
+    references: [referralCodes.id]
+  }),
+  rewards: many(referralRewards)
+}));
+
+export const referralRewardsRelations = relations(referralRewards, ({ one }) => ({
+  referral: one(referrals, {
+    fields: [referralRewards.referralId],
+    references: [referrals.id]
+  }),
+  referrer: one(users, {
+    fields: [referralRewards.referrerId],
+    references: [users.id]
+  })
+}));
+
+export const referralPayoutsRelations = relations(referralPayouts, ({ one }) => ({
+  user: one(users, {
+    fields: [referralPayouts.userId],
+    references: [users.id]
+  })
+}));
+
+export const referralAnalyticsRelations = relations(referralAnalytics, ({ one }) => ({
+  user: one(users, {
+    fields: [referralAnalytics.userId],
+    references: [users.id]
+  })
+}));
+
+export const referralMilestonesRelations = relations(referralMilestones, ({ one }) => ({
+  user: one(users, {
+    fields: [referralMilestones.userId],
+    references: [users.id]
+  })
+}));
+
+// ===== REFERRAL SYSTEM VALIDATION SCHEMAS =====
+
+export const insertReferralCodeSchema = createInsertSchema(referralCodes, {
+  code: (schema) => schema.min(3, "Referral code must be at least 3 characters").max(20, "Referral code must be less than 20 characters")
+}).omit({ id: true, clickCount: true, conversionCount: true, totalEarnings: true, createdAt: true, updatedAt: true });
+
+export const insertReferralSchema = createInsertSchema(referrals, {
+  ipAddress: (schema) => schema.optional(),
+  userAgent: (schema) => schema.optional(),
+  source: (schema) => schema.optional()
+}).omit({ id: true, totalEarnings: true, lifetimeValue: true, createdAt: true, updatedAt: true });
+
+export const insertReferralRewardSchema = createInsertSchema(referralRewards, {
+  amount: (schema) => schema.min(0, "Reward amount cannot be negative"),
+  description: (schema) => schema.optional()
+}).omit({ id: true, createdAt: true, updatedAt: true });
+
+export const insertReferralSettingSchema = createInsertSchema(referralSettings, {
+  settingKey: (schema) => schema.min(1, "Setting key is required"),
+  settingValue: (schema) => schema.min(1, "Setting value is required"),
+  settingType: (schema) => schema.refine(val => ['string', 'number', 'boolean', 'json'].includes(val), "Invalid setting type")
+}).omit({ id: true, createdAt: true, updatedAt: true });
+
+export const insertReferralPayoutSchema = createInsertSchema(referralPayouts, {
+  amount: (schema) => schema.min(100, "Minimum payout amount is $1.00")
+}).omit({ id: true, createdAt: true, updatedAt: true });
+
+export const insertReferralMilestoneSchema = createInsertSchema(referralMilestones, {
+  targetValue: (schema) => schema.min(1, "Target value must be at least 1"),
+  rewardAmount: (schema) => schema.min(0, "Reward amount cannot be negative")
+}).omit({ id: true, createdAt: true, updatedAt: true });
+
+// ===== REFERRAL SYSTEM TYPE EXPORTS =====
+
+export type ReferralCode = typeof referralCodes.$inferSelect;
+export type InsertReferralCode = z.infer<typeof insertReferralCodeSchema>;
+export type Referral = typeof referrals.$inferSelect;
+export type InsertReferral = z.infer<typeof insertReferralSchema>;
+export type ReferralReward = typeof referralRewards.$inferSelect;
+export type InsertReferralReward = z.infer<typeof insertReferralRewardSchema>;
+export type ReferralSetting = typeof referralSettings.$inferSelect;
+export type InsertReferralSetting = z.infer<typeof insertReferralSettingSchema>;
+export type ReferralPayout = typeof referralPayouts.$inferSelect;
+export type InsertReferralPayout = z.infer<typeof insertReferralPayoutSchema>;
+export type ReferralAnalytics = typeof referralAnalytics.$inferSelect;
+export type ReferralMilestone = typeof referralMilestones.$inferSelect;
+export type InsertReferralMilestone = z.infer<typeof insertReferralMilestoneSchema>;
+
