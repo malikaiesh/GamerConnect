@@ -12,7 +12,7 @@ import {
 } from "@/components/ui/table";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { AlertCircle, CheckCircle2, Edit, Plus, Trash2 } from "lucide-react";
+import { AlertCircle, CheckCircle2, Edit, Plus, Trash2, Zap } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { formatDate } from "@/lib/date-utils";
 import { PageHeader } from "@/components/page-header";
@@ -124,6 +124,32 @@ export default function GameCategoriesPage() {
     }
   });
 
+  const seedMutation = useMutation({
+    mutationFn: async () => {
+      const response = await apiRequest('POST', '/api/categories/seed');
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Failed to seed categories');
+      }
+      return await response.json();
+    },
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ['/api/categories'] });
+      toast({
+        title: "Success",
+        description: `${data.message}. Added ${data.added} categories, ${data.existing} already existed.`,
+        variant: "default",
+      });
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to seed categories",
+        variant: "destructive",
+      });
+    }
+  });
+
   const handleEdit = (category: GameCategory) => {
     setSelectedCategory(category);
     setIsEditDialogOpen(true);
@@ -167,7 +193,21 @@ export default function GameCategoriesPage() {
 
         <Card className="bg-card/60 backdrop-blur-sm border shadow-md">
           <CardHeader>
-            <CardTitle>All Categories</CardTitle>
+            <div className="flex justify-between items-center">
+              <CardTitle>All Categories</CardTitle>
+              <div className="flex gap-2">
+                <Button 
+                  onClick={() => seedMutation.mutate()}
+                  disabled={seedMutation.isPending}
+                  variant="outline"
+                  size="sm"
+                  className="bg-gradient-to-r from-primary/10 to-primary/20 border-primary/30 hover:from-primary/20 hover:to-primary/30"
+                >
+                  <Zap className="w-4 h-4 mr-2" />
+                  {seedMutation.isPending ? 'Seeding...' : 'Seed Categories'}
+                </Button>
+              </div>
+            </div>
           </CardHeader>
           <CardContent>
             {isLoading ? (

@@ -292,6 +292,183 @@ router.delete('/:id', isAuthenticated, isAdmin, async (req: Request, res: Respon
   }
 });
 
+// Seed new categories endpoint
+router.post('/seed', async (req: Request, res: Response) => {
+  try {
+    const newCategories = [
+      {
+        name: 'Fighting',
+        slug: 'fighting',
+        description: 'Combat and martial arts games with intense battles',
+        icon: 'ri-boxing-line',
+        displayOrder: 11
+      },
+      {
+        name: 'Shooting',
+        slug: 'shooting',
+        description: 'Action-packed shooting games and FPS adventures',
+        icon: 'ri-focus-3-line',
+        displayOrder: 12
+      },
+      {
+        name: 'Stealth',
+        slug: 'stealth',
+        description: 'Sneak and infiltrate in tactical stealth games',
+        icon: 'ri-spy-line',
+        displayOrder: 13
+      },
+      {
+        name: 'Survival',
+        slug: 'survival',
+        description: 'Test your survival skills in harsh environments',
+        icon: 'ri-fire-line',
+        displayOrder: 14
+      },
+      {
+        name: 'Horror',
+        slug: 'horror',
+        description: 'Spine-chilling horror games and scary experiences',
+        icon: 'ri-skull-2-line',
+        displayOrder: 15
+      },
+      {
+        name: 'Role-Playing (RPG)',
+        slug: 'role-playing-rpg',
+        description: 'Epic RPG adventures with character progression',
+        icon: 'ri-sword-line',
+        displayOrder: 16
+      },
+      {
+        name: 'Multiplayer Online Battle Arena (MOBA)',
+        slug: 'moba',
+        description: 'Strategic team battles in online arenas',
+        icon: 'ri-team-line',
+        displayOrder: 17
+      },
+      {
+        name: 'Battle Royale',
+        slug: 'battle-royale',
+        description: 'Last player standing in massive battle royales',
+        icon: 'ri-trophy-line',
+        displayOrder: 18
+      },
+      {
+        name: 'Roguelike / Roguelite',
+        slug: 'roguelike-roguelite',
+        description: 'Challenging games with procedural generation',
+        icon: 'ri-refresh-line',
+        displayOrder: 19
+      },
+      {
+        name: 'Sandbox',
+        slug: 'sandbox',
+        description: 'Creative building and open-world experiences',
+        icon: 'ri-hammer-line',
+        displayOrder: 20
+      },
+      {
+        name: 'Open World',
+        slug: 'open-world',
+        description: 'Explore vast open worlds and unlimited adventures',
+        icon: 'ri-earth-line',
+        displayOrder: 21
+      },
+      {
+        name: 'Card / Board Games',
+        slug: 'card-board-games',
+        description: 'Classic card games and digital board game experiences',
+        icon: 'ri-honour-line',
+        displayOrder: 22
+      },
+      {
+        name: 'Trivia / Quiz',
+        slug: 'trivia-quiz',
+        description: 'Test your knowledge with trivia and quiz games',
+        icon: 'ri-question-line',
+        displayOrder: 23
+      },
+      {
+        name: 'Educational',
+        slug: 'educational',
+        description: 'Learn while playing with educational games',
+        icon: 'ri-book-open-line',
+        displayOrder: 24
+      },
+      {
+        name: 'Casual',
+        slug: 'casual',
+        description: 'Easy-going games perfect for quick entertainment',
+        icon: 'ri-heart-3-line',
+        displayOrder: 25
+      },
+      {
+        name: 'Idle / Clicker',
+        slug: 'idle-clicker',
+        description: 'Incremental games that progress while you wait',
+        icon: 'ri-mouse-line',
+        displayOrder: 26
+      },
+      {
+        name: 'Party Games',
+        slug: 'party-games',
+        description: 'Fun multiplayer games perfect for groups',
+        icon: 'ri-celebration-line',
+        displayOrder: 27
+      },
+      {
+        name: 'Virtual Reality (VR)',
+        slug: 'virtual-reality-vr',
+        description: 'Immersive VR gaming experiences',
+        icon: 'ri-vr-box-line',
+        displayOrder: 28
+      },
+      {
+        name: 'Augmented Reality (AR)',
+        slug: 'augmented-reality-ar',
+        description: 'Blend reality with digital AR experiences',
+        icon: 'ri-ar-box-line',
+        displayOrder: 29
+      }
+    ];
+
+    // Check for existing categories to prevent duplicates
+    const existingCategories = await db.select().from(gameCategories);
+    const existingSlugs = new Set(existingCategories.map(cat => cat.slug));
+    
+    // Filter out categories that already exist
+    const categoriesToAdd = newCategories.filter(cat => !existingSlugs.has(cat.slug));
+    
+    if (categoriesToAdd.length === 0) {
+      return res.json({ 
+        message: 'All categories already exist',
+        added: 0,
+        existing: newCategories.length
+      });
+    }
+
+    // Add the new categories
+    const addedCategories = await db.insert(gameCategories).values(
+      categoriesToAdd.map(cat => ({
+        ...cat,
+        isActive: true,
+        createdAt: new Date(),
+        updatedAt: new Date()
+      }))
+    ).returning();
+
+    res.json({ 
+      message: `Successfully added ${addedCategories.length} new categories`,
+      added: addedCategories.length,
+      existing: newCategories.length - categoriesToAdd.length,
+      categories: addedCategories
+    });
+    
+  } catch (error) {
+    console.error('Error seeding categories:', error);
+    res.status(500).json({ message: 'Failed to seed categories' });
+  }
+});
+
 export const registerCategoryRoutes = (app: Express) => {
   app.use('/api/categories', router);
 };
