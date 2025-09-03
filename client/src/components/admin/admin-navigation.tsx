@@ -23,7 +23,8 @@ import {
   Database,
   CopyX,
   ChevronRight,
-  ChevronDown
+  ChevronDown,
+  Search
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -67,6 +68,7 @@ const navigationItems = [
   {
     section: "SEO & Technical",
     items: [
+      { name: "Webmaster Tools", href: "/admin/webmaster-tools", icon: Search },
       { name: "Sitemaps", href: "/admin/sitemaps", icon: Sitemap },
       { name: "URL Redirects", href: "/admin/redirects", icon: ExternalLink },
       { name: "Custom Code", href: "/admin/custom-code", icon: Code },

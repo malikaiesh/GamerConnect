@@ -10,6 +10,7 @@ import { seedEvents } from './events';
 import { seedVerifiedUsers } from './verified-users';
 import { seedVerifiedRooms } from './verified-rooms';
 import { seedHeroImages } from './hero-images';
+import { seedWebmasterTools } from './webmaster-tools';
 
 // Main seeding function that runs all seeds
 export async function runSeeds() {
@@ -26,6 +27,7 @@ export async function runSeeds() {
     await seedEvents(); // Run events since it depends on users table
     await seedVerifiedRooms(); // Run after verified users are created
     await seedHeroImages(); // Add hero images seeding
+    await seedWebmasterTools(); // Add webmaster tools seeding
     await seedPaymentGateways();
     await seedPricingPlans(); // Add payment gateways seeding
     await seedBlogPosts(); // Run this last since it depends on blog categories

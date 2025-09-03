@@ -27,6 +27,16 @@ import { registerWebsiteUpdatesRoutes } from "./api/website-updates";
 import { registerAdminNotificationsRoutes } from "./api/admin-notifications";
 import { registerSeoSchemaRoutes } from "./api/seo-schemas";
 import { registerTeamRoutes } from "./api/team";
+import { 
+  getWebmasterTools, 
+  getWebmasterToolById, 
+  createWebmasterTool, 
+  updateWebmasterTool, 
+  updateVerificationStatus, 
+  toggleWebmasterToolStatus, 
+  deleteWebmasterTool, 
+  getWebmasterToolsStats 
+} from "./api/webmaster-tools";
 import { registerSignupOptionsRoutes } from "./api/signup-options";
 import { registerHeroImageRoutes } from "./api/hero-images";
 import { registerGoogleIndexingRoutes } from "./api/google-indexing";
@@ -338,6 +348,16 @@ Sitemap: ${req.protocol}://${req.get('host')}/sitemap.xml`);
   app.put('/api/admin/verification-requests/:id/status', isAuthenticated, isAdmin, updateVerificationRequestStatus);
   app.delete('/api/admin/verification-requests/:id', isAuthenticated, isAdmin, deleteVerificationRequest);
   app.post('/api/verification-requests', createVerificationRequest); // Public route
+
+  // Webmaster Tools routes
+  app.get('/api/webmaster-tools', getWebmasterTools);
+  app.get('/api/admin/webmaster-tools/stats', isAuthenticated, isAdmin, getWebmasterToolsStats);
+  app.get('/api/webmaster-tools/:id', getWebmasterToolById);
+  app.post('/api/admin/webmaster-tools', isAuthenticated, isAdmin, createWebmasterTool);
+  app.put('/api/admin/webmaster-tools/:id', isAuthenticated, isAdmin, updateWebmasterTool);
+  app.put('/api/admin/webmaster-tools/:id/verification', isAuthenticated, isAdmin, updateVerificationStatus);
+  app.put('/api/admin/webmaster-tools/:id/status', isAuthenticated, isAdmin, toggleWebmasterToolStatus);
+  app.delete('/api/admin/webmaster-tools/:id', isAuthenticated, isAdmin, deleteWebmasterTool);
   
   // Register image upload API routes
   const imageUploadRoutes = await import('./api/image-upload');

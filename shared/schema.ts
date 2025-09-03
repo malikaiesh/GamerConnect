@@ -92,6 +92,10 @@ export const subscriptionStatusEnum = pgEnum('subscription_status', ['active', '
 export const verificationRequestTypeEnum = pgEnum('verification_request_type', ['user', 'room']);
 export const verificationRequestStatusEnum = pgEnum('verification_request_status', ['pending', 'approved', 'rejected', 'under_review']);
 
+// Webmaster Tools Enums
+export const webmasterToolStatusEnum = pgEnum('webmaster_tool_status', ['active', 'inactive']);
+export const webmasterVerificationStatusEnum = pgEnum('webmaster_verification_status', ['pending', 'verified', 'failed', 'not_verified']);
+
 // Roles table
 export const roles = pgTable('roles', {
   id: serial('id').primaryKey(),
@@ -2223,6 +2227,30 @@ export const verificationRequests = pgTable('verification_requests', {
   updatedAt: timestamp('updated_at').defaultNow().notNull()
 });
 
+// Webmaster Tools table
+export const webmasterTools = pgTable('webmaster_tools', {
+  id: serial('id').primaryKey(),
+  name: text('name').notNull(),
+  displayName: text('display_name').notNull(),
+  description: text('description'),
+  verificationUrl: text('verification_url'),
+  verificationCode: text('verification_code'),
+  htmlTag: text('html_tag'),
+  metaTag: text('meta_tag'),
+  verificationFile: text('verification_file'),
+  verificationFileName: text('verification_file_name'),
+  status: webmasterToolStatusEnum('status').default('active').notNull(),
+  verificationStatus: webmasterVerificationStatusEnum('verification_status').default('not_verified').notNull(),
+  lastVerified: timestamp('last_verified'),
+  verificationError: text('verification_error'),
+  priority: integer('priority').default(0).notNull(),
+  icon: text('icon'),
+  helpUrl: text('help_url'),
+  isEnabled: boolean('is_enabled').default(true).notNull(),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+  updatedAt: timestamp('updated_at').defaultNow().notNull()
+});
+
 // Pricing Plans Relations
 export const pricingPlansRelations = relations(pricingPlans, ({ one, many }) => ({
   createdByUser: one(users, {
@@ -2316,3 +2344,14 @@ export type InsertUserSubscription = z.infer<typeof insertUserSubscriptionSchema
 // Verification Request Type Exports
 export type VerificationRequest = typeof verificationRequests.$inferSelect;
 export type InsertVerificationRequest = z.infer<typeof insertVerificationRequestSchema>;
+
+// Webmaster Tools Validation Schema
+export const insertWebmasterToolSchema = createInsertSchema(webmasterTools, {
+  name: (schema) => schema.min(3, "Tool name must be at least 3 characters").max(100, "Tool name must be less than 100 characters"),
+  displayName: (schema) => schema.min(3, "Display name must be at least 3 characters").max(150, "Display name must be less than 150 characters"),
+  priority: (schema) => schema.min(0, "Priority cannot be negative").max(100, "Priority must be less than 100")
+});
+
+// Webmaster Tools Type Exports
+export type WebmasterTool = typeof webmasterTools.$inferSelect;
+export type InsertWebmasterTool = z.infer<typeof insertWebmasterToolSchema>;
