@@ -3,6 +3,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { apiRequest } from '@/lib/queryClient';
+import { useAuth } from '@/hooks/use-auth';
+import { Link } from 'wouter';
 import { 
   Gift, 
   DollarSign, 
@@ -17,11 +19,20 @@ import {
 } from 'lucide-react';
 
 export default function ReferEarnPage() {
+  const { user, isAuthenticated } = useAuth();
+  
   // Fetch available referral offers/settings
   const { data: offers, isLoading } = useQuery({
     queryKey: ['/api/referrals/public/offers'],
     queryFn: () => apiRequest('/api/referrals/public/offers')
   });
+
+  const scrollToFAQ = () => {
+    const faqSection = document.getElementById('faq-section');
+    if (faqSection) {
+      faqSection.scrollIntoView({ behavior: 'smooth' });
+    }
+  };
 
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('en-US', {
@@ -178,11 +189,28 @@ export default function ReferEarnPage() {
                 Join our referral program today and start earning rewards for sharing your favorite gaming platform with friends.
               </p>
               <div className="flex justify-center gap-4">
-                <Button size="lg" className="px-8" data-testid="button-get-started">
-                  <Target className="mr-2 h-5 w-5" />
-                  Get Started
-                </Button>
-                <Button variant="outline" size="lg" className="px-8" data-testid="button-learn-more">
+                {isAuthenticated ? (
+                  <Link href="/dashboard">
+                    <Button size="lg" className="px-8" data-testid="button-get-started">
+                      <Target className="mr-2 h-5 w-5" />
+                      Go to Dashboard
+                    </Button>
+                  </Link>
+                ) : (
+                  <Link href="/auth">
+                    <Button size="lg" className="px-8" data-testid="button-get-started">
+                      <Target className="mr-2 h-5 w-5" />
+                      Get Started
+                    </Button>
+                  </Link>
+                )}
+                <Button 
+                  variant="outline" 
+                  size="lg" 
+                  className="px-8" 
+                  onClick={scrollToFAQ}
+                  data-testid="button-learn-more"
+                >
                   Learn More
                 </Button>
               </div>
@@ -191,7 +219,7 @@ export default function ReferEarnPage() {
         </div>
 
         {/* FAQ Section */}
-        <div className="mt-16">
+        <div id="faq-section" className="mt-16">
           <h2 className="text-3xl font-bold text-center mb-8">Frequently Asked Questions</h2>
           <div className="max-w-3xl mx-auto space-y-6">
             <Card>
