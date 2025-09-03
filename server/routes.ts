@@ -66,6 +66,7 @@ import {
 import { referralRouter } from "./api/referrals";
 import { revenueRouter } from "./api/revenue";
 import { registerImagesGalleryRoutes } from "./api/images-gallery";
+import { registerShortLinksRoutes } from "./api/short-links";
 
 import {
   getPricingPlans,
@@ -376,6 +377,9 @@ Sitemap: ${req.protocol}://${req.get('host')}/sitemap.xml`);
   
   // Register images gallery routes
   registerImagesGalleryRoutes(app);
+  
+  // Register short links routes
+  registerShortLinksRoutes(app);
   
   // Register additional push notifications analytics endpoint
   app.get('/api/push-notifications-analytics', isAuthenticated, isAdmin, async (req, res) => {

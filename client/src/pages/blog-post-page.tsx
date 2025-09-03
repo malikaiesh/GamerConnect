@@ -7,6 +7,7 @@ import { Footer } from '@/components/layout/footer';
 import { BlogList } from '@/components/blog/blog-list';
 import { SocialShare } from '@/components/shared/social-share';
 import { SocialShareButtons } from '@/components/shared/social-share-buttons';
+import { ShareLink } from '@/components/shared/share-link';
 import { BlogPost, PushNotification as PushNotificationType, SiteSetting } from '@shared/schema';
 import { PushNotification } from '@/components/push-notification';
 import { BlogAd } from '@/components/ads/blog-ad';
@@ -440,6 +441,14 @@ export default function BlogPostPage() {
                       url={window.location.href}
                       image={post.featuredImage}
                       platforms={['facebook', 'twitter', 'linkedin', 'email', 'copy']}
+                    />
+                    
+                    <ShareLink
+                      title="Short Link"
+                      description="Get a short link for easy sharing"
+                      targetType="blog"
+                      targetSlug={post.slug}
+                      compact={true}
                     />
                     
                     <div className="flex justify-center mt-3">

@@ -3,6 +3,7 @@ import { useQuery } from '@tanstack/react-query';
 import { Header } from '@/components/layout/header';
 import { Footer } from '@/components/layout/footer';
 import { GameGrid } from '@/components/games/game-grid';
+import { ShareLink } from '@/components/shared/share-link';
 import { Game, GameCategory } from '@shared/schema';
 import { fetcher } from '@/lib/queryClient';
 
@@ -123,6 +124,16 @@ export default function CategoriesPage() {
               >
                 <i className="ri-arrow-left-line mr-1"></i> All Categories
               </button>
+            </div>
+            
+            <div className="mb-6">
+              <ShareLink
+                title={`Share ${activeCategory.name} Category`}
+                description="Get a short link to share this category"
+                targetType="category"
+                targetSlug={activeCategory.slug || activeCategory.name.toLowerCase().replace(/\s+/g, '-')}
+                compact={true}
+              />
             </div>
             
             <GameGrid 

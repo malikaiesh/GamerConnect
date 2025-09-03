@@ -9,6 +9,7 @@ import { PushNotification } from '@/components/push-notification';
 import { PostGameModal } from '@/components/games/post-game-modal';
 import { SocialShare } from '@/components/shared/social-share';
 import { SocialShareButtons } from '@/components/shared/social-share-buttons';
+import { ShareLink } from '@/components/shared/share-link';
 import { GameAdDisplay } from '@/components/games/game-ad-display';
 import { Game, PushNotification as PushNotificationType } from '@shared/schema';
 import { apiRequest, queryClient } from '@/lib/queryClient';
@@ -266,6 +267,17 @@ export default function GamePage() {
                     image={game.thumbnail}
                     platforms={['facebook', 'twitter', 'linkedin', 'whatsapp', 'email', 'copy']}
                   />
+                  
+                  <div className="mt-4">
+                    <ShareLink
+                      title="Short Link"
+                      description="Get a short link for easy sharing"
+                      targetType="game"
+                      targetId={game.id}
+                      targetSlug={game.slug}
+                      compact={true}
+                    />
+                  </div>
                 </div>
                 
                 {/* Sidebar Top Ad */}

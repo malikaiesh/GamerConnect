@@ -74,6 +74,9 @@ export const roomUserRoleEnum = pgEnum('room_user_role', ['owner', 'manager', 'm
 export const roomUserStatusEnum = pgEnum('room_user_status', ['active', 'muted', 'kicked', 'banned']);
 export const giftTypeEnum = pgEnum('gift_type', ['flower', 'car', 'diamond', 'crown', 'castle', 'ring', 'heart']);
 
+// Short Links Enum
+export const shortLinkTypeEnum = pgEnum('short_link_type', ['game', 'blog', 'category', 'page']);
+
 // Payment Gateway Enums
 export const paymentGatewayTypeEnum = pgEnum('payment_gateway_type', ['stripe', 'paypal', 'razorpay', 'flutterwave', 'mollie', 'square', 'adyen', '2checkout', 'braintree', 'authorize_net', 'manual']);
 export const paymentStatusEnum = pgEnum('payment_status', ['enabled', 'disabled', 'maintenance']);
@@ -259,6 +262,21 @@ export const blogPosts = pgTable('blog_posts', {
   publishedAt: timestamp('published_at'),
   createdAt: timestamp('created_at').defaultNow().notNull(),
   updatedAt: timestamp('updated_at').defaultNow().notNull()
+});
+
+// Short Links table
+export const shortLinks = pgTable('short_links', {
+  id: serial('id').primaryKey(),
+  shortCode: text('short_code').notNull().unique(),
+  originalUrl: text('original_url').notNull(),
+  targetType: shortLinkTypeEnum('target_type').notNull(),
+  targetId: integer('target_id'),
+  targetSlug: text('target_slug'),
+  clickCount: integer('click_count').default(0).notNull(),
+  isActive: boolean('is_active').default(true).notNull(),
+  expiresAt: timestamp('expires_at'),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+  lastClickedAt: timestamp('last_clicked_at')
 });
 
 // Ratings table
@@ -2922,4 +2940,16 @@ export type RevenueAnalytics = typeof revenueAnalytics.$inferSelect;
 export type InsertRevenueAnalytics = z.infer<typeof insertRevenueAnalyticsSchema>;
 export type RevenueReport = typeof revenueReports.$inferSelect;
 export type InsertRevenueReport = z.infer<typeof insertRevenueReportSchema>;
+
+// ===== SHORT LINKS VALIDATION SCHEMAS =====
+
+export const insertShortLinkSchema = createInsertSchema(shortLinks, {
+  shortCode: (schema) => schema.min(3, "Short code must be at least 3 characters").max(10, "Short code must be less than 10 characters"),
+  originalUrl: (schema) => schema.min(1, "Original URL is required").url("Must be a valid URL")
+}).omit({ id: true, clickCount: true, createdAt: true, lastClickedAt: true });
+
+// ===== SHORT LINKS TYPE EXPORTS =====
+
+export type ShortLink = typeof shortLinks.$inferSelect;
+export type InsertShortLink = z.infer<typeof insertShortLinkSchema>;
 
