@@ -66,17 +66,6 @@ const navigationItems = [
     ]
   },
   {
-    section: "SEO & Technical",
-    items: [
-      { name: "Webmaster Tools", href: "/admin/webmaster-tools", icon: Search },
-      { name: "Sitemaps", href: "/admin/sitemaps", icon: Sitemap },
-      { name: "URL Redirects", href: "/admin/redirects", icon: ExternalLink },
-      { name: "Custom Code", href: "/admin/custom-code", icon: Code },
-      { name: "Ads.txt", href: "/admin/ads-txt", icon: FileText },
-      { name: "Robots.txt", href: "/admin/robots-txt", icon: Shield },
-    ]
-  },
-  {
     section: "User Engagement",
     items: [
       { name: "Push Notifications", href: "/admin/push-notifications", icon: Bell },
@@ -91,8 +80,14 @@ const navigationItems = [
       { name: "API Keys", href: "/admin/api-keys", icon: Key },
       { name: "User Management", href: "/admin/users", icon: UserCheck },
       { name: "SEO Schemas", href: "/admin/seo-schemas", icon: Database },
+      { name: "Webmaster Tools", href: "/admin/webmaster-tools", icon: Search },
       { name: "Hero Images", href: "/admin/hero-images", icon: Image },
       { name: "Signup Options", href: "/admin/signup-options", icon: Users },
+      { name: "Sitemaps", href: "/admin/sitemaps", icon: Sitemap },
+      { name: "URL Redirects", href: "/admin/redirects", icon: ExternalLink },
+      { name: "Custom Code", href: "/admin/custom-code", icon: Code },
+      { name: "Ads.txt", href: "/admin/ads-txt", icon: FileText },
+      { name: "Robots.txt", href: "/admin/robots-txt", icon: Shield },
       { name: "Security", href: "/admin/security", icon: Shield },
     ]
   },
