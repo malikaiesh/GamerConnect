@@ -32,6 +32,7 @@ import {
 } from 'lucide-react';
 import { Link, useLocation } from 'wouter';
 import { apiRequest } from '@/lib/queryClient';
+import AdminNavigation from '@/components/admin/navigation';
 
 // Schema for forms
 const revenueSourceSchema = z.object({
@@ -216,101 +217,91 @@ export default function AdminRevenuePage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-50 via-white to-pink-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
-      {/* Header */}
-      <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm border-b border-purple-100 dark:border-gray-700 sticky top-0 z-10">
-        <div className="container mx-auto px-6 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-4">
-              <Link href="/admin/referrals" className="text-purple-600 hover:text-purple-700 dark:text-purple-400">
-                <Button variant="outline" size="sm" data-testid="button-back-referrals">
-                  ← Back to Referrals
-                </Button>
-              </Link>
-              <div>
-                <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Revenue Analytics</h1>
-                <p className="text-gray-600 dark:text-gray-300">Track and manage all revenue streams</p>
-              </div>
-            </div>
-            <div className="flex items-center space-x-3">
-              <Select value={selectedTimeframe} onValueChange={setSelectedTimeframe}>
-                <SelectTrigger className="w-32" data-testid="select-timeframe">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="7d">Last 7 days</SelectItem>
-                  <SelectItem value="30d">Last 30 days</SelectItem>
-                  <SelectItem value="90d">Last 90 days</SelectItem>
-                  <SelectItem value="1y">Last year</SelectItem>
-                </SelectContent>
-              </Select>
-              <Button variant="outline" size="sm" data-testid="button-export-report">
-                <Download className="h-4 w-4 mr-2" />
-                Export Report
-              </Button>
-            </div>
+    <div className="flex min-h-screen">
+      <AdminNavigation />
+      
+      <div className="flex-1 p-6 lg:p-10">
+        <div className="mb-6 flex justify-between items-center">
+          <div>
+            <h1 className="text-3xl font-bold text-foreground">Revenue Analytics</h1>
+            <p className="text-muted-foreground">Track and manage all revenue streams</p>
+          </div>
+          <div className="flex gap-3">
+            <Select value={selectedTimeframe} onValueChange={setSelectedTimeframe}>
+              <SelectTrigger className="w-32" data-testid="select-timeframe">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="7d">Last 7 days</SelectItem>
+                <SelectItem value="30d">Last 30 days</SelectItem>
+                <SelectItem value="90d">Last 90 days</SelectItem>
+                <SelectItem value="1y">Last year</SelectItem>
+              </SelectContent>
+            </Select>
+            <Button variant="outline" size="sm" data-testid="button-export-report">
+              <Download className="h-4 w-4 mr-2" />
+              Export Report
+            </Button>
           </div>
         </div>
-      </div>
 
-      <div className="container mx-auto p-6 space-y-8">
         {/* Revenue Overview Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-          <Card className="bg-gradient-to-r from-blue-500 to-blue-600 text-white">
+        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+          <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">Total Revenue</CardTitle>
-              <DollarSign className="h-4 w-4" />
+              <DollarSign className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold" data-testid="text-total-revenue">
                 {formatCurrency(overviewData?.overview?.totalRevenue || 0)}
               </div>
-              <p className="text-xs text-blue-100">
+              <p className="text-xs text-muted-foreground">
                 +12% from last period
               </p>
             </CardContent>
           </Card>
 
-          <Card className="bg-gradient-to-r from-green-500 to-green-600 text-white">
+          <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">Transactions</CardTitle>
-              <TrendingUp className="h-4 w-4" />
+              <TrendingUp className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold" data-testid="text-total-transactions">
                 {overviewData?.overview?.totalTransactions?.toLocaleString() || 0}
               </div>
-              <p className="text-xs text-green-100">
+              <p className="text-xs text-muted-foreground">
                 +8% from last period
               </p>
             </CardContent>
           </Card>
 
-          <Card className="bg-gradient-to-r from-purple-500 to-purple-600 text-white">
+          <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">Avg Transaction</CardTitle>
-              <BarChart3 className="h-4 w-4" />
+              <BarChart3 className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold" data-testid="text-avg-transaction">
                 {formatCurrency(overviewData?.overview?.averageTransaction || 0)}
               </div>
-              <p className="text-xs text-purple-100">
+              <p className="text-xs text-muted-foreground">
                 +5% from last period
               </p>
             </CardContent>
           </Card>
 
-          <Card className="bg-gradient-to-r from-orange-500 to-orange-600 text-white">
+          <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">Active Goals</CardTitle>
-              <Target className="h-4 w-4" />
+              <Target className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold" data-testid="text-active-goals">
                 {overviewData?.activeGoals?.length || 0}
               </div>
-              <p className="text-xs text-orange-100">
+              <p className="text-xs text-muted-foreground">
                 {overviewData?.activeGoals?.filter(g => g.goal.isAchieved).length || 0} achieved
               </p>
             </CardContent>
@@ -318,7 +309,7 @@ export default function AdminRevenuePage() {
         </div>
 
         {/* Main Content Tabs */}
-        <Tabs defaultValue="overview" className="w-full">
+        <Tabs defaultValue="overview" className="space-y-6">
           <TabsList className="grid w-full grid-cols-5">
             <TabsTrigger value="overview" data-testid="tab-overview">Overview</TabsTrigger>
             <TabsTrigger value="sources" data-testid="tab-sources">Revenue Sources</TabsTrigger>
@@ -338,12 +329,12 @@ export default function AdminRevenuePage() {
               <CardContent>
                 <div className="space-y-4">
                   {overviewData?.revenueByCategory?.map((item, index) => (
-                    <div key={index} className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-800 rounded-lg">
+                    <div key={index} className="flex items-center justify-between p-4 bg-muted/50 rounded-lg">
                       <div className="flex items-center space-x-3">
                         <Badge className={getCategoryColor(item.category)}>
                           {item.category.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase())}
                         </Badge>
-                        <span className="text-sm text-gray-600 dark:text-gray-300">
+                        <span className="text-sm text-muted-foreground">
                           {item.transactions} transactions
                         </span>
                       </div>
@@ -365,16 +356,16 @@ export default function AdminRevenuePage() {
               <CardContent>
                 <div className="space-y-4">
                   {overviewData?.topSources?.slice(0, 5).map((item, index) => (
-                    <div key={index} className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-800 rounded-lg">
+                    <div key={index} className="flex items-center justify-between p-4 bg-muted/50 rounded-lg">
                       <div className="flex items-center space-x-3">
-                        <div className="w-8 h-8 bg-purple-100 dark:bg-purple-900 rounded-full flex items-center justify-center text-purple-600 dark:text-purple-400 font-semibold">
+                        <div className="w-8 h-8 bg-primary/10 rounded-full flex items-center justify-center text-primary font-semibold">
                           {index + 1}
                         </div>
                         <div>
                           <div className="font-medium" data-testid={`text-source-name-${index}`}>
                             {item.source?.name}
                           </div>
-                          <div className="text-sm text-gray-600 dark:text-gray-300">
+                          <div className="text-sm text-muted-foreground">
                             {item.transactions} transactions
                           </div>
                         </div>
@@ -394,7 +385,7 @@ export default function AdminRevenuePage() {
             <div className="flex justify-between items-center">
               <div>
                 <h3 className="text-lg font-semibold">Revenue Sources</h3>
-                <p className="text-sm text-gray-600 dark:text-gray-300">Manage your revenue tracking sources</p>
+                <p className="text-sm text-muted-foreground">Manage your revenue tracking sources</p>
               </div>
               <Dialog open={isSourceDialogOpen} onOpenChange={setIsSourceDialogOpen}>
                 <DialogTrigger asChild>
@@ -571,11 +562,11 @@ export default function AdminRevenuePage() {
                     </div>
                   </CardHeader>
                   <CardContent>
-                    <p className="text-sm text-gray-600 dark:text-gray-300 mb-4">
+                    <p className="text-sm text-muted-foreground mb-4">
                       {source.description || 'No description provided'}
                     </p>
                     <div className="flex items-center justify-between">
-                      <div className="text-xs text-gray-500">
+                      <div className="text-xs text-muted-foreground">
                         Tracking: {source.trackingEnabled ? 'Enabled' : 'Disabled'}
                       </div>
                       <div className="flex items-center space-x-1">
@@ -643,16 +634,16 @@ export default function AdminRevenuePage() {
                   <div className="space-y-4">
                     {transactionsData?.transactions?.length > 0 ? (
                       transactionsData.transactions.map((item, index) => (
-                        <div key={item.transaction.id} className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-800 rounded-lg">
+                        <div key={item.transaction.id} className="flex items-center justify-between p-4 bg-muted/50 rounded-lg">
                           <div className="flex items-center space-x-4">
-                            <div className="w-10 h-10 bg-purple-100 dark:bg-purple-900 rounded-full flex items-center justify-center">
-                              <DollarSign className="h-5 w-5 text-purple-600 dark:text-purple-400" />
+                            <div className="w-10 h-10 bg-primary/10 rounded-full flex items-center justify-center">
+                              <DollarSign className="h-5 w-5 text-primary" />
                             </div>
                             <div>
                               <div className="font-medium" data-testid={`text-transaction-${index}-description`}>
                                 {item.transaction.description}
                               </div>
-                              <div className="text-sm text-gray-600 dark:text-gray-300">
+                              <div className="text-sm text-muted-foreground">
                                 {item.revenueSource?.name} • {new Date(item.transaction.createdAt).toLocaleDateString()}
                               </div>
                             </div>
@@ -671,7 +662,7 @@ export default function AdminRevenuePage() {
                         </div>
                       ))
                     ) : (
-                      <div className="text-center py-8 text-gray-500">
+                      <div className="text-center py-8 text-muted-foreground">
                         No transactions found
                       </div>
                     )}
@@ -686,7 +677,7 @@ export default function AdminRevenuePage() {
             <div className="flex justify-between items-center">
               <div>
                 <h3 className="text-lg font-semibold">Revenue Goals</h3>
-                <p className="text-sm text-gray-600 dark:text-gray-300">Set and track revenue targets</p>
+                <p className="text-sm text-muted-foreground">Set and track revenue targets</p>
               </div>
               <Dialog open={isGoalDialogOpen} onOpenChange={setIsGoalDialogOpen}>
                 <DialogTrigger asChild>
@@ -826,7 +817,7 @@ export default function AdminRevenuePage() {
                           <CardTitle className="text-lg" data-testid={`text-goal-${goal.id}-name`}>
                             {goal.name}
                           </CardTitle>
-                          <div className="text-sm text-gray-600 dark:text-gray-300">
+                          <div className="text-sm text-muted-foreground">
                             {new Date(goal.startDate).toLocaleDateString()} - {new Date(goal.endDate).toLocaleDateString()}
                           </div>
                         </div>
@@ -844,9 +835,9 @@ export default function AdminRevenuePage() {
                           <span>Progress</span>
                           <span data-testid={`text-goal-${goal.id}-progress`}>{progress.toFixed(1)}%</span>
                         </div>
-                        <div className="w-full bg-gray-200 rounded-full h-2">
+                        <div className="w-full bg-muted rounded-full h-2">
                           <div 
-                            className="bg-purple-600 h-2 rounded-full transition-all" 
+                            className="bg-primary h-2 rounded-full transition-all" 
                             style={{ width: `${progress}%` }}
                           />
                         </div>
@@ -856,7 +847,7 @@ export default function AdminRevenuePage() {
                           <div className="text-2xl font-bold" data-testid={`text-goal-${goal.id}-current`}>
                             {formatCurrency(goal.currentAmount)}
                           </div>
-                          <div className="text-sm text-gray-600 dark:text-gray-300">
+                          <div className="text-sm text-muted-foreground">
                             of {formatCurrency(goal.targetAmount)} goal
                           </div>
                         </div>
@@ -879,7 +870,7 @@ export default function AdminRevenuePage() {
                 <CardDescription>Detailed revenue performance metrics and insights</CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="text-center py-8 text-gray-500">
+                <div className="text-center py-8 text-muted-foreground">
                   Advanced analytics dashboard coming soon...
                 </div>
               </CardContent>
