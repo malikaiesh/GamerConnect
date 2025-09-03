@@ -105,6 +105,7 @@ const AdminRevenuePage = lazy(() => import("@/pages/admin/revenue"));
 
 // Admin image upload demo
 const AdminImageUploadDemo = lazy(() => import("@/pages/admin/image-upload-demo"));
+const AdminImagesGalleryPage = lazy(() => import("@/pages/admin/images-gallery"));
 
 // Admin security pages
 const AdminTwoFactorPage = lazy(() => import("@/pages/admin/security/two-factor"));
@@ -529,6 +530,11 @@ function Router() {
       <Route path="/admin/hero-images">
         <ProtectedRoute adminOnly={true}>
           <Suspense fallback={<LoadingFallback />}><AdminHeroImagesPage /></Suspense>
+        </ProtectedRoute>
+      </Route>
+      <Route path="/admin/images-gallery">
+        <ProtectedRoute adminOnly={true}>
+          <Suspense fallback={<LoadingFallback />}><AdminImagesGalleryPage /></Suspense>
         </ProtectedRoute>
       </Route>
       <Route path="/admin/accounts/locations">

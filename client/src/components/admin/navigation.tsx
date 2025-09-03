@@ -526,6 +526,20 @@ export default function AdminNavigation() {
             </Link>
           </li>
           <li>
+            <Link
+              href="/admin/images-gallery"
+              className={cn(
+                "flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all",
+                isActive("/admin/images-gallery")
+                  ? "bg-primary/15 text-primary shadow-sm"
+                  : "text-card-foreground hover:bg-primary/10 hover:text-primary"
+              )}
+            >
+              <Files size={18} className="text-primary opacity-80" />
+              Images Gallery
+            </Link>
+          </li>
+          <li>
             <a 
               href="/"
               target="_blank"
