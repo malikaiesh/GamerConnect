@@ -5,6 +5,7 @@ import { cn } from "@/lib/utils";
 import { Gamepad2, Book, Settings, LayoutDashboard, FileText, LogOut, Home, FileSymlink, Key, ImageIcon, Map, Code, BarChart, Files, Bell, Users, Send, Activity, BarChart3, UserRound, UserPlus, MapPin, Shield, Lock, KeyRound, AlertTriangle, FileDigit, Clock, ExternalLink, Bot, Rocket, ChevronDown, ChevronRight, Target, Ban as Advertisement, Calendar, Cloud, Archive, CreditCard, Wallet, Receipt, Gem, Star, Crown, DollarSign } from "lucide-react";
 import { useState } from "react";
 import { SiteSetting } from "@shared/schema";
+import { AdminThemeSwitcher } from "./theme-switcher";
 
 export default function AdminNavigation() {
   const [expandedSubMenus, setExpandedSubMenus] = useState<Record<string, boolean>>({
@@ -73,8 +74,13 @@ export default function AdminNavigation() {
       </div>
 
       <div className="p-4 text-sm text-muted-foreground bg-gradient-to-r from-primary/5 to-transparent">
-        <p className="font-medium">Welcome, {user.username}</p>
-        <p className="opacity-80">Admin Panel</p>
+        <div className="flex justify-between items-center">
+          <div>
+            <p className="font-medium">Welcome, {user.username}</p>
+            <p className="opacity-80">Admin Panel</p>
+          </div>
+          <AdminThemeSwitcher />
+        </div>
       </div>
 
       <nav className="flex-1 p-4">

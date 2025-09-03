@@ -508,3 +508,70 @@
     color: hsl(var(--foreground)) !important;
   }
 }
+
+/* Admin Theme Styles */
+@layer base {
+  /* Admin Light Theme */
+  .admin-light {
+    --admin-bg: 0 0% 100%;
+    --admin-surface: 0 0% 98%;
+    --admin-border: 240 5.9% 90%;
+    --admin-text: 240 10% 3.9%;
+    --admin-text-muted: 240 3.8% 46.1%;
+    --admin-nav-bg: 0 0% 100%;
+    --admin-nav-hover: 213 100% 95%;
+    --admin-nav-active: 213 100% 90%;
+    --admin-shadow: 0 0% 0% / 0.1;
+  }
+
+  /* Admin Dark Theme */
+  .admin-dark {
+    --admin-bg: 240 10% 3.9%;
+    --admin-surface: 240 5.9% 10%;
+    --admin-border: 240 3.7% 15.9%;
+    --admin-text: 0 0% 98%;
+    --admin-text-muted: 240 5% 64.9%;
+    --admin-nav-bg: 240 5.9% 10%;
+    --admin-nav-hover: 240 3.7% 15.9%;
+    --admin-nav-active: 213 100% 15%;
+    --admin-shadow: 0 0% 0% / 0.5;
+  }
+
+  /* Apply admin theme styles */
+  .admin-container {
+    background-color: hsl(var(--admin-bg));
+    color: hsl(var(--admin-text));
+    transition: background-color 0.3s ease, color 0.3s ease;
+  }
+
+  .admin-container .admin-nav {
+    background-color: hsl(var(--admin-nav-bg));
+    border-right: 1px solid hsl(var(--admin-border));
+  }
+
+  .admin-container .admin-nav-item {
+    color: hsl(var(--admin-text-muted));
+    transition: all 0.2s ease;
+  }
+
+  .admin-container .admin-nav-item:hover {
+    background-color: hsl(var(--admin-nav-hover));
+    color: hsl(var(--admin-text));
+  }
+
+  .admin-container .admin-nav-item.active {
+    background-color: hsl(var(--admin-nav-active));
+    color: hsl(var(--primary));
+  }
+
+  .admin-container .admin-card {
+    background-color: hsl(var(--admin-surface));
+    border: 1px solid hsl(var(--admin-border));
+    box-shadow: 0 1px 3px hsl(var(--admin-shadow));
+  }
+
+  .admin-container .admin-header {
+    background-color: hsl(var(--admin-surface));
+    border-bottom: 1px solid hsl(var(--admin-border));
+  }
+}
