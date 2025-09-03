@@ -5,6 +5,8 @@ import { Header } from '@/components/layout/header';
 import { Footer } from '@/components/layout/footer';
 import { GameGrid } from '@/components/games/game-grid';
 import { ShareLink } from '@/components/shared/share-link';
+import { CategoryIcon } from '@/components/category-icon';
+import { ArrowLeft, ArrowRight } from 'lucide-react';
 import { Game, GameCategory } from '@shared/schema';
 import { fetcher } from '@/lib/queryClient';
 
@@ -118,7 +120,11 @@ export default function CategoriesPage() {
                         <div className="absolute inset-0 -m-2 rounded-full bg-primary/10 group-hover:bg-primary/20 transition-colors duration-500 blur-sm"></div>
                         <div className="text-5xl text-primary relative group-hover:scale-110 transition-all duration-500">
                           {/* Use category icon from database if available */}
-                          <i className={category.icon || 'ri-gamepad-line'}></i>
+                          <CategoryIcon 
+                            iconClass={category.icon} 
+                            size={48} 
+                            className="text-primary" 
+                          />
                         </div>
                       </div>
                     </div>
@@ -144,7 +150,7 @@ export default function CategoriesPage() {
                 onClick={() => setLocation('/categories')}
                 className="text-primary hover:underline flex items-center"
               >
-                <i className="ri-arrow-left-line mr-1"></i> All Categories
+                <ArrowLeft size={16} className="mr-1" /> All Categories
               </button>
             </div>
             
@@ -220,7 +226,7 @@ export default function CategoriesPage() {
                           hover:before:scale-x-100 before:transition-transform before:duration-300"
                         >
                           <span className="relative z-10">Explore Games</span>
-                          <i className="ri-arrow-right-line relative z-10"></i>
+                          <ArrowRight size={20} className="relative z-10" />
                         </button>
                       </div>
                     </div>
