@@ -11,7 +11,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from '@/components/ui/dialog';
 import { useToast } from '@/hooks/use-toast';
 import { apiRequest } from '@/lib/queryClient';
-import AdminLayout from '@/components/layout/admin-layout';
+import AdminNavigation from '@/components/admin/navigation';
 import { 
   Target, 
   Users, 
@@ -228,32 +228,34 @@ export default function ReferralsPage() {
   };
 
   return (
-    <AdminLayout>
-      <div className="space-y-6 p-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold text-foreground">Referral System</h1>
-          <p className="text-muted-foreground">Manage referral codes, rewards, and analytics</p>
+    <div className="flex min-h-screen">
+      <AdminNavigation />
+      
+      <div className="flex-1 p-6 lg:p-10">
+        <div className="mb-6 flex justify-between items-center">
+          <div>
+            <h1 className="text-3xl font-bold text-foreground">Referral System</h1>
+            <p className="text-muted-foreground">Manage referral codes, rewards, and analytics</p>
+          </div>
+          <Button variant="outline">
+            <Download size={16} className="mr-2" />
+            Export Data
+          </Button>
         </div>
-        <Button variant="outline">
-          <Download size={16} className="mr-2" />
-          Export Data
-        </Button>
-      </div>
 
-      <Tabs defaultValue="overview" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-6">
-          <TabsTrigger value="overview">Overview</TabsTrigger>
-          <TabsTrigger value="referrals">All Referrals</TabsTrigger>
-          <TabsTrigger value="payouts">Payouts</TabsTrigger>
-          <TabsTrigger value="offers">Referral Offers</TabsTrigger>
-          <TabsTrigger value="settings">Settings</TabsTrigger>
-          <TabsTrigger value="leaderboard">Leaderboard</TabsTrigger>
-        </TabsList>
+        <Tabs defaultValue="overview" className="space-y-6">
+          <TabsList className="grid w-full grid-cols-6">
+            <TabsTrigger value="overview">Overview</TabsTrigger>
+            <TabsTrigger value="referrals">All Referrals</TabsTrigger>
+            <TabsTrigger value="payouts">Payouts</TabsTrigger>
+            <TabsTrigger value="offers">Referral Offers</TabsTrigger>
+            <TabsTrigger value="settings">Settings</TabsTrigger>
+            <TabsTrigger value="leaderboard">Leaderboard</TabsTrigger>
+          </TabsList>
 
-        {/* Overview Tab */}
-        <TabsContent value="overview">
-          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+          {/* Overview Tab */}
+          <TabsContent value="overview">
+            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
             <Card>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <CardTitle className="text-sm font-medium">Total Referrals</CardTitle>
@@ -315,9 +317,9 @@ export default function ReferralsPage() {
             </Card>
           </div>
 
-          <div className="grid gap-6 md:grid-cols-2">
-            {/* Daily Analytics Chart */}
-            <Card>
+            <div className="grid gap-6 md:grid-cols-2">
+              {/* Daily Analytics Chart */}
+              <Card>
               <CardHeader>
                 <CardTitle>Daily Referrals</CardTitle>
                 <CardDescription>Sign-ups and earnings over time</CardDescription>
@@ -350,8 +352,8 @@ export default function ReferralsPage() {
               </CardContent>
             </Card>
 
-            {/* Top Performers */}
-            <Card>
+              {/* Top Performers */}
+              <Card>
               <CardHeader>
                 <CardTitle>Top Performers</CardTitle>
                 <CardDescription>Users with highest referral earnings</CardDescription>
@@ -380,18 +382,18 @@ export default function ReferralsPage() {
                   )) || <p className="text-muted-foreground">No performers yet</p>}
                 </div>
               </CardContent>
-            </Card>
-          </div>
-        </TabsContent>
+              </Card>
+            </div>
+          </TabsContent>
 
-        {/* All Referrals Tab */}
-        <TabsContent value="referrals">
-          <Card>
-            <CardHeader>
-              <CardTitle>All Referrals</CardTitle>
-              <CardDescription>Manage and monitor all referral relationships</CardDescription>
-            </CardHeader>
-            <CardContent>
+          {/* All Referrals Tab */}
+          <TabsContent value="referrals">
+            <Card>
+              <CardHeader>
+                <CardTitle>All Referrals</CardTitle>
+                <CardDescription>Manage and monitor all referral relationships</CardDescription>
+              </CardHeader>
+              <CardContent>
               {referralsLoading ? (
                 <div className="text-center py-8">Loading referrals...</div>
               ) : (
@@ -421,32 +423,32 @@ export default function ReferralsPage() {
                   )) || <p className="text-muted-foreground text-center py-8">No referrals found</p>}
                 </div>
               )}
-            </CardContent>
-          </Card>
-        </TabsContent>
+              </CardContent>
+            </Card>
+          </TabsContent>
 
-        {/* Payouts Tab */}
-        <TabsContent value="payouts">
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between">
-              <div>
-                <CardTitle>Payout Management</CardTitle>
-                <CardDescription>Process and manage referral payouts</CardDescription>
-              </div>
-              <Select value={selectedPayoutStatus} onValueChange={setSelectedPayoutStatus}>
-                <SelectTrigger className="w-40">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Statuses</SelectItem>
-                  <SelectItem value="pending">Pending</SelectItem>
-                  <SelectItem value="processing">Processing</SelectItem>
-                  <SelectItem value="completed">Completed</SelectItem>
-                  <SelectItem value="failed">Failed</SelectItem>
-                </SelectContent>
-              </Select>
-            </CardHeader>
-            <CardContent>
+          {/* Payouts Tab */}
+          <TabsContent value="payouts">
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between">
+                <div>
+                  <CardTitle>Payout Management</CardTitle>
+                  <CardDescription>Process and manage referral payouts</CardDescription>
+                </div>
+                <Select value={selectedPayoutStatus} onValueChange={setSelectedPayoutStatus}>
+                  <SelectTrigger className="w-40">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Statuses</SelectItem>
+                    <SelectItem value="pending">Pending</SelectItem>
+                    <SelectItem value="processing">Processing</SelectItem>
+                    <SelectItem value="completed">Completed</SelectItem>
+                    <SelectItem value="failed">Failed</SelectItem>
+                  </SelectContent>
+                </Select>
+              </CardHeader>
+              <CardContent>
               {payoutsLoading ? (
                 <div className="text-center py-8">Loading payouts...</div>
               ) : (
@@ -505,12 +507,12 @@ export default function ReferralsPage() {
                 </div>
               )}
             </CardContent>
-          </Card>
-        </TabsContent>
+            </Card>
+          </TabsContent>
 
-        {/* Referral Offers Tab */}
-        <TabsContent value="offers">
-          <Card>
+          {/* Referral Offers Tab */}
+          <TabsContent value="offers">
+            <Card>
             <CardHeader className="flex flex-row items-center justify-between">
               <div>
                 <CardTitle>Referral Offers Management</CardTitle>
@@ -648,12 +650,12 @@ export default function ReferralsPage() {
                 </div>
               )}
             </CardContent>
-          </Card>
-        </TabsContent>
+            </Card>
+          </TabsContent>
 
-        {/* Settings Tab */}
-        <TabsContent value="settings">
-          <div className="grid gap-6">
+          {/* Settings Tab */}
+          <TabsContent value="settings">
+            <div className="grid gap-6">
             <Card>
               <CardHeader>
                 <CardTitle>System Configuration</CardTitle>
@@ -695,12 +697,12 @@ export default function ReferralsPage() {
                 </div>
               </CardContent>
             </Card>
-          </div>
-        </TabsContent>
+            </div>
+          </TabsContent>
 
-        {/* Leaderboard Tab */}
-        <TabsContent value="leaderboard">
-          <Card>
+          {/* Leaderboard Tab */}
+          <TabsContent value="leaderboard">
+            <Card>
             <CardHeader>
               <CardTitle>Referral Leaderboard</CardTitle>
               <CardDescription>Top performing referrers and their statistics</CardDescription>
@@ -734,10 +736,10 @@ export default function ReferralsPage() {
                 )) || <p className="text-muted-foreground text-center py-8">No performers yet</p>}
               </div>
             </CardContent>
-          </Card>
-        </TabsContent>
-      </Tabs>
+            </Card>
+          </TabsContent>
+        </Tabs>
       </div>
-    </AdminLayout>
+    </div>
   );
 }
