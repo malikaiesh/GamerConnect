@@ -357,6 +357,12 @@ export const siteSettings = pgTable('site_settings', {
   cookiePopupPosition: text('cookie_popup_position').default('bottom').notNull(), // 'bottom', 'top', 'center'
   cookiePopupTheme: text('cookie_popup_theme').default('dark').notNull(), // 'dark', 'light'
   
+  // Translation settings
+  translationEnabled: boolean('translation_enabled').default(false).notNull(),
+  defaultLanguage: text('default_language').default('en').notNull(),
+  autoDetectLanguage: boolean('auto_detect_language').default(true).notNull(),
+  showLanguageSelectorOnHomepage: boolean('show_language_selector_on_homepage').default(true).notNull(),
+  
   updatedAt: timestamp('updated_at').defaultNow().notNull()
 });
 
@@ -2941,6 +2947,36 @@ export type InsertRevenueAnalytics = z.infer<typeof insertRevenueAnalyticsSchema
 export type RevenueReport = typeof revenueReports.$inferSelect;
 export type InsertRevenueReport = z.infer<typeof insertRevenueReportSchema>;
 
+// Languages table for multi-language support
+export const languages = pgTable('languages', {
+  id: serial('id').primaryKey(),
+  code: text('code').notNull().unique(), // e.g., 'en', 'es', 'fr'
+  name: text('name').notNull(), // e.g., 'English', 'Spanish', 'French'
+  nativeName: text('native_name').notNull(), // e.g., 'English', 'Español', 'Français'
+  flag: text('flag').notNull(), // emoji flag or flag icon code
+  isActive: boolean('is_active').default(true).notNull(),
+  sortOrder: integer('sort_order').default(0).notNull(),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+  updatedAt: timestamp('updated_at').defaultNow().notNull()
+});
+
+// Translations table for storing text translations
+export const translations = pgTable('translations', {
+  id: serial('id').primaryKey(),
+  translationKey: text('translation_key').notNull(), // e.g., 'nav.home', 'common.welcome'
+  languageCode: text('language_code').notNull().references(() => languages.code),
+  translatedText: text('translated_text').notNull(),
+  category: text('category').default('general').notNull(), // e.g., 'navigation', 'common', 'pages'
+  isActive: boolean('is_active').default(true).notNull(),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+  updatedAt: timestamp('updated_at').defaultNow().notNull()
+}, (table) => {
+  return {
+    // Composite unique constraint to prevent duplicate translations for same key and language
+    translationKeyLangIdx: uniqueIndex('translation_key_lang_idx').on(table.translationKey, table.languageCode)
+  };
+});
+
 // ===== SHORT LINKS VALIDATION SCHEMAS =====
 
 export const insertShortLinkSchema = createInsertSchema(shortLinks, {
@@ -2948,8 +2984,31 @@ export const insertShortLinkSchema = createInsertSchema(shortLinks, {
   originalUrl: (schema) => schema.min(1, "Original URL is required").url("Must be a valid URL")
 }).omit({ id: true, clickCount: true, createdAt: true, lastClickedAt: true });
 
+// ===== TRANSLATION VALIDATION SCHEMAS =====
+
+export const insertLanguageSchema = createInsertSchema(languages, {
+  code: (schema) => schema.min(2, "Language code must be at least 2 characters").max(5, "Language code must be less than 5 characters"),
+  name: (schema) => schema.min(1, "Language name is required").max(50, "Name must be less than 50 characters"),
+  nativeName: (schema) => schema.min(1, "Native name is required").max(50, "Native name must be less than 50 characters"),
+  flag: (schema) => schema.min(1, "Flag is required")
+}).omit({ id: true, createdAt: true, updatedAt: true });
+
+export const insertTranslationSchema = createInsertSchema(translations, {
+  translationKey: (schema) => schema.min(1, "Translation key is required").max(100, "Key must be less than 100 characters"),
+  languageCode: (schema) => schema.min(2, "Language code is required"),
+  translatedText: (schema) => schema.min(1, "Translated text is required"),
+  category: (schema) => schema.min(1, "Category is required").max(50, "Category must be less than 50 characters")
+}).omit({ id: true, createdAt: true, updatedAt: true });
+
 // ===== SHORT LINKS TYPE EXPORTS =====
 
 export type ShortLink = typeof shortLinks.$inferSelect;
 export type InsertShortLink = z.infer<typeof insertShortLinkSchema>;
+
+// ===== TRANSLATION TYPE EXPORTS =====
+
+export type Language = typeof languages.$inferSelect;
+export type InsertLanguage = z.infer<typeof insertLanguageSchema>;
+export type Translation = typeof translations.$inferSelect;
+export type InsertTranslation = z.infer<typeof insertTranslationSchema>;
 

@@ -15,6 +15,7 @@ import { RandomGameSection } from '@/components/games/random-game-section';
 import { HomeAd } from '@/components/ads/home-ad';
 import { HeroSlider } from '@/components/HeroSlider';
 import { PublicRoomsSection } from '@/components/home/public-rooms-section';
+import { LanguageSelector } from '@/components/language-selector';
 import { Game, BlogPost, PushNotification as PushNotificationType } from '@shared/schema';
 import { apiRequest } from '@/lib/queryClient';
 
@@ -167,7 +168,7 @@ export default function HomePage() {
                   Pricing Plans
                 </Link>
               </div>
-              <div className="flex flex-wrap gap-4">
+              <div className="flex flex-wrap gap-4 mb-6">
                 <Link href="/games" className="bg-primary hover:bg-primary/90 text-primary-foreground font-bold py-3 px-6 rounded-lg transition-colors shadow-lg">
                   Play Now
                 </Link>
@@ -177,6 +178,15 @@ export default function HomePage() {
                 <Link href="/events" className="bg-gradient-to-r from-orange-600 to-orange-700 hover:from-orange-700 hover:to-orange-800 text-white font-bold py-3 px-6 rounded-lg transition-all shadow-lg" data-testid="hero-events-button">
                   Gaming Events
                 </Link>
+              </div>
+              
+              {/* Language Selector */}
+              <div className="max-w-xs">
+                <LanguageSelector 
+                  variant="select" 
+                  className="backdrop-blur-sm bg-white/10 rounded-lg p-3 border border-white/20"
+                  showLabel={false}
+                />
               </div>
             </div>
             <div className="md:w-1/2 relative">
