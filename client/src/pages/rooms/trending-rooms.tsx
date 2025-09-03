@@ -11,7 +11,8 @@ import {
   ArrowUp
 } from "lucide-react";
 import { Link } from "wouter";
-import { Sidebar } from "@/components/layout/sidebar";
+import { Header } from "@/components/layout/header";
+import { Footer } from "@/components/layout/footer";
 
 interface TrendingRoom {
   id: number;
@@ -139,26 +140,37 @@ export default function TrendingRoomsPage() {
   });
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-950 flex">
-      <Sidebar />
+    <div className="min-h-screen flex flex-col bg-background">
+      <Header />
       
-      {/* Main Content */}
-      <div className="flex-1 ml-64">
-        {/* Header */}
-        <div className="bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 p-6">
-          <div className="flex items-center gap-3">
-            <div className="p-2 bg-gradient-to-r from-green-500 to-emerald-500 rounded-lg">
-              <TrendingUp className="w-6 h-6 text-white" />
+      {/* Hero Section */}
+      <section className="relative py-16 overflow-hidden">
+        {/* Background gradient with blur effect */}
+        <div className="absolute inset-0 bg-gradient-to-br from-green-500/20 via-background to-background/90"></div>
+        {/* Decorative elements */}
+        <div className="absolute top-0 left-0 w-full h-full opacity-10">
+          <div className="absolute top-10 right-10 w-40 h-40 rounded-full bg-green-500 blur-3xl"></div>
+          <div className="absolute bottom-10 left-20 w-60 h-60 rounded-full bg-emerald-500 blur-3xl"></div>
+        </div>
+        
+        <div className="container relative mx-auto px-4">
+          <div className="max-w-2xl mx-auto text-center">
+            <div className="inline-block mb-4 px-4 py-1 border border-green-500/30 rounded-full bg-green-500/10 text-green-600 text-sm font-medium tracking-wide">
+              TRENDING ROOMS
             </div>
-            <div>
-              <h1 className="text-2xl font-bold text-gray-900 dark:text-white">📈 Trending Rooms</h1>
-              <p className="text-gray-500 dark:text-gray-400">Fastest growing and most popular rooms</p>
-            </div>
+            <h1 className="heading-xl mb-6 text-transparent bg-clip-text bg-gradient-to-r from-green-500 to-emerald-500 font-extrabold">
+              📈 Trending Rooms
+            </h1>
+            <p className="text-lg md:text-xl font-medium text-foreground/90 leading-relaxed">
+              Fastest growing and most popular rooms - ride the wave of trending conversations
+            </p>
           </div>
         </div>
+      </section>
 
-        {/* Content */}
-        <div className="p-6">
+      {/* Main Content */}
+      <section className="py-12 bg-background flex-grow">
+        <div className="container mx-auto px-4">
           {isLoading ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
               {Array.from({ length: 8 }).map((_, i) => (
@@ -197,7 +209,8 @@ export default function TrendingRoomsPage() {
             </div>
           )}
         </div>
-      </div>
+      </section>
+      <Footer />
     </div>
   );
 }
