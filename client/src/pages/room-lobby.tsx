@@ -9,6 +9,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Users, Lock, Globe, Clock, Search, Plus } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { Link } from "wouter";
+import { Header } from "@/components/layout/header";
+import { Footer } from "@/components/layout/footer";
 
 interface RoomListing {
   room: {
@@ -97,138 +99,161 @@ export default function RoomLobbyPage() {
   };
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      {/* Header */}
-      <div className="text-center mb-8">
-        <h1 className="text-4xl font-bold mb-4" data-testid="page-title">Room Lobby</h1>
-        <p className="text-xl text-muted-foreground mb-6">
-          Discover and join rooms to connect with people around the world
-        </p>
-        
-        <div className="flex justify-center gap-4">
-          <Link href="/my-rooms" className="inline-block">
-            <Button data-testid="button-my-rooms">
-              <Users className="h-4 w-4 mr-2" />
-              My Rooms
-            </Button>
-          </Link>
-          <Link href="/my-rooms" className="inline-block">
-            <Button variant="outline" data-testid="button-create-room">
-              <Plus className="h-4 w-4 mr-2" />
-              Create Room
-            </Button>
-          </Link>
+    <div className="min-h-screen flex flex-col bg-background">
+      <Header />
+      
+      {/* Hero Section */}
+      <section className="relative py-16 overflow-hidden">
+        {/* Background gradient with blur effect */}
+        <div className="absolute inset-0 bg-gradient-to-br from-purple-500/20 via-background to-background/90"></div>
+        {/* Decorative elements */}
+        <div className="absolute top-0 left-0 w-full h-full opacity-10">
+          <div className="absolute top-10 right-10 w-40 h-40 rounded-full bg-purple-500 blur-3xl"></div>
+          <div className="absolute bottom-10 left-20 w-60 h-60 rounded-full bg-primary blur-3xl"></div>
         </div>
-      </div>
+        
+        <div className="container relative mx-auto px-4">
+          <div className="max-w-2xl mx-auto text-center">
+            <div className="inline-block mb-4 px-4 py-1 border border-purple-500/30 rounded-full bg-purple-500/10 text-purple-600 text-sm font-medium tracking-wide">
+              ROOM LOBBY
+            </div>
+            <h1 className="heading-xl mb-6 text-transparent bg-clip-text bg-gradient-to-r from-purple-500 to-primary font-extrabold" data-testid="page-title">
+              Room Lobby
+            </h1>
+            <p className="text-lg md:text-xl font-medium text-foreground/90 leading-relaxed mb-8">
+              Discover and join rooms to connect with people around the world
+            </p>
+            
+            <div className="flex flex-col sm:flex-row justify-center gap-4">
+              <Link href="/my-rooms" className="inline-block">
+                <Button size="lg" className="px-8 py-3 text-lg bg-gradient-to-r from-purple-500 to-primary hover:from-purple-500/90 hover:to-primary/90 shadow-lg hover:shadow-xl transition-all duration-300" data-testid="button-my-rooms">
+                  <Users className="h-5 w-5 mr-2" />
+                  My Rooms
+                </Button>
+              </Link>
+              <Link href="/my-rooms" className="inline-block">
+                <Button variant="outline" size="lg" className="px-8 py-3 text-lg border-2 hover:bg-secondary/10 hover:border-secondary/50 transition-all duration-300" data-testid="button-create-room">
+                  <Plus className="h-5 w-5 mr-2" />
+                  Create Room
+                </Button>
+              </Link>
+            </div>
+          </div>
+        </div>
+      </section>
 
-      {/* Filters */}
-      <Card className="mb-6" data-testid="card-filters">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Search className="h-5 w-5" />
-            Find Rooms
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="grid gap-4 md:grid-cols-4">
-            <div>
-              <Input
+      {/* Main Content */}
+      <section className="py-12 bg-background flex-grow">
+        <div className="container mx-auto px-4">
+
+          {/* Filters */}
+          <Card className="mb-6" data-testid="card-filters">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Search className="h-5 w-5" />
+                Find Rooms
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="grid gap-4 md:grid-cols-4">
+                <div>
+                  <Input
                 placeholder="Search rooms..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                data-testid="input-search"
-              />
-            </div>
-            <div>
-              <Select value={categoryFilter} onValueChange={setCategoryFilter}>
-                <SelectTrigger data-testid="select-category">
-                  <SelectValue placeholder="All Categories" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Categories</SelectItem>
-                  <SelectItem value="general">General</SelectItem>
-                  <SelectItem value="gaming">Gaming</SelectItem>
-                  <SelectItem value="music">Music</SelectItem>
-                  <SelectItem value="chat">Chat</SelectItem>
-                  <SelectItem value="study">Study</SelectItem>
-                  <SelectItem value="business">Business</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <div>
-              <Select value={languageFilter} onValueChange={setLanguageFilter}>
-                <SelectTrigger data-testid="select-language">
-                  <SelectValue placeholder="All Languages" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Languages</SelectItem>
-                  <SelectItem value="en">English</SelectItem>
-                  <SelectItem value="es">Spanish</SelectItem>
-                  <SelectItem value="fr">French</SelectItem>
-                  <SelectItem value="de">German</SelectItem>
-                  <SelectItem value="it">Italian</SelectItem>
-                  <SelectItem value="pt">Portuguese</SelectItem>
-                  <SelectItem value="ar">Arabic</SelectItem>
-                  <SelectItem value="hi">Hindi</SelectItem>
-                  <SelectItem value="ur">Urdu</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <div>
-              <Button 
-                variant="outline" 
-                onClick={() => {
-                  setSearchTerm("");
-                  setCategoryFilter("all");
-                  setLanguageFilter("all");
-                }}
-                data-testid="button-clear-filters"
-              >
-                Clear Filters
-              </Button>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Room Tabs */}
-      <Tabs value={activeTab} onValueChange={setActiveTab} className="mb-6">
-        <TabsList className="grid w-full grid-cols-4">
-          <TabsTrigger value="all" data-testid="tab-all">All Rooms</TabsTrigger>
-          <TabsTrigger value="popular" data-testid="tab-popular">Popular</TabsTrigger>
-          <TabsTrigger value="featured" data-testid="tab-featured">Featured</TabsTrigger>
-          <TabsTrigger value="recent" data-testid="tab-recent">Recently Active</TabsTrigger>
-        </TabsList>
-
-        <TabsContent value={activeTab} className="mt-6">
-          {isLoading ? (
-            <div className="flex items-center justify-center py-12">
-              <div className="text-muted-foreground">Loading rooms...</div>
-            </div>
-          ) : !roomsData?.rooms?.length ? (
-            <Card data-testid="card-no-rooms">
-              <CardContent className="flex flex-col items-center justify-center py-12">
-                <Users className="h-16 w-16 text-muted-foreground mb-4" />
-                <h3 className="text-lg font-medium mb-2">No rooms found</h3>
-                <p className="text-muted-foreground text-center mb-4">
-                  {searchTerm || categoryFilter || languageFilter
-                    ? "Try adjusting your filters or search terms."
-                    : "Be the first to create a room in this category."}
-                </p>
-                <Link href="/my-rooms">
-                  <Button data-testid="button-create-first-room">
-                    <Plus className="h-4 w-4 mr-2" />
-                    Create Your First Room
+                    data-testid="input-search"
+                  />
+                </div>
+                <div>
+                  <Select value={categoryFilter} onValueChange={setCategoryFilter}>
+                    <SelectTrigger data-testid="select-category">
+                      <SelectValue placeholder="All Categories" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">All Categories</SelectItem>
+                      <SelectItem value="general">General</SelectItem>
+                      <SelectItem value="gaming">Gaming</SelectItem>
+                      <SelectItem value="music">Music</SelectItem>
+                      <SelectItem value="chat">Chat</SelectItem>
+                      <SelectItem value="study">Study</SelectItem>
+                      <SelectItem value="business">Business</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div>
+                  <Select value={languageFilter} onValueChange={setLanguageFilter}>
+                    <SelectTrigger data-testid="select-language">
+                      <SelectValue placeholder="All Languages" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">All Languages</SelectItem>
+                      <SelectItem value="en">English</SelectItem>
+                      <SelectItem value="es">Spanish</SelectItem>
+                      <SelectItem value="fr">French</SelectItem>
+                      <SelectItem value="de">German</SelectItem>
+                      <SelectItem value="it">Italian</SelectItem>
+                      <SelectItem value="pt">Portuguese</SelectItem>
+                      <SelectItem value="ar">Arabic</SelectItem>
+                      <SelectItem value="hi">Hindi</SelectItem>
+                      <SelectItem value="ur">Urdu</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div>
+                  <Button 
+                    variant="outline" 
+                    onClick={() => {
+                      setSearchTerm("");
+                      setCategoryFilter("all");
+                      setLanguageFilter("all");
+                    }}
+                    data-testid="button-clear-filters"
+                  >
+                    Clear Filters
                   </Button>
-                </Link>
-              </CardContent>
-            </Card>
-          ) : (
-            <>
-              {/* Rooms Grid */}
-              <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-                {roomsData.rooms.map((roomListing) => (
-                  <Card key={roomListing.room.id} className="hover:shadow-lg transition-shadow cursor-pointer" data-testid={`card-room-${roomListing.room.id}`}>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Room Tabs */}
+          <Tabs value={activeTab} onValueChange={setActiveTab} className="mb-6">
+            <TabsList className="grid w-full grid-cols-4">
+              <TabsTrigger value="all" data-testid="tab-all">All Rooms</TabsTrigger>
+              <TabsTrigger value="popular" data-testid="tab-popular">Popular</TabsTrigger>
+              <TabsTrigger value="featured" data-testid="tab-featured">Featured</TabsTrigger>
+              <TabsTrigger value="recent" data-testid="tab-recent">Recently Active</TabsTrigger>
+            </TabsList>
+
+            <TabsContent value={activeTab} className="mt-6">
+              {isLoading ? (
+                <div className="flex items-center justify-center py-12">
+                  <div className="text-muted-foreground">Loading rooms...</div>
+                </div>
+              ) : !roomsData?.rooms?.length ? (
+                <Card data-testid="card-no-rooms">
+                  <CardContent className="flex flex-col items-center justify-center py-12">
+                    <Users className="h-16 w-16 text-muted-foreground mb-4" />
+                    <h3 className="text-lg font-medium mb-2">No rooms found</h3>
+                    <p className="text-muted-foreground text-center mb-4">
+                      {searchTerm || categoryFilter || languageFilter
+                        ? "Try adjusting your filters or search terms."
+                        : "Be the first to create a room in this category."}
+                    </p>
+                    <Link href="/my-rooms">
+                      <Button data-testid="button-create-first-room">
+                        <Plus className="h-4 w-4 mr-2" />
+                        Create Your First Room
+                      </Button>
+                    </Link>
+                  </CardContent>
+                </Card>
+              ) : (
+                <>
+                  {/* Rooms Grid */}
+                  <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+                    {roomsData.rooms.map((roomListing) => (
+                      <Card key={roomListing.room.id} className="hover:shadow-lg transition-shadow cursor-pointer" data-testid={`card-room-${roomListing.room.id}`}>
                     <CardHeader>
                       <div className="flex items-start justify-between">
                         <div className="flex-1 min-w-0">
@@ -318,37 +343,40 @@ export default function RoomLobbyPage() {
                       </div>
                     </CardContent>
                   </Card>
-                ))}
-              </div>
-
-              {/* Pagination */}
-              {roomsData.pagination && roomsData.pagination.pages > 1 && (
-                <div className="flex items-center justify-center space-x-2 mt-8">
-                  <Button
-                    variant="outline"
-                    onClick={() => setCurrentPage(currentPage - 1)}
-                    disabled={currentPage <= 1}
-                    data-testid="button-prev-page"
-                  >
-                    Previous
-                  </Button>
-                  <div className="text-sm text-muted-foreground">
-                    Page {roomsData.pagination.page} of {roomsData.pagination.pages}
+                    ))}
                   </div>
-                  <Button
-                    variant="outline"
-                    onClick={() => setCurrentPage(currentPage + 1)}
-                    disabled={currentPage >= roomsData.pagination.pages}
-                    data-testid="button-next-page"
-                  >
-                    Next
-                  </Button>
-                </div>
+
+                  {/* Pagination */}
+                  {roomsData.pagination && roomsData.pagination.pages > 1 && (
+                    <div className="flex items-center justify-center space-x-2 mt-8">
+                      <Button
+                        variant="outline"
+                        onClick={() => setCurrentPage(currentPage - 1)}
+                        disabled={currentPage <= 1}
+                        data-testid="button-prev-page"
+                      >
+                        Previous
+                      </Button>
+                      <div className="text-sm text-muted-foreground">
+                        Page {roomsData.pagination.page} of {roomsData.pagination.pages}
+                      </div>
+                      <Button
+                        variant="outline"
+                        onClick={() => setCurrentPage(currentPage + 1)}
+                        disabled={currentPage >= roomsData.pagination.pages}
+                        data-testid="button-next-page"
+                      >
+                        Next
+                      </Button>
+                    </div>
+                  )}
+                </>
               )}
-            </>
-          )}
-        </TabsContent>
-      </Tabs>
+            </TabsContent>
+          </Tabs>
+        </div>
+      </section>
+      <Footer />
     </div>
   );
 }
