@@ -141,8 +141,21 @@ export default function VerificationPage() {
 
   const onSubmit = (data: VerificationFormData) => {
     if (data.paymentMethod === 'international') {
-      // For international payments, open payment dialog
-      setPaymentDialogOpen(true);
+      // For international payments, redirect to checkout page with the selected verification plan
+      if (!data.pricingPlanId) {
+        toast({
+          title: "Plan Required",
+          description: "Please select a verification plan to proceed with payment.",
+          variant: "destructive",
+        });
+        return;
+      }
+      
+      // Save form data to localStorage so we can retrieve it after payment
+      localStorage.setItem('pendingVerificationRequest', JSON.stringify(data));
+      
+      // Redirect to checkout page with the selected plan
+      window.location.href = `/checkout?plan=${data.pricingPlanId}&type=verification`;
     } else {
       // For local payments, submit directly (payment screenshot already uploaded)
       submitVerificationRequest.mutate(data);

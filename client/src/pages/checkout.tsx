@@ -32,9 +32,10 @@ export default function CheckoutPage() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
-  // Get plan ID from URL params
+  // Get plan ID and type from URL params
   const urlParams = new URLSearchParams(window.location.search);
   const planId = urlParams.get('plan');
+  const checkoutType = urlParams.get('type'); // 'verification' or null
 
   // Fetch the selected pricing plan
   const { data: plan, isLoading: planLoading } = useQuery<PricingPlan>({
@@ -61,6 +62,11 @@ export default function CheckoutPage() {
         title: "Transaction Initiated",
         description: `Transaction ${transaction.transactionId} has been created successfully.`,
       });
+      
+      // If this is a verification checkout, also create the verification request
+      if (checkoutType === 'verification') {
+        createVerificationRequestAfterPayment(transaction);
+      }
       
       // Redirect to appropriate payment flow based on gateway type
       if (selectedGateway?.methodType === 'automated') {
@@ -116,6 +122,46 @@ export default function CheckoutPage() {
       title: "Manual Payment Required",
       description: "Please follow the payment instructions and upload your payment proof.",
     });
+  };
+
+  const createVerificationRequestAfterPayment = async (transaction: any) => {
+    try {
+      // Get saved verification form data from localStorage
+      const savedData = localStorage.getItem('pendingVerificationRequest');
+      if (!savedData) {
+        console.error('No pending verification request data found');
+        return;
+      }
+
+      const verificationData = JSON.parse(savedData);
+      
+      // Create verification request with payment information
+      const verificationRequest = {
+        ...verificationData,
+        paymentTransactionId: transaction.id,
+        paymentScreenshot: `transaction_${transaction.transactionId}`,
+        paymentMethod: 'international'
+      };
+
+      // Submit verification request
+      const response = await apiRequest('POST', '/api/verification-requests', verificationRequest);
+      
+      toast({
+        title: "Verification Request Submitted",
+        description: "Your verification request has been submitted and will be reviewed after payment confirmation.",
+      });
+
+      // Clear saved data
+      localStorage.removeItem('pendingVerificationRequest');
+      
+    } catch (error) {
+      console.error('Error creating verification request:', error);
+      toast({
+        title: "Request Submission Failed",
+        description: "Payment was initiated but verification request could not be submitted. Please contact support.",
+        variant: "destructive",
+      });
+    }
   };
 
   const handleProceedToPayment = () => {
