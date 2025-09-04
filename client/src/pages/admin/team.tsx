@@ -246,8 +246,17 @@ export default function TeamAdminPage() {
     }
   });
 
-  const handleCreate = (data: any) => {
+  const handleCreate = (data: FormData) => {
     console.log('Creating team member with data:', data);
+    // Ensure required fields are present
+    if (!data.name || !data.designation) {
+      toast({
+        title: "Validation Error",
+        description: "Name and designation are required fields",
+        variant: "destructive"
+      });
+      return;
+    }
     createMutation.mutate(data);
   };
 
@@ -348,7 +357,12 @@ export default function TeamAdminPage() {
             <p className="text-muted-foreground">Manage your team members and their information</p>
           </div>
           
-          <Dialog open={createDialogOpen} onOpenChange={setCreateDialogOpen}>
+          <Dialog open={createDialogOpen} onOpenChange={(open) => {
+            setCreateDialogOpen(open);
+            if (!open) {
+              form.reset(); // Reset form when dialog closes
+            }
+          }}>
             <DialogTrigger asChild>
               <Button data-testid="button-add-member">
                 <PlusCircle className="mr-2 h-4 w-4" /> Add Team Member
@@ -367,7 +381,7 @@ export default function TeamAdminPage() {
               
               <div className="overflow-y-auto max-h-[calc(90vh-180px)] px-1">
                 <Form {...form}>
-                  <form onSubmit={form.handleSubmit(handleCreate)} className="space-y-6 py-4">
+                  <form id="create-team-member-form" onSubmit={form.handleSubmit(handleCreate)} className="space-y-6 py-4">
                     {/* Basic Information */}
                     <div className="bg-card/50 rounded-lg p-4 space-y-4">
                       <h3 className="text-lg font-semibold text-foreground border-b border-border/30 pb-2">
@@ -399,7 +413,7 @@ export default function TeamAdminPage() {
                           render={({ field }) => (
                             <FormItem>
                               <FormLabel className="text-sm font-medium">Designation *</FormLabel>
-                              <Select onValueChange={field.onChange} defaultValue={field.value}>
+                              <Select onValueChange={field.onChange} value={field.value}>
                                 <FormControl>
                                   <SelectTrigger data-testid="select-designation" className="focus:ring-2 focus:ring-primary/20">
                                     <SelectValue placeholder="Select designation" />
@@ -699,7 +713,8 @@ export default function TeamAdminPage() {
                   </Button>
                 </DialogClose>
                 <Button 
-                  onClick={form.handleSubmit(handleCreate)}
+                  type="submit"
+                  form="create-team-member-form"
                   disabled={createMutation.isPending}
                   data-testid="button-submit"
                   className="bg-primary hover:bg-primary/90 shadow-lg"
