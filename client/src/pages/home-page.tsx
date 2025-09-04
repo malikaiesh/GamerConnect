@@ -15,11 +15,12 @@ import { RandomGameSection } from '@/components/games/random-game-section';
 import { HomeAd } from '@/components/ads/home-ad';
 import { HeroSlider } from '@/components/HeroSlider';
 import { PublicRoomsSection } from '@/components/home/public-rooms-section';
-import { LanguageSelector } from '@/components/language-selector';
+import { LanguageSelector, useTranslations } from '@/components/language-selector';
 import { Game, BlogPost, PushNotification as PushNotificationType } from '@shared/schema';
 import { apiRequest } from '@/lib/queryClient';
 
 export default function HomePage() {
+  const { t } = useTranslations();
   const [activeCategory, setActiveCategory] = useState('all');
   const [showMoreFeatured, setShowMoreFeatured] = useState(false);
   const [allPopularGames, setAllPopularGames] = useState<Game[]>([]);
@@ -152,38 +153,37 @@ export default function HomePage() {
           <div className="flex flex-col md:flex-row items-center justify-between">
             <div className="md:w-1/2 mb-8 md:mb-0">
               <h1 className="heading-xl mb-4 text-white">
-                <span className="block bg-clip-text text-transparent bg-gradient-to-r from-secondary to-primary">Play the Best</span> 
-                Gaming Experience
+                {t('home.title', 'Play the Best Gaming Experience')}
               </h1>
               <p className="text-lg md:text-xl mb-6 text-white/90">
-                Discover thousands of immersive games across all genres. No downloads required - play instantly in your browser!
+                {t('home.description', 'Discover thousands of immersive games across all genres. No downloads required - play instantly in your browser!')}
               </p>
               <div className="flex flex-wrap gap-4 mb-4">
                 <Link href="/verification" className="bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-bold py-3 px-6 rounded-lg transition-all shadow-lg flex items-center">
                   <i className="ri-verified-badge-line mr-2"></i>
-                  Get Verified
+                  {t('buttons.get_verified', 'Get Verified')}
                 </Link>
                 <Link href="/pricing-plans" className="bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white font-bold py-3 px-6 rounded-lg transition-all shadow-lg flex items-center">
                   <i className="ri-money-dollar-circle-line mr-2"></i>
-                  Pricing Plans
+                  {t('buttons.pricing_plans', 'Pricing Plans')}
                 </Link>
               </div>
               <div className="flex flex-wrap gap-4 mb-6">
                 <Link href="/games" className="bg-primary hover:bg-primary/90 text-primary-foreground font-bold py-3 px-6 rounded-lg transition-colors shadow-lg">
-                  Play Now
+                  {t('common.play_now', 'Play Now')}
                 </Link>
                 <Link href="/rooms" className="bg-secondary hover:bg-secondary/90 text-secondary-foreground font-bold py-3 px-6 rounded-lg transition-colors shadow-lg">
-                  Join Rooms
+                  {t('buttons.join_rooms', 'Join Rooms')}
                 </Link>
                 <Link href="/events" className="bg-gradient-to-r from-orange-600 to-orange-700 hover:from-orange-700 hover:to-orange-800 text-white font-bold py-3 px-6 rounded-lg transition-all shadow-lg" data-testid="hero-events-button">
-                  Gaming Events
+                  {t('buttons.gaming_events', 'Gaming Events')}
                 </Link>
               </div>
               
               {/* Language Selector */}
               <div className="w-auto">
                 <LanguageSelector 
-                  variant="select" 
+                  variant="dropdown" 
                   className=""
                   showLabel={false}
                 />
@@ -209,9 +209,9 @@ export default function HomePage() {
       <section id="featured" className="py-10 bg-background">
         <div className="container mx-auto px-4">
           <div className="flex justify-between items-center mb-6">
-            <h2 className="heading-md">Featured Games</h2>
+            <h2 className="heading-md">{t('sections.featured_games', 'Featured Games')}</h2>
             <Link href="/featured" className="text-primary hover:underline flex items-center">
-              View All <i className="ri-arrow-right-line ml-1"></i>
+              {t('common.view_all', 'View All')} <i className="ri-arrow-right-line ml-1"></i>
             </Link>
           </div>
           

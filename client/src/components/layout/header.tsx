@@ -5,12 +5,14 @@ import { useTheme } from '@/hooks/use-theme';
 import { ThemeSwitcher } from '@/components/layout/theme-switcher';
 import { useQuery } from '@tanstack/react-query';
 import { SiteSetting } from '@shared/schema';
+import { useTranslations } from '@/components/language-selector';
 
 export function Header() {
+  const { t } = useTranslations();
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
-  const { user, logoutMutation } = useAuth();
+  const { user } = useAuth();
   const { darkMode, toggleMode } = useTheme();
   const [location, setLocation] = useLocation();
   
@@ -45,7 +47,7 @@ export function Header() {
   };
 
   const handleLogout = () => {
-    logoutMutation.mutate();
+    window.location.href = '/api/logout';
   };
 
   return (
@@ -78,19 +80,19 @@ export function Header() {
           {/* Main Navigation - Desktop */}
           <nav className="hidden md:flex items-center space-x-8">
             <Link href="/" className="font-medium text-foreground hover:text-primary transition-colors">
-              Home
+              {t('nav.home', 'Home')}
             </Link>
             <Link href="/categories" className="font-medium text-foreground hover:text-primary transition-colors">
-              Categories
+              {t('nav.categories', 'Categories')}
             </Link>
             <Link href="/top-games" className="font-medium text-foreground hover:text-primary transition-colors">
-              Top Games
+              {t('nav.top_games', 'Top Games')}
             </Link>
             <Link href="/random" className="font-medium text-foreground hover:text-primary transition-colors">
-              Random Game
+              {t('nav.random_game', 'Random Game')}
             </Link>
             <Link href="/blog" className="font-medium text-foreground hover:text-primary transition-colors">
-              Blog
+              {t('nav.blog', 'Blog')}
             </Link>
           </nav>
           
