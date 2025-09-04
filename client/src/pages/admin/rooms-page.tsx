@@ -28,6 +28,7 @@ import { Users, Lock, Globe, Clock, Settings, Trash2, Eye } from "lucide-react";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { formatDistanceToNow } from "date-fns";
+import AdminNavigation from "@/components/admin/navigation";
 
 interface Room {
   room: {
@@ -173,8 +174,23 @@ export default function RoomsPage() {
     }
   };
 
+  if (isLoading) {
+    return (
+      <div className="flex min-h-screen bg-background">
+        <AdminNavigation />
+        <div className="flex-1 p-6 lg:p-10">
+          <div className="text-center">Loading...</div>
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div className="space-y-6">
+    <div className="flex min-h-screen bg-background">
+      <AdminNavigation />
+      
+      <div className="flex-1 p-6 lg:p-10">
+        <div className="space-y-6">
       {/* Header */}
       <div>
         <h1 className="text-3xl font-bold" data-testid="page-title">Room Management</h1>
@@ -228,30 +244,6 @@ export default function RoomsPage() {
         </div>
       )}
 
-      {/* Recent Rooms */}
-      {stats?.recentRooms && stats.recentRooms.length > 0 && (
-        <Card data-testid="card-recent-rooms">
-          <CardHeader>
-            <CardTitle>Recently Created Rooms</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-2">
-              {stats.recentRooms.map((room) => (
-                <div key={room.room.id} className="flex items-center justify-between py-2 border-b border-border last:border-0">
-                  <div>
-                    <p className="font-medium" data-testid={`text-room-name-${room.room.id}`}>
-                      {room.room.name} <span className="text-muted-foreground">({room.room.roomId})</span>
-                    </p>
-                    <p className="text-sm text-muted-foreground">
-                      by {room.owner.displayName || room.owner.username} • {formatDistanceToNow(new Date(room.room.createdAt))} ago
-                    </p>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-      )}
 
       {/* Filters */}
       <Card data-testid="card-filters">
@@ -465,6 +457,34 @@ export default function RoomsPage() {
           )}
         </CardContent>
       </Card>
+
+      {/* Recently Created Rooms - Moved to bottom */}
+      {stats?.recentRooms && stats.recentRooms.length > 0 && (
+        <Card data-testid="card-recent-rooms">
+          <CardHeader>
+            <CardTitle>Recently Created Rooms</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-2">
+              {stats.recentRooms.map((room) => (
+                <div key={room.room.id} className="flex items-center justify-between py-2 border-b border-border last:border-0">
+                  <div>
+                    <p className="font-medium" data-testid={`text-room-name-${room.room.id}`}>
+                      {room.room.name} <span className="text-muted-foreground">({room.room.roomId})</span>
+                    </p>
+                    <p className="text-sm text-muted-foreground">
+                      by {room.owner.displayName || room.owner.username} • {formatDistanceToNow(new Date(room.room.createdAt))} ago
+                    </p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+        </div>
+      </div>
     </div>
   );
 }
