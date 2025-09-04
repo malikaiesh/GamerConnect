@@ -1,56 +1,87 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-
-export type AdminTheme = 'light' | 'dark';
+import { themes, Theme, getCurrentTheme, setTheme as setWebsiteTheme, isDarkMode as getIsDarkMode, toggleDarkMode as setDarkMode } from '@/lib/themes';
 
 interface AdminThemeContextType {
-  theme: AdminTheme;
-  setTheme: (theme: AdminTheme) => void;
-  toggleTheme: () => void;
+  currentTheme: string;
+  darkMode: boolean;
+  themes: Theme[];
+  setTheme: (themeId: string) => void;
+  toggleDarkMode: () => void;
+  getCurrentThemeObject: () => Theme;
 }
 
 const AdminThemeContext = createContext<AdminThemeContextType | undefined>(undefined);
 
 export function AdminThemeProvider({ children }: { children: ReactNode }) {
-  const [theme, setThemeState] = useState<AdminTheme>('light');
+  const [currentTheme, setCurrentTheme] = useState<string>(getCurrentTheme());
+  const [darkMode, setDarkModeState] = useState<boolean>(getIsDarkMode());
 
   useEffect(() => {
-    // Load saved admin theme from localStorage
-    const savedTheme = localStorage.getItem('admin-theme') as AdminTheme;
-    if (savedTheme) {
-      setThemeState(savedTheme);
-      applyTheme(savedTheme);
-    } else {
-      // Default to light theme for admin
-      applyTheme('light');
-    }
+    // Load saved admin theme from localStorage (or use website theme)
+    const adminTheme = localStorage.getItem('admin-theme') || getCurrentTheme();
+    const adminDarkMode = localStorage.getItem('admin-darkMode') === 'dark' || getIsDarkMode();
+    
+    setCurrentTheme(adminTheme);
+    setDarkModeState(adminDarkMode);
+    applyTheme(adminTheme, adminDarkMode);
   }, []);
 
-  const applyTheme = (newTheme: AdminTheme) => {
+  const applyTheme = (themeId: string, isDark: boolean) => {
+    // Apply website theme to admin container
     const adminElement = document.querySelector('.admin-container');
     if (adminElement) {
-      if (newTheme === 'dark') {
-        adminElement.classList.add('admin-dark');
-        adminElement.classList.remove('admin-light');
-      } else {
-        adminElement.classList.add('admin-light');
-        adminElement.classList.remove('admin-dark');
+      // Remove all theme classes
+      themes.forEach(theme => {
+        if (theme.class) {
+          adminElement.classList.remove(theme.class);
+        }
+      });
+      adminElement.classList.remove('dark', 'admin-light', 'admin-dark');
+      
+      // Add current theme class
+      const theme = themes.find(t => t.id === themeId);
+      if (theme && theme.class) {
+        adminElement.classList.add(theme.class);
       }
+      
+      // Add dark mode class
+      if (isDark) {
+        adminElement.classList.add('dark');
+      }
+      
+      // Keep admin-specific classes for backwards compatibility
+      adminElement.classList.add(isDark ? 'admin-dark' : 'admin-light');
     }
-    localStorage.setItem('admin-theme', newTheme);
+    
+    // Save admin preferences separately from website
+    localStorage.setItem('admin-theme', themeId);
+    localStorage.setItem('admin-darkMode', isDark ? 'dark' : 'light');
   };
 
-  const setTheme = (newTheme: AdminTheme) => {
-    setThemeState(newTheme);
-    applyTheme(newTheme);
+  const setTheme = (themeId: string) => {
+    setCurrentTheme(themeId);
+    applyTheme(themeId, darkMode);
   };
 
-  const toggleTheme = () => {
-    const newTheme = theme === 'light' ? 'dark' : 'light';
-    setTheme(newTheme);
+  const toggleDarkMode = () => {
+    const newDarkMode = !darkMode;
+    setDarkModeState(newDarkMode);
+    applyTheme(currentTheme, newDarkMode);
+  };
+
+  const getCurrentThemeObject = (): Theme => {
+    return themes.find(t => t.id === currentTheme) || themes[0];
   };
 
   return (
-    <AdminThemeContext.Provider value={{ theme, setTheme, toggleTheme }}>
+    <AdminThemeContext.Provider value={{ 
+      currentTheme, 
+      darkMode, 
+      themes, 
+      setTheme, 
+      toggleDarkMode, 
+      getCurrentThemeObject 
+    }}>
       {children}
     </AdminThemeContext.Provider>
   );
