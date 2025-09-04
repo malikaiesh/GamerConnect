@@ -54,6 +54,7 @@ import {
   deletePaymentGateway,
   getPaymentGatewayById 
 } from "./api/payment-gateways";
+import { getPaymentGatewaysWithApiKeys, testPaymentGatewayApiKey } from "./api/payment-api-keys";
 import { 
   getPaymentTransactions, 
   getPaymentTransactionById, 
@@ -324,6 +325,10 @@ Sitemap: ${req.protocol}://${req.get('host')}/sitemap.xml`);
   app.put('/api/admin/payment-gateways/:id', isAuthenticated, isAdmin, updatePaymentGateway);
   app.patch('/api/admin/payment-gateways/:id/status', isAuthenticated, isAdmin, updatePaymentGatewayStatus);
   app.delete('/api/admin/payment-gateways/:id', isAuthenticated, isAdmin, deletePaymentGateway);
+  
+  // Payment Gateway API Integration Routes
+  app.get('/api/admin/payment-gateways-with-api-keys', isAuthenticated, isAdmin, getPaymentGatewaysWithApiKeys);
+  app.get('/api/admin/payment-gateway/:gatewayType/test-api-key', isAuthenticated, isAdmin, testPaymentGatewayApiKey);
   
   // Payment Transaction Routes
   app.get('/api/admin/payment-transactions', isAuthenticated, isAdmin, getPaymentTransactions);

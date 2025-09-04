@@ -358,6 +358,17 @@ export default function ApiKeysPage() {
                     <SelectItem value="tinymce">TinyMCE</SelectItem>
                     <SelectItem value="game-monetize">Game Monetize</SelectItem>
                     <SelectItem value="analytics">Analytics</SelectItem>
+                    <SelectItem value="sendgrid">SendGrid</SelectItem>
+                    <SelectItem value="stripe">Stripe</SelectItem>
+                    <SelectItem value="paypal">PayPal</SelectItem>
+                    <SelectItem value="razorpay">Razorpay</SelectItem>
+                    <SelectItem value="flutterwave">Flutterwave</SelectItem>
+                    <SelectItem value="mollie">Mollie</SelectItem>
+                    <SelectItem value="square">Square</SelectItem>
+                    <SelectItem value="adyen">Adyen</SelectItem>
+                    <SelectItem value="2checkout">2Checkout</SelectItem>
+                    <SelectItem value="braintree">Braintree</SelectItem>
+                    <SelectItem value="authorize_net">Authorize.Net</SelectItem>
                     <SelectItem value="custom">Custom</SelectItem>
                   </SelectContent>
                 </Select>

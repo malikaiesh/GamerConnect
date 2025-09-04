@@ -15,6 +15,7 @@ import { seedWebmasterTools } from './webmaster-tools';
 import { seedReferralSettings } from './referral-settings';
 import { seedPayoutMethods } from './payout-methods';
 import { seedTranslations } from './translations';
+import { seedApiKeys } from './api-keys';
 
 // Main seeding function that runs all seeds
 export async function runSeeds() {
@@ -37,6 +38,7 @@ export async function runSeeds() {
     await seedPayoutMethods(); // Add payout methods seeding
     await seedPaymentGateways();
     await seedPricingPlans(); // Add payment gateways seeding
+    await seedApiKeys(); // Add API keys seeding
     await seedTranslations(); // Add translations and languages seeding
     await seedBlogPosts(); // Run this last since it depends on blog categories
     console.log('✅ All seeds completed successfully');
