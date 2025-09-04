@@ -574,4 +574,56 @@
     background-color: hsl(var(--admin-surface));
     border-bottom: 1px solid hsl(var(--admin-border));
   }
+
+  /* Force admin theme colors on common UI components */
+  .admin-container .bg-card {
+    background-color: hsl(var(--admin-surface)) !important;
+  }
+
+  .admin-container .bg-background {
+    background-color: hsl(var(--admin-bg)) !important;
+  }
+
+  .admin-container .text-foreground {
+    color: hsl(var(--admin-text)) !important;
+  }
+
+  .admin-container .text-muted-foreground {
+    color: hsl(var(--admin-text-muted)) !important;
+  }
+
+  .admin-container .border-border {
+    border-color: hsl(var(--admin-border)) !important;
+  }
+
+  .admin-container .border {
+    border-color: hsl(var(--admin-border)) !important;
+  }
+
+  .admin-container input {
+    background-color: hsl(var(--admin-surface)) !important;
+    border-color: hsl(var(--admin-border)) !important;
+    color: hsl(var(--admin-text)) !important;
+  }
+
+  .admin-container textarea {
+    background-color: hsl(var(--admin-surface)) !important;
+    border-color: hsl(var(--admin-border)) !important;
+    color: hsl(var(--admin-text)) !important;
+  }
+
+  .admin-container select {
+    background-color: hsl(var(--admin-surface)) !important;
+    border-color: hsl(var(--admin-border)) !important;
+    color: hsl(var(--admin-text)) !important;
+  }
+
+  .admin-container [role="dialog"] {
+    background-color: hsl(var(--admin-surface)) !important;
+    border-color: hsl(var(--admin-border)) !important;
+  }
+
+  .admin-container .dialog-content {
+    background-color: hsl(var(--admin-surface)) !important;
+  }
 }

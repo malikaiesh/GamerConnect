@@ -44,12 +44,17 @@ export default function GameCategoriesPage() {
 
   const createMutation = useMutation({
     mutationFn: async (data: Partial<GameCategory>) => {
-      const response = await apiRequest('POST', '/api/categories', data);
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || 'Failed to create category');
+      try {
+        return await apiRequest('/api/categories', { method: 'POST', body: data });
+      } catch (error: any) {
+        if (error.message.includes('Not authenticated') || error.message.includes('401')) {
+          throw new Error('Authentication required. Please log in as an administrator.');
+        }
+        if (error.message.includes('DOCTYPE') || error.message.includes('Unexpected token')) {
+          throw new Error('Server error: Please refresh the page and try again.');
+        }
+        throw error;
       }
-      return await response.json();
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/categories'] });
@@ -71,12 +76,17 @@ export default function GameCategoriesPage() {
 
   const updateMutation = useMutation({
     mutationFn: async ({ id, data }: { id: number, data: Partial<GameCategory> }) => {
-      const response = await apiRequest('PUT', `/api/categories/${id}`, data);
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || 'Failed to update category');
+      try {
+        return await apiRequest(`/api/categories/${id}`, { method: 'PUT', body: data });
+      } catch (error: any) {
+        if (error.message.includes('Not authenticated') || error.message.includes('401')) {
+          throw new Error('Authentication required. Please log in as an administrator.');
+        }
+        if (error.message.includes('DOCTYPE') || error.message.includes('Unexpected token')) {
+          throw new Error('Server error: Please refresh the page and try again.');
+        }
+        throw error;
       }
-      return await response.json();
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/categories'] });
@@ -99,12 +109,17 @@ export default function GameCategoriesPage() {
 
   const deleteMutation = useMutation({
     mutationFn: async (id: number) => {
-      const response = await apiRequest('DELETE', `/api/categories/${id}`);
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || 'Failed to delete category');
+      try {
+        return await apiRequest(`/api/categories/${id}`, { method: 'DELETE' });
+      } catch (error: any) {
+        if (error.message.includes('Not authenticated') || error.message.includes('401')) {
+          throw new Error('Authentication required. Please log in as an administrator.');
+        }
+        if (error.message.includes('DOCTYPE') || error.message.includes('Unexpected token')) {
+          throw new Error('Server error: Please refresh the page and try again.');
+        }
+        throw error;
       }
-      return await response.json();
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/categories'] });
@@ -127,12 +142,17 @@ export default function GameCategoriesPage() {
 
   const seedMutation = useMutation({
     mutationFn: async () => {
-      const response = await apiRequest('POST', '/api/categories/seed');
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || 'Failed to seed categories');
+      try {
+        return await apiRequest('/api/categories/seed', { method: 'POST' });
+      } catch (error: any) {
+        if (error.message.includes('Not authenticated') || error.message.includes('401')) {
+          throw new Error('Authentication required. Please log in as an administrator.');
+        }
+        if (error.message.includes('DOCTYPE') || error.message.includes('Unexpected token')) {
+          throw new Error('Server error: Please refresh the page and try again.');
+        }
+        throw error;
       }
-      return await response.json();
     },
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ['/api/categories'] });
@@ -179,9 +199,9 @@ export default function GameCategoriesPage() {
 
   return (
     <AdminThemeProvider>
-      <div className="admin-container flex min-h-screen">
+      <div className="admin-container flex min-h-screen bg-background">
         <AdminNavigation />
-        <div className="flex-1 px-4 py-8">
+        <div className="flex-1 px-4 py-8 bg-background">
         <PageHeader 
           title="Game Categories" 
           description="Manage game categories for your platform"
