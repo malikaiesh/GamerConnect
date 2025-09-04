@@ -354,7 +354,7 @@ Sitemap: ${req.protocol}://${req.get('host')}/sitemap.xml`);
 
   // Public pricing plans routes
   app.get('/api/pricing-plans/public', getPublicPricingPlans);
-  app.get('/api/pricing-plans/:id/public', getPublicPricingPlan);
+  app.get('/api/pricing-plans/public/:id', getPublicPricingPlan);
 
   // Verification requests routes
   app.get('/api/admin/verification-requests', isAuthenticated, isAdmin, getVerificationRequests);
