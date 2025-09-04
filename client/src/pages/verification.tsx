@@ -393,25 +393,10 @@ export default function VerificationPage() {
                                         <SelectItem 
                                           key={plan.id} 
                                           value={plan.id.toString()}
-                                          className="p-3"
                                         >
-                                          <div className="flex items-center justify-between w-full">
-                                            <div className="flex items-center gap-3">
-                                              <div className="rounded bg-green-100 dark:bg-green-900/30 p-1.5">
-                                                <DollarSign className="h-4 w-4 text-green-600 dark:text-green-400" />
-                                              </div>
-                                              <div>
-                                                <div className="font-medium">{plan.displayName}</div>
-                                                {plan.verificationDuration && (
-                                                  <div className="text-xs text-muted-foreground">
-                                                    {plan.verificationDuration} days verification
-                                                  </div>
-                                                )}
-                                              </div>
-                                            </div>
-                                            <div className="font-bold text-green-600 dark:text-green-400">
-                                              {formatPrice(plan.price, plan.currency)}
-                                            </div>
+                                          <div className="flex items-center gap-2">
+                                            <DollarSign className="h-4 w-4 text-green-600" />
+                                            {plan.displayName} - {formatPrice(plan.price, plan.currency)}
                                           </div>
                                         </SelectItem>
                                       ))
