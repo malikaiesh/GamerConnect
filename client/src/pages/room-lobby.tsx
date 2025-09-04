@@ -75,10 +75,8 @@ export default function RoomLobbyPage() {
         ...(languageFilter && languageFilter !== "all" && { language: languageFilter }),
       });
       
-      // Handle special tab cases
-      if (activeTab === "verified") {
-        params.append("verified", "true");
-      } else if (activeTab !== "all") {
+      // Handle category filtering
+      if (activeTab !== "all") {
         params.append("category", activeTab);
       }
       

@@ -456,9 +456,9 @@ router.get("/", async (req: Request, res: Response) => {
           .limit(Math.min(limit, 20));
         break;
       case 'verified':
-        // Verified rooms: only show rooms where owner is verified
+        // Verified rooms: only show rooms that are verified
         query = query
-          .where(and(...conditions, eq(users.isVerified, true)))
+          .where(and(...conditions, eq(rooms.isVerified, true)))
           .orderBy(desc(rooms.isFeatured), desc(sql<number>`(SELECT COUNT(*) FROM ${roomUsers} WHERE ${roomUsers.roomId} = ${rooms.id})`), desc(rooms.createdAt))
           .limit(Math.min(limit, 20));
         break;
