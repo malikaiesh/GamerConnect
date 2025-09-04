@@ -73,8 +73,15 @@ export default function RoomLobbyPage() {
         search: searchTerm,
         ...(categoryFilter && categoryFilter !== "all" && { category: categoryFilter }),
         ...(languageFilter && languageFilter !== "all" && { language: languageFilter }),
-        category: activeTab === "all" ? "" : activeTab,
       });
+      
+      // Handle special tab cases
+      if (activeTab === "verified") {
+        params.append("verified", "true");
+      } else if (activeTab !== "all") {
+        params.append("category", activeTab);
+      }
+      
       return fetch(`/api/rooms?${params}`).then(res => res.json());
     }
   });
@@ -244,10 +251,11 @@ export default function RoomLobbyPage() {
 
           {/* Room Tabs */}
           <Tabs value={activeTab} onValueChange={setActiveTab} className="mb-6">
-            <TabsList className="grid w-full grid-cols-4">
+            <TabsList className="grid w-full grid-cols-5">
               <TabsTrigger value="all" data-testid="tab-all">All Rooms</TabsTrigger>
               <TabsTrigger value="popular" data-testid="tab-popular">Popular</TabsTrigger>
               <TabsTrigger value="featured" data-testid="tab-featured">Featured</TabsTrigger>
+              <TabsTrigger value="verified" data-testid="tab-verified">Verified</TabsTrigger>
               <TabsTrigger value="recent" data-testid="tab-recent">Recently Active</TabsTrigger>
             </TabsList>
 
