@@ -13,7 +13,6 @@ const verifyUserSchema = z.object({
 });
 
 const verifyRoomSchema = z.object({
-  roomId: z.string().min(1, "Room ID is required"), 
   isVerified: z.boolean(),
 });
 
