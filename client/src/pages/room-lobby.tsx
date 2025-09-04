@@ -6,7 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Users, Lock, Globe, Clock, Search, Plus, CheckCircle } from "lucide-react";
+import { Users, Lock, Globe, Clock, Search, Plus, CheckCircle, Crown, Eye, Mic, MessageCircle, Gift, Play } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { Link } from "wouter";
 import { Header } from "@/components/layout/header";
@@ -28,16 +28,24 @@ interface RoomListing {
     isLocked: boolean;
     isFeatured: boolean;
     isVerified: boolean;
+    voiceChatEnabled: boolean;
+    textChatEnabled: boolean;
+    giftsEnabled: boolean;
+    backgroundTheme: string;
     tags: string[];
     totalVisits: number;
+    totalGiftsReceived: number;
+    totalGiftValue: number;
     createdAt: string;
     lastActivity: string;
   };
+  userCount: number;
   owner: {
     id: number;
     username: string;
     displayName: string | null;
     profilePicture: string | null;
+    isVerified: boolean;
   };
 }
 
@@ -74,13 +82,30 @@ export default function RoomLobbyPage() {
   const getStatusColor = (status: string) => {
     switch (status) {
       case "active":
-        return "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300";
+        return "bg-primary/10 text-primary border border-primary/20";
       case "inactive":
-        return "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300";
+        return "bg-destructive/10 text-destructive border border-destructive/20";
       case "maintenance":
-        return "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300";
+        return "bg-muted text-muted-foreground border border-border";
       default:
-        return "bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-300";
+        return "bg-muted text-muted-foreground border border-border";
+    }
+  };
+
+  const getThemeGradient = (theme: string) => {
+    switch (theme) {
+      case 'ocean':
+        return 'from-primary/80 via-primary to-primary/60';
+      case 'sunset':
+        return 'from-primary/70 via-accent/80 to-primary/90';
+      case 'forest':
+        return 'from-primary/60 via-primary/80 to-primary';
+      case 'purple':
+        return 'from-primary via-primary/80 to-accent/70';
+      case 'galaxy':
+        return 'from-primary/90 via-accent/60 to-primary/70';
+      default:
+        return 'from-primary via-primary/80 to-accent/60';
     }
   };
 
@@ -252,115 +277,148 @@ export default function RoomLobbyPage() {
               ) : (
                 <>
                   {/* Rooms Grid */}
-                  <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+                  <div className="grid gap-4 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
                     {roomsData.rooms.map((roomListing) => (
-                      <Card key={roomListing.room.id} className="hover:shadow-lg transition-shadow cursor-pointer" data-testid={`card-room-${roomListing.room.id}`}>
-                    <CardHeader>
-                      <div className="flex items-start justify-between">
-                        <div className="flex-1 min-w-0">
-                          <CardTitle className="flex items-center gap-2 text-lg truncate">
-                            {roomListing.room.type === 'public' ? 
-                              <Globe className="h-4 w-4 text-green-500 flex-shrink-0" /> : 
-                              <Lock className="h-4 w-4 text-orange-500 flex-shrink-0" />
-                            }
-                            <span className="truncate">{roomListing.room.name}</span>
-                            {roomListing.room.isVerified && (
-                              <div className="inline-flex items-center justify-center w-7 h-7 flex-shrink-0 relative">
-                                <svg className="w-7 h-7 drop-shadow-md" viewBox="0 0 24 24" fill="none">
-                                  <path d="M12 2L13.09 5.26L16 4L15.74 7.26L19 8.35L16.74 10.74L19 12.65L15.74 13.26L16 17L13.09 15.74L12 19L10.91 15.74L8 17L8.26 13.74L5 12.65L8.26 10.26L5 8.35L8.26 7.74L8 4L10.91 5.26L12 2Z" fill="url(#verifyGradientLobby)" stroke="#1565C0" strokeWidth="0.5"/>
-                                  <path d="M9 11.5L11 13.5L15 9.5" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                                  <defs>
-                                    <linearGradient id="verifyGradientLobby" x1="0%" y1="0%" x2="0%" y2="100%">
-                                      <stop offset="0%" stopColor="#1877F2" />
-                                      <stop offset="100%" stopColor="#166FE5" />
-                                    </linearGradient>
-                                  </defs>
-                                </svg>
-                                <div className="absolute inset-0 bg-gradient-to-t from-transparent to-white opacity-20 rounded-full"></div>
-                              </div>
+                      <Card key={roomListing.room.id} className="overflow-hidden group hover:shadow-lg transition-all duration-200" data-testid={`card-room-${roomListing.room.id}`}>
+                        {/* Room Header with theme background */}
+                        <div className="relative">
+                          <div className={`h-20 bg-gradient-to-br ${getThemeGradient(roomListing.room.backgroundTheme)} flex items-center justify-center`}>
+                            <div className="w-12 h-12 bg-white/20 rounded-lg flex items-center justify-center backdrop-blur-sm">
+                              <Crown className="w-6 h-6 text-white" />
+                            </div>
+                            {roomListing.room.isFeatured && (
+                              <Badge className="absolute top-2 left-2 bg-accent text-accent-foreground">
+                                Featured
+                              </Badge>
                             )}
-                          </CardTitle>
-                          <div className="text-sm text-muted-foreground">
-                            ID: {roomListing.room.roomId}
                           </div>
-                          <div className="text-sm text-muted-foreground">
-                            by @{roomListing.owner.displayName || roomListing.owner.username}
-                          </div>
-                        </div>
-                        <div className="flex flex-col gap-1 items-end flex-shrink-0">
-                          <Badge className={getStatusColor(roomListing.room.status)}>
+                          <Badge className={`absolute top-2 right-2 ${getStatusColor(roomListing.room.status)}`}>
                             {roomListing.room.status.charAt(0).toUpperCase() + roomListing.room.status.slice(1)}
                           </Badge>
-                          {roomListing.room.isFeatured && (
-                            <Badge variant="secondary" className="text-xs">
-                              Featured
-                            </Badge>
+                        </div>
+                        
+                        <CardHeader className="pb-3">
+                          <div className="flex items-center justify-between">
+                            <CardTitle className="flex items-center gap-2 text-lg">
+                              {roomListing.room.type === 'public' ? <Globe className="h-4 w-4 text-primary" /> : <Lock className="h-4 w-4 text-muted-foreground" />}
+                              {roomListing.room.name}
+                              {roomListing.room.isVerified && (
+                                <div className="inline-flex items-center justify-center w-7 h-7 flex-shrink-0 ml-2 relative">
+                                  <svg className="w-7 h-7 drop-shadow-md" viewBox="0 0 24 24" fill="none">
+                                    <path d="M12 2L13.09 5.26L16 4L15.74 7.26L19 8.35L16.74 10.74L19 12.65L15.74 13.26L16 17L13.09 15.74L12 19L10.91 15.74L8 17L8.26 13.74L5 12.65L8.26 10.26L5 8.35L8.26 7.74L8 4L10.91 5.26L12 2Z" fill="url(#verifyGradientLobby)" stroke="#1565C0" strokeWidth="0.5"/>
+                                    <path d="M9 11.5L11 13.5L15 9.5" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                                    <defs>
+                                      <linearGradient id="verifyGradientLobby" x1="0%" y1="0%" x2="0%" y2="100%">
+                                        <stop offset="0%" stopColor="#1877F2" />
+                                        <stop offset="100%" stopColor="#166FE5" />
+                                      </linearGradient>
+                                    </defs>
+                                  </svg>
+                                  <div className="absolute inset-0 bg-gradient-to-t from-transparent to-white opacity-20 rounded-full"></div>
+                                </div>
+                              )}
+                            </CardTitle>
+                          </div>
+                          <div className="text-xs text-muted-foreground font-mono">
+                            ID: {roomListing.room.roomId}
+                          </div>
+                          {roomListing.room.description && (
+                            <p className="text-sm text-muted-foreground line-clamp-2">{roomListing.room.description}</p>
                           )}
-                        </div>
-                      </div>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="space-y-3">
-                        {roomListing.room.description && (
-                          <p className="text-sm text-muted-foreground line-clamp-2">
-                            {roomListing.room.description}
-                          </p>
-                        )}
-
-                        <div className="flex items-center justify-between text-sm">
-                          <div className="flex items-center gap-1">
-                            <Users className="h-4 w-4 text-muted-foreground" />
-                            <span>{roomListing.room.currentUsers}/{roomListing.room.maxSeats}</span>
+                          <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                            <span>by {roomListing.owner.displayName || roomListing.owner.username}</span>
                           </div>
-                          <div className="flex items-center gap-1">
-                            <Clock className="h-4 w-4 text-muted-foreground" />
-                            <span>{formatDistanceToNow(new Date(roomListing.room.lastActivity))} ago</span>
+                        </CardHeader>
+                        
+                        <CardContent className="space-y-4">
+                          {/* Room Stats */}
+                          <div className="grid grid-cols-2 gap-4 text-sm">
+                            <div className="flex items-center gap-2">
+                              <Users className="h-4 w-4 text-primary" />
+                              <div>
+                                <div className="font-medium">{roomListing.userCount}/{roomListing.room.maxSeats}</div>
+                                <div className="text-xs text-muted-foreground">Users</div>
+                              </div>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <Eye className="h-4 w-4 text-primary" />
+                              <div>
+                                <div className="font-medium">{roomListing.room.totalVisits}</div>
+                                <div className="text-xs text-muted-foreground">Visits</div>
+                              </div>
+                            </div>
                           </div>
-                        </div>
 
-                        <div className="flex items-center justify-between text-sm">
-                          <Badge variant="outline" className="text-xs">
-                            {roomListing.room.category}
-                          </Badge>
-                          <span className="text-muted-foreground">
-                            {getLanguageName(roomListing.room.language)}
-                          </span>
-                        </div>
-
-                        {roomListing.room.tags.length > 0 && (
+                          {/* Features */}
                           <div className="flex flex-wrap gap-1">
-                            {roomListing.room.tags.slice(0, 3).map((tag) => (
-                              <Badge key={tag} variant="secondary" className="text-xs">
-                                {tag}
-                              </Badge>
-                            ))}
-                            {roomListing.room.tags.length > 3 && (
+                            {roomListing.room.voiceChatEnabled && (
                               <Badge variant="secondary" className="text-xs">
-                                +{roomListing.room.tags.length - 3}
+                                <Mic className="w-3 h-3 mr-1" />
+                                Voice
+                              </Badge>
+                            )}
+                            {roomListing.room.textChatEnabled && (
+                              <Badge variant="secondary" className="text-xs">
+                                <MessageCircle className="w-3 h-3 mr-1" />
+                                Text
+                              </Badge>
+                            )}
+                            {roomListing.room.giftsEnabled && (
+                              <Badge variant="secondary" className="text-xs">
+                                <Gift className="w-3 h-3 mr-1" />
+                                Gifts
                               </Badge>
                             )}
                           </div>
-                        )}
 
-                        <div className="pt-2">
-                          <Button 
-                            className="w-full" 
-                            disabled={roomListing.room.currentUsers >= roomListing.room.maxSeats || roomListing.room.status !== 'active'}
-                            data-testid={`button-join-${roomListing.room.id}`}
-                          >
-                            {roomListing.room.currentUsers >= roomListing.room.maxSeats ? (
-                              "Room Full"
-                            ) : roomListing.room.status !== 'active' ? (
-                              "Unavailable"
-                            ) : roomListing.room.isLocked ? (
-                              "Join with Password"
-                            ) : (
-                              "Join Room"
-                            )}
-                          </Button>
-                        </div>
-                      </div>
-                    </CardContent>
+                          {/* Tags */}
+                          {roomListing.room.tags.length > 0 && (
+                            <div className="flex flex-wrap gap-1">
+                              {roomListing.room.tags.slice(0, 2).map((tag) => (
+                                <Badge key={tag} variant="outline" className="text-xs">
+                                  #{tag}
+                                </Badge>
+                              ))}
+                              {roomListing.room.isVerified && (
+                                <Badge className="bg-blue-50 text-blue-600 border border-blue-200 text-xs flex items-center gap-1">
+                                  <div className="inline-flex items-center justify-center w-6 h-6 flex-shrink-0 relative">
+                                    <svg className="w-6 h-6 drop-shadow-md" viewBox="0 0 24 24" fill="none">
+                                      <path d="M12 2L13.09 5.26L16 4L15.74 7.26L19 8.35L16.74 10.74L19 12.65L15.74 13.26L16 17L13.09 15.74L12 19L10.91 15.74L8 17L8.26 13.74L5 12.65L8.26 10.26L5 8.35L8.26 7.74L8 4L10.91 5.26L12 2Z" fill="url(#verifyGradientTag)" stroke="#1565C0" strokeWidth="0.5"/>
+                                      <path d="M9 11.5L11 13.5L15 9.5" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                                      <defs>
+                                        <linearGradient id="verifyGradientTag" x1="0%" y1="0%" x2="0%" y2="100%">
+                                          <stop offset="0%" stopColor="#1877F2" />
+                                          <stop offset="100%" stopColor="#166FE5" />
+                                        </linearGradient>
+                                      </defs>
+                                    </svg>
+                                    <div className="absolute inset-0 bg-gradient-to-t from-transparent to-white opacity-20 rounded-full"></div>
+                                  </div>
+                                  Verified
+                                </Badge>
+                              )}
+                              {roomListing.room.tags.length > 2 && (
+                                <Badge variant="outline" className="text-xs">
+                                  +{roomListing.room.tags.length - 2}
+                                </Badge>
+                              )}
+                            </div>
+                          )}
+
+                          {/* Activity and Join Button */}
+                          <div className="flex items-center justify-between pt-2">
+                            <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                              <i className="ri-time-line text-xs"></i>
+                              {formatDistanceToNow(new Date(roomListing.room.lastActivity))} ago
+                            </div>
+                            <Link href={`/room/${roomListing.room.roomId}`}>
+                              <Button size="sm" className="text-xs" data-testid={`button-join-${roomListing.room.id}`}>
+                                <Play className="h-3 w-3 mr-1" />
+                                Join Room
+                              </Button>
+                            </Link>
+                          </div>
+                        </CardContent>
                   </Card>
                     ))}
                   </div>

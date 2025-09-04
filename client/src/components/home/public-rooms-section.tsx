@@ -303,7 +303,7 @@ export function PublicRoomsSection() {
                   )}
                 </div>
                 <Badge className={`absolute top-2 right-2 ${getStatusColor(room.room.status)}`}>
-                  {room.room.status}
+                  {room.room.status.charAt(0).toUpperCase() + room.room.status.slice(1)}
                 </Badge>
               </div>
               
