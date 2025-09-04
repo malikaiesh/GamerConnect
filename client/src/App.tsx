@@ -11,6 +11,7 @@ import { Loader2 } from "lucide-react";
 import { Providers } from "./lib/providers";
 import { ProtectedRoute } from "./lib/protected-route";
 import { useAuth } from "@/hooks/use-auth";
+import { AdminThemeProvider } from "@/contexts/admin-theme-context";
 
 // Core components - eagerly loaded for best performance
 import HomePage from "@/pages/home-page";
@@ -161,6 +162,17 @@ const AdminHelperNav = () => {
   );
 };
 
+// Admin Route Wrapper with Theme Provider
+const AdminRoute = ({ children }: { children: React.ReactNode }) => {
+  return (
+    <AdminThemeProvider>
+      <ProtectedRoute adminOnly={true}>
+        {children}
+      </ProtectedRoute>
+    </AdminThemeProvider>
+  );
+};
+
 function Router() {
   return (
     <Switch>
@@ -304,302 +316,302 @@ function Router() {
 
       {/* Admin Routes - using path + component pattern for route-based protected routes */}
       <Route path="/admin/dashboard">
-        <ProtectedRoute adminOnly={true}>
+        <AdminRoute>
           <Suspense fallback={<LoadingFallback />}><AdminDashboard /></Suspense>
-        </ProtectedRoute>
+        </AdminRoute>
       </Route>
       <Route path="/admin/games">
-        <ProtectedRoute adminOnly={true}>
+        <AdminRoute>
           <Suspense fallback={<LoadingFallback />}><AdminGames /></Suspense>
-        </ProtectedRoute>
+        </AdminRoute>
       </Route>
       <Route path="/admin/game-categories">
-        <ProtectedRoute adminOnly={true}>
+        <AdminRoute>
           <Suspense fallback={<LoadingFallback />}><AdminGameCategories /></Suspense>
-        </ProtectedRoute>
+        </AdminRoute>
       </Route>
       <Route path="/admin/games-integration">
-        <ProtectedRoute adminOnly={true}>
+        <AdminRoute>
           <Suspense fallback={<LoadingFallback />}><AdminGamesIntegrationPage /></Suspense>
-        </ProtectedRoute>
+        </AdminRoute>
       </Route>
       <Route path="/admin/blog">
-        <ProtectedRoute adminOnly={true}>
+        <AdminRoute>
           <Suspense fallback={<LoadingFallback />}><AdminBlog /></Suspense>
-        </ProtectedRoute>
+        </AdminRoute>
       </Route>
       <Route path="/admin/team">
-        <ProtectedRoute adminOnly={true}>
+        <AdminRoute>
           <Suspense fallback={<LoadingFallback />}><AdminTeam /></Suspense>
-        </ProtectedRoute>
+        </AdminRoute>
       </Route>
       <Route path="/admin/events">
-        <ProtectedRoute adminOnly={true}>
+        <AdminRoute>
           <Suspense fallback={<LoadingFallback />}><AdminEvents /></Suspense>
-        </ProtectedRoute>
+        </AdminRoute>
       </Route>
       <Route path="/admin/event-registrations">
-        <ProtectedRoute adminOnly={true}>
+        <AdminRoute>
           <Suspense fallback={<LoadingFallback />}><AdminEventRegistrations /></Suspense>
-        </ProtectedRoute>
+        </AdminRoute>
       </Route>
       <Route path="/admin/rooms">
-        <ProtectedRoute adminOnly={true}>
+        <AdminRoute>
           <Suspense fallback={<LoadingFallback />}><AdminRoomsPage /></Suspense>
-        </ProtectedRoute>
+        </AdminRoute>
       </Route>
       <Route path="/admin/homepage-content">
-        <ProtectedRoute adminOnly={true}>
+        <AdminRoute>
           <Suspense fallback={<LoadingFallback />}><AdminHomepageContent /></Suspense>
-        </ProtectedRoute>
+        </AdminRoute>
       </Route>
       <Route path="/admin/api-keys">
-        <ProtectedRoute adminOnly={true}>
+        <AdminRoute>
           <Suspense fallback={<LoadingFallback />}><AdminApiKeysPage /></Suspense>
-        </ProtectedRoute>
+        </AdminRoute>
       </Route>
       <Route path="/admin/home-ads">
-        <ProtectedRoute adminOnly={true}>
+        <AdminRoute>
           <Suspense fallback={<LoadingFallback />}><AdminHomeAdsPage /></Suspense>
-        </ProtectedRoute>
+        </AdminRoute>
       </Route>
       <Route path="/admin/games-ads">
-        <ProtectedRoute adminOnly={true}>
+        <AdminRoute>
           <Suspense fallback={<LoadingFallback />}><AdminGamesAdsPage /></Suspense>
-        </ProtectedRoute>
+        </AdminRoute>
       </Route>
       <Route path="/admin/sitemaps">
-        <ProtectedRoute adminOnly={true}>
+        <AdminRoute>
           <Suspense fallback={<LoadingFallback />}><AdminSitemapsPage /></Suspense>
-        </ProtectedRoute>
+        </AdminRoute>
       </Route>
       <Route path="/admin/blog-ads">
-        <ProtectedRoute adminOnly={true}>
+        <AdminRoute>
           <Suspense fallback={<LoadingFallback />}><AdminBlogAdsPage /></Suspense>
-        </ProtectedRoute>
+        </AdminRoute>
       </Route>
       <Route path="/admin/custom-code">
-        <ProtectedRoute adminOnly={true}>
+        <AdminRoute>
           <Suspense fallback={<LoadingFallback />}><AdminCustomCodePage /></Suspense>
-        </ProtectedRoute>
+        </AdminRoute>
       </Route>
       <Route path="/admin/ads-txt">
-        <ProtectedRoute adminOnly={true}>
+        <AdminRoute>
           <Suspense fallback={<LoadingFallback />}><AdsTxtPage /></Suspense>
-        </ProtectedRoute>
+        </AdminRoute>
       </Route>
       <Route path="/admin/robots-txt">
-        <ProtectedRoute adminOnly={true}>
+        <AdminRoute>
           <Suspense fallback={<LoadingFallback />}><RobotsTxtPage /></Suspense>
-        </ProtectedRoute>
+        </AdminRoute>
       </Route>
       <Route path="/admin/website-updates">
-        <ProtectedRoute adminOnly={true}>
+        <AdminRoute>
           <Suspense fallback={<LoadingFallback />}><WebsiteUpdatesPage /></Suspense>
-        </ProtectedRoute>
+        </AdminRoute>
       </Route>
       <Route path="/admin/pages">
-        <ProtectedRoute adminOnly={true}>
+        <AdminRoute>
           <Suspense fallback={<LoadingFallback />}><AdminPagesPage /></Suspense>
-        </ProtectedRoute>
+        </AdminRoute>
       </Route>
       <Route path="/admin/pages/new">
-        <ProtectedRoute adminOnly={true}>
+        <AdminRoute>
           <Suspense fallback={<LoadingFallback />}><AdminPageEditPage /></Suspense>
-        </ProtectedRoute>
+        </AdminRoute>
       </Route>
       <Route path="/admin/page/:id">
-        <ProtectedRoute adminOnly={true}>
+        <AdminRoute>
           <Suspense fallback={<LoadingFallback />}><AdminPageEditPage /></Suspense>
-        </ProtectedRoute>
+        </AdminRoute>
       </Route>
       <Route path="/admin/verification">
-        <ProtectedRoute adminOnly={true}>
+        <AdminRoute>
           <Suspense fallback={<LoadingFallback />}><VerificationTool /></Suspense>
-        </ProtectedRoute>
+        </AdminRoute>
       </Route>
       <Route path="/admin/verification-requests">
-        <ProtectedRoute adminOnly={true}>
+        <AdminRoute>
           <Suspense fallback={<LoadingFallback />}><AdminVerificationRequestsPage /></Suspense>
-        </ProtectedRoute>
+        </AdminRoute>
       </Route>
       <Route path="/admin/webmaster-tools">
-        <ProtectedRoute adminOnly={true}>
+        <AdminRoute>
           <Suspense fallback={<LoadingFallback />}><AdminWebmasterToolsPage /></Suspense>
-        </ProtectedRoute>
+        </AdminRoute>
       </Route>
       <Route path="/admin/referrals">
-        <ProtectedRoute adminOnly={true}>
+        <AdminRoute>
           <Suspense fallback={<LoadingFallback />}><AdminReferralsPage /></Suspense>
-        </ProtectedRoute>
+        </AdminRoute>
       </Route>
       <Route path="/admin/payout-methods">
-        <ProtectedRoute adminOnly={true}>
+        <AdminRoute>
           <Suspense fallback={<LoadingFallback />}><AdminPayoutMethodsPage /></Suspense>
-        </ProtectedRoute>
+        </AdminRoute>
       </Route>
       <Route path="/admin/revenue">
-        <ProtectedRoute adminOnly={true}>
+        <AdminRoute>
           <Suspense fallback={<LoadingFallback />}><AdminRevenuePage /></Suspense>
-        </ProtectedRoute>
+        </AdminRoute>
       </Route>
       <Route path="/admin/payments/gateways">
-        <ProtectedRoute adminOnly={true}>
+        <AdminRoute>
           <Suspense fallback={<LoadingFallback />}><AdminPaymentGatewaysPage /></Suspense>
-        </ProtectedRoute>
+        </AdminRoute>
       </Route>
       <Route path="/admin/payments/transactions">
-        <ProtectedRoute adminOnly={true}>
+        <AdminRoute>
           <Suspense fallback={<LoadingFallback />}><AdminPaymentTransactionsPage /></Suspense>
-        </ProtectedRoute>
+        </AdminRoute>
       </Route>
       <Route path="/admin/pricing/plans">
-        <ProtectedRoute adminOnly={true}>
+        <AdminRoute>
           <Suspense fallback={<LoadingFallback />}><AdminPricingPlansPage /></Suspense>
-        </ProtectedRoute>
+        </AdminRoute>
       </Route>
       <Route path="/admin/pricing/subscriptions">
-        <ProtectedRoute adminOnly={true}>
+        <AdminRoute>
           <Suspense fallback={<LoadingFallback />}><AdminPricingPlansPage /></Suspense>
-        </ProtectedRoute>
+        </AdminRoute>
       </Route>
       <Route path="/admin/pricing/diamonds">
-        <ProtectedRoute adminOnly={true}>
+        <AdminRoute>
           <Suspense fallback={<LoadingFallback />}><AdminPricingPlansPage /></Suspense>
-        </ProtectedRoute>
+        </AdminRoute>
       </Route>
       <Route path="/admin/pricing/verification">
-        <ProtectedRoute adminOnly={true}>
+        <AdminRoute>
           <Suspense fallback={<LoadingFallback />}><AdminPricingPlansPage /></Suspense>
-        </ProtectedRoute>
+        </AdminRoute>
       </Route>
       <Route path="/admin/pricing/rooms">
-        <ProtectedRoute adminOnly={true}>
+        <AdminRoute>
           <Suspense fallback={<LoadingFallback />}><AdminPricingPlansPage /></Suspense>
-        </ProtectedRoute>
+        </AdminRoute>
       </Route>
       <Route path="/admin/settings">
-        <ProtectedRoute adminOnly={true}>
+        <AdminRoute>
           <Suspense fallback={<LoadingFallback />}><AdminSettings /></Suspense>
-        </ProtectedRoute>
+        </AdminRoute>
       </Route>
       <Route path="/admin/settings/redirects">
-        <ProtectedRoute adminOnly={true}>
+        <AdminRoute>
           <Suspense fallback={<LoadingFallback />}><AdminRedirectsPage /></Suspense>
-        </ProtectedRoute>
+        </AdminRoute>
       </Route>
       <Route path="/admin/settings/general">
-        <ProtectedRoute adminOnly={true}>
+        <AdminRoute>
           <Suspense fallback={<LoadingFallback />}><AdminGeneralSettingsPage /></Suspense>
-        </ProtectedRoute>
+        </AdminRoute>
       </Route>
       <Route path="/admin/seo/schemas">
-        <ProtectedRoute adminOnly={true}>
+        <AdminRoute>
           <Suspense fallback={<LoadingFallback />}><AdminSeoSchemasPage /></Suspense>
-        </ProtectedRoute>
+        </AdminRoute>
       </Route>
       <Route path="/admin/google-indexing">
-        <ProtectedRoute adminOnly={true}>
+        <AdminRoute>
           <Suspense fallback={<LoadingFallback />}><AdminGoogleIndexingPage /></Suspense>
-        </ProtectedRoute>
+        </AdminRoute>
       </Route>
       <Route path="/admin/backup-restore">
-        <ProtectedRoute adminOnly={true}>
+        <AdminRoute>
           <Suspense fallback={<LoadingFallback />}><AdminBackupRestorePage /></Suspense>
-        </ProtectedRoute>
+        </AdminRoute>
       </Route>
       
       {/* Admin Accounts Routes */}
       <Route path="/admin/accounts/users">
-        <ProtectedRoute adminOnly={true}>
+        <AdminRoute>
           <Suspense fallback={<LoadingFallback />}><AdminUsersPage /></Suspense>
-        </ProtectedRoute>
+        </AdminRoute>
       </Route>
       <Route path="/admin/accounts/roles">
-        <ProtectedRoute adminOnly={true}>
+        <AdminRoute>
           <Suspense fallback={<LoadingFallback />}><AdminRolesPage /></Suspense>
-        </ProtectedRoute>
+        </AdminRoute>
       </Route>
       <Route path="/admin/accounts/signups">
-        <ProtectedRoute adminOnly={true}>
+        <AdminRoute>
           <Suspense fallback={<LoadingFallback />}><AdminSignupsPage /></Suspense>
-        </ProtectedRoute>
+        </AdminRoute>
       </Route>
       <Route path="/admin/signup-options">
-        <ProtectedRoute adminOnly={true}>
+        <AdminRoute>
           <Suspense fallback={<LoadingFallback />}><AdminSignupOptionsPage /></Suspense>
-        </ProtectedRoute>
+        </AdminRoute>
       </Route>
       <Route path="/admin/hero-images">
-        <ProtectedRoute adminOnly={true}>
+        <AdminRoute>
           <Suspense fallback={<LoadingFallback />}><AdminHeroImagesPage /></Suspense>
-        </ProtectedRoute>
+        </AdminRoute>
       </Route>
       <Route path="/admin/images-gallery">
-        <ProtectedRoute adminOnly={true}>
+        <AdminRoute>
           <Suspense fallback={<LoadingFallback />}><AdminImagesGalleryPage /></Suspense>
-        </ProtectedRoute>
+        </AdminRoute>
       </Route>
       <Route path="/admin/accounts/locations">
-        <ProtectedRoute adminOnly={true}>
+        <AdminRoute>
           <Suspense fallback={<LoadingFallback />}><AdminLocationsPage /></Suspense>
-        </ProtectedRoute>
+        </AdminRoute>
       </Route>
       <Route path="/admin/accounts/profile">
-        <ProtectedRoute adminOnly={true}>
+        <AdminRoute>
           <Suspense fallback={<LoadingFallback />}><AdminProfilePage /></Suspense>
-        </ProtectedRoute>
+        </AdminRoute>
       </Route>
       
       {/* Admin Security Routes */}
       <Route path="/admin/security/two-factor">
-        <ProtectedRoute adminOnly={true}>
+        <AdminRoute>
           <Suspense fallback={<LoadingFallback />}><AdminTwoFactorPage /></Suspense>
-        </ProtectedRoute>
+        </AdminRoute>
       </Route>
       <Route path="/admin/security/logs">
-        <ProtectedRoute adminOnly={true}>
+        <AdminRoute>
           <Suspense fallback={<LoadingFallback />}><AdminSecurityLogsPage /></Suspense>
-        </ProtectedRoute>
+        </AdminRoute>
       </Route>
       <Route path="/admin/security/settings">
-        <ProtectedRoute adminOnly={true}>
+        <AdminRoute>
           <Suspense fallback={<LoadingFallback />}><AdminSecuritySettingsPage /></Suspense>
-        </ProtectedRoute>
+        </AdminRoute>
       </Route>
       <Route path="/admin/security/reset-password">
-        <ProtectedRoute adminOnly={true}>
+        <AdminRoute>
           <Suspense fallback={<LoadingFallback />}><AdminResetPasswordPage /></Suspense>
-        </ProtectedRoute>
+        </AdminRoute>
       </Route>
       
       {/* Image Upload Demo Route */}
       <Route path="/admin/image-upload">
-        <ProtectedRoute adminOnly={true}>
+        <AdminRoute>
           <Suspense fallback={<LoadingFallback />}><AdminImageUploadDemo /></Suspense>
-        </ProtectedRoute>
+        </AdminRoute>
       </Route>
       
       {/* Push Notifications Routes */}
       <Route path="/admin/push-notifications">
-        <ProtectedRoute adminOnly={true}>
+        <AdminRoute>
           <Suspense fallback={<LoadingFallback />}><AdminPushNotificationsPage /></Suspense>
-        </ProtectedRoute>
+        </AdminRoute>
       </Route>
       <Route path="/admin/push-notifications/campaigns">
-        <ProtectedRoute adminOnly={true}>
+        <AdminRoute>
           <Suspense fallback={<LoadingFallback />}><AdminPushNotificationsCampaignsPage /></Suspense>
-        </ProtectedRoute>
+        </AdminRoute>
       </Route>
       <Route path="/admin/push-notifications/analytics">
-        <ProtectedRoute adminOnly={true}>
+        <AdminRoute>
           <Suspense fallback={<LoadingFallback />}><AdminPushNotificationsAnalyticsPage /></Suspense>
-        </ProtectedRoute>
+        </AdminRoute>
       </Route>
       <Route path="/admin/push-notifications/subscribers">
-        <ProtectedRoute adminOnly={true}>
+        <AdminRoute>
           <Suspense fallback={<LoadingFallback />}><AdminPushNotificationsSubscribersPage /></Suspense>
-        </ProtectedRoute>
+        </AdminRoute>
       </Route>
       
       {/* Fallback */}
