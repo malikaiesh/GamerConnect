@@ -514,10 +514,10 @@
   /* Admin Light Theme */
   .admin-light {
     --admin-bg: 0 0% 100%;
-    --admin-surface: 0 0% 98%;
+    --admin-surface: 0 0% 100%;
     --admin-border: 240 5.9% 90%;
     --admin-text: 240 10% 3.9%;
-    --admin-text-muted: 240 3.8% 46.1%;
+    --admin-text-muted: 240 5% 35%;
     --admin-nav-bg: 0 0% 100%;
     --admin-nav-hover: 213 100% 95%;
     --admin-nav-active: 213 100% 90%;
@@ -625,5 +625,50 @@
 
   .admin-container .dialog-content {
     background-color: hsl(var(--admin-surface)) !important;
+  }
+
+  /* Admin Light Mode - Ensure proper text contrast */
+  .admin-container.admin-light {
+    background-color: hsl(0 0% 98%) !important;
+  }
+
+  .admin-container.admin-light .bg-card {
+    background-color: hsl(0 0% 100%) !important;
+  }
+
+  .admin-container.admin-light .text-foreground,
+  .admin-container.admin-light h1,
+  .admin-container.admin-light h2,
+  .admin-container.admin-light h3,
+  .admin-container.admin-light h4,
+  .admin-container.admin-light h5,
+  .admin-container.admin-light h6 {
+    color: hsl(240 10% 3.9%) !important;
+  }
+
+  .admin-container.admin-light .text-muted-foreground {
+    color: hsl(240 5% 35%) !important;
+  }
+
+  .admin-container.admin-light th,
+  .admin-container.admin-light td {
+    color: hsl(240 10% 3.9%) !important;
+  }
+
+  .admin-container.admin-light .font-medium {
+    color: hsl(240 10% 3.9%) !important;
+  }
+
+  /* Table styling for better contrast */
+  .admin-container.admin-light table {
+    background-color: hsl(0 0% 100%) !important;
+  }
+
+  .admin-container.admin-light .table-row {
+    background-color: hsl(0 0% 100%) !important;
+  }
+
+  .admin-container.admin-light .table-row:hover {
+    background-color: hsl(240 4.8% 95.9%) !important;
   }
 }
