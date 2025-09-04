@@ -64,6 +64,7 @@ import {
   getUserTransactions,
   createPaymentTransaction
 } from "./api/payment-transactions";
+import { createCheckoutTransaction } from "./api/payment-transactions-public";
 
 import { referralRouter } from "./api/referrals";
 import { revenueRouter } from "./api/revenue";
@@ -334,7 +335,10 @@ Sitemap: ${req.protocol}://${req.get('host')}/sitemap.xml`);
   app.get('/api/admin/payment-gateways-with-api-keys', isAuthenticated, isAdmin, getPaymentGatewaysWithApiKeys);
   app.get('/api/admin/payment-gateway/:gatewayType/test-api-key', isAuthenticated, isAdmin, testPaymentGatewayApiKey);
   
-  // Payment Transaction Routes
+  // Public Payment Transaction Routes
+  app.post('/api/payment-transactions', createCheckoutTransaction);
+  
+  // Admin Payment Transaction Routes
   app.get('/api/admin/payment-transactions', isAuthenticated, isAdmin, getPaymentTransactions);
   app.get('/api/admin/payment-transactions/:id', isAuthenticated, isAdmin, getPaymentTransactionById);
   app.patch('/api/admin/payment-transactions/:id/verify', isAuthenticated, isAdmin, verifyPaymentTransaction);
