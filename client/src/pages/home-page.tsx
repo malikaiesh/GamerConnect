@@ -181,10 +181,10 @@ export default function HomePage() {
               </div>
               
               {/* Language Selector */}
-              <div className="w-auto">
+              <div className="inline-flex items-center">
                 <LanguageSelector 
-                  variant="dropdown" 
-                  className=""
+                  variant="select" 
+                  className="flex-shrink-0"
                   showLabel={false}
                 />
               </div>
