@@ -48,6 +48,7 @@ export async function seedVerifiedRooms() {
         totalVisits: 245,
         totalGiftsReceived: 35,
         totalGiftValue: 750.00,
+        isVerified: true,
         ownerId: verifiedUsers[0].id,
         createdAt: new Date(),
         updatedAt: new Date()
@@ -72,6 +73,7 @@ export async function seedVerifiedRooms() {
         totalVisits: 189,
         totalGiftsReceived: 28,
         totalGiftValue: 560.00,
+        isVerified: true,
         ownerId: verifiedUsers[1]?.id || verifiedUsers[0].id,
         createdAt: new Date(),
         updatedAt: new Date()
@@ -96,6 +98,7 @@ export async function seedVerifiedRooms() {
         totalVisits: 320,
         totalGiftsReceived: 45,
         totalGiftValue: 920.00,
+        isVerified: true,
         ownerId: verifiedUsers[2]?.id || verifiedUsers[0].id,
         createdAt: new Date(),
         updatedAt: new Date()
@@ -120,6 +123,7 @@ export async function seedVerifiedRooms() {
         totalVisits: 420,
         totalGiftsReceived: 55,
         totalGiftValue: 1150.00,
+        isVerified: true,
         ownerId: verifiedUsers[0].id,
         createdAt: new Date(),
         updatedAt: new Date()
