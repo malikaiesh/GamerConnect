@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { themes, Theme, getCurrentTheme, setTheme as setWebsiteTheme, isDarkMode as getIsDarkMode, toggleDarkMode as setDarkMode } from '@/lib/themes';
+import { themes, Theme, getCurrentTheme, setTheme as setWebsiteTheme, isDarkMode as getIsDarkMode, toggleDarkMode as setWebsiteDarkMode } from '@/lib/themes';
 
 interface AdminThemeContextType {
   currentTheme: string;
@@ -27,44 +27,22 @@ export function AdminThemeProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const applyTheme = (themeId: string, isDark: boolean) => {
-    // Apply website theme to admin container
-    const adminElement = document.querySelector('.admin-container');
-    if (adminElement) {
-      // Remove all theme classes
-      themes.forEach(theme => {
-        if (theme.class) {
-          adminElement.classList.remove(theme.class);
-        }
-      });
-      adminElement.classList.remove('dark', 'admin-light', 'admin-dark');
-      
-      // Add current theme class
-      const theme = themes.find(t => t.id === themeId);
-      if (theme && theme.class) {
-        adminElement.classList.add(theme.class);
-      }
-      
-      // Add dark mode class
-      if (isDark) {
-        adminElement.classList.add('dark');
-      }
-      
-      // Keep admin-specific classes for backwards compatibility
-      adminElement.classList.add(isDark ? 'admin-dark' : 'admin-light');
-    }
-    
-    // Save admin preferences separately from website
+    // Save admin preferences
     localStorage.setItem('admin-theme', themeId);
     localStorage.setItem('admin-darkMode', isDark ? 'dark' : 'light');
   };
 
   const setTheme = (themeId: string) => {
+    // Apply to website theme system directly
+    setWebsiteTheme(themeId);
     setCurrentTheme(themeId);
     applyTheme(themeId, darkMode);
   };
 
   const toggleDarkMode = () => {
     const newDarkMode = !darkMode;
+    // Apply to website theme system directly using the imported function
+    setWebsiteDarkMode(newDarkMode);
     setDarkModeState(newDarkMode);
     applyTheme(currentTheme, newDarkMode);
   };
