@@ -27,6 +27,34 @@ export function AdminThemeProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const applyTheme = (themeId: string, isDark: boolean) => {
+    // Apply to admin dashboard main container (if it exists)
+    const adminDashboard = document.querySelector('[class*="min-h-screen bg-background"]');
+    if (adminDashboard) {
+      adminDashboard.classList.add('admin-container');
+      
+      // Remove all theme classes
+      themes.forEach(theme => {
+        if (theme.class) {
+          adminDashboard.classList.remove(theme.class);
+        }
+      });
+      adminDashboard.classList.remove('dark', 'admin-light', 'admin-dark');
+      
+      // Add current theme class
+      const theme = themes.find(t => t.id === themeId);
+      if (theme && theme.class) {
+        adminDashboard.classList.add(theme.class);
+      }
+      
+      // Add dark mode class
+      if (isDark) {
+        adminDashboard.classList.add('dark');
+      }
+      
+      // Keep admin-specific classes for backwards compatibility
+      adminDashboard.classList.add(isDark ? 'admin-dark' : 'admin-light');
+    }
+    
     // Save admin preferences
     localStorage.setItem('admin-theme', themeId);
     localStorage.setItem('admin-darkMode', isDark ? 'dark' : 'light');

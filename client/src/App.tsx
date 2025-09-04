@@ -166,11 +166,9 @@ const AdminHelperNav = () => {
 const AdminRoute = ({ children }: { children: React.ReactNode }) => {
   return (
     <AdminThemeProvider>
-      <div className="admin-container">
-        <ProtectedRoute adminOnly={true}>
-          {children}
-        </ProtectedRoute>
-      </div>
+      <ProtectedRoute adminOnly={true}>
+        {children}
+      </ProtectedRoute>
     </AdminThemeProvider>
   );
 };
