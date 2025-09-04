@@ -668,7 +668,7 @@ export default function VerificationPage() {
                             />
 
                             {/* Document Image Uploads */}
-                            <div className="grid grid-cols-1 gap-4 sm:gap-6">
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                               {/* Front Image Upload */}
                               <div className="space-y-3">
                                 <FormField
