@@ -281,12 +281,15 @@ export default function RoomLobbyPage() {
                             )}
                           </CardTitle>
                           <div className="text-sm text-muted-foreground">
+                            ID: {roomListing.room.roomId}
+                          </div>
+                          <div className="text-sm text-muted-foreground">
                             by @{roomListing.owner.displayName || roomListing.owner.username}
                           </div>
                         </div>
                         <div className="flex flex-col gap-1 items-end flex-shrink-0">
                           <Badge className={getStatusColor(roomListing.room.status)}>
-                            {roomListing.room.status}
+                            {roomListing.room.status.charAt(0).toUpperCase() + roomListing.room.status.slice(1)}
                           </Badge>
                           {roomListing.room.isFeatured && (
                             <Badge variant="secondary" className="text-xs">
