@@ -108,7 +108,7 @@ export default function HomePage() {
   // Track notification impression
   const trackNotificationImpression = async (notificationId: number) => {
     try {
-      await apiRequest(`/api/notifications/${notificationId}/impression`, { method: 'POST', body: {} });
+      await apiRequest('POST', `/api/notifications/${notificationId}/impression`, {});
     } catch (error) {
       console.error('Error tracking notification impression:', error);
     }
@@ -122,7 +122,7 @@ export default function HomePage() {
   // Track notification click
   const trackNotificationClick = async (notificationId: number) => {
     try {
-      await apiRequest(`/api/notifications/${notificationId}/click`, { method: 'POST', body: {} });
+      await apiRequest('POST', `/api/notifications/${notificationId}/click`, {});
     } catch (error) {
       console.error('Error tracking notification click:', error);
     }

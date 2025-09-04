@@ -49,6 +49,13 @@ export const fetcher = async (url: string) => {
   }
 };
 
+// Overloaded function for backward compatibility
+export async function apiRequest(
+  method: "GET" | "POST" | "PUT" | "PATCH" | "DELETE",
+  url: string,
+  body?: any,
+  options?: { headers?: Record<string, string> }
+): Promise<any>;
 export async function apiRequest(
   url: string,
   options?: {
@@ -56,15 +63,44 @@ export async function apiRequest(
     body?: any;
     headers?: Record<string, string>;
   }
-) {
-  const method = options?.method || "GET";
+): Promise<any>;
+export async function apiRequest(
+  methodOrUrl: string,
+  urlOrOptions?: string | {
+    method?: "GET" | "POST" | "PUT" | "PATCH" | "DELETE";
+    body?: any;
+    headers?: Record<string, string>;
+  },
+  body?: any,
+  options?: { headers?: Record<string, string> }
+): Promise<any> {
   const controller = new AbortController();
   const timeoutId = setTimeout(() => controller.abort(), 30000); // 30-second timeout
   
+  let method: "GET" | "POST" | "PUT" | "PATCH" | "DELETE";
+  let url: string;
+  let requestBody: any;
+  let headers: Record<string, string> = {};
+
+  // Determine which signature is being used
+  if (typeof urlOrOptions === 'string') {
+    // New signature: apiRequest(method, url, body?, options?)
+    method = methodOrUrl as "GET" | "POST" | "PUT" | "PATCH" | "DELETE";
+    url = urlOrOptions;
+    requestBody = body;
+    headers = options?.headers || {};
+  } else {
+    // Old signature: apiRequest(url, options?)
+    url = methodOrUrl;
+    const opts = urlOrOptions || {};
+    method = opts.method || "GET";
+    requestBody = opts.body;
+    headers = opts.headers || {};
+  }
+  
   // Automatically JSON.stringify body if it's an object
-  let body = options?.body;
-  if (body && typeof body === 'object' && !(body instanceof FormData) && !(body instanceof URLSearchParams)) {
-    body = JSON.stringify(body);
+  if (requestBody && typeof requestBody === 'object' && !(requestBody instanceof FormData) && !(requestBody instanceof URLSearchParams)) {
+    requestBody = JSON.stringify(requestBody);
   }
   
   try {
@@ -73,9 +109,9 @@ export async function apiRequest(
       credentials: "include",
       headers: {
         "Content-Type": "application/json",
-        ...options?.headers,
+        ...headers,
       },
-      body,
+      body: requestBody,
       signal: controller.signal
     });
     
