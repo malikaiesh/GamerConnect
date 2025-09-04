@@ -2245,6 +2245,12 @@ export const verificationRequests = pgTable('verification_requests', {
     gameplayProof?: string;
     socialProof?: string;
     additionalFiles?: string[];
+    // ID Document verification (for user verification only)
+    idDocuments?: {
+      documentType: 'passport' | 'driving_license' | 'national_id';
+      frontImage: string; // Object storage path
+      backImage: string;  // Object storage path
+    };
   }>(),
   
   // Request information

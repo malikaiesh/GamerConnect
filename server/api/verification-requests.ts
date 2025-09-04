@@ -187,6 +187,23 @@ export const createVerificationRequest = async (req: Request, res: Response) => 
       }
     }
 
+    // Process document data
+    let documentsData: any = {};
+    
+    // For user verification with international payment, process ID documents
+    if (validatedData.requestType === 'user' && req.body.documentType && req.body.frontImageUrl && req.body.backImageUrl) {
+      documentsData.idDocuments = {
+        documentType: req.body.documentType,
+        frontImage: req.body.frontImageUrl,
+        backImage: req.body.backImageUrl,
+      };
+    }
+
+    // Handle payment screenshot for local payments
+    if (req.body.paymentScreenshot) {
+      documentsData.identityProof = req.body.paymentScreenshot;
+    }
+
     // Extract IP address and user agent for metadata
     const ipAddress = req.ip || req.connection.remoteAddress || 'unknown';
     const userAgent = req.get('User-Agent') || 'unknown';
@@ -197,6 +214,7 @@ export const createVerificationRequest = async (req: Request, res: Response) => 
         ...validatedData,
         userId: targetUserId,
         roomId: targetRoomId,
+        documents: documentsData,
         status: 'pending',
         paymentStatus: 'pending',
         metadata: {

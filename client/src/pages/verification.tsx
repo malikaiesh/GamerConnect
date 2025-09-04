@@ -14,7 +14,8 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
-import { Shield, User, Home, FileText, DollarSign, CheckCircle2, AlertCircle, CreditCard, Upload, FileImage } from "lucide-react";
+import { Shield, User, Home, FileText, DollarSign, CheckCircle2, AlertCircle, CreditCard, Upload, FileImage, Camera, IdCard } from "lucide-react";
+import { ObjectUploader } from "@/components/ObjectUploader";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import type { PricingPlan } from "@shared/schema";
 
@@ -33,6 +34,10 @@ const verificationFormSchema = z.object({
     required_error: "Please select a payment method",
   }),
   paymentScreenshot: z.string().optional(),
+  // ID Document fields for user verification
+  documentType: z.enum(['passport', 'driving_license', 'national_id']).optional(),
+  frontImageUrl: z.string().optional(),
+  backImageUrl: z.string().optional(),
 }).refine(
   (data) => {
     if (data.requestType === 'user' && !data.username) {
@@ -60,6 +65,11 @@ export default function VerificationPage() {
   const [paymentDialogOpen, setPaymentDialogOpen] = useState(false);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [uploadedImageUrl, setUploadedImageUrl] = useState<string>('');
+  
+  // Document upload states
+  const [frontImageUrl, setFrontImageUrl] = useState<string>("");
+  const [backImageUrl, setBackImageUrl] = useState<string>("");
+  const [documentType, setDocumentType] = useState<'passport' | 'driving_license' | 'national_id'>('passport');
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
@@ -119,6 +129,48 @@ export default function VerificationPage() {
     }
   };
 
+  // Document upload handlers
+  const handleDocumentUpload = async () => {
+    try {
+      const response = await apiRequest('POST', '/api/objects/upload');
+      return {
+        method: 'PUT' as const,
+        url: response.uploadURL,
+      };
+    } catch (error) {
+      toast({
+        title: "Upload Error",
+        description: "Failed to get upload URL. Please try again.",
+        variant: "destructive",
+      });
+      throw error;
+    }
+  };
+
+  const handleFrontImageComplete = (result: any) => {
+    const uploadedFile = result.successful[0];
+    if (uploadedFile && uploadedFile.uploadURL) {
+      setFrontImageUrl(uploadedFile.uploadURL);
+      form.setValue('frontImageUrl', uploadedFile.uploadURL);
+      toast({
+        title: "Front Image Uploaded",
+        description: "Front side of your document has been uploaded successfully.",
+      });
+    }
+  };
+
+  const handleBackImageComplete = (result: any) => {
+    const uploadedFile = result.successful[0];
+    if (uploadedFile && uploadedFile.uploadURL) {
+      setBackImageUrl(uploadedFile.uploadURL);
+      form.setValue('backImageUrl', uploadedFile.uploadURL);
+      toast({
+        title: "Back Image Uploaded",
+        description: "Back side of your document has been uploaded successfully.",
+      });
+    }
+  };
+
   const submitVerificationRequest = useMutation({
     mutationFn: async (data: VerificationFormData) => {
       return apiRequest('/api/verification-requests', { method: 'POST', body: data });
@@ -149,6 +201,18 @@ export default function VerificationPage() {
           variant: "destructive",
         });
         return;
+      }
+      
+      // For user verification, check if documents are uploaded
+      if (data.requestType === 'user') {
+        if (!data.documentType || !data.frontImageUrl || !data.backImageUrl) {
+          toast({
+            title: "Documents Required",
+            description: "Please upload both front and back images of your ID document before proceeding.",
+            variant: "destructive",
+          });
+          return;
+        }
       }
       
       // Save form data to localStorage so we can retrieve it after payment
@@ -499,6 +563,168 @@ export default function VerificationPage() {
                                 </FormItem>
                               )}
                             />
+                          </div>
+                        )}
+
+                        {/* ID Document Upload for User Verification with International Payment */}
+                        {requestType === 'user' && paymentMethod === 'international' && (
+                          <div className="space-y-6">
+                            <div className="p-4 border rounded-lg bg-blue-50 dark:bg-blue-950/20">
+                              <div className="flex items-center gap-2 mb-3">
+                                <IdCard className="h-5 w-5 text-blue-600" />
+                                <h4 className="font-medium text-blue-900 dark:text-blue-100">ID Document Verification Required</h4>
+                              </div>
+                              <p className="text-sm text-blue-700 dark:text-blue-300">
+                                To verify your identity, please upload clear images of your government-issued ID document.
+                                Both front and back sides are required.
+                              </p>
+                            </div>
+
+                            {/* Document Type Selection */}
+                            <FormField
+                              control={form.control}
+                              name="documentType"
+                              render={({ field }) => (
+                                <FormItem>
+                                  <FormLabel>Document Type *</FormLabel>
+                                  <FormControl>
+                                    <Select onValueChange={(value) => {
+                                      field.onChange(value);
+                                      setDocumentType(value as 'passport' | 'driving_license' | 'national_id');
+                                      form.setValue('documentType', value as any);
+                                    }}>
+                                      <SelectTrigger data-testid="select-document-type">
+                                        <SelectValue placeholder="Select your ID document type" />
+                                      </SelectTrigger>
+                                      <SelectContent>
+                                        <SelectItem value="passport">
+                                          <div className="flex items-center gap-2">
+                                            <FileImage className="h-4 w-4" />
+                                            Passport
+                                          </div>
+                                        </SelectItem>
+                                        <SelectItem value="driving_license">
+                                          <div className="flex items-center gap-2">
+                                            <IdCard className="h-4 w-4" />
+                                            Driving License
+                                          </div>
+                                        </SelectItem>
+                                        <SelectItem value="national_id">
+                                          <div className="flex items-center gap-2">
+                                            <FileText className="h-4 w-4" />
+                                            National Identity Card
+                                          </div>
+                                        </SelectItem>
+                                      </SelectContent>
+                                    </Select>
+                                  </FormControl>
+                                  <FormMessage />
+                                </FormItem>
+                              )}
+                            />
+
+                            {/* Document Image Uploads */}
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                              {/* Front Image Upload */}
+                              <div className="space-y-3">
+                                <FormField
+                                  control={form.control}
+                                  name="frontImageUrl"
+                                  render={({ field }) => (
+                                    <FormItem>
+                                      <FormLabel className="flex items-center gap-2">
+                                        <Camera className="h-4 w-4" />
+                                        Front Side *
+                                      </FormLabel>
+                                      <FormControl>
+                                        <div className="space-y-3">
+                                          <ObjectUploader
+                                            maxNumberOfFiles={1}
+                                            maxFileSize={5242880} // 5MB
+                                            onGetUploadParameters={handleDocumentUpload}
+                                            onComplete={handleFrontImageComplete}
+                                            buttonClassName="w-full h-32 border-2 border-dashed border-gray-300 hover:border-blue-500 bg-gray-50 dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                                          >
+                                            <div className="flex flex-col items-center gap-2">
+                                              <Upload className="h-8 w-8 text-gray-400" />
+                                              <span className="text-sm font-medium">Upload Front Side</span>
+                                              <span className="text-xs text-muted-foreground">PNG, JPG (Max 5MB)</span>
+                                            </div>
+                                          </ObjectUploader>
+                                          {frontImageUrl && (
+                                            <div className="mt-3">
+                                              <p className="text-sm font-medium mb-2 text-green-600">✓ Front side uploaded</p>
+                                              <img 
+                                                src={frontImageUrl} 
+                                                alt="Front side of document" 
+                                                className="max-w-full h-auto max-h-32 rounded-lg border border-green-300"
+                                              />
+                                            </div>
+                                          )}
+                                        </div>
+                                      </FormControl>
+                                      <FormMessage />
+                                    </FormItem>
+                                  )}
+                                />
+                              </div>
+
+                              {/* Back Image Upload */}
+                              <div className="space-y-3">
+                                <FormField
+                                  control={form.control}
+                                  name="backImageUrl"
+                                  render={({ field }) => (
+                                    <FormItem>
+                                      <FormLabel className="flex items-center gap-2">
+                                        <Camera className="h-4 w-4" />
+                                        Back Side *
+                                      </FormLabel>
+                                      <FormControl>
+                                        <div className="space-y-3">
+                                          <ObjectUploader
+                                            maxNumberOfFiles={1}
+                                            maxFileSize={5242880} // 5MB
+                                            onGetUploadParameters={handleDocumentUpload}
+                                            onComplete={handleBackImageComplete}
+                                            buttonClassName="w-full h-32 border-2 border-dashed border-gray-300 hover:border-blue-500 bg-gray-50 dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                                          >
+                                            <div className="flex flex-col items-center gap-2">
+                                              <Upload className="h-8 w-8 text-gray-400" />
+                                              <span className="text-sm font-medium">Upload Back Side</span>
+                                              <span className="text-xs text-muted-foreground">PNG, JPG (Max 5MB)</span>
+                                            </div>
+                                          </ObjectUploader>
+                                          {backImageUrl && (
+                                            <div className="mt-3">
+                                              <p className="text-sm font-medium mb-2 text-green-600">✓ Back side uploaded</p>
+                                              <img 
+                                                src={backImageUrl} 
+                                                alt="Back side of document" 
+                                                className="max-w-full h-auto max-h-32 rounded-lg border border-green-300"
+                                              />
+                                            </div>
+                                          )}
+                                        </div>
+                                      </FormControl>
+                                      <FormMessage />
+                                    </FormItem>
+                                  )}
+                                />
+                              </div>
+                            </div>
+
+                            {/* Document Upload Guidelines */}
+                            <div className="p-4 border rounded-lg bg-yellow-50 dark:bg-yellow-950/20">
+                              <h5 className="font-medium text-yellow-900 dark:text-yellow-100 mb-2">📸 Document Photo Guidelines</h5>
+                              <ul className="text-sm text-yellow-700 dark:text-yellow-300 space-y-1">
+                                <li>• Ensure all text is clearly readable</li>
+                                <li>• No glare or shadows covering the document</li>
+                                <li>• Take photos in good lighting conditions</li>
+                                <li>• Document should fill most of the frame</li>
+                                <li>• All four corners of the document should be visible</li>
+                              </ul>
+                            </div>
                           </div>
                         )}
 

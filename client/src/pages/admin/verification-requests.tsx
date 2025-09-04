@@ -19,7 +19,10 @@ import {
   Clock, 
   AlertCircle,
   Eye,
-  DollarSign
+  DollarSign,
+  FileImage,
+  Camera,
+  Download
 } from "lucide-react";
 
 interface VerificationRequest {
@@ -36,6 +39,17 @@ interface VerificationRequest {
   createdAt: string;
   updatedAt: string;
   reviewedAt?: string;
+  documents?: {
+    identityProof?: string;
+    gameplayProof?: string;
+    socialProof?: string;
+    additionalFiles?: string[];
+    idDocuments?: {
+      documentType: 'passport' | 'driving_license' | 'national_id';
+      frontImage: string;
+      backImage: string;
+    };
+  };
   pricingPlan?: {
     id: number;
     displayName: string;
@@ -423,6 +437,97 @@ export default function VerificationRequestsPage() {
                   <label className="text-sm font-medium">Additional Information</label>
                   <div className="mt-1 p-3 border rounded-lg bg-muted/50">
                     <p className="text-sm">{selectedRequest.additionalInfo}</p>
+                  </div>
+                </div>
+              )}
+
+              {/* ID Documents Section for User Verification */}
+              {selectedRequest.requestType === 'user' && selectedRequest.documents?.idDocuments && (
+                <div className="space-y-4">
+                  <div className="flex items-center gap-2">
+                    <FileImage className="h-5 w-5 text-blue-600" />
+                    <h3 className="font-medium">ID Document Verification</h3>
+                  </div>
+                  
+                  <div className="p-4 border rounded-lg bg-blue-50 dark:bg-blue-950/20">
+                    <div className="mb-3">
+                      <span className="text-sm font-medium">Document Type: </span>
+                      <Badge variant="outline" className="ml-2">
+                        {selectedRequest.documents.idDocuments.documentType.replace('_', ' ').toUpperCase()}
+                      </Badge>
+                    </div>
+                    
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      {/* Front Image */}
+                      <div className="space-y-3">
+                        <div className="flex items-center gap-2">
+                          <Camera className="h-4 w-4 text-green-600" />
+                          <span className="text-sm font-medium">Front Side</span>
+                        </div>
+                        <div className="border rounded-lg overflow-hidden bg-white">
+                          <img 
+                            src={selectedRequest.documents.idDocuments.frontImage} 
+                            alt="Front side of ID document" 
+                            className="w-full h-48 object-contain border-b"
+                            onError={(e) => {
+                              (e.target as HTMLImageElement).src = '/placeholder-image.png';
+                            }}
+                          />
+                          <div className="p-2 flex justify-between items-center">
+                            <span className="text-xs text-muted-foreground">Front Side</span>
+                            <Button 
+                              size="sm" 
+                              variant="ghost"
+                              onClick={() => window.open(selectedRequest.documents.idDocuments.frontImage, '_blank')}
+                            >
+                              <Download className="h-3 w-3 mr-1" />
+                              View Full
+                            </Button>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Back Image */}
+                      <div className="space-y-3">
+                        <div className="flex items-center gap-2">
+                          <Camera className="h-4 w-4 text-green-600" />
+                          <span className="text-sm font-medium">Back Side</span>
+                        </div>
+                        <div className="border rounded-lg overflow-hidden bg-white">
+                          <img 
+                            src={selectedRequest.documents.idDocuments.backImage} 
+                            alt="Back side of ID document" 
+                            className="w-full h-48 object-contain border-b"
+                            onError={(e) => {
+                              (e.target as HTMLImageElement).src = '/placeholder-image.png';
+                            }}
+                          />
+                          <div className="p-2 flex justify-between items-center">
+                            <span className="text-xs text-muted-foreground">Back Side</span>
+                            <Button 
+                              size="sm" 
+                              variant="ghost"
+                              onClick={() => window.open(selectedRequest.documents.idDocuments.backImage, '_blank')}
+                            >
+                              <Download className="h-3 w-3 mr-1" />
+                              View Full
+                            </Button>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Document Guidelines for Review */}
+                    <div className="mt-4 p-3 bg-yellow-50 dark:bg-yellow-950/20 border border-yellow-200 dark:border-yellow-900 rounded-lg">
+                      <h5 className="text-sm font-medium text-yellow-900 dark:text-yellow-100 mb-2">⚠️ Review Guidelines</h5>
+                      <ul className="text-xs text-yellow-700 dark:text-yellow-300 space-y-1">
+                        <li>• Verify all text is clearly readable</li>
+                        <li>• Check document authenticity and validity</li>
+                        <li>• Ensure name matches the username (if applicable)</li>
+                        <li>• Look for signs of tampering or forgery</li>
+                        <li>• Confirm document is not expired</li>
+                      </ul>
+                    </div>
                   </div>
                 </div>
               )}
