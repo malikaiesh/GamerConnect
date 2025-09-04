@@ -80,8 +80,8 @@ interface RoomStats {
 export default function RoomsPage() {
   const [currentPage, setCurrentPage] = useState(1);
   const [searchTerm, setSearchTerm] = useState("");
-  const [statusFilter, setStatusFilter] = useState<string>("");
-  const [typeFilter, setTypeFilter] = useState<string>("");
+  const [statusFilter, setStatusFilter] = useState<string>("all");
+  const [typeFilter, setTypeFilter] = useState<string>("all");
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
@@ -101,7 +101,11 @@ export default function RoomsPage() {
     };
   }>({
     queryKey: ["/api/rooms/admin", currentPage, searchTerm, statusFilter, typeFilter],
-    queryFn: () => apiRequest(`/api/rooms/admin?page=${currentPage}&search=${searchTerm}&status=${statusFilter}&type=${typeFilter}`)
+    queryFn: () => {
+      const status = statusFilter === "all" ? "" : statusFilter;
+      const type = typeFilter === "all" ? "" : typeFilter;
+      return apiRequest(`/api/rooms/admin?page=${currentPage}&search=${searchTerm}&status=${status}&type=${type}`);
+    }
   });
 
   // Delete room mutation
@@ -268,7 +272,7 @@ export default function RoomsPage() {
                 <SelectValue placeholder="Filter by status" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">All Statuses</SelectItem>
+                <SelectItem value="all">All Statuses</SelectItem>
                 <SelectItem value="active">Active</SelectItem>
                 <SelectItem value="inactive">Inactive</SelectItem>
                 <SelectItem value="maintenance">Maintenance</SelectItem>
@@ -279,7 +283,7 @@ export default function RoomsPage() {
                 <SelectValue placeholder="Filter by type" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">All Types</SelectItem>
+                <SelectItem value="all">All Types</SelectItem>
                 <SelectItem value="public">Public</SelectItem>
                 <SelectItem value="private">Private</SelectItem>
               </SelectContent>
