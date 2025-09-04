@@ -18,6 +18,8 @@ import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { Link } from "wouter";
 import { AppHead } from "@/components/app-head";
+import { Header } from "@/components/layout/header";
+import { Footer } from "@/components/layout/footer";
 
 interface Event {
   id: number;
@@ -200,6 +202,7 @@ export default function EventDetailPage() {
         title={event.metaTitle || `${event.title} | Events`}
         description={event.metaDescription || event.description}
       />
+      <Header />
 
       <div className="container mx-auto px-4 py-8">
         {/* Back Navigation */}
@@ -247,7 +250,7 @@ export default function EventDetailPage() {
                 {event.title}
               </h1>
 
-              <div className="flex flex-wrap items-center gap-6 text-foreground dark:text-white mb-6">
+              <div className="flex flex-wrap items-center gap-6 text-foreground mb-6">
                 <div className="flex items-center gap-2">
                   <Calendar className="h-4 w-4" />
                   <span data-testid="event-date">{formatDate(event.startDate)}</span>
@@ -626,6 +629,7 @@ export default function EventDetailPage() {
           </div>
         </div>
       </div>
+      <Footer />
     </div>
   );
 }

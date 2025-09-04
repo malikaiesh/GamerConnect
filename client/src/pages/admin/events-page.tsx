@@ -41,8 +41,8 @@ const eventFormSchema = z.object({
     return !val || !isNaN(Date.parse(val));
   }, "Please enter a valid date").refine((val, ctx) => {
     if (!val) return true; // Optional field
-    const formData = ctx.parent as EventFormValues;
-    if (!formData.startDate) return true;
+    const formData = ctx.parent as EventFormValues | undefined;
+    if (!formData || !formData.startDate) return true;
     const startDate = new Date(formData.startDate);
     const endDate = new Date(val);
     return endDate > startDate;
