@@ -98,6 +98,7 @@ router.get("/admin", isAuthenticated, isAdmin, async (req: Request, res: Respons
     const status = req.query.status as string;
     const type = req.query.type as string;
     const verified = req.query.verified as string;
+    const newRooms = req.query.newRooms as string;
 
     const offset = (page - 1) * limit;
 
@@ -130,6 +131,17 @@ router.get("/admin", isAuthenticated, isAdmin, async (req: Request, res: Respons
     }
     if (verified) {
       conditions.push(eq(rooms.isVerified, verified === 'true'));
+    }
+    if (newRooms) {
+      const yesterday = new Date();
+      yesterday.setDate(yesterday.getDate() - 1);
+      if (newRooms === 'true') {
+        // Show rooms created in last 24 hours
+        conditions.push(gte(rooms.createdAt, yesterday));
+      } else if (newRooms === 'false') {
+        // Show rooms older than 24 hours
+        conditions.push(sql`${rooms.createdAt} < ${yesterday}`);
+      }
     }
 
     if (conditions.length > 0) {

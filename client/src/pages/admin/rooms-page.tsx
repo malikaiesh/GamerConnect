@@ -86,6 +86,7 @@ export default function RoomsPage() {
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [typeFilter, setTypeFilter] = useState<string>("all");
   const [verifiedFilter, setVerifiedFilter] = useState<string>("all");
+  const [newRoomsFilter, setNewRoomsFilter] = useState<string>("all");
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
@@ -104,12 +105,13 @@ export default function RoomsPage() {
       pages: number;
     };
   }>({
-    queryKey: ["/api/rooms/admin", currentPage, searchTerm, statusFilter, typeFilter, verifiedFilter],
+    queryKey: ["/api/rooms/admin", currentPage, searchTerm, statusFilter, typeFilter, verifiedFilter, newRoomsFilter],
     queryFn: () => {
       const status = statusFilter === "all" ? "" : statusFilter;
       const type = typeFilter === "all" ? "" : typeFilter;
       const verified = verifiedFilter === "all" ? "" : (verifiedFilter === "verified" ? "true" : "false");
-      return apiRequest(`/api/rooms/admin?page=${currentPage}&search=${searchTerm}&status=${status}&type=${type}&verified=${verified}`);
+      const newRooms = newRoomsFilter === "all" ? "" : (newRoomsFilter === "new" ? "true" : "false");
+      return apiRequest(`/api/rooms/admin?page=${currentPage}&search=${searchTerm}&status=${status}&type=${type}&verified=${verified}&newRooms=${newRooms}`);
     }
   });
 
@@ -313,6 +315,16 @@ export default function RoomsPage() {
                 <SelectItem value="all">All Rooms</SelectItem>
                 <SelectItem value="verified">Verified Only</SelectItem>
                 <SelectItem value="unverified">Unverified Only</SelectItem>
+              </SelectContent>
+            </Select>
+            <Select value={newRoomsFilter} onValueChange={setNewRoomsFilter}>
+              <SelectTrigger className="md:max-w-xs" data-testid="select-new-rooms">
+                <SelectValue placeholder="Filter by creation" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Rooms</SelectItem>
+                <SelectItem value="new">New Rooms (24h)</SelectItem>
+                <SelectItem value="older">Older Rooms</SelectItem>
               </SelectContent>
             </Select>
           </div>
