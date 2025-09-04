@@ -68,7 +68,7 @@ export default function PaymentGatewaysPage() {
 
   const createGatewayMutation = useMutation({
     mutationFn: async (data: PaymentGatewayForm) => {
-      return apiRequest("POST", "/api/admin/payment-gateways", data);
+      return apiRequest("/api/admin/payment-gateways", { method: "POST", body: data });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/admin/payment-gateways"] });
@@ -82,7 +82,7 @@ export default function PaymentGatewaysPage() {
 
   const updateGatewayMutation = useMutation({
     mutationFn: async ({ id, data }: { id: number; data: PaymentGatewayForm }) => {
-      return apiRequest("PUT", `/api/admin/payment-gateways/${id}`, data);
+      return apiRequest(`/api/admin/payment-gateways/${id}`, { method: "PUT", body: data });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/admin/payment-gateways"] });
@@ -97,20 +97,37 @@ export default function PaymentGatewaysPage() {
 
   const toggleGatewayMutation = useMutation({
     mutationFn: async ({ id, status }: { id: number; status: string }) => {
-      return apiRequest("PATCH", `/api/admin/payment-gateways/${id}/status`, { status });
+      try {
+        return await apiRequest(`/api/admin/payment-gateways/${id}/status`, { method: "PATCH", body: { status } });
+      } catch (error: any) {
+        // Handle authentication errors specifically
+        if (error.message.includes('Not authenticated') || error.message.includes('401')) {
+          throw new Error('Authentication required. Please log in as an administrator.');
+        }
+        // Handle HTML responses (like DOCTYPE errors)
+        if (error.message.includes('DOCTYPE') || error.message.includes('Unexpected token')) {
+          throw new Error('Server error: Please refresh the page and try again.');
+        }
+        throw error;
+      }
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/admin/payment-gateways"] });
       toast({ title: "Success", description: "Gateway status updated successfully!" });
     },
     onError: (error: Error) => {
-      toast({ title: "Error", description: error.message, variant: "destructive" });
+      console.error('Payment gateway toggle error:', error);
+      toast({ 
+        title: "Error", 
+        description: error.message || "Failed to update gateway status. Please try again.", 
+        variant: "destructive" 
+      });
     }
   });
 
   const deleteGatewayMutation = useMutation({
     mutationFn: async (id: number) => {
-      return apiRequest("DELETE", `/api/admin/payment-gateways/${id}`);
+      return apiRequest(`/api/admin/payment-gateways/${id}`, { method: "DELETE" });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/admin/payment-gateways"] });
@@ -363,6 +380,229 @@ export default function PaymentGatewaysPage() {
                   />
                 </div>
 
+                {/* API Configuration Section */}
+                <div className="space-y-4 border-t pt-4">
+                  <h4 className="text-lg font-medium flex items-center gap-2">
+                    <Key className="w-5 h-5" />
+                    API Configuration
+                  </h4>
+                  <p className="text-sm text-muted-foreground">
+                    Configure API keys and credentials for automated payment processing.
+                  </p>
+                  
+                  {/* Watch gateway type to show appropriate fields */}
+                  {createForm.watch("gatewayType") === "stripe" && (
+                    <div className="space-y-4 bg-blue-50 p-4 rounded-lg dark:bg-blue-950/20">
+                      <div className="flex items-center gap-2 text-blue-700 dark:text-blue-300">
+                        <div className="w-6 h-6 bg-blue-600 rounded flex items-center justify-center text-white text-xs font-bold">ST</div>
+                        <span className="font-medium">Stripe Configuration</span>
+                      </div>
+                      <p className="text-xs text-blue-600 dark:text-blue-400">
+                        Get your API keys from: <a href="https://dashboard.stripe.com/apikeys" target="_blank" rel="noopener noreferrer" className="underline">Stripe Dashboard → API Keys</a>
+                      </p>
+                      <div className="grid grid-cols-2 gap-4">
+                        <FormField
+                          control={createForm.control}
+                          name="apiConfiguration.publicKey"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Publishable Key</FormLabel>
+                              <FormControl>
+                                <Input placeholder="pk_test_..." {...field} data-testid="input-stripe-public-key" />
+                              </FormControl>
+                              <FormDescription className="text-xs">Starts with pk_test_ or pk_live_</FormDescription>
+                            </FormItem>
+                          )}
+                        />
+                        <FormField
+                          control={createForm.control}
+                          name="apiConfiguration.secretKey"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Secret Key</FormLabel>
+                              <FormControl>
+                                <Input type="password" placeholder="sk_test_..." {...field} data-testid="input-stripe-secret-key" />
+                              </FormControl>
+                              <FormDescription className="text-xs">Starts with sk_test_ or sk_live_</FormDescription>
+                            </FormItem>
+                          )}
+                        />
+                      </div>
+                      <FormField
+                        control={createForm.control}
+                        name="apiConfiguration.webhookSecret"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Webhook Secret (Optional)</FormLabel>
+                            <FormControl>
+                              <Input placeholder="whsec_..." {...field} data-testid="input-stripe-webhook-secret" />
+                            </FormControl>
+                            <FormDescription className="text-xs">For webhook verification (starts with whsec_)</FormDescription>
+                          </FormItem>
+                        )}
+                      />
+                    </div>
+                  )}
+
+                  {createForm.watch("gatewayType") === "paypal" && (
+                    <div className="space-y-4 bg-blue-50 p-4 rounded-lg dark:bg-blue-950/20">
+                      <div className="flex items-center gap-2 text-blue-700 dark:text-blue-300">
+                        <div className="w-6 h-6 bg-blue-800 rounded flex items-center justify-center text-white text-xs font-bold">PP</div>
+                        <span className="font-medium">PayPal Configuration</span>
+                      </div>
+                      <p className="text-xs text-blue-600 dark:text-blue-400">
+                        Get your credentials from: <a href="https://developer.paypal.com/developer/applications/" target="_blank" rel="noopener noreferrer" className="underline">PayPal Developer → My Apps & Credentials</a>
+                      </p>
+                      <div className="grid grid-cols-2 gap-4">
+                        <FormField
+                          control={createForm.control}
+                          name="apiConfiguration.apiKey"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Client ID</FormLabel>
+                              <FormControl>
+                                <Input placeholder="Client ID" {...field} data-testid="input-paypal-client-id" />
+                              </FormControl>
+                            </FormItem>
+                          )}
+                        />
+                        <FormField
+                          control={createForm.control}
+                          name="apiConfiguration.secretKey"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Client Secret</FormLabel>
+                              <FormControl>
+                                <Input type="password" placeholder="Client Secret" {...field} data-testid="input-paypal-secret" />
+                              </FormControl>
+                            </FormItem>
+                          )}
+                        />
+                      </div>
+                    </div>
+                  )}
+
+                  {createForm.watch("gatewayType") === "razorpay" && (
+                    <div className="space-y-4 bg-blue-50 p-4 rounded-lg dark:bg-blue-950/20">
+                      <div className="flex items-center gap-2 text-blue-700 dark:text-blue-300">
+                        <div className="w-6 h-6 bg-blue-500 rounded flex items-center justify-center text-white text-xs font-bold">RP</div>
+                        <span className="font-medium">Razorpay Configuration</span>
+                      </div>
+                      <p className="text-xs text-blue-600 dark:text-blue-400">
+                        Get your keys from: <a href="https://dashboard.razorpay.com/#/app/keys" target="_blank" rel="noopener noreferrer" className="underline">Razorpay Dashboard → API Keys</a>
+                      </p>
+                      <div className="grid grid-cols-2 gap-4">
+                        <FormField
+                          control={createForm.control}
+                          name="apiConfiguration.apiKey"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Key ID</FormLabel>
+                              <FormControl>
+                                <Input placeholder="rzp_test_..." {...field} data-testid="input-razorpay-key-id" />
+                              </FormControl>
+                            </FormItem>
+                          )}
+                        />
+                        <FormField
+                          control={createForm.control}
+                          name="apiConfiguration.secretKey"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Key Secret</FormLabel>
+                              <FormControl>
+                                <Input type="password" placeholder="Key Secret" {...field} data-testid="input-razorpay-secret" />
+                              </FormControl>
+                            </FormItem>
+                          )}
+                        />
+                      </div>
+                    </div>
+                  )}
+
+                  {createForm.watch("gatewayType") === "manual" && (
+                    <div className="space-y-4 bg-gray-50 p-4 rounded-lg dark:bg-gray-900/20">
+                      <div className="flex items-center gap-2 text-gray-700 dark:text-gray-300">
+                        <CreditCard className="w-5 h-5" />
+                        <span className="font-medium">Manual Payment Details</span>
+                      </div>
+                      <FormField
+                        control={createForm.control}
+                        name="accountDetails.bankName"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Bank Name</FormLabel>
+                            <FormControl>
+                              <Input placeholder="First National Bank" {...field} data-testid="input-bank-name" />
+                            </FormControl>
+                          </FormItem>
+                        )}
+                      />
+                      <div className="grid grid-cols-2 gap-4">
+                        <FormField
+                          control={createForm.control}
+                          name="accountDetails.accountNumber"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Account Number</FormLabel>
+                              <FormControl>
+                                <Input placeholder="1234567890" {...field} data-testid="input-account-number" />
+                              </FormControl>
+                            </FormItem>
+                          )}
+                        />
+                        <FormField
+                          control={createForm.control}
+                          name="accountDetails.routingNumber"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Routing Number</FormLabel>
+                              <FormControl>
+                                <Input placeholder="123456789" {...field} data-testid="input-routing-number" />
+                              </FormControl>
+                            </FormItem>
+                          )}
+                        />
+                      </div>
+                    </div>
+                  )}
+
+                  {!["stripe", "paypal", "razorpay", "manual"].includes(createForm.watch("gatewayType")) && createForm.watch("gatewayType") && (
+                    <div className="space-y-4 bg-orange-50 p-4 rounded-lg dark:bg-orange-950/20">
+                      <div className="flex items-center gap-2 text-orange-700 dark:text-orange-300">
+                        <Settings className="w-5 h-5" />
+                        <span className="font-medium">Generic API Configuration</span>
+                      </div>
+                      <div className="grid grid-cols-2 gap-4">
+                        <FormField
+                          control={createForm.control}
+                          name="apiConfiguration.apiKey"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>API Key</FormLabel>
+                              <FormControl>
+                                <Input placeholder="API Key" {...field} data-testid="input-generic-api-key" />
+                              </FormControl>
+                            </FormItem>
+                          )}
+                        />
+                        <FormField
+                          control={createForm.control}
+                          name="apiConfiguration.secretKey"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Secret Key</FormLabel>
+                              <FormControl>
+                                <Input type="password" placeholder="Secret Key" {...field} data-testid="input-generic-secret" />
+                              </FormControl>
+                            </FormItem>
+                          )}
+                        />
+                      </div>
+                    </div>
+                  )}
+                </div>
+
                 <div className="flex justify-end space-x-2">
                   <Button type="button" variant="outline" onClick={() => setIsCreateModalOpen(false)}>
                     Cancel
@@ -393,6 +633,13 @@ export default function PaymentGatewaysPage() {
                         {gateway.methodType}
                       </Badge>
                       {gateway.isTestMode && <Badge variant="outline" className="text-xs bg-yellow-50">Test</Badge>}
+                      {gateway.methodType === 'automated' && gateway.apiConfiguration && 
+                       Object.values(gateway.apiConfiguration).some((val: any) => val && val.trim && val.trim() !== '') && (
+                        <Badge variant="outline" className="text-xs bg-green-50 text-green-700">
+                          <Key className="w-3 h-3 mr-1" />
+                          API Configured
+                        </Badge>
+                      )}
                     </div>
                   </div>
                 </div>

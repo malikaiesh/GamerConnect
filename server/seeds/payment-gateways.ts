@@ -21,11 +21,11 @@ const defaultGateways = [
     processingFee: 290, // 2.9%
     paymentInstructions: "",
     apiConfiguration: {
-      publicKey: "",
-      secretKey: "",
-      webhookSecret: "",
-      sandboxApiKey: "",
-      sandboxSecretKey: ""
+      publicKey: "pk_test_sample_key_for_testing_only",
+      secretKey: "sk_test_sample_secret_for_testing_only",
+      webhookSecret: "whsec_sample_webhook_secret_for_testing",
+      sandboxApiKey: "pk_test_sample_sandbox_key",
+      sandboxSecretKey: "sk_test_sample_sandbox_secret"
     },
     accountDetails: null
   },
@@ -45,12 +45,12 @@ const defaultGateways = [
     processingFee: 349, // 3.49%
     paymentInstructions: "",
     apiConfiguration: {
-      apiKey: "",
-      secretKey: "",
-      merchantId: "",
-      webhookSecret: "",
-      sandboxApiKey: "",
-      sandboxSecretKey: ""
+      apiKey: "sample_paypal_client_id_for_testing",
+      secretKey: "sample_paypal_client_secret_for_testing",
+      merchantId: "sample_merchant_id",
+      webhookSecret: "sample_webhook_secret",
+      sandboxApiKey: "sandbox_client_id_for_testing",
+      sandboxSecretKey: "sandbox_client_secret_for_testing"
     },
     accountDetails: null
   },
@@ -70,9 +70,9 @@ const defaultGateways = [
     processingFee: 200, // 2.0%
     paymentInstructions: "",
     apiConfiguration: {
-      apiKey: "",
-      secretKey: "",
-      webhookSecret: ""
+      apiKey: "rzp_test_sample_key_id_for_testing",
+      secretKey: "sample_razorpay_secret_for_testing",
+      webhookSecret: "sample_webhook_secret_for_testing"
     },
     accountDetails: null
   },
