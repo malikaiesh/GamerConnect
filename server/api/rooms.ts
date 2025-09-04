@@ -539,6 +539,11 @@ router.get("/stats/overview", isAuthenticated, isAdmin, async (req: Request, res
     const [publicRoomsResult] = await db.select({ count: count() }).from(rooms).where(eq(rooms.type, 'public'));
     const [privateRoomsResult] = await db.select({ count: count() }).from(rooms).where(eq(rooms.type, 'private'));
     const [verifiedRoomsResult] = await db.select({ count: count() }).from(rooms).where(eq(rooms.isVerified, true));
+    
+    // Get newly created rooms (last 24 hours)
+    const yesterday = new Date();
+    yesterday.setDate(yesterday.getDate() - 1);
+    const [newRoomsResult] = await db.select({ count: count() }).from(rooms).where(gte(rooms.createdAt, yesterday));
 
     // Get recent room activity
     const recentRooms = await db
@@ -560,6 +565,7 @@ router.get("/stats/overview", isAuthenticated, isAdmin, async (req: Request, res
       publicRooms: publicRoomsResult.count,
       privateRooms: privateRoomsResult.count,
       verifiedRooms: verifiedRoomsResult.count,
+      newRooms: newRoomsResult.count,
       recentRooms
     });
   } catch (error) {
