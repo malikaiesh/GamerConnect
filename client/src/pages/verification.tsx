@@ -277,7 +277,7 @@ export default function VerificationPage() {
       <section className="py-12 bg-background">
         <div className="container mx-auto px-4">
           <div className="max-w-4xl mx-auto">
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8">
               
               {/* Verification Form */}
               <div className="lg:col-span-2">
@@ -376,25 +376,66 @@ export default function VerificationPage() {
                             <FormItem>
                               <FormLabel>Verification Plan *</FormLabel>
                               <FormControl>
-                                <Select onValueChange={(value) => field.onChange(parseInt(value))}>
-                                  <SelectTrigger data-testid="select-pricing-plan">
-                                    <SelectValue placeholder="Select a verification plan" />
-                                  </SelectTrigger>
-                                  <SelectContent>
-                                    {loadingPlans ? (
-                                      <SelectItem value="loading" disabled>Loading plans...</SelectItem>
-                                    ) : verificationPlans.length === 0 ? (
-                                      <SelectItem value="no-plans" disabled>No verification plans available</SelectItem>
-                                    ) : (
-                                      verificationPlans.map((plan) => (
-                                        <SelectItem key={plan.id} value={plan.id.toString()}>
-                                          {plan.displayName} - {formatPrice(plan.price, plan.currency)}
-                                          {plan.verificationDuration && ` (${plan.verificationDuration} days)`}
-                                        </SelectItem>
-                                      ))
-                                    )}
-                                  </SelectContent>
-                                </Select>
+                                <div className="space-y-3">
+                                  {loadingPlans ? (
+                                    <div className="text-center py-4 text-muted-foreground">Loading plans...</div>
+                                  ) : verificationPlans.length === 0 ? (
+                                    <div className="text-center py-4 text-muted-foreground">No verification plans available</div>
+                                  ) : (
+                                    <RadioGroup
+                                      value={field.value?.toString()}
+                                      onValueChange={(value) => field.onChange(parseInt(value))}
+                                      className="grid gap-3"
+                                    >
+                                      {verificationPlans.map((plan) => (
+                                        <div key={plan.id} className="relative">
+                                          <RadioGroupItem 
+                                            value={plan.id.toString()} 
+                                            id={`plan-${plan.id}`} 
+                                            className="peer sr-only" 
+                                          />
+                                          <label
+                                            htmlFor={`plan-${plan.id}`}
+                                            className={`flex items-center justify-between p-3 sm:p-4 rounded-lg border-2 cursor-pointer transition-all duration-200 ${
+                                              field.value === plan.id
+                                                ? 'border-blue-500 bg-blue-50 dark:bg-blue-950/20 shadow-md'
+                                                : 'border-gray-200 dark:border-gray-700 hover:border-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800'
+                                            }`}
+                                            data-testid={`select-plan-${plan.id}`}
+                                          >
+                                            <div className="flex items-center gap-3">
+                                              <div className={`w-4 h-4 rounded-full border-2 flex items-center justify-center ${
+                                                field.value === plan.id
+                                                  ? 'border-blue-500 bg-blue-500'
+                                                  : 'border-gray-300'
+                                              }`}>
+                                                {field.value === plan.id && (
+                                                  <div className="w-2 h-2 bg-white rounded-full"></div>
+                                                )}
+                                              </div>
+                                              <div>
+                                                <div className="font-medium text-sm sm:text-base">{plan.displayName}</div>
+                                                {plan.verificationDuration && (
+                                                  <div className="text-xs sm:text-sm text-muted-foreground">
+                                                    {plan.verificationDuration} days verification
+                                                  </div>
+                                                )}
+                                              </div>
+                                            </div>
+                                            <div className="text-right">
+                                              <div className="font-bold text-base sm:text-lg text-blue-600 dark:text-blue-400">
+                                                {formatPrice(plan.price, plan.currency)}
+                                              </div>
+                                              {field.value === plan.id && (
+                                                <div className="text-xs text-green-600 font-medium">✓ Selected</div>
+                                              )}
+                                            </div>
+                                          </label>
+                                        </div>
+                                      ))}
+                                    </RadioGroup>
+                                  )}
+                                </div>
                               </FormControl>
                               <FormMessage />
                             </FormItem>
@@ -650,7 +691,7 @@ export default function VerificationPage() {
                             />
 
                             {/* Document Image Uploads */}
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div className="grid grid-cols-1 gap-4 sm:gap-6">
                               {/* Front Image Upload */}
                               <div className="space-y-3">
                                 <FormField
@@ -671,16 +712,16 @@ export default function VerificationPage() {
                                             onComplete={handleFrontImageComplete}
                                             buttonClassName="w-full"
                                           >
-                                            <div className="flex flex-col items-center gap-3 py-8">
-                                              <div className="rounded-full bg-blue-100 dark:bg-blue-900/30 p-4">
-                                                <Upload className="h-10 w-10 text-blue-600 dark:text-blue-400" />
+                                            <div className="flex flex-col items-center gap-2 py-4 sm:py-6">
+                                              <div className="rounded-full bg-blue-100 dark:bg-blue-900/30 p-2 sm:p-3">
+                                                <Upload className="h-6 w-6 sm:h-8 sm:w-8 text-blue-600 dark:text-blue-400" />
                                               </div>
                                               <div className="text-center">
-                                                <span className="text-lg font-semibold text-gray-900 dark:text-white">Upload Front Side</span>
-                                                <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-                                                  Drag & drop or click to upload
+                                                <span className="text-sm sm:text-base font-semibold text-gray-900 dark:text-white">Upload Front Side</span>
+                                                <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400 mt-1">
+                                                  Tap to upload or drag & drop
                                                 </p>
-                                                <p className="text-xs text-gray-400 dark:text-gray-500 mt-2">
+                                                <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">
                                                   PNG, JPG (Max 5MB)
                                                 </p>
                                               </div>
@@ -724,16 +765,16 @@ export default function VerificationPage() {
                                             onComplete={handleBackImageComplete}
                                             buttonClassName="w-full"
                                           >
-                                            <div className="flex flex-col items-center gap-3 py-8">
-                                              <div className="rounded-full bg-blue-100 dark:bg-blue-900/30 p-4">
-                                                <Upload className="h-10 w-10 text-blue-600 dark:text-blue-400" />
+                                            <div className="flex flex-col items-center gap-2 py-4 sm:py-6">
+                                              <div className="rounded-full bg-blue-100 dark:bg-blue-900/30 p-2 sm:p-3">
+                                                <Upload className="h-6 w-6 sm:h-8 sm:w-8 text-blue-600 dark:text-blue-400" />
                                               </div>
                                               <div className="text-center">
-                                                <span className="text-lg font-semibold text-gray-900 dark:text-white">Upload Back Side</span>
-                                                <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-                                                  Drag & drop or click to upload
+                                                <span className="text-sm sm:text-base font-semibold text-gray-900 dark:text-white">Upload Back Side</span>
+                                                <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400 mt-1">
+                                                  Tap to upload or drag & drop
                                                 </p>
-                                                <p className="text-xs text-gray-400 dark:text-gray-500 mt-2">
+                                                <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">
                                                   PNG, JPG (Max 5MB)
                                                 </p>
                                               </div>
