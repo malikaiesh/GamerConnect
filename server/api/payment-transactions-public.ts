@@ -19,8 +19,12 @@ export async function createCheckoutTransaction(req: Request, res: Response) {
     // Generate a unique transaction ID
     const transactionId = `TXN_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
     
-    // For now, use a default user ID (guest checkout) or get from session if authenticated
-    const userId = (req.session as any)?.user?.id || null;
+    // Get user ID from session (user must be authenticated for checkout)
+    const userId = (req as any).user?.id;
+    
+    if (!userId) {
+      return res.status(401).json({ error: 'Authentication required for checkout' });
+    }
     
     const [transaction] = await db
       .insert(paymentTransactions)

@@ -70,11 +70,23 @@ export default function CheckoutPage() {
       }
     },
     onError: (error: any) => {
-      toast({
-        title: "Transaction Failed",
-        description: error.message || "Failed to create transaction. Please try again.",
-        variant: "destructive",
-      });
+      if (error.message?.includes('401') || error.message?.includes('Authentication required')) {
+        toast({
+          title: "Authentication Required",
+          description: "Please log in to complete your purchase.",
+          variant: "destructive",
+        });
+        // Redirect to login page after a short delay
+        setTimeout(() => {
+          window.location.href = '/auth?redirect=' + encodeURIComponent(window.location.pathname + window.location.search);
+        }, 2000);
+      } else {
+        toast({
+          title: "Transaction Failed",
+          description: error.message || "Failed to create transaction. Please try again.",
+          variant: "destructive",
+        });
+      }
     },
   });
 

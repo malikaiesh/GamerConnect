@@ -335,8 +335,8 @@ Sitemap: ${req.protocol}://${req.get('host')}/sitemap.xml`);
   app.get('/api/admin/payment-gateways-with-api-keys', isAuthenticated, isAdmin, getPaymentGatewaysWithApiKeys);
   app.get('/api/admin/payment-gateway/:gatewayType/test-api-key', isAuthenticated, isAdmin, testPaymentGatewayApiKey);
   
-  // Public Payment Transaction Routes
-  app.post('/api/payment-transactions', createCheckoutTransaction);
+  // Public Payment Transaction Routes (requires authentication)
+  app.post('/api/payment-transactions', isAuthenticated, createCheckoutTransaction);
   
   // Admin Payment Transaction Routes
   app.get('/api/admin/payment-transactions', isAuthenticated, isAdmin, getPaymentTransactions);
