@@ -39,14 +39,7 @@ const eventFormSchema = z.object({
   }, "Start date must be today or in the future"),
   endDate: z.string().optional().refine((val) => {
     return !val || !isNaN(Date.parse(val));
-  }, "Please enter a valid date").refine((val, ctx) => {
-    if (!val) return true; // Optional field
-    const formData = ctx.parent as EventFormValues | undefined;
-    if (!formData || !formData.startDate) return true;
-    const startDate = new Date(formData.startDate);
-    const endDate = new Date(val);
-    return endDate > startDate;
-  }, "End date must be after start date"),
+  }, "Please enter a valid date"),
   timezone: z.string().default('UTC'),
   locationType: z.enum(['online', 'physical', 'hybrid']),
   locationName: z.string().optional(),
@@ -69,6 +62,14 @@ const eventFormSchema = z.object({
   metaTitle: z.string().optional(),
   metaDescription: z.string().optional(),
   featured: z.boolean().default(false),
+}).refine((data) => {
+  if (!data.endDate || !data.startDate) return true;
+  const startDate = new Date(data.startDate);
+  const endDate = new Date(data.endDate);
+  return endDate > startDate;
+}, {
+  message: "End date must be after start date",
+  path: ["endDate"]
 });
 
 type EventFormValues = z.infer<typeof eventFormSchema>;
