@@ -265,8 +265,8 @@ export default function RoomLobbyPage() {
                             }
                             <span className="truncate">{roomListing.room.name}</span>
                             {roomListing.room.isVerified && (
-                              <div className="inline-flex items-center justify-center w-5 h-5 flex-shrink-0 relative">
-                                <svg className="w-5 h-5 drop-shadow-md" viewBox="0 0 24 24" fill="none">
+                              <div className="inline-flex items-center justify-center w-7 h-7 flex-shrink-0 relative">
+                                <svg className="w-7 h-7 drop-shadow-md" viewBox="0 0 24 24" fill="none">
                                   <path d="M12 2L13.09 5.26L16 4L15.74 7.26L19 8.35L16.74 10.74L19 12.65L15.74 13.26L16 17L13.09 15.74L12 19L10.91 15.74L8 17L8.26 13.74L5 12.65L8.26 10.26L5 8.35L8.26 7.74L8 4L10.91 5.26L12 2Z" fill="url(#verifyGradientLobby)" stroke="#1565C0" strokeWidth="0.5"/>
                                   <path d="M9 11.5L11 13.5L15 9.5" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
                                   <defs>
