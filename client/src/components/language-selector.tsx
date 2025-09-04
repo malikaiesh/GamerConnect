@@ -159,27 +159,28 @@ export function LanguageSelector({
         value={selectedLanguage}
         onValueChange={handleLanguageChange}
       >
-        <SelectTrigger className="w-full" data-testid="select-language">
+        <SelectTrigger className="w-auto min-w-[140px] max-w-[180px] h-10 px-3 py-2 text-sm border border-white/20 bg-white/10 backdrop-blur-sm rounded-lg hover:bg-white/20 transition-all duration-200 focus:ring-2 focus:ring-primary/50 focus:border-primary/50" data-testid="select-language">
           <SelectValue placeholder="Select language">
             {currentLanguage && (
-              <div className="flex items-center gap-2">
-                <span className="text-lg">{currentLanguage.flag}</span>
-                <span>{currentLanguage.nativeName}</span>
+              <div className="flex items-center gap-2 text-white">
+                <span className="text-base">{currentLanguage.flag}</span>
+                <span className="font-medium text-sm truncate">{currentLanguage.nativeName}</span>
               </div>
             )}
           </SelectValue>
         </SelectTrigger>
-        <SelectContent>
+        <SelectContent className="bg-card/95 backdrop-blur-sm border border-border shadow-lg rounded-lg">
           {languages.map((language) => (
             <SelectItem 
               key={language.code} 
               value={language.code}
+              className="hover:bg-primary/10 focus:bg-primary/15 cursor-pointer"
               data-testid={`option-language-${language.code}`}
             >
               <div className="flex items-center gap-2">
-                <span className="text-lg">{language.flag}</span>
-                <span>{language.name}</span>
-                <span className="text-muted-foreground">({language.nativeName})</span>
+                <span className="text-base">{language.flag}</span>
+                <span className="font-medium">{language.name}</span>
+                <span className="text-xs text-muted-foreground">({language.nativeName})</span>
               </div>
             </SelectItem>
           ))}
@@ -234,7 +235,7 @@ export function useCurrentLanguage() {
 export function useTranslations(category?: string) {
   const { currentLanguage, isTranslationEnabled } = useCurrentLanguage();
 
-  const { data: translations = {} } = useQuery({
+  const { data: translations = {} } = useQuery<Record<string, string>>({
     queryKey: ['/api/translations/translations', currentLanguage, { category }],
     enabled: isTranslationEnabled && !!currentLanguage,
   });

@@ -107,7 +107,7 @@ export default function HomePage() {
   // Track notification impression
   const trackNotificationImpression = async (notificationId: number) => {
     try {
-      await apiRequest('POST', `/api/notifications/${notificationId}/impression`, {});
+      await apiRequest(`/api/notifications/${notificationId}/impression`, { method: 'POST', body: {} });
     } catch (error) {
       console.error('Error tracking notification impression:', error);
     }
@@ -121,7 +121,7 @@ export default function HomePage() {
   // Track notification click
   const trackNotificationClick = async (notificationId: number) => {
     try {
-      await apiRequest('POST', `/api/notifications/${notificationId}/click`, {});
+      await apiRequest(`/api/notifications/${notificationId}/click`, { method: 'POST', body: {} });
     } catch (error) {
       console.error('Error tracking notification click:', error);
     }
@@ -181,10 +181,10 @@ export default function HomePage() {
               </div>
               
               {/* Language Selector */}
-              <div className="max-w-xs">
+              <div className="w-auto">
                 <LanguageSelector 
                   variant="select" 
-                  className="backdrop-blur-sm bg-white/10 rounded-lg p-3 border border-white/20"
+                  className=""
                   showLabel={false}
                 />
               </div>
