@@ -54,7 +54,7 @@ export default function PricingPlansPage() {
       <Header />
       
       {/* Hero Section */}
-      <section className="relative py-16 overflow-hidden" style={{
+      <section className="relative py-8 sm:py-12 lg:py-16 overflow-hidden" style={{
         background: "linear-gradient(135deg, hsl(260 40% 12%) 0%, hsl(270 45% 15%) 100%)",
         boxShadow: "0 4px 30px rgba(0, 0, 0, 0.2)",
       }}>
@@ -63,10 +63,10 @@ export default function PricingPlansPage() {
         
         <div className="container mx-auto px-4 relative z-10">
           <div className="text-center max-w-3xl mx-auto">
-            <h1 className="heading-xl mb-4 text-white">
+            <h1 className="text-2xl sm:text-3xl lg:text-4xl xl:text-5xl font-bold mb-4 text-white leading-tight">
               Choose Your <span className="bg-clip-text text-transparent bg-gradient-to-r from-secondary to-primary">Perfect Plan</span>
             </h1>
-            <p className="text-lg md:text-xl text-white/90 mb-8">
+            <p className="text-base sm:text-lg lg:text-xl text-white/90 mb-6 sm:mb-8 px-4">
               Unlock premium features, get verified, and enhance your gaming experience with our flexible pricing plans.
             </p>
           </div>
@@ -74,20 +74,20 @@ export default function PricingPlansPage() {
       </section>
 
       {/* Pricing Plans Section */}
-      <section className="py-12 bg-background">
-        <div className="container mx-auto px-4">
+      <section className="py-6 sm:py-8 lg:py-12 bg-background">
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           {isLoading ? (
-            <div className="text-center py-12">
-              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
-              <p className="text-muted-foreground">Loading pricing plans...</p>
+            <div className="text-center py-8 sm:py-12">
+              <div className="animate-spin rounded-full h-8 w-8 sm:h-12 sm:w-12 border-b-2 border-primary mx-auto mb-4"></div>
+              <p className="text-muted-foreground text-sm sm:text-base">Loading pricing plans...</p>
             </div>
           ) : (
             <Tabs defaultValue="all" value={selectedType} onValueChange={setSelectedType}>
               <div className="mb-8">
-                <TabsList className="grid w-full max-w-2xl mx-auto grid-cols-5 mb-8">
+                <TabsList className="grid w-full max-w-4xl mx-auto grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 mb-8 h-auto">
                   {planTypes.map(type => (
-                    <TabsTrigger key={type} value={type} className="capitalize">
-                      {type === "all" ? "All Plans" : planTypeLabels[type as keyof typeof planTypeLabels] || type}
+                    <TabsTrigger key={type} value={type} className="capitalize text-xs sm:text-sm py-2 px-1 sm:px-3">
+                      {type === "all" ? "All" : planTypeLabels[type as keyof typeof planTypeLabels] || type}
                     </TabsTrigger>
                   ))}
                 </TabsList>
@@ -95,18 +95,18 @@ export default function PricingPlansPage() {
 
               <TabsContent value={selectedType}>
                 {filteredPlans.length === 0 ? (
-                  <div className="text-center py-12">
-                    <p className="text-muted-foreground text-lg">No plans available for this category.</p>
+                  <div className="text-center py-8 sm:py-12">
+                    <p className="text-muted-foreground text-base sm:text-lg">No plans available for this category.</p>
                   </div>
                 ) : (
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">
                     {filteredPlans.map((plan) => {
                       const IconComponent = planIcons[plan.planType as keyof typeof planIcons] || Star;
                       
                       return (
                         <Card 
                           key={plan.id} 
-                          className={`relative overflow-hidden transition-all hover:shadow-lg hover:scale-105 ${
+                          className={`relative overflow-hidden transition-all hover:shadow-lg hover:scale-[1.02] sm:hover:scale-105 ${
                             plan.isPopular ? 'border-primary ring-2 ring-primary/20' : ''
                           }`}
                           data-testid={`plan-${plan.name}`}
@@ -117,11 +117,11 @@ export default function PricingPlansPage() {
                             </div>
                           )}
                           
-                          <CardHeader className={`text-center ${plan.isPopular ? 'pt-8' : 'pt-6'}`}>
+                          <CardHeader className={`text-center ${plan.isPopular ? 'pt-8' : 'pt-4 sm:pt-6'} px-4 sm:px-6`}>
                             <div className="mx-auto mb-3 p-3 rounded-full bg-primary/10">
                               <IconComponent className="h-8 w-8 text-primary" />
                             </div>
-                            <CardTitle className="text-xl font-bold">{plan.displayName}</CardTitle>
+                            <CardTitle className="text-lg sm:text-xl font-bold leading-tight">{plan.displayName}</CardTitle>
                             <div className="space-y-2">
                               <div className="flex items-center justify-center gap-2">
                                 {plan.originalPrice && plan.originalPrice > plan.price && (
@@ -129,7 +129,7 @@ export default function PricingPlansPage() {
                                     {formatPrice(plan.originalPrice, plan.currency)}
                                   </span>
                                 )}
-                                <span className="text-3xl font-bold text-primary">
+                                <span className="text-2xl sm:text-3xl font-bold text-primary">
                                   {formatPrice(plan.price, plan.currency)}
                                 </span>
                               </div>
@@ -139,7 +139,7 @@ export default function PricingPlansPage() {
                             </div>
                           </CardHeader>
                           
-                          <CardContent>
+                          <CardContent className="px-4 sm:px-6 pb-4 sm:pb-6">
                             {plan.description && (
                               <p className="text-sm text-muted-foreground mb-4">{plan.description}</p>
                             )}
@@ -178,7 +178,7 @@ export default function PricingPlansPage() {
                             )}
                             
                             <Button 
-                              className="w-full"
+                              className="w-full text-sm sm:text-base py-2 sm:py-3"
                               onClick={() => handlePurchase(plan)}
                               data-testid={`purchase-${plan.name}`}
                             >

@@ -54,6 +54,7 @@ import {
   deletePaymentGateway,
   getPaymentGatewayById 
 } from "./api/payment-gateways";
+import { getPublicPaymentGateways } from "./api/payment-gateways-public";
 import { getPaymentGatewaysWithApiKeys, testPaymentGatewayApiKey } from "./api/payment-api-keys";
 import { 
   getPaymentTransactions, 
@@ -318,7 +319,10 @@ Sitemap: ${req.protocol}://${req.get('host')}/sitemap.xml`);
   registerUserRoutes(app);
   registerCategoryRoutes(app);
   
-  // Payment Gateway Routes
+  // Public Payment Gateway Routes
+  app.get('/api/payment-gateways/public', getPublicPaymentGateways);
+  
+  // Payment Gateway Routes (Admin)
   app.get('/api/admin/payment-gateways', isAuthenticated, isAdmin, getPaymentGateways);
   app.post('/api/admin/payment-gateways', isAuthenticated, isAdmin, createPaymentGateway);
   app.get('/api/admin/payment-gateways/:id', isAuthenticated, isAdmin, getPaymentGatewayById);
