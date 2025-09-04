@@ -6,7 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Users, Lock, Globe, Clock, Search, Plus } from "lucide-react";
+import { Users, Lock, Globe, Clock, Search, Plus, CheckCircle } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { Link } from "wouter";
 import { Header } from "@/components/layout/header";
@@ -27,6 +27,7 @@ interface RoomListing {
     language: string;
     isLocked: boolean;
     isFeatured: boolean;
+    isVerified: boolean;
     tags: string[];
     totalVisits: number;
     createdAt: string;
@@ -263,6 +264,9 @@ export default function RoomLobbyPage() {
                               <Lock className="h-4 w-4 text-orange-500 flex-shrink-0" />
                             }
                             <span className="truncate">{roomListing.room.name}</span>
+                            {roomListing.room.isVerified && (
+                              <CheckCircle className="h-4 w-4 text-blue-600 flex-shrink-0" />
+                            )}
                           </CardTitle>
                           <div className="text-sm text-muted-foreground">
                             by @{roomListing.owner.displayName || roomListing.owner.username}

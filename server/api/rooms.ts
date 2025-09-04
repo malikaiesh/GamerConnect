@@ -394,6 +394,7 @@ router.get("/", async (req: Request, res: Response) => {
           language: rooms.language,
           isLocked: rooms.isLocked,
           isFeatured: rooms.isFeatured,
+          isVerified: rooms.isVerified,
           voiceChatEnabled: rooms.voiceChatEnabled,
           textChatEnabled: rooms.textChatEnabled,
           giftsEnabled: rooms.giftsEnabled,
