@@ -344,12 +344,7 @@ export default function ApiKeysPage() {
                 </Label>
                 <Select
                   value={formData.type}
-                  onValueChange={(value) => {
-                    handleSelectChange('type', value);
-                    // Force the select to close after selection
-                    document.body.click();
-                  }}
-                  open={false}
+                  onValueChange={(value) => handleSelectChange('type', value)}
                 >
                   <SelectTrigger className="col-span-3">
                     <SelectValue placeholder="Select type" />
