@@ -97,6 +97,7 @@ router.get("/admin", isAuthenticated, isAdmin, async (req: Request, res: Respons
     const search = req.query.search as string;
     const status = req.query.status as string;
     const type = req.query.type as string;
+    const verified = req.query.verified as string;
 
     const offset = (page - 1) * limit;
 
@@ -126,6 +127,9 @@ router.get("/admin", isAuthenticated, isAdmin, async (req: Request, res: Respons
     }
     if (type) {
       conditions.push(eq(rooms.type, type as any));
+    }
+    if (verified) {
+      conditions.push(eq(rooms.isVerified, verified === 'true'));
     }
 
     if (conditions.length > 0) {
@@ -534,6 +538,7 @@ router.get("/stats/overview", isAuthenticated, isAdmin, async (req: Request, res
     const [activeRoomsResult] = await db.select({ count: count() }).from(rooms).where(eq(rooms.status, 'active'));
     const [publicRoomsResult] = await db.select({ count: count() }).from(rooms).where(eq(rooms.type, 'public'));
     const [privateRoomsResult] = await db.select({ count: count() }).from(rooms).where(eq(rooms.type, 'private'));
+    const [verifiedRoomsResult] = await db.select({ count: count() }).from(rooms).where(eq(rooms.isVerified, true));
 
     // Get recent room activity
     const recentRooms = await db
@@ -554,6 +559,7 @@ router.get("/stats/overview", isAuthenticated, isAdmin, async (req: Request, res
       activeRooms: activeRoomsResult.count,
       publicRooms: publicRoomsResult.count,
       privateRooms: privateRoomsResult.count,
+      verifiedRooms: verifiedRoomsResult.count,
       recentRooms
     });
   } catch (error) {

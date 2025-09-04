@@ -64,6 +64,7 @@ interface RoomStats {
   activeRooms: number;
   publicRooms: number;
   privateRooms: number;
+  verifiedRooms: number;
   recentRooms: Array<{
     room: {
       id: number;
@@ -83,6 +84,7 @@ export default function RoomsPage() {
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [typeFilter, setTypeFilter] = useState<string>("all");
+  const [verifiedFilter, setVerifiedFilter] = useState<string>("all");
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
@@ -101,11 +103,12 @@ export default function RoomsPage() {
       pages: number;
     };
   }>({
-    queryKey: ["/api/rooms/admin", currentPage, searchTerm, statusFilter, typeFilter],
+    queryKey: ["/api/rooms/admin", currentPage, searchTerm, statusFilter, typeFilter, verifiedFilter],
     queryFn: () => {
       const status = statusFilter === "all" ? "" : statusFilter;
       const type = typeFilter === "all" ? "" : typeFilter;
-      return apiRequest(`/api/rooms/admin?page=${currentPage}&search=${searchTerm}&status=${status}&type=${type}`);
+      const verified = verifiedFilter === "all" ? "" : (verifiedFilter === "verified" ? "true" : "false");
+      return apiRequest(`/api/rooms/admin?page=${currentPage}&search=${searchTerm}&status=${status}&type=${type}&verified=${verified}`);
     }
   });
 
@@ -201,7 +204,7 @@ export default function RoomsPage() {
 
       {/* Statistics Cards */}
       {stats && (
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-5">
           <Card data-testid="card-total-rooms">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">Total Rooms</CardTitle>
@@ -241,6 +244,16 @@ export default function RoomsPage() {
               <div className="text-2xl font-bold" data-testid="text-private-rooms">{stats.privateRooms}</div>
             </CardContent>
           </Card>
+
+          <Card data-testid="card-verified-rooms">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Verified Rooms</CardTitle>
+              <Settings className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold" data-testid="text-verified-rooms">{stats.verifiedRooms}</div>
+            </CardContent>
+          </Card>
         </div>
       )}
 
@@ -278,6 +291,16 @@ export default function RoomsPage() {
                 <SelectItem value="all">All Types</SelectItem>
                 <SelectItem value="public">Public</SelectItem>
                 <SelectItem value="private">Private</SelectItem>
+              </SelectContent>
+            </Select>
+            <Select value={verifiedFilter} onValueChange={setVerifiedFilter}>
+              <SelectTrigger className="md:max-w-xs" data-testid="select-verified">
+                <SelectValue placeholder="Filter by verification" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Rooms</SelectItem>
+                <SelectItem value="verified">Verified Only</SelectItem>
+                <SelectItem value="unverified">Unverified Only</SelectItem>
               </SelectContent>
             </Select>
           </div>
