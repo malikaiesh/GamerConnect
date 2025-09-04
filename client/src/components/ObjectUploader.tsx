@@ -1,12 +1,7 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import type { ReactNode } from "react";
-import Uppy from "@uppy/core";
-import { DashboardModal } from "@uppy/react";
-import "@uppy/core/dist/style.min.css";
-import "@uppy/dashboard/dist/style.min.css";
-import AwsS3 from "@uppy/aws-s3";
-import type { UploadResult } from "@uppy/core";
 import { Button } from "@/components/ui/button";
+import { Upload, X, CheckCircle2 } from "lucide-react";
 
 interface ObjectUploaderProps {
   maxNumberOfFiles?: number;
@@ -15,9 +10,7 @@ interface ObjectUploaderProps {
     method: "PUT";
     url: string;
   }>;
-  onComplete?: (
-    result: UploadResult<Record<string, unknown>, Record<string, unknown>>
-  ) => void;
+  onComplete?: (result: { successful: Array<{ uploadURL: string }> }) => void;
   buttonClassName?: string;
   children: ReactNode;
 }
@@ -58,139 +51,127 @@ export function ObjectUploader({
   buttonClassName,
   children,
 }: ObjectUploaderProps) {
-  const [showModal, setShowModal] = useState(false);
-  const [uppy] = useState(() =>
-    new Uppy({
-      restrictions: {
-        maxNumberOfFiles,
-        maxFileSize,
-        allowedFileTypes: ['image/*'],
-      },
-      autoProceed: false,
-    })
-      .use(AwsS3, {
-        shouldUseMultipart: false,
-        getUploadParameters: onGetUploadParameters,
-      })
-      .on("complete", (result) => {
-        onComplete?.(result);
-        setShowModal(false);
-      })
-  );
+  const [isUploading, setIsUploading] = useState(false);
+  const [uploadSuccess, setUploadSuccess] = useState(false);
+  const [dragActive, setDragActive] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const handleFiles = async (files: FileList) => {
+    if (files.length === 0) return;
+    
+    const file = files[0];
+    
+    // Check file size
+    if (file.size > maxFileSize) {
+      alert(`File size exceeds ${Math.round(maxFileSize / 1024 / 1024)}MB limit`);
+      return;
+    }
+    
+    // Check file type
+    if (!file.type.startsWith('image/')) {
+      alert('Please select an image file');
+      return;
+    }
+
+    setIsUploading(true);
+    
+    try {
+      // Get upload parameters
+      const { url } = await onGetUploadParameters();
+      
+      // Upload file directly
+      const response = await fetch(url, {
+        method: 'PUT',
+        body: file,
+        headers: {
+          'Content-Type': file.type,
+        },
+      });
+      
+      if (response.ok) {
+        setUploadSuccess(true);
+        onComplete?.({ successful: [{ uploadURL: url }] });
+        setTimeout(() => setUploadSuccess(false), 3000);
+      } else {
+        throw new Error('Upload failed');
+      }
+    } catch (error) {
+      console.error('Upload error:', error);
+      alert('Upload failed. Please try again.');
+    } finally {
+      setIsUploading(false);
+    }
+  };
+
+  const handleDrag = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (e.type === "dragenter" || e.type === "dragover") {
+      setDragActive(true);
+    } else if (e.type === "dragleave") {
+      setDragActive(false);
+    }
+  };
+
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setDragActive(false);
+    
+    if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+      handleFiles(e.dataTransfer.files);
+    }
+  };
+
+  const handleClick = () => {
+    fileInputRef.current?.click();
+  };
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files) {
+      handleFiles(e.target.files);
+    }
+  };
 
   return (
-    <div>
-      <Button onClick={() => setShowModal(true)} className={buttonClassName} data-testid="button-upload-image">
-        {children}
-      </Button>
-
-      <style>{`
-        .uppy-Dashboard {
-          border-radius: 12px !important;
-          border: 2px dashed #6366f1 !important;
-          background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
-        }
+    <div className={buttonClassName}>
+      <div
+        className={`relative border-2 border-dashed rounded-lg p-6 text-center cursor-pointer transition-colors ${
+          dragActive 
+            ? 'border-blue-400 bg-blue-50 dark:bg-blue-950/20' 
+            : 'border-gray-300 hover:border-gray-400'
+        } ${uploadSuccess ? 'border-green-400 bg-green-50 dark:bg-green-950/20' : ''}`}
+        onDragEnter={handleDrag}
+        onDragLeave={handleDrag}
+        onDragOver={handleDrag}
+        onDrop={handleDrop}
+        onClick={handleClick}
+        data-testid="button-upload-image"
+      >
+        <input
+          ref={fileInputRef}
+          type="file"
+          className="hidden"
+          accept="image/*"
+          onChange={handleFileChange}
+        />
         
-        .uppy-Dashboard-inner {
-          border-radius: 10px !important;
-          background: rgba(255, 255, 255, 0.95) !important;
-          backdrop-filter: blur(10px) !important;
-        }
-        
-        .uppy-Dashboard-dropFilesHereHint {
-          font-size: 18px !important;
-          font-weight: 600 !important;
-          color: #374151 !important;
-          margin-bottom: 8px !important;
-        }
-        
-        .uppy-Dashboard-browse {
-          color: #6366f1 !important;
-          font-weight: 600 !important;
-          text-decoration: none !important;
-          border-bottom: 2px solid #6366f1 !important;
-          transition: all 0.2s ease !important;
-        }
-        
-        .uppy-Dashboard-browse:hover {
-          color: #4f46e5 !important;
-          border-bottom-color: #4f46e5 !important;
-        }
-        
-        .uppy-Dashboard-AddFiles {
-          border-radius: 8px !important;
-          background: rgba(255, 255, 255, 0.8) !important;
-          backdrop-filter: blur(5px) !important;
-          border: 2px dashed #d1d5db !important;
-          transition: all 0.3s ease !important;
-        }
-        
-        .uppy-Dashboard-AddFiles:hover {
-          border-color: #6366f1 !important;
-          background: rgba(255, 255, 255, 0.9) !important;
-        }
-        
-        .uppy-Dashboard-AddFiles-info {
-          padding: 20px !important;
-        }
-        
-        .uppy-Dashboard-note {
-          font-size: 14px !important;
-          color: #6b7280 !important;
-          font-weight: 500 !important;
-        }
-        
-        .uppy-Dashboard-AddFiles-title {
-          font-size: 16px !important;
-          font-weight: 600 !important;
-          color: #374151 !important;
-          margin-bottom: 10px !important;
-        }
-        
-        .uppy-DashboardItem {
-          border-radius: 8px !important;
-          background: rgba(255, 255, 255, 0.9) !important;
-          backdrop-filter: blur(10px) !important;
-          border: 1px solid #e5e7eb !important;
-        }
-        
-        .uppy-Dashboard-progressindicators {
-          background: rgba(255, 255, 255, 0.95) !important;
-          backdrop-filter: blur(10px) !important;
-          border-radius: 0 0 10px 10px !important;
-        }
-        
-        .uppy-ProgressBar {
-          background: linear-gradient(90deg, #6366f1, #8b5cf6) !important;
-          border-radius: 4px !important;
-        }
-        
-        .uppy-Dashboard-close {
-          background: rgba(255, 255, 255, 0.9) !important;
-          border-radius: 50% !important;
-          border: 1px solid #e5e7eb !important;
-          width: 32px !important;
-          height: 32px !important;
-          transition: all 0.2s ease !important;
-        }
-        
-        .uppy-Dashboard-close:hover {
-          background: #f3f4f6 !important;
-          border-color: #d1d5db !important;
-        }
-      `}</style>
-
-      <DashboardModal
-        uppy={uppy}
-        open={showModal}
-        onRequestClose={() => setShowModal(false)}
-        proudlyDisplayPoweredByUppy={false}
-        theme="light"
-        note="Upload your profile picture (max 5MB)"
-        closeAfterFinish={true}
-        showProgressDetails={true}
-        doneButtonHandler={() => setShowModal(false)}
-      />
+        {isUploading ? (
+          <div className="flex flex-col items-center">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mb-2"></div>
+            <span className="text-sm text-gray-600">Uploading...</span>
+          </div>
+        ) : uploadSuccess ? (
+          <div className="flex flex-col items-center text-green-600">
+            <CheckCircle2 className="h-8 w-8 mb-2" />
+            <span className="text-sm">Upload successful!</span>
+          </div>
+        ) : (
+          <div className="flex flex-col items-center">
+            {children}
+          </div>
+        )}
+      </div>
     </div>
   );
 }
