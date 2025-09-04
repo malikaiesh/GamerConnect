@@ -462,12 +462,25 @@ export default function VerificationPage() {
                                     <RadioGroupItem value="international" id="international" className="peer sr-only" />
                                     <label
                                       htmlFor="international"
-                                      className="flex flex-col items-center justify-between rounded-lg border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground peer-checked:border-primary cursor-pointer"
+                                      className={`flex flex-col items-center justify-between rounded-xl border-2 p-6 cursor-pointer transition-all duration-200 ${
+                                        field.value === 'international' 
+                                          ? 'border-green-500 bg-green-50 dark:bg-green-950/20 shadow-lg scale-105' 
+                                          : 'border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 hover:border-gray-300 hover:shadow-md'
+                                      }`}
                                     >
-                                      <CreditCard className="h-6 w-6 mb-2" />
+                                      <div className={`rounded-full p-3 mb-3 ${
+                                        field.value === 'international' 
+                                          ? 'bg-green-500 text-white' 
+                                          : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300'
+                                      }`}>
+                                        <CreditCard className="h-6 w-6" />
+                                      </div>
                                       <div className="text-center">
-                                        <div className="font-medium">International Payment</div>
+                                        <div className="font-semibold text-lg mb-1">International Payment</div>
                                         <div className="text-sm text-muted-foreground">Stripe/PayPal</div>
+                                        {field.value === 'international' && (
+                                          <div className="mt-2 text-xs text-green-600 font-medium">✓ Selected</div>
+                                        )}
                                       </div>
                                     </label>
                                   </div>
@@ -475,12 +488,25 @@ export default function VerificationPage() {
                                     <RadioGroupItem value="local" id="local" className="peer sr-only" />
                                     <label
                                       htmlFor="local"
-                                      className="flex flex-col items-center justify-between rounded-lg border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground peer-checked:border-primary cursor-pointer"
+                                      className={`flex flex-col items-center justify-between rounded-xl border-2 p-6 cursor-pointer transition-all duration-200 ${
+                                        field.value === 'local' 
+                                          ? 'border-green-500 bg-green-50 dark:bg-green-950/20 shadow-lg scale-105' 
+                                          : 'border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 hover:border-gray-300 hover:shadow-md'
+                                      }`}
                                     >
-                                      <FileImage className="h-6 w-6 mb-2" />
+                                      <div className={`rounded-full p-3 mb-3 ${
+                                        field.value === 'local' 
+                                          ? 'bg-green-500 text-white' 
+                                          : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300'
+                                      }`}>
+                                        <FileImage className="h-6 w-6" />
+                                      </div>
                                       <div className="text-center">
-                                        <div className="font-medium">Local Payment</div>
+                                        <div className="font-semibold text-lg mb-1">Local Payment</div>
                                         <div className="text-sm text-muted-foreground">Bank Transfer + Screenshot</div>
+                                        {field.value === 'local' && (
+                                          <div className="mt-2 text-xs text-green-600 font-medium">✓ Selected</div>
+                                        )}
                                       </div>
                                     </label>
                                   </div>
@@ -643,12 +669,21 @@ export default function VerificationPage() {
                                             maxFileSize={5242880} // 5MB
                                             onGetUploadParameters={handleDocumentUpload}
                                             onComplete={handleFrontImageComplete}
-                                            buttonClassName="w-full h-32 border-2 border-dashed border-gray-300 hover:border-blue-500 bg-gray-50 dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                                            buttonClassName="w-full"
                                           >
-                                            <div className="flex flex-col items-center gap-2">
-                                              <Upload className="h-8 w-8 text-gray-400" />
-                                              <span className="text-sm font-medium">Upload Front Side</span>
-                                              <span className="text-xs text-muted-foreground">PNG, JPG (Max 5MB)</span>
+                                            <div className="flex flex-col items-center gap-3 py-8">
+                                              <div className="rounded-full bg-blue-100 dark:bg-blue-900/30 p-4">
+                                                <Upload className="h-10 w-10 text-blue-600 dark:text-blue-400" />
+                                              </div>
+                                              <div className="text-center">
+                                                <span className="text-lg font-semibold text-gray-900 dark:text-white">Upload Front Side</span>
+                                                <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+                                                  Drag & drop or click to upload
+                                                </p>
+                                                <p className="text-xs text-gray-400 dark:text-gray-500 mt-2">
+                                                  PNG, JPG (Max 5MB)
+                                                </p>
+                                              </div>
                                             </div>
                                           </ObjectUploader>
                                           {frontImageUrl && (
@@ -687,12 +722,21 @@ export default function VerificationPage() {
                                             maxFileSize={5242880} // 5MB
                                             onGetUploadParameters={handleDocumentUpload}
                                             onComplete={handleBackImageComplete}
-                                            buttonClassName="w-full h-32 border-2 border-dashed border-gray-300 hover:border-blue-500 bg-gray-50 dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                                            buttonClassName="w-full"
                                           >
-                                            <div className="flex flex-col items-center gap-2">
-                                              <Upload className="h-8 w-8 text-gray-400" />
-                                              <span className="text-sm font-medium">Upload Back Side</span>
-                                              <span className="text-xs text-muted-foreground">PNG, JPG (Max 5MB)</span>
+                                            <div className="flex flex-col items-center gap-3 py-8">
+                                              <div className="rounded-full bg-blue-100 dark:bg-blue-900/30 p-4">
+                                                <Upload className="h-10 w-10 text-blue-600 dark:text-blue-400" />
+                                              </div>
+                                              <div className="text-center">
+                                                <span className="text-lg font-semibold text-gray-900 dark:text-white">Upload Back Side</span>
+                                                <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+                                                  Drag & drop or click to upload
+                                                </p>
+                                                <p className="text-xs text-gray-400 dark:text-gray-500 mt-2">
+                                                  PNG, JPG (Max 5MB)
+                                                </p>
+                                              </div>
                                             </div>
                                           </ObjectUploader>
                                           {backImageUrl && (
@@ -715,15 +759,61 @@ export default function VerificationPage() {
                             </div>
 
                             {/* Document Upload Guidelines */}
-                            <div className="p-4 border rounded-lg bg-yellow-50 dark:bg-yellow-950/20">
-                              <h5 className="font-medium text-yellow-900 dark:text-yellow-100 mb-2">📸 Document Photo Guidelines</h5>
-                              <ul className="text-sm text-yellow-700 dark:text-yellow-300 space-y-1">
-                                <li>• Ensure all text is clearly readable</li>
-                                <li>• No glare or shadows covering the document</li>
-                                <li>• Take photos in good lighting conditions</li>
-                                <li>• Document should fill most of the frame</li>
-                                <li>• All four corners of the document should be visible</li>
-                              </ul>
+                            <div className="bg-gradient-to-br from-yellow-50 to-orange-50 dark:from-yellow-950/20 dark:to-orange-950/20 border border-yellow-200 dark:border-yellow-900 rounded-xl p-6">
+                              <div className="flex items-start gap-3">
+                                <div className="rounded-full bg-yellow-100 dark:bg-yellow-900/30 p-2 mt-1">
+                                  <FileImage className="h-5 w-5 text-yellow-600 dark:text-yellow-400" />
+                                </div>
+                                <div>
+                                  <h4 className="font-semibold text-yellow-900 dark:text-yellow-100 mb-3">
+                                    📋 Document Photo Guidelines
+                                  </h4>
+                                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div>
+                                      <h5 className="font-medium text-yellow-800 dark:text-yellow-200 mb-2">✅ Do:</h5>
+                                      <ul className="space-y-2 text-sm text-yellow-700 dark:text-yellow-300">
+                                        <li className="flex items-start gap-2">
+                                          <span className="text-green-500 mt-0.5">•</span>
+                                          Ensure all text is clearly readable
+                                        </li>
+                                        <li className="flex items-start gap-2">
+                                          <span className="text-green-500 mt-0.5">•</span>
+                                          Take photos in good lighting
+                                        </li>
+                                        <li className="flex items-start gap-2">
+                                          <span className="text-green-500 mt-0.5">•</span>
+                                          Fill most of the frame with document
+                                        </li>
+                                        <li className="flex items-start gap-2">
+                                          <span className="text-green-500 mt-0.5">•</span>
+                                          Keep document flat and straight
+                                        </li>
+                                      </ul>
+                                    </div>
+                                    <div>
+                                      <h5 className="font-medium text-yellow-800 dark:text-yellow-200 mb-2">❌ Avoid:</h5>
+                                      <ul className="space-y-2 text-sm text-yellow-700 dark:text-yellow-300">
+                                        <li className="flex items-start gap-2">
+                                          <span className="text-red-500 mt-0.5">•</span>
+                                          Glare or shadows on document
+                                        </li>
+                                        <li className="flex items-start gap-2">
+                                          <span className="text-red-500 mt-0.5">•</span>
+                                          Blurry or cropped images
+                                        </li>
+                                        <li className="flex items-start gap-2">
+                                          <span className="text-red-500 mt-0.5">•</span>
+                                          Covering any part of the document
+                                        </li>
+                                        <li className="flex items-start gap-2">
+                                          <span className="text-red-500 mt-0.5">•</span>
+                                          Taking photos from an angle
+                                        </li>
+                                      </ul>
+                                    </div>
+                                  </div>
+                                </div>
+                              </div>
                             </div>
                           </div>
                         )}
