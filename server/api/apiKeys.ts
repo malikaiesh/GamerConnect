@@ -2,18 +2,12 @@ import { Express, Request, Response } from 'express';
 import { storage } from '../storage';
 import { ApiKey, insertApiKeySchema } from '@shared/schema';
 import { ZodError } from 'zod';
+import { isAuthenticated, isAdmin } from '../middleware/auth';
 
 export function registerApiKeyRoutes(app: Express) {
-  // Middleware to require admin authentication
-  const requireAdmin = (req: Request, res: Response, next: Function) => {
-    if (!req.isAuthenticated() || !req.user.isAdmin) {
-      return res.status(401).json({ message: 'Unauthorized' });
-    }
-    next();
-  };
 
   // Get all API keys
-  app.get('/api/api-keys', requireAdmin, async (req: Request, res: Response) => {
+  app.get('/api/api-keys', isAuthenticated, isAdmin, async (req: Request, res: Response) => {
     try {
       const apiKeys = await storage.getApiKeys();
       return res.status(200).json(apiKeys);
@@ -24,7 +18,7 @@ export function registerApiKeyRoutes(app: Express) {
   });
 
   // Get API key by ID
-  app.get('/api/api-keys/:id', requireAdmin, async (req: Request, res: Response) => {
+  app.get('/api/api-keys/:id', isAuthenticated, isAdmin, async (req: Request, res: Response) => {
     try {
       const id = parseInt(req.params.id);
       if (isNaN(id)) {
@@ -64,7 +58,7 @@ export function registerApiKeyRoutes(app: Express) {
   });
 
   // Create API key
-  app.post('/api/api-keys', requireAdmin, async (req: Request, res: Response) => {
+  app.post('/api/api-keys', isAuthenticated, isAdmin, async (req: Request, res: Response) => {
     try {
       const apiKeyData = insertApiKeySchema.parse(req.body);
       
@@ -83,34 +77,47 @@ export function registerApiKeyRoutes(app: Express) {
   });
 
   // Update API key
-  app.put('/api/api-keys/:id', requireAdmin, async (req: Request, res: Response) => {
+  app.put('/api/api-keys/:id', isAuthenticated, isAdmin, async (req: Request, res: Response) => {
     try {
+      console.log('API Key update request received:', {
+        id: req.params.id,
+        body: req.body,
+        user: req.user?.username || 'unknown'
+      });
+      
       const id = parseInt(req.params.id);
       if (isNaN(id)) {
+        console.log('Invalid API key ID:', req.params.id);
         return res.status(400).json({ message: 'Invalid API key ID' });
       }
 
       const existingApiKey = await storage.getApiKeyById(id);
       if (!existingApiKey) {
+        console.log('API key not found:', id);
         return res.status(404).json({ message: 'API key not found' });
       }
 
-      // Only validate the fields that are being updated
-      const apiKeyData = req.body;
+      // Create a partial update schema that doesn't require all fields
+      const updateSchema = insertApiKeySchema.partial();
+      console.log('Validating update data:', req.body);
+      const apiKeyData = updateSchema.parse(req.body);
+      console.log('Validation passed, updating API key:', apiKeyData);
       
       const updatedApiKey = await storage.updateApiKey(id, apiKeyData);
+      console.log('API key updated successfully:', updatedApiKey?.id);
       return res.status(200).json(updatedApiKey);
     } catch (error) {
       if (error instanceof ZodError) {
+        console.error('Validation error updating API key:', error.errors);
         return res.status(400).json({ message: 'Invalid API key data', errors: error.errors });
       }
       console.error('Error updating API key:', error);
-      return res.status(500).json({ message: 'Error updating API key' });
+      return res.status(500).json({ message: 'Error updating API key', error: error.message });
     }
   });
 
   // Delete API key
-  app.delete('/api/api-keys/:id', requireAdmin, async (req: Request, res: Response) => {
+  app.delete('/api/api-keys/:id', isAuthenticated, isAdmin, async (req: Request, res: Response) => {
     try {
       const id = parseInt(req.params.id);
       if (isNaN(id)) {
