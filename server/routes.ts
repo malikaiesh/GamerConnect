@@ -946,16 +946,64 @@ Sitemap: ${req.protocol}://${req.get('host')}/sitemap.xml`);
   // Create new event (admin only)
   app.post('/api/events', isAdmin, async (req, res) => {
     try {
-      const eventData = insertEventSchema.parse({
+      // Parse and format the data before validation
+      const parsedData = {
         ...req.body,
         createdBy: req.user?.id
-      });
+      };
+
+      // Handle date parsing if dates are strings
+      if (parsedData.startDate && typeof parsedData.startDate === 'string') {
+        parsedData.startDate = new Date(parsedData.startDate);
+      }
+      if (parsedData.endDate && typeof parsedData.endDate === 'string') {
+        parsedData.endDate = new Date(parsedData.endDate);
+      }
+      if (parsedData.registrationStartDate && typeof parsedData.registrationStartDate === 'string') {
+        parsedData.registrationStartDate = new Date(parsedData.registrationStartDate);
+      }
+      if (parsedData.registrationEndDate && typeof parsedData.registrationEndDate === 'string') {
+        parsedData.registrationEndDate = new Date(parsedData.registrationEndDate);
+      }
+
+      // Generate slug if not provided
+      if (!parsedData.slug && parsedData.title) {
+        parsedData.slug = parsedData.title
+          .toLowerCase()
+          .replace(/[^a-z0-9\s-]/g, '')
+          .replace(/\s+/g, '-')
+          .replace(/-+/g, '-')
+          .trim('-');
+      }
+
+      // Set default values for optional fields
+      if (parsedData.timezone === undefined) {
+        parsedData.timezone = 'UTC';
+      }
+      if (parsedData.registrationEnabled === undefined) {
+        parsedData.registrationEnabled = false;
+      }
+      if (parsedData.featured === undefined) {
+        parsedData.featured = false;
+      }
+      if (parsedData.registrationFee === undefined) {
+        parsedData.registrationFee = 0;
+      }
+
+      console.log('Event data before validation:', parsedData);
+      
+      const eventData = insertEventSchema.parse(parsedData);
       
       const [newEvent] = await db.insert(events).values([eventData]).returning();
       res.status(201).json(newEvent);
     } catch (error) {
       if (error instanceof z.ZodError) {
-        return res.status(400).json({ error: 'Validation error', details: error.errors });
+        console.log('Validation errors:', error.errors);
+        return res.status(400).json({ 
+          error: 'Validation error', 
+          details: error.errors,
+          message: 'Please check the form data and ensure all required fields are filled correctly.'
+        });
       }
       console.error('Error creating event:', error);
       res.status(500).json({ error: 'Failed to create event' });
