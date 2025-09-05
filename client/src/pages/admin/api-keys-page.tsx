@@ -217,6 +217,84 @@ export default function ApiKeysPage() {
     return date.toLocaleDateString() + ' ' + date.toLocaleTimeString();
   };
 
+  // Categorize API keys
+  const paymentGatewayTypes = ['stripe', 'paypal', 'razorpay', 'flutterwave', 'mollie', 'square', 'adyen', '2checkout', 'braintree', 'authorize_net'];
+  
+  const paymentGatewayKeys = apiKeys.filter((key: ApiKey) => paymentGatewayTypes.includes(key.type));
+  const otherApiKeys = apiKeys.filter((key: ApiKey) => !paymentGatewayTypes.includes(key.type));
+
+  // Render API Keys Table
+  const renderApiKeysTable = (keys: ApiKey[]) => {
+    if (keys.length === 0) {
+      return (
+        <div className="text-center py-8 text-muted-foreground">
+          No API keys found in this category.
+        </div>
+      );
+    }
+
+    return (
+      <Table>
+        <TableHeader>
+          <TableRow>
+            <TableHead className="text-foreground">Name</TableHead>
+            <TableHead className="text-foreground">Type</TableHead>
+            <TableHead className="text-foreground">Key</TableHead>
+            <TableHead className="text-foreground">Status</TableHead>
+            <TableHead className="text-foreground">Created At</TableHead>
+            <TableHead className="text-foreground">Actions</TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {keys.map((apiKey: ApiKey) => (
+            <TableRow key={apiKey.id}>
+              <TableCell className="font-medium text-foreground">{apiKey.name}</TableCell>
+              <TableCell>
+                <Badge variant="outline" className="capitalize">
+                  {apiKey.type}
+                </Badge>
+              </TableCell>
+              <TableCell>
+                <code className="bg-muted px-1 py-0.5 rounded text-sm text-foreground">
+                  {apiKey.key.substring(0, 8)}...{apiKey.key.substring(apiKey.key.length - 4)}
+                </code>
+              </TableCell>
+              <TableCell>
+                <div className="flex items-center space-x-2">
+                  <Switch
+                    checked={apiKey.isActive}
+                    onCheckedChange={() => toggleApiKeyStatus(apiKey)}
+                  />
+                  <span className="text-foreground">{apiKey.isActive ? 'Active' : 'Inactive'}</span>
+                </div>
+              </TableCell>
+              <TableCell className="text-foreground">{formatDate(apiKey.createdAt)}</TableCell>
+              <TableCell>
+                <div className="flex space-x-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => handleEditApiKey(apiKey)}
+                  >
+                    <Pencil className="h-4 w-4" />
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => handleDeleteApiKey(apiKey.id)}
+                    className="text-destructive hover:text-destructive"
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
+                </div>
+              </TableCell>
+            </TableRow>
+          ))}
+        </TableBody>
+      </Table>
+    );
+  };
+
   return (
     <div className="flex min-h-screen bg-background">
       <AdminNavigation />
@@ -225,90 +303,55 @@ export default function ApiKeysPage() {
           <h1 className="text-3xl font-bold text-foreground">API Keys</h1>
           <p className="text-muted-foreground">Manage external service API keys and integrations</p>
         </div>
+        {/* Payment Gateway API Keys Section */}
         <Card className="border-border bg-card">
-        <CardHeader className="flex flex-row items-center justify-between">
-          <div>
-            <CardTitle className="text-foreground">API Keys</CardTitle>
-            <CardDescription>
-              Manage your API keys for external services
-            </CardDescription>
-          </div>
-          <Button onClick={handleCreateApiKey}>
-            <Plus className="mr-2 h-4 w-4" />
-            Add New API Key
-          </Button>
-        </CardHeader>
-        <CardContent>
-          {isLoading ? (
-            <div className="flex justify-center my-8">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+          <CardHeader className="flex flex-row items-center justify-between">
+            <div>
+              <CardTitle className="text-foreground">Payment Gateway API Keys</CardTitle>
+              <CardDescription>
+                Manage API keys for payment processing services
+              </CardDescription>
             </div>
-          ) : apiKeys.length === 0 ? (
-            <div className="text-center py-8 text-muted-foreground">
-              No API keys found. Click "Add New API Key" to create one.
+            <Button onClick={handleCreateApiKey}>
+              <Plus className="mr-2 h-4 w-4" />
+              Add Payment Gateway Key
+            </Button>
+          </CardHeader>
+          <CardContent>
+            {isLoading ? (
+              <div className="flex justify-center my-8">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+              </div>
+            ) : (
+              renderApiKeysTable(paymentGatewayKeys)
+            )}
+          </CardContent>
+        </Card>
+
+        {/* Other API Keys Section */}
+        <Card className="border-border bg-card">
+          <CardHeader className="flex flex-row items-center justify-between">
+            <div>
+              <CardTitle className="text-foreground">Other API Keys</CardTitle>
+              <CardDescription>
+                Manage API keys for external services and integrations
+              </CardDescription>
             </div>
-          ) : (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead className="text-foreground">Name</TableHead>
-                  <TableHead className="text-foreground">Type</TableHead>
-                  <TableHead className="text-foreground">Key</TableHead>
-                  <TableHead className="text-foreground">Status</TableHead>
-                  <TableHead className="text-foreground">Created At</TableHead>
-                  <TableHead className="text-foreground">Actions</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {apiKeys.map((apiKey: ApiKey) => (
-                  <TableRow key={apiKey.id}>
-                    <TableCell className="font-medium text-foreground">{apiKey.name}</TableCell>
-                    <TableCell>
-                      <Badge variant="outline" className="capitalize">
-                        {apiKey.type}
-                      </Badge>
-                    </TableCell>
-                    <TableCell>
-                      <code className="bg-muted px-1 py-0.5 rounded text-sm text-foreground">
-                        {apiKey.key.substring(0, 8)}...{apiKey.key.substring(apiKey.key.length - 4)}
-                      </code>
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex items-center space-x-2">
-                        <Switch
-                          checked={apiKey.isActive}
-                          onCheckedChange={() => toggleApiKeyStatus(apiKey)}
-                        />
-                        <span className="text-foreground">{apiKey.isActive ? 'Active' : 'Inactive'}</span>
-                      </div>
-                    </TableCell>
-                    <TableCell className="text-foreground">{formatDate(apiKey.createdAt)}</TableCell>
-                    <TableCell>
-                      <div className="flex space-x-2">
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => handleEditApiKey(apiKey)}
-                        >
-                          <Pencil className="h-4 w-4" />
-                        </Button>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => handleDeleteApiKey(apiKey.id)}
-                          className="text-destructive hover:text-destructive"
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          )}
-        </CardContent>
-      </Card>
+            <Button onClick={handleCreateApiKey}>
+              <Plus className="mr-2 h-4 w-4" />
+              Add Service API Key
+            </Button>
+          </CardHeader>
+          <CardContent>
+            {isLoading ? (
+              <div className="flex justify-center my-8">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+              </div>
+            ) : (
+              renderApiKeysTable(otherApiKeys)
+            )}
+          </CardContent>
+        </Card>
 
       {/* Create/Edit API Key Dialog */}
       <Dialog open={openDialog} onOpenChange={setOpenDialog}>
