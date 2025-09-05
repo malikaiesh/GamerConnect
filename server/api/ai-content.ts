@@ -30,15 +30,22 @@ export async function generateAIContent(req: Request, res: Response) {
     // Validate request body
     const validatedData = generateContentSchema.parse(req.body);
 
-    // Check if AI model is configured
-    const apiKeys = await storage.getApiKeys();
-    const modelKey = apiKeys.find(key => key.type === validatedData.aiModel && key.isActive);
+    // Check if AI model is configured (environment variable or database)
+    const hasEnvKey = (validatedData.aiModel === 'chatgpt' && process.env.OPENAI_API_KEY) ||
+                      (validatedData.aiModel === 'claude' && process.env.CLAUDE_API_KEY) ||
+                      (validatedData.aiModel === 'google_gemini' && process.env.GOOGLE_GEMINI_API_KEY);
     
-    if (!modelKey || !modelKey.value) {
-      return res.status(400).json({ 
-        error: `${validatedData.aiModel} is not configured or active`,
-        message: `Please configure ${validatedData.aiModel} API key in the API Keys section`
-      });
+    if (!hasEnvKey) {
+      // Fallback: check database
+      const apiKeys = await storage.getApiKeys();
+      const modelKey = apiKeys.find(key => key.type === validatedData.aiModel && key.isActive);
+      
+      if (!modelKey || !modelKey.value) {
+        return res.status(400).json({ 
+          error: `${validatedData.aiModel} is not configured or active`,
+          message: `Please configure ${validatedData.aiModel} API key in the API Keys section or add it as an environment variable`
+        });
+      }
     }
 
     // Generate content using AI service
@@ -100,15 +107,49 @@ export async function generateAIContent(req: Request, res: Response) {
 // Get available AI models
 export async function getAvailableAIModels(req: Request, res: Response) {
   try {
+    const aiModels = [];
+
+    // Check environment variables first
+    if (process.env.OPENAI_API_KEY) {
+      aiModels.push({
+        type: 'chatgpt',
+        name: 'OpenAI API Key (Environment)',
+        isActive: true,
+        isConfigured: true
+      });
+    }
+
+    if (process.env.CLAUDE_API_KEY) {
+      aiModels.push({
+        type: 'claude',
+        name: 'Claude API Key (Environment)',
+        isActive: true,
+        isConfigured: true
+      });
+    }
+
+    if (process.env.GOOGLE_GEMINI_API_KEY) {
+      aiModels.push({
+        type: 'google_gemini',
+        name: 'Google Gemini API Key (Environment)',
+        isActive: true,
+        isConfigured: true
+      });
+    }
+
+    // Add database API keys for any models not found in environment
     const apiKeys = await storage.getApiKeys();
-    const aiModels = apiKeys
+    const dbModels = apiKeys
       .filter(key => ['chatgpt', 'claude', 'google_gemini'].includes(key.type) && key.isActive)
+      .filter(key => !aiModels.some(model => model.type === key.type)) // Only add if not already from env
       .map(key => ({
         type: key.type,
         name: key.name,
         isActive: key.isActive,
         isConfigured: !!key.value
       }));
+
+    aiModels.push(...dbModels);
 
     res.json(aiModels);
   } catch (error) {
@@ -131,13 +172,21 @@ export async function testAIModel(req: Request, res: Response) {
       });
     }
 
-    const apiKeys = await storage.getApiKeys();
-    const modelKey = apiKeys.find(key => key.type === modelType && key.isActive);
+    // Check if AI model is configured (environment variable or database)
+    const hasEnvKey = (modelType === 'chatgpt' && process.env.OPENAI_API_KEY) ||
+                      (modelType === 'claude' && process.env.CLAUDE_API_KEY) ||
+                      (modelType === 'google_gemini' && process.env.GOOGLE_GEMINI_API_KEY);
     
-    if (!modelKey || !modelKey.value) {
-      return res.status(400).json({
-        error: `${modelType} is not configured or active`
-      });
+    if (!hasEnvKey) {
+      // Fallback: check database
+      const apiKeys = await storage.getApiKeys();
+      const modelKey = apiKeys.find(key => key.type === modelType && key.isActive);
+      
+      if (!modelKey || !modelKey.value) {
+        return res.status(400).json({
+          error: `${modelType} is not configured or active`
+        });
+      }
     }
 
     // Test the model with a simple request
@@ -189,14 +238,17 @@ export async function generateImageAltText(req: Request, res: Response) {
       });
     }
 
-    // Check if ChatGPT (vision model) is available
-    const apiKeys = await storage.getApiKeys();
-    const chatgptKey = apiKeys.find(key => key.type === 'chatgpt' && key.isActive);
-    
-    if (!chatgptKey || !chatgptKey.value) {
-      return res.status(400).json({
-        error: 'ChatGPT is required for image alt text generation'
-      });
+    // Check if ChatGPT (vision model) is available (environment variable or database)
+    if (!process.env.OPENAI_API_KEY) {
+      // Fallback: check database
+      const apiKeys = await storage.getApiKeys();
+      const chatgptKey = apiKeys.find(key => key.type === 'chatgpt' && key.isActive);
+      
+      if (!chatgptKey || !chatgptKey.value) {
+        return res.status(400).json({
+          error: 'ChatGPT is required for image alt text generation'
+        });
+      }
     }
 
     // For now, generate alt text based on context
