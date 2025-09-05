@@ -14,6 +14,7 @@ export default function AdminNavigation() {
     adminUsers: false,
     settings: false,
     adManager: true,
+    manageGames: false,
     payments: false,
     pricing: false,
     verification: false
@@ -104,47 +105,69 @@ export default function AdminNavigation() {
               Dashboard
             </Link>
           </li>
-          <li>
-            <Link
-              href="/admin/games"
+          {/* Manage Games Section */}
+          <li className="space-y-1">
+            <button
+              onClick={(e) => toggleSubMenu('manageGames', e)}
               className={cn(
-                "flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all",
-                isActive("/admin/games")
+                "flex items-center justify-between w-full gap-3 px-3 py-2.5 rounded-lg transition-all",
+                (isActive("/admin/games") || isActive("/admin/game-categories") || isActive("/admin/games-integration")) || expandedSubMenus.manageGames
                   ? "bg-primary/15 text-primary shadow-sm"
                   : "text-card-foreground hover:bg-primary/10 hover:text-primary"
               )}
             >
-              <Gamepad2 size={18} className="text-primary opacity-80" />
-              Games
-            </Link>
-          </li>
-          <li>
-            <Link
-              href="/admin/game-categories"
-              className={cn(
-                "flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all",
-                isActive("/admin/game-categories")
-                  ? "bg-primary/15 text-primary shadow-sm"
-                  : "text-card-foreground hover:bg-primary/10 hover:text-primary"
-              )}
-            >
-              <Files size={18} className="text-primary opacity-80" />
-              Game Categories
-            </Link>
-          </li>
-          <li>
-            <Link
-              href="/admin/games-integration"
-              className={cn(
-                "flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all",
-                isActive("/admin/games-integration")
-                  ? "bg-primary/15 text-primary shadow-sm"
-                  : "text-card-foreground hover:bg-primary/10 hover:text-primary"
-              )}
-            >
-              <Gamepad2 size={18} className="text-primary opacity-80" />
-              Games Integration
-            </Link>
+              <div className="flex items-center gap-3">
+                <Gamepad2 size={18} className="text-primary opacity-80" />
+                <span>Manage Games</span>
+              </div>
+              {expandedSubMenus.manageGames ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
+            </button>
+            {expandedSubMenus.manageGames && (
+              <ul className="ml-6 space-y-1">
+                <li>
+                  <Link
+                    href="/admin/games"
+                    className={cn(
+                      "flex items-center gap-3 px-3 py-2 rounded-lg transition-all text-sm",
+                      isActive("/admin/games")
+                        ? "bg-primary/15 text-primary shadow-sm"
+                        : "text-card-foreground hover:bg-primary/10 hover:text-primary"
+                    )}
+                  >
+                    <Gamepad2 size={16} className="text-primary opacity-60" />
+                    Games
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    href="/admin/game-categories"
+                    className={cn(
+                      "flex items-center gap-3 px-3 py-2 rounded-lg transition-all text-sm",
+                      isActive("/admin/game-categories")
+                        ? "bg-primary/15 text-primary shadow-sm"
+                        : "text-card-foreground hover:bg-primary/10 hover:text-primary"
+                    )}
+                  >
+                    <Files size={16} className="text-primary opacity-60" />
+                    Game Categories
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    href="/admin/games-integration"
+                    className={cn(
+                      "flex items-center gap-3 px-3 py-2 rounded-lg transition-all text-sm",
+                      isActive("/admin/games-integration")
+                        ? "bg-primary/15 text-primary shadow-sm"
+                        : "text-card-foreground hover:bg-primary/10 hover:text-primary"
+                    )}
+                  >
+                    <ExternalLink size={16} className="text-primary opacity-60" />
+                    Games Integration
+                  </Link>
+                </li>
+              </ul>
+            )}
           </li>
           <li>
             <Link
