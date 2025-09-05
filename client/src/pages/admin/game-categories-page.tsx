@@ -21,7 +21,6 @@ import { DeleteConfirmDialog } from "@/components/admin/delete-confirm-dialog";
 import { queryClient, apiRequest } from "@/lib/queryClient";
 import type { GameCategory } from "@shared/schema";
 import AdminNavigation from "@/components/admin/navigation";
-import { AdminThemeProvider } from "@/contexts/admin-theme-context";
 
 export default function GameCategoriesPage() {
   const [, setLocation] = useLocation();
@@ -198,10 +197,10 @@ export default function GameCategoriesPage() {
   };
 
   return (
-    <AdminThemeProvider>
-      <div className="admin-container flex min-h-screen bg-background">
-        <AdminNavigation />
-        <div className="flex-1 px-4 py-8 bg-background">
+    <div className="flex min-h-screen">
+      <AdminNavigation />
+      
+      <div className="flex-1 p-6 lg:p-10">
         <PageHeader 
           title="Game Categories" 
           description="Manage game categories for your platform"
@@ -344,8 +343,7 @@ export default function GameCategoriesPage() {
           itemName={selectedCategory.name}
         />
       )}
-        </div>
       </div>
-    </AdminThemeProvider>
+    </div>
   );
 }
