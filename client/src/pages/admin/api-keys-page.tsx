@@ -219,9 +219,11 @@ export default function ApiKeysPage() {
 
   // Categorize API keys
   const paymentGatewayTypes = ['stripe', 'paypal', 'razorpay', 'flutterwave', 'mollie', 'square', 'adyen', '2checkout', 'braintree', 'authorize_net'];
+  const aiToolTypes = ['chatgpt', 'claude', 'deepseek', 'google_gemini', 'grok', 'perplexity', 'character_ai', 'midjourney', 'dalle3', 'leonardo_ai', 'heygen', 'elevenlabs', 'luma_ai', 'notion_ai', 'taskade_ai', 'lumio_ai'];
   
   const paymentGatewayKeys = apiKeys.filter((key: ApiKey) => paymentGatewayTypes.includes(key.type));
-  const otherApiKeys = apiKeys.filter((key: ApiKey) => !paymentGatewayTypes.includes(key.type));
+  const aiToolKeys = apiKeys.filter((key: ApiKey) => aiToolTypes.includes(key.type));
+  const otherApiKeys = apiKeys.filter((key: ApiKey) => !paymentGatewayTypes.includes(key.type) && !aiToolTypes.includes(key.type));
 
   // Render API Keys Table
   const renderApiKeysTable = (keys: ApiKey[]) => {
@@ -328,6 +330,31 @@ export default function ApiKeysPage() {
           </CardContent>
         </Card>
 
+        {/* AI Tools API Keys Section */}
+        <Card className="border-border bg-card">
+          <CardHeader className="flex flex-row items-center justify-between">
+            <div>
+              <CardTitle className="text-foreground">AI Tools API Keys</CardTitle>
+              <CardDescription>
+                Manage API keys for AI and machine learning services
+              </CardDescription>
+            </div>
+            <Button onClick={handleCreateApiKey}>
+              <Plus className="mr-2 h-4 w-4" />
+              Add AI Tool Key
+            </Button>
+          </CardHeader>
+          <CardContent>
+            {isLoading ? (
+              <div className="flex justify-center my-8">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+              </div>
+            ) : (
+              renderApiKeysTable(aiToolKeys)
+            )}
+          </CardContent>
+        </Card>
+
         {/* Other API Keys Section */}
         <Card className="border-border bg-card">
           <CardHeader className="flex flex-row items-center justify-between">
@@ -393,10 +420,7 @@ export default function ApiKeysPage() {
                     <SelectValue placeholder="Select type" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="tinymce">TinyMCE</SelectItem>
-                    <SelectItem value="game-monetize">Game Monetize</SelectItem>
-                    <SelectItem value="analytics">Analytics</SelectItem>
-                    <SelectItem value="sendgrid">SendGrid</SelectItem>
+                    {/* Payment Gateway Options */}
                     <SelectItem value="stripe">Stripe</SelectItem>
                     <SelectItem value="paypal">PayPal</SelectItem>
                     <SelectItem value="razorpay">Razorpay</SelectItem>
@@ -407,6 +431,30 @@ export default function ApiKeysPage() {
                     <SelectItem value="2checkout">2Checkout</SelectItem>
                     <SelectItem value="braintree">Braintree</SelectItem>
                     <SelectItem value="authorize_net">Authorize.Net</SelectItem>
+                    
+                    {/* AI Tools Options */}
+                    <SelectItem value="chatgpt">ChatGPT</SelectItem>
+                    <SelectItem value="claude">Claude</SelectItem>
+                    <SelectItem value="deepseek">DeepSeek</SelectItem>
+                    <SelectItem value="google_gemini">Google Gemini</SelectItem>
+                    <SelectItem value="grok">Grok</SelectItem>
+                    <SelectItem value="perplexity">Perplexity</SelectItem>
+                    <SelectItem value="character_ai">Character.ai</SelectItem>
+                    <SelectItem value="midjourney">Midjourney</SelectItem>
+                    <SelectItem value="dalle3">DALL·E 3</SelectItem>
+                    <SelectItem value="leonardo_ai">Leonardo AI</SelectItem>
+                    <SelectItem value="heygen">HeyGen</SelectItem>
+                    <SelectItem value="elevenlabs">ElevenLabs</SelectItem>
+                    <SelectItem value="luma_ai">Luma AI</SelectItem>
+                    <SelectItem value="notion_ai">Notion AI</SelectItem>
+                    <SelectItem value="taskade_ai">Taskade AI</SelectItem>
+                    <SelectItem value="lumio_ai">Lumio AI</SelectItem>
+                    
+                    {/* Other Services Options */}
+                    <SelectItem value="tinymce">TinyMCE</SelectItem>
+                    <SelectItem value="game-monetize">Game Monetize</SelectItem>
+                    <SelectItem value="analytics">Analytics</SelectItem>
+                    <SelectItem value="sendgrid">SendGrid</SelectItem>
                     <SelectItem value="custom">Custom</SelectItem>
                   </SelectContent>
                 </Select>
