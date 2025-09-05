@@ -241,27 +241,27 @@ export default function GameCategoriesPage() {
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead>Name</TableHead>
-                      <TableHead>Slug</TableHead>
-                      <TableHead>Icon</TableHead>
-                      <TableHead>Display Order</TableHead>
-                      <TableHead>Status</TableHead>
-                      <TableHead>Created</TableHead>
-                      <TableHead className="text-right">Actions</TableHead>
+                      <TableHead className="text-foreground">Name</TableHead>
+                      <TableHead className="text-foreground">Slug</TableHead>
+                      <TableHead className="text-foreground">Icon</TableHead>
+                      <TableHead className="text-foreground">Display Order</TableHead>
+                      <TableHead className="text-foreground">Status</TableHead>
+                      <TableHead className="text-foreground">Created</TableHead>
+                      <TableHead className="text-right text-foreground">Actions</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
                     {categories.map((category: GameCategory) => (
                       <TableRow key={category.id} className="hover:bg-muted/50">
-                        <TableCell className="font-medium">{category.name}</TableCell>
-                        <TableCell>{category.slug}</TableCell>
-                        <TableCell>
+                        <TableCell className="font-medium text-foreground">{category.name}</TableCell>
+                        <TableCell className="text-foreground">{category.slug}</TableCell>
+                        <TableCell className="text-foreground">
                           <span className="flex items-center">
                             <i className={`${category.icon || 'ri-gamepad-line'} mr-2 text-lg`}></i>
                             {category.icon || 'ri-gamepad-line'}
                           </span>
                         </TableCell>
-                        <TableCell>{category.displayOrder}</TableCell>
+                        <TableCell className="text-foreground">{category.displayOrder}</TableCell>
                         <TableCell>
                           {category.isActive ? (
                             <Badge variant="default" className="flex items-center gap-1 bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-100">
@@ -275,7 +275,7 @@ export default function GameCategoriesPage() {
                             </Badge>
                           )}
                         </TableCell>
-                        <TableCell>{formatDate(category.createdAt)}</TableCell>
+                        <TableCell className="text-foreground">{formatDate(category.createdAt)}</TableCell>
                         <TableCell className="text-right space-x-2">
                           <Button
                             variant="ghost"
