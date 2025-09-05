@@ -13,7 +13,7 @@ export default function AdminNavigation() {
     accounts: false,
     adminUsers: false,
     settings: false,
-    adManager: true,
+    adManager: false,
     manageGames: false,
     payments: false,
     pricing: false,
