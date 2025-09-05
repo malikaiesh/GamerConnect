@@ -329,23 +329,23 @@ export default function ContentWritingPage() {
             {/* Main Content Area */}
             <div className="lg:col-span-3">
               <Tabs defaultValue="generate" className="space-y-6">
-            <TabsList className="grid w-full grid-cols-3">
-              <TabsTrigger value="generate" className="flex items-center gap-2">
-                <PenTool className="h-4 w-4" />
-                Generate Content
-              </TabsTrigger>
-              <TabsTrigger value="preview" className="flex items-center gap-2">
-                <Eye className="h-4 w-4" />
-                Preview & Edit
-              </TabsTrigger>
-              <TabsTrigger value="publish" className="flex items-center gap-2">
-                <Send className="h-4 w-4" />
-                Publish
-              </TabsTrigger>
-            </TabsList>
+                <TabsList className="grid w-full grid-cols-3">
+                  <TabsTrigger value="generate" className="flex items-center gap-2">
+                    <PenTool className="h-4 w-4" />
+                    Generate Content
+                  </TabsTrigger>
+                  <TabsTrigger value="preview" className="flex items-center gap-2">
+                    <Eye className="h-4 w-4" />
+                    Preview & Edit
+                  </TabsTrigger>
+                  <TabsTrigger value="publish" className="flex items-center gap-2">
+                    <Send className="h-4 w-4" />
+                    Publish
+                  </TabsTrigger>
+                </TabsList>
 
-            {/* Generate Content Tab */}
-            <TabsContent value="generate">
+                {/* Generate Content Tab */}
+                <TabsContent value="generate">
               <Card>
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
@@ -1071,10 +1071,11 @@ export default function ContentWritingPage() {
                 </CardContent>
               </Card>
             </TabsContent>
-          </Tabs>
-        </div>
+              </Tabs>
+            </div>
+          </div>
         </div>
       </div>
-    </div>
-  );
+    );
+  }
 }

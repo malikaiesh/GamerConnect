@@ -56,13 +56,12 @@ const defaultApiKeys = [
     isActive: true
   },
 
-  // AI Tools API Keys (Temporarily commented out until enum is updated)
-  /*
+  // AI Tools API Keys
   {
-    name: "ChatGPT API Key",
+    name: "OpenAI API Key",
     type: "chatgpt" as const,
-    key: "sk-example_chatgpt_api_key_for_testing",
-    description: "OpenAI ChatGPT API key for AI chat functionality",
+    key: "sk-example_openai_api_key_for_testing",
+    description: "OpenAI API key for ChatGPT and AI content generation",
     isActive: true
   },
   {
@@ -170,7 +169,6 @@ const defaultApiKeys = [
     description: "Lumio AI API key for educational AI tools",
     isActive: true
   }
-  */
 ];
 
 export async function seedApiKeys() {
