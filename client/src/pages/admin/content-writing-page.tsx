@@ -1073,6 +1073,7 @@ export default function ContentWritingPage() {
             </TabsContent>
           </Tabs>
         </div>
+        </div>
       </div>
     </div>
   );
