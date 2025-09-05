@@ -221,9 +221,47 @@ export default function ApiKeysPage() {
   const paymentGatewayTypes = ['stripe', 'paypal', 'razorpay', 'flutterwave', 'mollie', 'square', 'adyen', '2checkout', 'braintree', 'authorize_net'];
   const aiToolTypes = ['chatgpt', 'claude', 'deepseek', 'google_gemini', 'grok', 'perplexity', 'character_ai', 'midjourney', 'dalle3', 'leonardo_ai', 'heygen', 'elevenlabs', 'luma_ai', 'notion_ai', 'taskade_ai', 'lumio_ai'];
   
-  const paymentGatewayKeys = apiKeys.filter((key: ApiKey) => paymentGatewayTypes.includes(key.type));
-  const aiToolKeys = apiKeys.filter((key: ApiKey) => aiToolTypes.includes(key.type));
-  const otherApiKeys = apiKeys.filter((key: ApiKey) => !paymentGatewayTypes.includes(key.type) && !aiToolTypes.includes(key.type));
+  // Helper function to check if an API key is a payment gateway
+  const isPaymentGateway = (key: ApiKey) => {
+    return paymentGatewayTypes.includes(key.type) || 
+           key.name.toLowerCase().includes('paypal') ||
+           key.name.toLowerCase().includes('stripe') ||
+           key.name.toLowerCase().includes('razorpay') ||
+           key.name.toLowerCase().includes('flutterwave') ||
+           key.name.toLowerCase().includes('mollie') ||
+           key.name.toLowerCase().includes('square') ||
+           key.name.toLowerCase().includes('adyen') ||
+           key.name.toLowerCase().includes('2checkout') ||
+           key.name.toLowerCase().includes('braintree') ||
+           key.name.toLowerCase().includes('authorize');
+  };
+
+  // Helper function to check if an API key is an AI tool
+  const isAiTool = (key: ApiKey) => {
+    return aiToolTypes.includes(key.type) ||
+           key.name.toLowerCase().includes('chatgpt') ||
+           key.name.toLowerCase().includes('openai') ||
+           key.name.toLowerCase().includes('claude') ||
+           key.name.toLowerCase().includes('deepseek') ||
+           key.name.toLowerCase().includes('gemini') ||
+           key.name.toLowerCase().includes('grok') ||
+           key.name.toLowerCase().includes('perplexity') ||
+           key.name.toLowerCase().includes('character.ai') ||
+           key.name.toLowerCase().includes('midjourney') ||
+           key.name.toLowerCase().includes('dall-e') ||
+           key.name.toLowerCase().includes('dalle') ||
+           key.name.toLowerCase().includes('leonardo') ||
+           key.name.toLowerCase().includes('heygen') ||
+           key.name.toLowerCase().includes('elevenlabs') ||
+           key.name.toLowerCase().includes('luma') ||
+           key.name.toLowerCase().includes('notion ai') ||
+           key.name.toLowerCase().includes('taskade') ||
+           key.name.toLowerCase().includes('lumio');
+  };
+  
+  const paymentGatewayKeys = apiKeys.filter((key: ApiKey) => isPaymentGateway(key));
+  const aiToolKeys = apiKeys.filter((key: ApiKey) => isAiTool(key));
+  const otherApiKeys = apiKeys.filter((key: ApiKey) => !isPaymentGateway(key) && !isAiTool(key));
 
   // Render API Keys Table
   const renderApiKeysTable = (keys: ApiKey[]) => {
