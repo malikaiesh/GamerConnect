@@ -253,6 +253,30 @@
     --admin-nav-active: 270 75% 20%;
     --admin-shadow: 0 0% 0% / 0.5;
   }
+
+  /* Lunexa Theme Light Mode Override */
+  .lunexa-theme.admin-light {
+    /* Light version of Lunexa with proper contrast */
+    --background: 260 30% 96%;
+    --foreground: 260 15% 15%;
+    --card: 260 20% 98%;
+    --card-foreground: 260 15% 15%;
+    --muted: 260 15% 90%;
+    --muted-foreground: 260 10% 40%;
+    --border: 260 20% 85%;
+    --input: 260 20% 92%;
+    
+    /* Light mode admin variables for Lunexa */
+    --admin-bg: 260 30% 96%;
+    --admin-surface: 260 20% 98%;
+    --admin-border: 260 20% 85%;
+    --admin-text: 260 15% 15%;
+    --admin-text-muted: 260 10% 40%;
+    --admin-nav-bg: 260 20% 98%;
+    --admin-nav-hover: 270 75% 95%;
+    --admin-nav-active: 270 75% 90%;
+    --admin-shadow: 260 20% 40% / 0.1;
+  }
 }
 
   * {
