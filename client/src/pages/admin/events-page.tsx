@@ -8,6 +8,7 @@ import { useAuth } from "@/hooks/use-auth";
 import { useToast } from "@/hooks/use-toast";
 import { queryClient, apiRequest } from "@/lib/queryClient";
 import AdminNavigation from "@/components/admin/navigation";
+import { AdminThemeProvider } from "@/contexts/admin-theme-context";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -783,8 +784,9 @@ export default function EventsPage() {
   }
 
   return (
-    <div className="flex min-h-screen bg-background">
-      <AdminNavigation />
+    <AdminThemeProvider>
+      <div className="admin-container flex min-h-screen bg-background">
+        <AdminNavigation />
       <div className="flex-1 p-6 space-y-6">
         <div className="space-y-6">
             <div className="flex justify-between items-center">
@@ -943,6 +945,6 @@ export default function EventsPage() {
             )}
         </div>
       </div>
-    </div>
+    </AdminThemeProvider>
   );
 }

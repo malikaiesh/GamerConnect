@@ -310,7 +310,7 @@ export default function EventDetailPage() {
                     </CardHeader>
                     <CardContent>
                       <div 
-                        className="prose prose-sm max-w-none dark:prose-invert prose-headings:text-foreground prose-p:text-foreground dark:prose-headings:text-white dark:prose-p:text-white"
+                        className="prose prose-sm max-w-none dark:prose-invert prose-headings:text-gray-900 prose-p:text-gray-700 dark:prose-headings:text-white dark:prose-p:text-gray-100"
                         dangerouslySetInnerHTML={{ __html: event.rules }}
                         data-testid="event-rules"
                       />
@@ -328,7 +328,7 @@ export default function EventDetailPage() {
                     </CardHeader>
                     <CardContent>
                       <div 
-                        className="prose prose-sm max-w-none dark:prose-invert prose-headings:text-foreground prose-p:text-foreground dark:prose-headings:text-white dark:prose-p:text-white"
+                        className="prose prose-sm max-w-none dark:prose-invert prose-headings:text-gray-900 prose-p:text-gray-700 dark:prose-headings:text-white dark:prose-p:text-gray-100"
                         dangerouslySetInnerHTML={{ __html: event.prizes }}
                         data-testid="event-prizes"
                       />
@@ -343,7 +343,7 @@ export default function EventDetailPage() {
                     </CardHeader>
                     <CardContent>
                       <div 
-                        className="prose prose-sm max-w-none dark:prose-invert prose-headings:text-foreground prose-p:text-foreground dark:prose-headings:text-white dark:prose-p:text-white"
+                        className="prose prose-sm max-w-none dark:prose-invert prose-headings:text-gray-900 prose-p:text-gray-700 dark:prose-headings:text-white dark:prose-p:text-gray-100"
                         dangerouslySetInnerHTML={{ __html: event.requirements }}
                         data-testid="event-requirements"
                       />
