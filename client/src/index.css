@@ -255,7 +255,8 @@
   }
 
   /* Lunexa Theme Light Mode Override */
-  .lunexa-theme.admin-light {
+  .lunexa-theme.admin-light,
+  .admin-container.lunexa-theme.admin-light {
     /* Light version of Lunexa with proper contrast */
     --background: 260 30% 96%;
     --foreground: 260 15% 15%;
