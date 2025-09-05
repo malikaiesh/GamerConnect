@@ -419,6 +419,217 @@ export default function AdminNavigation() {
               </ul>
             )}
           </li>
+          
+          {/* Ad Manager Section */}
+          <li className="space-y-1">
+            <button
+              onClick={(e) => toggleSubMenu('adManager', e)}
+              className={cn(
+                "flex items-center justify-between w-full gap-3 px-3 py-2.5 rounded-lg transition-all",
+                (isActive("/admin/home-ads") || isActive("/admin/blog-ads") || isActive("/admin/games-ads")) || expandedSubMenus.adManager
+                  ? "bg-primary/15 text-primary shadow-sm"
+                  : "text-card-foreground hover:bg-primary/10 hover:text-primary"
+              )}
+            >
+              <div className="flex items-center gap-3">
+                <Advertisement size={18} className="text-primary opacity-80" />
+                <span>Ad Manager</span>
+              </div>
+              {expandedSubMenus.adManager ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
+            </button>
+            {expandedSubMenus.adManager && (
+              <ul className="ml-6 space-y-1">
+                <li>
+                  <Link
+                    href="/admin/home-ads"
+                    className={cn(
+                      "flex items-center gap-3 px-3 py-2 rounded-lg transition-all text-sm",
+                      isActive("/admin/home-ads")
+                        ? "bg-primary/15 text-primary shadow-sm"
+                        : "text-card-foreground hover:bg-primary/10 hover:text-primary"
+                    )}
+                  >
+                    <Advertisement size={16} className="text-primary opacity-60" />
+                    Home Ads
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    href="/admin/games-ads"
+                    className={cn(
+                      "flex items-center gap-3 px-3 py-2 rounded-lg transition-all text-sm",
+                      isActive("/admin/games-ads")
+                        ? "bg-primary/15 text-primary shadow-sm"
+                        : "text-card-foreground hover:bg-primary/10 hover:text-primary"
+                    )}
+                  >
+                    <Target size={16} className="text-primary opacity-60" />
+                    Games Ads
+                    <span className="ml-auto px-1.5 py-0.5 text-xs bg-green-100 text-green-700 rounded">New</span>
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    href="/admin/blog-ads"
+                    className={cn(
+                      "flex items-center gap-3 px-3 py-2 rounded-lg transition-all text-sm",
+                      isActive("/admin/blog-ads")
+                        ? "bg-primary/15 text-primary shadow-sm"
+                        : "text-card-foreground hover:bg-primary/10 hover:text-primary"
+                    )}
+                  >
+                    <Book size={16} className="text-primary opacity-60" />
+                    Blog Ads
+                  </Link>
+                </li>
+              </ul>
+            )}
+          </li>
+
+          {/* Push Notifications Section */}
+          <li className="space-y-1">
+            <button
+              onClick={(e) => toggleSubMenu('pushNotifications', e)}
+              className={cn(
+                "flex items-center justify-between w-full gap-3 px-3 py-2.5 rounded-lg transition-all",
+                isActive("/admin/push-notifications") || expandedSubMenus.pushNotifications
+                  ? "bg-primary/15 text-primary shadow-sm"
+                  : "text-card-foreground hover:bg-primary/10 hover:text-primary"
+              )}
+            >
+              <div className="flex items-center gap-3">
+                <Bell size={18} className="text-primary opacity-80" />
+                <span>Push Notifications</span>
+              </div>
+              {expandedSubMenus.pushNotifications ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
+            </button>
+            {expandedSubMenus.pushNotifications && (
+              <ul className="ml-6 space-y-1">
+                <li>
+                  <Link
+                    href="/admin/push-notifications"
+                    className={cn(
+                      "flex items-center gap-3 px-3 py-2 rounded-lg transition-all text-sm",
+                      isActive("/admin/push-notifications")
+                        ? "bg-primary/15 text-primary shadow-sm"
+                        : "text-card-foreground hover:bg-primary/10 hover:text-primary"
+                    )}
+                  >
+                    <Bell size={16} className="text-primary opacity-80" />
+                    Notifications
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    href="/admin/push-notifications/campaigns"
+                    className={cn(
+                      "flex items-center gap-3 px-3 py-2 rounded-lg transition-all text-sm",
+                      isActive("/admin/push-notifications/campaigns")
+                        ? "bg-primary/15 text-primary shadow-sm"
+                        : "text-card-foreground hover:bg-primary/10 hover:text-primary"
+                    )}
+                  >
+                    <Send size={16} className="text-primary opacity-80" />
+                    Campaigns
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    href="/admin/push-notifications/subscribers"
+                    className={cn(
+                      "flex items-center gap-3 px-3 py-2 rounded-lg transition-all text-sm",
+                      isActive("/admin/push-notifications/subscribers")
+                        ? "bg-primary/15 text-primary shadow-sm"
+                        : "text-card-foreground hover:bg-primary/10 hover:text-primary"
+                    )}
+                  >
+                    <Users size={16} className="text-primary opacity-80" />
+                    Subscribers
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    href="/admin/push-notifications/analytics"
+                    className={cn(
+                      "flex items-center gap-3 px-3 py-2 rounded-lg transition-all text-sm",
+                      isActive("/admin/push-notifications/analytics")
+                        ? "bg-primary/15 text-primary shadow-sm"
+                        : "text-card-foreground hover:bg-primary/10 hover:text-primary"
+                    )}
+                  >
+                    <Activity size={16} className="text-primary opacity-80" />
+                    Analytics
+                  </Link>
+                </li>
+              </ul>
+            )}
+          </li>
+
+          {/* Accounts Section */}
+          <li className="space-y-1">
+            <button
+              onClick={(e) => toggleSubMenu('accounts', e)}
+              className={cn(
+                "flex items-center justify-between w-full gap-3 px-3 py-2.5 rounded-lg transition-all",
+                isActive("/admin/accounts") || expandedSubMenus.accounts
+                  ? "bg-primary/15 text-primary shadow-sm"
+                  : "text-card-foreground hover:bg-primary/10 hover:text-primary"
+              )}
+            >
+              <div className="flex items-center gap-3">
+                <UserRound size={18} className="text-primary opacity-80" />
+                <span>Accounts</span>
+              </div>
+              {expandedSubMenus.accounts ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
+            </button>
+            {expandedSubMenus.accounts && (
+              <ul className="ml-6 space-y-1">
+                <li>
+                  <Link
+                    href="/admin/accounts/users"
+                    className={cn(
+                      "flex items-center gap-3 px-3 py-2 rounded-lg transition-all text-sm",
+                      isActive("/admin/accounts/users")
+                        ? "bg-primary/15 text-primary shadow-sm"
+                        : "text-card-foreground hover:bg-primary/10 hover:text-primary"
+                    )}
+                  >
+                    <Users size={16} className="text-primary opacity-80" />
+                    All Users
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    href="/admin/accounts/locations"
+                    className={cn(
+                      "flex items-center gap-3 px-3 py-2 rounded-lg transition-all text-sm",
+                      isActive("/admin/accounts/locations")
+                        ? "bg-primary/15 text-primary shadow-sm"
+                        : "text-card-foreground hover:bg-primary/10 hover:text-primary"
+                    )}
+                  >
+                    <MapPin size={16} className="text-primary opacity-80" />
+                    User Locations
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    href="/admin/accounts/signups"
+                    className={cn(
+                      "flex items-center gap-3 px-3 py-2 rounded-lg transition-all text-sm",
+                      isActive("/admin/accounts/signups")
+                        ? "bg-primary/15 text-primary shadow-sm"
+                        : "text-card-foreground hover:bg-primary/10 hover:text-primary"
+                    )}
+                  >
+                    <UserPlus size={16} className="text-primary opacity-80" />
+                    Signup Stats
+                  </Link>
+                </li>
+              </ul>
+            )}
+          </li>
+
           <li>
             <Link
               href="/admin/events"
@@ -587,70 +798,6 @@ export default function AdminNavigation() {
               View Site
             </a>
           </li>
-          <li className="space-y-1">
-            <button
-              onClick={(e) => toggleSubMenu('adManager', e)}
-              className={cn(
-                "flex items-center justify-between w-full gap-3 px-3 py-2.5 rounded-lg transition-all",
-                (isActive("/admin/home-ads") || isActive("/admin/blog-ads") || isActive("/admin/games-ads")) || expandedSubMenus.adManager
-                  ? "bg-primary/15 text-primary shadow-sm"
-                  : "text-card-foreground hover:bg-primary/10 hover:text-primary"
-              )}
-            >
-              <div className="flex items-center gap-3">
-                <Advertisement size={18} className="text-primary opacity-80" />
-                <span>Ad Manager</span>
-              </div>
-              {expandedSubMenus.adManager ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
-            </button>
-            {expandedSubMenus.adManager && (
-              <ul className="ml-6 space-y-1">
-                <li>
-                  <Link
-                    href="/admin/home-ads"
-                    className={cn(
-                      "flex items-center gap-3 px-3 py-2 rounded-lg transition-all text-sm",
-                      isActive("/admin/home-ads")
-                        ? "bg-primary/15 text-primary shadow-sm"
-                        : "text-card-foreground hover:bg-primary/10 hover:text-primary"
-                    )}
-                  >
-                    <Advertisement size={16} className="text-primary opacity-60" />
-                    Home Ads
-                  </Link>
-                </li>
-                <li>
-                  <Link
-                    href="/admin/games-ads"
-                    className={cn(
-                      "flex items-center gap-3 px-3 py-2 rounded-lg transition-all text-sm",
-                      isActive("/admin/games-ads")
-                        ? "bg-primary/15 text-primary shadow-sm"
-                        : "text-card-foreground hover:bg-primary/10 hover:text-primary"
-                    )}
-                  >
-                    <Target size={16} className="text-primary opacity-60" />
-                    Games Ads
-                    <span className="ml-auto px-1.5 py-0.5 text-xs bg-green-100 text-green-700 rounded">New</span>
-                  </Link>
-                </li>
-                <li>
-                  <Link
-                    href="/admin/blog-ads"
-                    className={cn(
-                      "flex items-center gap-3 px-3 py-2 rounded-lg transition-all text-sm",
-                      isActive("/admin/blog-ads")
-                        ? "bg-primary/15 text-primary shadow-sm"
-                        : "text-card-foreground hover:bg-primary/10 hover:text-primary"
-                    )}
-                  >
-                    <Book size={16} className="text-primary opacity-60" />
-                    Blog Ads
-                  </Link>
-                </li>
-              </ul>
-            )}
-          </li>
           <li>
             <Link
               href="/admin/signup-options"
@@ -694,83 +841,6 @@ export default function AdminNavigation() {
             </Link>
           </li>
 
-          <li className="space-y-1">
-            <button
-              onClick={(e) => toggleSubMenu('pushNotifications', e)}
-              className={cn(
-                "flex items-center justify-between w-full gap-3 px-3 py-2.5 rounded-lg transition-all",
-                isActive("/admin/push-notifications") || expandedSubMenus.pushNotifications
-                  ? "bg-primary/15 text-primary shadow-sm"
-                  : "text-card-foreground hover:bg-primary/10 hover:text-primary"
-              )}
-            >
-              <div className="flex items-center gap-3">
-                <Bell size={18} className="text-primary opacity-80" />
-                <span>Push Notifications</span>
-              </div>
-              {expandedSubMenus.pushNotifications ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
-            </button>
-            {expandedSubMenus.pushNotifications && (
-              <ul className="ml-6 space-y-1">
-                <li>
-                  <Link
-                    href="/admin/push-notifications"
-                    className={cn(
-                      "flex items-center gap-3 px-3 py-2 rounded-lg transition-all text-sm",
-                      isActive("/admin/push-notifications")
-                        ? "bg-primary/15 text-primary shadow-sm"
-                        : "text-card-foreground hover:bg-primary/10 hover:text-primary"
-                    )}
-                  >
-                    <Bell size={16} className="text-primary opacity-80" />
-                    Notifications
-                  </Link>
-                </li>
-                <li>
-                  <Link
-                    href="/admin/push-notifications/campaigns"
-                    className={cn(
-                      "flex items-center gap-3 px-3 py-2 rounded-lg transition-all text-sm",
-                      isActive("/admin/push-notifications/campaigns")
-                        ? "bg-primary/15 text-primary shadow-sm"
-                        : "text-card-foreground hover:bg-primary/10 hover:text-primary"
-                    )}
-                  >
-                    <Send size={16} className="text-primary opacity-80" />
-                    Campaigns
-                  </Link>
-                </li>
-                <li>
-                  <Link
-                    href="/admin/push-notifications/subscribers"
-                    className={cn(
-                      "flex items-center gap-3 px-3 py-2 rounded-lg transition-all text-sm",
-                      isActive("/admin/push-notifications/subscribers")
-                        ? "bg-primary/15 text-primary shadow-sm"
-                        : "text-card-foreground hover:bg-primary/10 hover:text-primary"
-                    )}
-                  >
-                    <Users size={16} className="text-primary opacity-80" />
-                    Subscribers
-                  </Link>
-                </li>
-                <li>
-                  <Link
-                    href="/admin/push-notifications/analytics"
-                    className={cn(
-                      "flex items-center gap-3 px-3 py-2 rounded-lg transition-all text-sm",
-                      isActive("/admin/push-notifications/analytics")
-                        ? "bg-primary/15 text-primary shadow-sm"
-                        : "text-card-foreground hover:bg-primary/10 hover:text-primary"
-                    )}
-                  >
-                    <Activity size={16} className="text-primary opacity-80" />
-                    Analytics
-                  </Link>
-                </li>
-              </ul>
-            )}
-          </li>
           <li>
             <Link
               href="/admin/ads-txt"
@@ -900,71 +970,6 @@ export default function AdminNavigation() {
                   >
                     <Shield size={16} className="text-primary opacity-80" />
                     Security Settings
-                  </Link>
-                </li>
-              </ul>
-            )}
-          </li>
-
-
-          <li className="space-y-1">
-            <button
-              onClick={(e) => toggleSubMenu('accounts', e)}
-              className={cn(
-                "flex items-center justify-between w-full gap-3 px-3 py-2.5 rounded-lg transition-all",
-                isActive("/admin/accounts") || expandedSubMenus.accounts
-                  ? "bg-primary/15 text-primary shadow-sm"
-                  : "text-card-foreground hover:bg-primary/10 hover:text-primary"
-              )}
-            >
-              <div className="flex items-center gap-3">
-                <UserRound size={18} className="text-primary opacity-80" />
-                <span>Accounts</span>
-              </div>
-              {expandedSubMenus.accounts ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
-            </button>
-            {expandedSubMenus.accounts && (
-              <ul className="ml-6 space-y-1">
-                <li>
-                  <Link
-                    href="/admin/accounts/users"
-                    className={cn(
-                      "flex items-center gap-3 px-3 py-2 rounded-lg transition-all text-sm",
-                      isActive("/admin/accounts/users")
-                        ? "bg-primary/15 text-primary shadow-sm"
-                        : "text-card-foreground hover:bg-primary/10 hover:text-primary"
-                    )}
-                  >
-                    <Users size={16} className="text-primary opacity-80" />
-                    All Users
-                  </Link>
-                </li>
-                <li>
-                  <Link
-                    href="/admin/accounts/locations"
-                    className={cn(
-                      "flex items-center gap-3 px-3 py-2 rounded-lg transition-all text-sm",
-                      isActive("/admin/accounts/locations")
-                        ? "bg-primary/15 text-primary shadow-sm"
-                        : "text-card-foreground hover:bg-primary/10 hover:text-primary"
-                    )}
-                  >
-                    <MapPin size={16} className="text-primary opacity-80" />
-                    User Locations
-                  </Link>
-                </li>
-                <li>
-                  <Link
-                    href="/admin/accounts/signups"
-                    className={cn(
-                      "flex items-center gap-3 px-3 py-2 rounded-lg transition-all text-sm",
-                      isActive("/admin/accounts/signups")
-                        ? "bg-primary/15 text-primary shadow-sm"
-                        : "text-card-foreground hover:bg-primary/10 hover:text-primary"
-                    )}
-                  >
-                    <UserPlus size={16} className="text-primary opacity-80" />
-                    Signup Stats
                   </Link>
                 </li>
               </ul>
