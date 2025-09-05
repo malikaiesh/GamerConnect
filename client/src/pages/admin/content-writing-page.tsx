@@ -21,6 +21,7 @@ import { Slider } from "@/components/ui/slider";
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
 import { apiRequest } from "@/lib/queryClient";
+import AdminNavigation from "@/components/admin/navigation";
 
 // Content Writing Form Schema
 const contentWritingSchema = z.object({
@@ -257,44 +258,48 @@ export default function ContentWritingPage() {
   }
 
   return (
-    <div className="container mx-auto p-6 space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold flex items-center gap-3">
-            <BrainCircuit className="h-8 w-8 text-primary" />
-            AI Content Writing
-            <Badge variant="secondary" className="bg-gradient-to-r from-purple-100 to-blue-100 text-purple-700">
-              Powered by AI
-            </Badge>
-          </h1>
-          <p className="text-muted-foreground mt-2">
-            Generate SEO-optimized, human-like content using advanced AI models and publish directly to your blog.
-          </p>
-        </div>
-        <div className="flex items-center gap-2">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => setPreviewMode(!previewMode)}
-            className={cn(previewMode && "bg-primary/10")}
-          >
-            <Eye className="h-4 w-4 mr-2" />
-            {previewMode ? 'Edit Mode' : 'Preview Mode'}
-          </Button>
-        </div>
-      </div>
+    <div className="flex min-h-screen bg-background">
+      <AdminNavigation />
+      
+      <div className="flex-1 p-6 lg:p-10">
+        <div className="max-w-7xl mx-auto space-y-6">
+          {/* Header */}
+          <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+            <div>
+              <h1 className="text-3xl font-bold flex items-center gap-3 flex-wrap">
+                <BrainCircuit className="h-8 w-8 text-primary" />
+                AI Content Writing
+                <Badge variant="secondary" className="bg-gradient-to-r from-purple-100 to-blue-100 text-purple-700">
+                  Powered by AI
+                </Badge>
+              </h1>
+              <p className="text-muted-foreground mt-2">
+                Generate SEO-optimized, human-like content using advanced AI models and publish directly to your blog.
+              </p>
+            </div>
+            <div className="flex items-center gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setPreviewMode(!previewMode)}
+                className={cn(previewMode && "bg-primary/10")}
+              >
+                <Eye className="h-4 w-4 mr-2" />
+                {previewMode ? 'Edit Mode' : 'Preview Mode'}
+              </Button>
+            </div>
+          </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
         {/* Content Templates */}
         <div className="lg:col-span-1">
           <Card>
             <CardHeader>
-              <CardTitle className="text-lg flex items-center gap-2">
-                <Sparkles className="h-5 w-5" />
-                Content Templates
+              <CardTitle className="text-lg flex items-center gap-2 flex-wrap">
+                <Sparkles className="h-5 w-5 flex-shrink-0" />
+                <span className="break-words">Content Templates</span>
               </CardTitle>
-              <CardDescription>
+              <CardDescription className="text-sm">
                 Quick start with pre-built templates
               </CardDescription>
             </CardHeader>
