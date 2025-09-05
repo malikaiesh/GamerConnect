@@ -264,7 +264,7 @@ export default function GameCategoriesPage() {
                         <TableCell>{category.displayOrder}</TableCell>
                         <TableCell>
                           {category.isActive ? (
-                            <Badge variant="success" className="flex items-center gap-1">
+                            <Badge variant="default" className="flex items-center gap-1 bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-100">
                               <CheckCircle2 className="w-3 h-3" />
                               Active
                             </Badge>

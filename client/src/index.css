@@ -73,6 +73,17 @@
     --theme-primary: 213 100% 58%;
     --theme-secondary: 16 100% 57%;
     --theme-accent: 122 50% 49%;
+    
+    /* Admin variables for Modern theme (default light) */
+    --admin-bg: 0 0% 98%;
+    --admin-surface: 0 0% 100%;
+    --admin-border: 240 5.9% 90%;
+    --admin-text: 240 10% 3.9%;
+    --admin-text-muted: 240 5% 35%;
+    --admin-nav-bg: 0 0% 100%;
+    --admin-nav-hover: 213 100% 95%;
+    --admin-nav-active: 213 100% 90%;
+    --admin-shadow: 0 0% 0% / 0.1;
   }
 
   .dark {
@@ -114,6 +125,17 @@
     --accent: 122 50% 49%;
     --accent-foreground: 0 0% 98%;
     --ring: 210 100% 40%;
+    
+    /* Admin variables for Sports theme */
+    --admin-bg: 0 0% 98%;
+    --admin-surface: 0 0% 100%;
+    --admin-border: 240 5.9% 90%;
+    --admin-text: 240 10% 3.9%;
+    --admin-text-muted: 240 5% 35%;
+    --admin-nav-bg: 0 0% 100%;
+    --admin-nav-hover: 210 100% 95%;
+    --admin-nav-active: 210 100% 90%;
+    --admin-shadow: 0 0% 0% / 0.1;
   }
 
   /* Girls Theme */
@@ -125,6 +147,17 @@
     --accent: 187 100% 42%;
     --accent-foreground: 0 0% 98%;
     --ring: 340 83% 52%;
+    
+    /* Admin variables for Girls theme */
+    --admin-bg: 0 0% 98%;
+    --admin-surface: 0 0% 100%;
+    --admin-border: 240 5.9% 90%;
+    --admin-text: 240 10% 3.9%;
+    --admin-text-muted: 240 5% 35%;
+    --admin-nav-bg: 0 0% 100%;
+    --admin-nav-hover: 340 83% 95%;
+    --admin-nav-active: 340 83% 90%;
+    --admin-shadow: 0 0% 0% / 0.1;
   }
 
   /* Retro Theme */
@@ -136,6 +169,17 @@
     --accent: 45 100% 47%;
     --accent-foreground: 0 0% 98%;
     --ring: 88 60% 55%;
+    
+    /* Admin variables for Retro theme */
+    --admin-bg: 0 0% 98%;
+    --admin-surface: 0 0% 100%;
+    --admin-border: 240 5.9% 90%;
+    --admin-text: 240 10% 3.9%;
+    --admin-text-muted: 240 5% 35%;
+    --admin-nav-bg: 0 0% 100%;
+    --admin-nav-hover: 88 60% 95%;
+    --admin-nav-active: 88 60% 90%;
+    --admin-shadow: 0 0% 0% / 0.1;
   }
 
   /* Futuristic Theme */
@@ -147,6 +191,17 @@
     --accent: 270 76% 58%;
     --accent-foreground: 0 0% 98%;
     --ring: 210 83% 53%;
+    
+    /* Admin variables for Futuristic theme */
+    --admin-bg: 0 0% 98%;
+    --admin-surface: 0 0% 100%;
+    --admin-border: 240 5.9% 90%;
+    --admin-text: 240 10% 3.9%;
+    --admin-text-muted: 240 5% 35%;
+    --admin-nav-bg: 0 0% 100%;
+    --admin-nav-hover: 210 83% 95%;
+    --admin-nav-active: 210 83% 90%;
+    --admin-shadow: 0 0% 0% / 0.1;
   }
   
   /* Lunexa Theme (based on the image you shared) */
@@ -186,6 +241,17 @@
     --ring: 270 75% 60%;
     
     --radius: 0.75rem;
+    
+    /* Admin variables for Lunexa theme (dark theme) */
+    --admin-bg: 260 40% 8%;
+    --admin-surface: 260 35% 12%;
+    --admin-border: 260 20% 18%;
+    --admin-text: 0 0% 98%;
+    --admin-text-muted: 210 10% 70%;
+    --admin-nav-bg: 260 35% 12%;
+    --admin-nav-hover: 260 20% 15%;
+    --admin-nav-active: 270 75% 20%;
+    --admin-shadow: 0 0% 0% / 0.5;
   }
 }
 
