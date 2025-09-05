@@ -104,6 +104,7 @@ import { ObjectStorageService, ObjectNotFoundError } from "./objectStorage";
 import { ObjectPermission } from "./objectAcl";
 import { users, events, eventRegistrations, eventCategories } from "@shared/schema";
 import { games, blogPosts, staticPages, pushSubscribers, pushCampaigns } from "@shared/schema";
+import { paymentTransactions, paymentGateways } from "@shared/schema";
 import { insertEventSchema, insertEventRegistrationSchema } from "@shared/schema";
 import { eq, count, gte, sql, desc, and } from "drizzle-orm";
 import { z } from "zod";
