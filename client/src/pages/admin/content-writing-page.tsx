@@ -1071,7 +1071,6 @@ export default function ContentWritingPage() {
               </Card>
             </TabsContent>
               </Tabs>
-            </div>
           </div>
         </div>
       </div>
