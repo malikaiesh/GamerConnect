@@ -96,20 +96,34 @@ export default function CheckoutPage() {
     },
   });
 
-  const handleAutomatedPayment = (transaction: any) => {
-    // For automated payments, integrate with payment gateway
-    const gatewayType = selectedGateway?.gatewayType;
-    
-    if (gatewayType === 'stripe') {
-      // Redirect to Stripe checkout
-      window.location.href = `/api/stripe/checkout?transaction=${transaction.id}`;
-    } else if (gatewayType === 'paypal') {
-      // Redirect to PayPal checkout
-      window.location.href = `/api/paypal/checkout?transaction=${transaction.id}`;
-    } else {
+  const handleAutomatedPayment = async (transaction: any) => {
+    try {
+      // Use generic payment processing endpoint for all gateways
+      const response = await apiRequest('POST', '/api/payment/process', {
+        transactionId: transaction.id,
+        gatewayType: selectedGateway?.gatewayType
+      });
+
+      // Show payment instructions to user
       toast({
-        title: "Gateway Not Configured",
-        description: "This payment gateway is not yet configured. Please try another payment method.",
+        title: "Payment Processing",
+        description: response.message || `Payment initiated via ${selectedGateway?.displayName}`,
+      });
+
+      // For demo purposes, simulate payment processing
+      // In a real implementation, you would redirect to the gateway's payment page
+      setTimeout(() => {
+        toast({
+          title: "Payment Demo",
+          description: `This is a demo. In production, you would be redirected to ${selectedGateway?.displayName} to complete payment.`,
+          variant: "default",
+        });
+      }, 2000);
+
+    } catch (error: any) {
+      toast({
+        title: "Payment Processing Failed",
+        description: error.message || "Failed to process payment. Please try again.",
         variant: "destructive",
       });
     }

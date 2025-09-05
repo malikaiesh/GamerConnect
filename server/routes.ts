@@ -112,6 +112,34 @@ import path from "path";
 import { initializeSendGrid } from "./services/email-service";
 import { handleUrlRedirects } from "./middleware/redirects";
 
+// Helper function to get payment instructions for different gateways
+function getPaymentInstructions(gatewayType: string): string {
+  switch (gatewayType) {
+    case 'stripe':
+      return 'You will be redirected to Stripe\'s secure payment page to complete your transaction.';
+    case 'paypal':
+      return 'You will be redirected to PayPal to complete your payment securely.';
+    case 'razorpay':
+      return 'You will be redirected to Razorpay to complete your payment using various Indian payment methods.';
+    case 'flutterwave':
+      return 'You will be redirected to Flutterwave to complete your payment using African payment methods.';
+    case 'mollie':
+      return 'You will be redirected to Mollie to complete your payment using European payment methods.';
+    case 'square':
+      return 'You will be redirected to Square to complete your payment securely.';
+    case 'adyen':
+      return 'You will be redirected to Adyen to complete your payment using global payment methods.';
+    case '2checkout':
+      return 'You will be redirected to 2Checkout to complete your payment securely.';
+    case 'braintree':
+      return 'You will be redirected to Braintree (PayPal) to complete your payment.';
+    case 'authorize_net':
+      return 'You will be redirected to Authorize.Net to complete your payment.';
+    default:
+      return 'Please follow the payment instructions provided by your selected payment method.';
+  }
+}
+
 // Function to check if application is installed
 async function isInstalled(): Promise<boolean> {
   try {
@@ -337,6 +365,60 @@ Sitemap: ${req.protocol}://${req.get('host')}/sitemap.xml`);
   
   // Public Payment Transaction Routes (requires authentication)
   app.post('/api/payment-transactions', isAuthenticated, createCheckoutTransaction);
+  
+  // Generic payment processing endpoint for all gateways
+  app.post('/api/payment/process', isAuthenticated, async (req, res) => {
+    try {
+      const { transactionId, gatewayType } = req.body;
+      
+      if (!transactionId || !gatewayType) {
+        return res.status(400).json({ error: 'Transaction ID and gateway type are required' });
+      }
+      
+      // Get transaction details
+      const [transaction] = await db
+        .select({
+          id: paymentTransactions.id,
+          transactionId: paymentTransactions.transactionId,
+          amount: paymentTransactions.amount,
+          currency: paymentTransactions.currency,
+          gatewayId: paymentTransactions.gatewayId,
+          gateway: {
+            gatewayType: paymentGateways.gatewayType,
+            displayName: paymentGateways.displayName,
+            apiConfiguration: paymentGateways.apiConfiguration,
+            isTestMode: paymentGateways.isTestMode
+          }
+        })
+        .from(paymentTransactions)
+        .leftJoin(paymentGateways, eq(paymentTransactions.gatewayId, paymentGateways.id))
+        .where(eq(paymentTransactions.id, parseInt(transactionId)));
+      
+      if (!transaction) {
+        return res.status(404).json({ error: 'Transaction not found' });
+      }
+      
+      // For now, return a standard response for all automated gateways
+      // In a real implementation, you would integrate with each gateway's API
+      const response = {
+        success: true,
+        transactionId: transaction.transactionId,
+        gatewayType: transaction.gateway?.gatewayType,
+        amount: transaction.amount,
+        currency: transaction.currency,
+        status: 'pending',
+        message: `Payment processing initiated for ${transaction.gateway?.displayName}`,
+        // For demo purposes, generate a mock payment URL
+        paymentUrl: `#payment-processing-${transaction.transactionId}`,
+        instructions: getPaymentInstructions(transaction.gateway?.gatewayType)
+      };
+      
+      res.json(response);
+    } catch (error) {
+      console.error('Error processing payment:', error);
+      res.status(500).json({ error: 'Failed to process payment' });
+    }
+  });
   
   // Admin Payment Transaction Routes
   app.get('/api/admin/payment-transactions', isAuthenticated, isAdmin, getPaymentTransactions);
