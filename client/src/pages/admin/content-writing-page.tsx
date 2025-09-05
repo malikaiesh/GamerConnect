@@ -308,15 +308,15 @@ export default function ContentWritingPage() {
                     <Button
                       key={template.id}
                       variant={selectedTemplate === template.id ? "default" : "outline"}
-                      className="w-full justify-start h-auto p-3"
+                      className="w-full justify-start h-auto p-3 min-h-[80px]"
                       onClick={() => handleTemplateSelect(template)}
                     >
-                      <div className="text-left">
-                        <div className="flex items-center gap-2 mb-1">
-                          <span className="text-lg">{template.icon}</span>
-                          <span className="font-medium text-sm">{template.name}</span>
+                      <div className="text-left w-full">
+                        <div className="flex items-center gap-2 mb-2">
+                          <span className="text-lg flex-shrink-0">{template.icon}</span>
+                          <span className="font-medium text-sm truncate">{template.name}</span>
                         </div>
-                        <p className="text-xs text-muted-foreground">
+                        <p className="text-xs text-muted-foreground leading-relaxed whitespace-normal break-words">
                           {template.description}
                         </p>
                       </div>
