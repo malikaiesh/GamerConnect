@@ -11,7 +11,14 @@ export const blogStatusEnum = pgEnum('blog_status', ['draft', 'published']);
 export const notificationTypeEnum = pgEnum('notification_type', ['alert', 'banner', 'modal', 'slide-in', 'toast', 'web-push', 'survey']);
 export const contentStatusEnum = pgEnum('content_status', ['active', 'inactive']);
 export const pageTypeEnum = pgEnum('page_type', ['about', 'contact', 'privacy', 'terms', 'cookie-policy', 'faq', 'custom']);
-export const apiKeyTypeEnum = pgEnum('api_key_type', ['tinymce', 'game-monetize', 'analytics', 'sendgrid', 'custom', 'stripe', 'paypal', 'razorpay', 'flutterwave', 'mollie', 'square', 'adyen', '2checkout', 'braintree', 'authorize_net']);
+export const apiKeyTypeEnum = pgEnum('api_key_type', [
+  // Service API Keys
+  'tinymce', 'game-monetize', 'analytics', 'sendgrid', 'custom',
+  // Payment Gateway API Keys  
+  'stripe', 'paypal', 'razorpay', 'flutterwave', 'mollie', 'square', 'adyen', '2checkout', 'braintree', 'authorize_net',
+  // AI Tools API Keys
+  'chatgpt', 'claude', 'deepseek', 'google_gemini', 'grok', 'perplexity', 'character_ai', 'midjourney', 'dalle3', 'leonardo_ai', 'heygen', 'elevenlabs', 'luma_ai', 'notion_ai', 'taskade_ai', 'lumio_ai'
+]);
 export const adPositionEnum = pgEnum('ad_position', ['above_featured', 'below_featured', 'above_popular', 'below_popular', 'above_about', 'below_about']);
 export const gameAdPositionEnum = pgEnum('game_ad_position', ['above_game', 'below_game', 'above_related', 'below_related', 'sidebar_top', 'sidebar_bottom']);
 export const sitemapTypeEnum = pgEnum('sitemap_type', ['games', 'blog', 'pages', 'main']);
