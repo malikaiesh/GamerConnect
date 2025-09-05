@@ -160,7 +160,7 @@ export default function EventDetailPage() {
   if (isLoading) {
     return (
       <div className="min-h-screen bg-background">
-        <AppHead title="Loading..." description="Loading event details..." />
+        <AppHead />
         <div className="container mx-auto px-4 py-8">
           <div className="flex items-center justify-center min-h-[60vh]">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
@@ -173,7 +173,7 @@ export default function EventDetailPage() {
   if (error || !event) {
     return (
       <div className="min-h-screen bg-background">
-        <AppHead title="Event Not Found" description="The requested event could not be found." />
+        <AppHead />
         <div className="container mx-auto px-4 py-8">
           <div className="text-center py-12">
             <h1 className="text-2xl font-bold text-foreground mb-4">Event Not Found</h1>

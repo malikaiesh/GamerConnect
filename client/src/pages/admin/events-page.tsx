@@ -787,7 +787,7 @@ export default function EventsPage() {
     <AdminThemeProvider>
       <div className="admin-container flex min-h-screen bg-background">
         <AdminNavigation />
-      <div className="flex-1 p-6 space-y-6">
+        <div className="flex-1 p-6 space-y-6">
         <div className="space-y-6">
             <div className="flex justify-between items-center">
               <div>

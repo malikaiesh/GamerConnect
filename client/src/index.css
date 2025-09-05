@@ -761,4 +761,35 @@
   .admin-container.admin-light .table-row:hover {
     background-color: hsl(240 4.8% 95.9%) !important;
   }
+
+  /* Enhanced text visibility for Lunexa theme event details */
+  .lunexa-theme .prose-headings\\:text-gray-900 {
+    color: hsl(0 0% 95%) !important;
+  }
+  
+  .lunexa-theme .prose-p\\:text-gray-700 {
+    color: hsl(0 0% 85%) !important;
+  }
+  
+  /* Force high contrast text in Lunexa theme for event sections */
+  .lunexa-theme .prose {
+    color: hsl(0 0% 90%) !important;
+  }
+  
+  .lunexa-theme .prose h1,
+  .lunexa-theme .prose h2, 
+  .lunexa-theme .prose h3,
+  .lunexa-theme .prose h4,
+  .lunexa-theme .prose h5,
+  .lunexa-theme .prose h6 {
+    color: hsl(0 0% 98%) !important;
+    font-weight: 700;
+  }
+  
+  .lunexa-theme .prose p,
+  .lunexa-theme .prose li,
+  .lunexa-theme .prose strong,
+  .lunexa-theme .prose span {
+    color: hsl(0 0% 88%) !important;
+  }
 }
