@@ -71,6 +71,13 @@ import { revenueRouter } from "./api/revenue";
 import { registerImagesGalleryRoutes } from "./api/images-gallery";
 import { registerShortLinksRoutes } from "./api/short-links";
 import { registerTranslationRoutes } from "./api/translations";
+import { 
+  generateAIContent, 
+  getAvailableAIModels, 
+  testAIModel, 
+  generateImageAltText, 
+  getContentOptimizationSuggestions 
+} from "./api/ai-content";
 
 import {
   getPricingPlans,
@@ -598,6 +605,13 @@ Sitemap: ${req.protocol}://${req.get('host')}/sitemap.xml`);
   registerSignupOptionsRoutes(app);
   registerHeroImageRoutes(app);
   registerGoogleIndexingRoutes(app);
+  
+  // AI Content Generation routes (admin only)
+  app.post('/api/ai/generate-content', isAdmin, generateAIContent);
+  app.get('/api/ai/models', isAdmin, getAvailableAIModels);
+  app.post('/api/ai/test/:modelType', isAdmin, testAIModel);
+  app.post('/api/ai/image-alt-text', isAdmin, generateImageAltText);
+  app.post('/api/ai/content-optimization', isAdmin, getContentOptimizationSuggestions);
   
   // Register backup and restore routes (admin only)
   app.use('/api/backup-restore', isAdmin, backupRestoreRoutes);

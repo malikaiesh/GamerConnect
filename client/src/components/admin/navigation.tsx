@@ -2,7 +2,7 @@ import { Link, useLocation } from "wouter";
 import { useAuth } from "@/hooks/use-auth";
 import { useQuery } from "@tanstack/react-query";
 import { cn } from "@/lib/utils";
-import { Gamepad2, Book, Settings, LayoutDashboard, FileText, LogOut, Home, FileSymlink, Key, ImageIcon, Map, Code, BarChart, Files, Bell, Users, Send, Activity, BarChart3, UserRound, UserPlus, MapPin, Shield, Lock, KeyRound, AlertTriangle, FileDigit, Clock, ExternalLink, Bot, Rocket, ChevronDown, ChevronRight, Target, Ban as Advertisement, Calendar, Cloud, Archive, CreditCard, Wallet, Receipt, Gem, Star, Crown, DollarSign } from "lucide-react";
+import { Gamepad2, Book, Settings, LayoutDashboard, FileText, LogOut, Home, FileSymlink, Key, ImageIcon, Map, Code, BarChart, Files, Bell, Users, Send, Activity, BarChart3, UserRound, UserPlus, MapPin, Shield, Lock, KeyRound, AlertTriangle, FileDigit, Clock, ExternalLink, Bot, Rocket, ChevronDown, ChevronRight, Target, Ban as Advertisement, Calendar, Cloud, Archive, CreditCard, Wallet, Receipt, Gem, Star, Crown, DollarSign, PenTool, Zap, BrainCircuit } from "lucide-react";
 import { useState } from "react";
 import { SiteSetting } from "@shared/schema";
 import { AdminThemeSwitcher } from "./theme-switcher";
@@ -181,6 +181,21 @@ export default function AdminNavigation() {
             >
               <Book size={18} className="text-primary opacity-80" />
               Blog
+            </Link>
+          </li>
+          <li>
+            <Link
+              href="/admin/content-writing"
+              className={cn(
+                "flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all",
+                isActive("/admin/content-writing")
+                  ? "bg-primary/15 text-primary shadow-sm"
+                  : "text-card-foreground hover:bg-primary/10 hover:text-primary"
+              )}
+            >
+              <BrainCircuit size={18} className="text-primary opacity-80" />
+              <span>Content Writing</span>
+              <span className="ml-auto px-1.5 py-0.5 text-xs bg-gradient-to-r from-purple-100 to-blue-100 text-purple-700 rounded font-medium">AI</span>
             </Link>
           </li>
           <li>
