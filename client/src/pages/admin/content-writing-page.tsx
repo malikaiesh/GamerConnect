@@ -290,45 +290,45 @@ export default function ContentWritingPage() {
             </div>
           </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-        {/* Content Templates */}
-        <div className="lg:col-span-1">
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-lg flex items-center gap-2 flex-wrap">
-                <Sparkles className="h-5 w-5 flex-shrink-0" />
-                <span className="break-words">Content Templates</span>
-              </CardTitle>
-              <CardDescription className="text-sm">
-                Quick start with pre-built templates
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-3">
-              {contentTemplates.map((template) => (
-                <Button
-                  key={template.id}
-                  variant={selectedTemplate === template.id ? "default" : "outline"}
-                  className="w-full justify-start h-auto p-3"
-                  onClick={() => handleTemplateSelect(template)}
-                >
-                  <div className="text-left">
-                    <div className="flex items-center gap-2 mb-1">
-                      <span className="text-lg">{template.icon}</span>
-                      <span className="font-medium text-sm">{template.name}</span>
-                    </div>
-                    <p className="text-xs text-muted-foreground">
-                      {template.description}
-                    </p>
-                  </div>
-                </Button>
-              ))}
-            </CardContent>
-          </Card>
-        </div>
+          <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+            {/* Content Templates */}
+            <div className="lg:col-span-1">
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-lg flex items-center gap-2 flex-wrap">
+                    <Sparkles className="h-5 w-5 flex-shrink-0" />
+                    <span className="break-words">Content Templates</span>
+                  </CardTitle>
+                  <CardDescription className="text-sm">
+                    Quick start with pre-built templates
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-3">
+                  {contentTemplates.map((template) => (
+                    <Button
+                      key={template.id}
+                      variant={selectedTemplate === template.id ? "default" : "outline"}
+                      className="w-full justify-start h-auto p-3"
+                      onClick={() => handleTemplateSelect(template)}
+                    >
+                      <div className="text-left">
+                        <div className="flex items-center gap-2 mb-1">
+                          <span className="text-lg">{template.icon}</span>
+                          <span className="font-medium text-sm">{template.name}</span>
+                        </div>
+                        <p className="text-xs text-muted-foreground">
+                          {template.description}
+                        </p>
+                      </div>
+                    </Button>
+                  ))}
+                </CardContent>
+              </Card>
+            </div>
 
-        {/* Main Content Area */}
-        <div className="lg:col-span-3">
-          <Tabs defaultValue="generate" className="space-y-6">
+            {/* Main Content Area */}
+            <div className="lg:col-span-3">
+              <Tabs defaultValue="generate" className="space-y-6">
             <TabsList className="grid w-full grid-cols-3">
               <TabsTrigger value="generate" className="flex items-center gap-2">
                 <PenTool className="h-4 w-4" />
