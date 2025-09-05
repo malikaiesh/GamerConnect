@@ -19,15 +19,20 @@ export default function AdminNavigation() {
     verification: false
   });
   const [location] = useLocation();
-  const { logoutMutation, user } = useAuth();
+  const { user } = useAuth();
   
   // Fetch site settings for logo configuration
   const { data: settings } = useQuery<SiteSetting>({
     queryKey: ['/api/settings'],
   });
 
-  const handleLogout = () => {
-    logoutMutation.mutate();
+  const handleLogout = async () => {
+    try {
+      await fetch('/api/logout', { method: 'POST' });
+      window.location.href = '/';
+    } catch (error) {
+      console.error('Logout failed:', error);
+    }
   };
   
   const toggleSubMenu = (menuName: string, event?: React.MouseEvent) => {
@@ -573,20 +578,18 @@ export default function AdminNavigation() {
                 <Advertisement size={18} className="text-primary opacity-80" />
                 <span>Ad Manager</span>
               </div>
-              <span className={cn("transform transition-transform text-primary opacity-80", expandedSubMenus.adManager ? "rotate-180" : "")}>
-                ▼
-              </span>
+              {expandedSubMenus.adManager ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
             </button>
             {expandedSubMenus.adManager && (
-              <ul className="ml-6 space-y-1 border-l border-border pl-2 mt-1">
+              <ul className="ml-6 space-y-1">
                 <li>
                   <Link
                     href="/admin/home-ads"
                     className={cn(
-                      "flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all",
-                      location === "/admin/home-ads"
-                        ? "bg-primary/10 text-primary"
-                        : "text-card-foreground/80 hover:bg-primary/5 hover:text-primary/90"
+                      "flex items-center gap-3 px-3 py-2 rounded-lg transition-all text-sm",
+                      isActive("/admin/home-ads")
+                        ? "bg-primary/15 text-primary shadow-sm"
+                        : "text-card-foreground hover:bg-primary/10 hover:text-primary"
                     )}
                   >
                     <Advertisement size={16} className="text-primary opacity-60" />
@@ -597,10 +600,10 @@ export default function AdminNavigation() {
                   <Link
                     href="/admin/games-ads"
                     className={cn(
-                      "flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all",
-                      location === "/admin/games-ads"
-                        ? "bg-primary/10 text-primary"
-                        : "text-card-foreground/80 hover:bg-primary/5 hover:text-primary/90"
+                      "flex items-center gap-3 px-3 py-2 rounded-lg transition-all text-sm",
+                      isActive("/admin/games-ads")
+                        ? "bg-primary/15 text-primary shadow-sm"
+                        : "text-card-foreground hover:bg-primary/10 hover:text-primary"
                     )}
                   >
                     <Target size={16} className="text-primary opacity-60" />
@@ -612,10 +615,10 @@ export default function AdminNavigation() {
                   <Link
                     href="/admin/blog-ads"
                     className={cn(
-                      "flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all",
-                      location === "/admin/blog-ads"
-                        ? "bg-primary/10 text-primary"
-                        : "text-card-foreground/80 hover:bg-primary/5 hover:text-primary/90"
+                      "flex items-center gap-3 px-3 py-2 rounded-lg transition-all text-sm",
+                      isActive("/admin/blog-ads")
+                        ? "bg-primary/15 text-primary shadow-sm"
+                        : "text-card-foreground hover:bg-primary/10 hover:text-primary"
                     )}
                   >
                     <Book size={16} className="text-primary opacity-60" />
@@ -682,20 +685,18 @@ export default function AdminNavigation() {
                 <Bell size={18} className="text-primary opacity-80" />
                 <span>Push Notifications</span>
               </div>
-              <span className={cn("transform transition-transform text-primary opacity-80", expandedSubMenus.pushNotifications ? "rotate-180" : "")}>
-                ▼
-              </span>
+              {expandedSubMenus.pushNotifications ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
             </button>
             {expandedSubMenus.pushNotifications && (
-              <ul className="ml-6 space-y-1 border-l border-border pl-2 mt-1">
+              <ul className="ml-6 space-y-1">
                 <li>
                   <Link
                     href="/admin/push-notifications"
                     className={cn(
-                      "flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all",
-                      location === "/admin/push-notifications"
-                        ? "bg-primary/10 text-primary"
-                        : "text-card-foreground/80 hover:bg-primary/5 hover:text-primary/90"
+                      "flex items-center gap-3 px-3 py-2 rounded-lg transition-all text-sm",
+                      isActive("/admin/push-notifications")
+                        ? "bg-primary/15 text-primary shadow-sm"
+                        : "text-card-foreground hover:bg-primary/10 hover:text-primary"
                     )}
                   >
                     <Bell size={16} className="text-primary opacity-80" />
@@ -706,10 +707,10 @@ export default function AdminNavigation() {
                   <Link
                     href="/admin/push-notifications/campaigns"
                     className={cn(
-                      "flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all",
-                      location === "/admin/push-notifications/campaigns"
-                        ? "bg-primary/10 text-primary"
-                        : "text-card-foreground/80 hover:bg-primary/5 hover:text-primary/90"
+                      "flex items-center gap-3 px-3 py-2 rounded-lg transition-all text-sm",
+                      isActive("/admin/push-notifications/campaigns")
+                        ? "bg-primary/15 text-primary shadow-sm"
+                        : "text-card-foreground hover:bg-primary/10 hover:text-primary"
                     )}
                   >
                     <Send size={16} className="text-primary opacity-80" />
@@ -720,10 +721,10 @@ export default function AdminNavigation() {
                   <Link
                     href="/admin/push-notifications/subscribers"
                     className={cn(
-                      "flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all",
-                      location === "/admin/push-notifications/subscribers"
-                        ? "bg-primary/10 text-primary"
-                        : "text-card-foreground/80 hover:bg-primary/5 hover:text-primary/90"
+                      "flex items-center gap-3 px-3 py-2 rounded-lg transition-all text-sm",
+                      isActive("/admin/push-notifications/subscribers")
+                        ? "bg-primary/15 text-primary shadow-sm"
+                        : "text-card-foreground hover:bg-primary/10 hover:text-primary"
                     )}
                   >
                     <Users size={16} className="text-primary opacity-80" />
@@ -734,10 +735,10 @@ export default function AdminNavigation() {
                   <Link
                     href="/admin/push-notifications/analytics"
                     className={cn(
-                      "flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all",
-                      location === "/admin/push-notifications/analytics"
-                        ? "bg-primary/10 text-primary"
-                        : "text-card-foreground/80 hover:bg-primary/5 hover:text-primary/90"
+                      "flex items-center gap-3 px-3 py-2 rounded-lg transition-all text-sm",
+                      isActive("/admin/push-notifications/analytics")
+                        ? "bg-primary/15 text-primary shadow-sm"
+                        : "text-card-foreground hover:bg-primary/10 hover:text-primary"
                     )}
                   >
                     <Activity size={16} className="text-primary opacity-80" />
@@ -818,20 +819,18 @@ export default function AdminNavigation() {
                 <UserRound size={18} className="text-primary opacity-80" />
                 <span>Admin Users</span>
               </div>
-              <span className={cn("transform transition-transform text-primary opacity-80", expandedSubMenus.adminUsers ? "rotate-180" : "")}>
-                ▼
-              </span>
+              {expandedSubMenus.adminUsers ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
             </button>
             {expandedSubMenus.adminUsers && (
-              <ul className="ml-6 space-y-1 border-l border-border pl-2 mt-1">
+              <ul className="ml-6 space-y-1">
                 <li>
                   <Link
                     href="/admin/accounts/roles"
                     className={cn(
-                      "flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all",
-                      location === "/admin/accounts/roles"
-                        ? "bg-primary/10 text-primary"
-                        : "text-card-foreground/80 hover:bg-primary/5 hover:text-primary/90"
+                      "flex items-center gap-3 px-3 py-2 rounded-lg transition-all text-sm",
+                      isActive("/admin/accounts/roles")
+                        ? "bg-primary/15 text-primary shadow-sm"
+                        : "text-card-foreground hover:bg-primary/10 hover:text-primary"
                     )}
                   >
                     <Shield size={16} className="text-primary opacity-80" />
@@ -842,10 +841,10 @@ export default function AdminNavigation() {
                   <Link
                     href="/admin/security/two-factor"
                     className={cn(
-                      "flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all",
-                      location === "/admin/security/two-factor"
-                        ? "bg-primary/10 text-primary"
-                        : "text-card-foreground/80 hover:bg-primary/5 hover:text-primary/90"
+                      "flex items-center gap-3 px-3 py-2 rounded-lg transition-all text-sm",
+                      isActive("/admin/security/two-factor")
+                        ? "bg-primary/15 text-primary shadow-sm"
+                        : "text-card-foreground hover:bg-primary/10 hover:text-primary"
                     )}
                   >
                     <KeyRound size={16} className="text-primary opacity-80" />
@@ -856,10 +855,10 @@ export default function AdminNavigation() {
                   <Link
                     href="/admin/security/logs"
                     className={cn(
-                      "flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all",
-                      location === "/admin/security/logs"
-                        ? "bg-primary/10 text-primary"
-                        : "text-card-foreground/80 hover:bg-primary/5 hover:text-primary/90"
+                      "flex items-center gap-3 px-3 py-2 rounded-lg transition-all text-sm",
+                      isActive("/admin/security/logs")
+                        ? "bg-primary/15 text-primary shadow-sm"
+                        : "text-card-foreground hover:bg-primary/10 hover:text-primary"
                     )}
                   >
                     <FileDigit size={16} className="text-primary opacity-80" />
@@ -870,10 +869,10 @@ export default function AdminNavigation() {
                   <Link
                     href="/admin/security/settings"
                     className={cn(
-                      "flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all",
-                      location === "/admin/security/settings"
-                        ? "bg-primary/10 text-primary"
-                        : "text-card-foreground/80 hover:bg-primary/5 hover:text-primary/90"
+                      "flex items-center gap-3 px-3 py-2 rounded-lg transition-all text-sm",
+                      isActive("/admin/security/settings")
+                        ? "bg-primary/15 text-primary shadow-sm"
+                        : "text-card-foreground hover:bg-primary/10 hover:text-primary"
                     )}
                   >
                     <Shield size={16} className="text-primary opacity-80" />
@@ -899,20 +898,18 @@ export default function AdminNavigation() {
                 <UserRound size={18} className="text-primary opacity-80" />
                 <span>Accounts</span>
               </div>
-              <span className={cn("transform transition-transform text-primary opacity-80", expandedSubMenus.accounts ? "rotate-180" : "")}>
-                ▼
-              </span>
+              {expandedSubMenus.accounts ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
             </button>
             {expandedSubMenus.accounts && (
-              <ul className="ml-6 space-y-1 border-l border-border pl-2 mt-1">
+              <ul className="ml-6 space-y-1">
                 <li>
                   <Link
                     href="/admin/accounts/users"
                     className={cn(
-                      "flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all",
-                      location === "/admin/accounts/users"
-                        ? "bg-primary/10 text-primary"
-                        : "text-card-foreground/80 hover:bg-primary/5 hover:text-primary/90"
+                      "flex items-center gap-3 px-3 py-2 rounded-lg transition-all text-sm",
+                      isActive("/admin/accounts/users")
+                        ? "bg-primary/15 text-primary shadow-sm"
+                        : "text-card-foreground hover:bg-primary/10 hover:text-primary"
                     )}
                   >
                     <Users size={16} className="text-primary opacity-80" />
@@ -923,10 +920,10 @@ export default function AdminNavigation() {
                   <Link
                     href="/admin/accounts/locations"
                     className={cn(
-                      "flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all",
-                      location === "/admin/accounts/locations"
-                        ? "bg-primary/10 text-primary"
-                        : "text-card-foreground/80 hover:bg-primary/5 hover:text-primary/90"
+                      "flex items-center gap-3 px-3 py-2 rounded-lg transition-all text-sm",
+                      isActive("/admin/accounts/locations")
+                        ? "bg-primary/15 text-primary shadow-sm"
+                        : "text-card-foreground hover:bg-primary/10 hover:text-primary"
                     )}
                   >
                     <MapPin size={16} className="text-primary opacity-80" />
@@ -937,10 +934,10 @@ export default function AdminNavigation() {
                   <Link
                     href="/admin/accounts/signups"
                     className={cn(
-                      "flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all",
-                      location === "/admin/accounts/signups"
-                        ? "bg-primary/10 text-primary"
-                        : "text-card-foreground/80 hover:bg-primary/5 hover:text-primary/90"
+                      "flex items-center gap-3 px-3 py-2 rounded-lg transition-all text-sm",
+                      isActive("/admin/accounts/signups")
+                        ? "bg-primary/15 text-primary shadow-sm"
+                        : "text-card-foreground hover:bg-primary/10 hover:text-primary"
                     )}
                   >
                     <UserPlus size={16} className="text-primary opacity-80" />
@@ -964,20 +961,18 @@ export default function AdminNavigation() {
                 <Settings size={18} className="text-primary opacity-80" />
                 <span>Settings</span>
               </div>
-              <span className={cn("transform transition-transform text-primary opacity-80", expandedSubMenus.settings ? "rotate-180" : "")}>
-                ▼
-              </span>
+              {expandedSubMenus.settings ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
             </button>
             {expandedSubMenus.settings && (
-              <ul className="ml-6 space-y-1 border-l border-border pl-2 mt-1">
+              <ul className="ml-6 space-y-1">
                 <li>
                   <Link
                     href="/admin/settings/general"
                     className={cn(
-                      "flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all",
-                      location === "/admin/settings/general"
-                        ? "bg-primary/10 text-primary"
-                        : "text-card-foreground/80 hover:bg-primary/5 hover:text-primary/90"
+                      "flex items-center gap-3 px-3 py-2 rounded-lg transition-all text-sm",
+                      isActive("/admin/settings/general")
+                        ? "bg-primary/15 text-primary shadow-sm"
+                        : "text-card-foreground hover:bg-primary/10 hover:text-primary"
                     )}
                   >
                     <Settings size={16} className="text-primary opacity-80" />
@@ -988,10 +983,10 @@ export default function AdminNavigation() {
                   <Link
                     href="/admin/settings/redirects"
                     className={cn(
-                      "flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all",
-                      location === "/admin/settings/redirects"
-                        ? "bg-primary/10 text-primary"
-                        : "text-card-foreground/80 hover:bg-primary/5 hover:text-primary/90"
+                      "flex items-center gap-3 px-3 py-2 rounded-lg transition-all text-sm",
+                      isActive("/admin/settings/redirects")
+                        ? "bg-primary/15 text-primary shadow-sm"
+                        : "text-card-foreground hover:bg-primary/10 hover:text-primary"
                     )}
                   >
                     <ExternalLink size={16} className="text-primary opacity-80" />
