@@ -42,23 +42,61 @@ class AIContentGenerator {
   private openai?: OpenAI;
 
   async initializeAIModels(): Promise<{ [key: string]: AIModelConfig }> {
-    const apiKeys = await storage.getApiKeys();
     const aiModels: { [key: string]: AIModelConfig } = {};
 
-    for (const key of apiKeys) {
-      if (['chatgpt', 'claude', 'google_gemini'].includes(key.type) && key.isActive && key.value) {
-        aiModels[key.type] = {
-          type: key.type,
-          apiKey: key.value,
-          isActive: key.isActive,
-          name: key.name
-        };
+    // First, check for environment variables (preferred method)
+    if (process.env.OPENAI_API_KEY) {
+      aiModels['chatgpt'] = {
+        type: 'chatgpt',
+        apiKey: process.env.OPENAI_API_KEY,
+        isActive: true,
+        name: 'OpenAI API Key (Environment)'
+      };
 
-        // Initialize OpenAI if ChatGPT is available
-        if (key.type === 'chatgpt') {
-          this.openai = new OpenAI({
-            apiKey: key.value
-          });
+      // Initialize OpenAI
+      this.openai = new OpenAI({
+        apiKey: process.env.OPENAI_API_KEY
+      });
+    }
+
+    // Add other environment variables for different AI models
+    if (process.env.CLAUDE_API_KEY) {
+      aiModels['claude'] = {
+        type: 'claude',
+        apiKey: process.env.CLAUDE_API_KEY,
+        isActive: true,
+        name: 'Claude API Key (Environment)'
+      };
+    }
+
+    if (process.env.GOOGLE_GEMINI_API_KEY) {
+      aiModels['google_gemini'] = {
+        type: 'google_gemini',
+        apiKey: process.env.GOOGLE_GEMINI_API_KEY,
+        isActive: true,
+        name: 'Google Gemini API Key (Environment)'
+      };
+    }
+
+    // Fallback: Check database API keys for any models not found in environment
+    const dbApiKeys = await storage.getApiKeys();
+    for (const key of dbApiKeys) {
+      if (['chatgpt', 'claude', 'google_gemini'].includes(key.type) && key.isActive && key.value) {
+        // Only use database key if environment variable is not available
+        if (!aiModels[key.type]) {
+          aiModels[key.type] = {
+            type: key.type,
+            apiKey: key.value,
+            isActive: key.isActive,
+            name: key.name
+          };
+
+          // Initialize OpenAI if ChatGPT is available from database
+          if (key.type === 'chatgpt') {
+            this.openai = new OpenAI({
+              apiKey: key.value
+            });
+          }
         }
       }
     }
