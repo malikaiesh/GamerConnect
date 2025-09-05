@@ -244,6 +244,7 @@ function EventForm({ event, onClose }: { event?: Event; onClose: () => void }) {
                   <FormLabel>Description</FormLabel>
                   <FormControl>
                     <BasicTextEditor
+                      id="event-description"
                       value={field.value}
                       onChange={field.onChange}
                       placeholder="Enter event description..."
@@ -598,6 +599,7 @@ function EventForm({ event, onClose }: { event?: Event; onClose: () => void }) {
                   <FormLabel>Rules & Guidelines</FormLabel>
                   <FormControl>
                     <BasicTextEditor
+                      id="event-rules"
                       value={field.value || ""}
                       onChange={field.onChange}
                       placeholder="Enter event rules and guidelines..."
@@ -616,6 +618,7 @@ function EventForm({ event, onClose }: { event?: Event; onClose: () => void }) {
                   <FormLabel>Prizes & Rewards</FormLabel>
                   <FormControl>
                     <BasicTextEditor
+                      id="event-prizes"
                       value={field.value || ""}
                       onChange={field.onChange}
                       placeholder="Enter information about prizes..."
@@ -634,6 +637,7 @@ function EventForm({ event, onClose }: { event?: Event; onClose: () => void }) {
                   <FormLabel>Requirements</FormLabel>
                   <FormControl>
                     <BasicTextEditor
+                      id="event-requirements"
                       value={field.value || ""}
                       onChange={field.onChange}
                       placeholder="Enter participation requirements..."
@@ -788,7 +792,7 @@ export default function EventsPage() {
       <div className="admin-container flex min-h-screen bg-background">
         <AdminNavigation />
         <div className="flex-1 p-6 space-y-6">
-        <div className="space-y-6">
+          <div className="space-y-6">
             <div className="flex justify-between items-center">
               <div>
                 <h1 className="text-3xl font-bold text-foreground">Events Management</h1>
@@ -884,7 +888,7 @@ export default function EventsPage() {
                         <div className="flex items-center text-sm text-muted-foreground">
                           <Clock className="h-4 w-4 mr-2" />
                           <span data-testid={`text-start-date-${event.id}`}>
-                            {formatDate(event.startDate)}
+                            {formatDate(event.startDate.toString())}
                           </span>
                         </div>
                         
@@ -943,6 +947,7 @@ export default function EventsPage() {
                 ))}
               </div>
             )}
+          </div>
         </div>
       </div>
     </AdminThemeProvider>
