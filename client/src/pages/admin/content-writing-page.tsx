@@ -1076,6 +1076,6 @@ export default function ContentWritingPage() {
           </div>
         </div>
       </div>
-    );
-  }
+    </div>
+  );
 }
