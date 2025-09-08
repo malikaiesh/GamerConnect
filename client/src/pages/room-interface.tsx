@@ -14,6 +14,7 @@ import {
 } from "lucide-react";
 import EmojiPicker from 'emoji-picker-react';
 import { useAuth } from "@/hooks/use-auth";
+import { voiceChatService } from "@/services/voiceChat";
 import { formatDistanceToNow } from "date-fns";
 
 interface RoomUser {
@@ -176,6 +177,46 @@ export default function RoomInterfacePage() {
     }
   }, [roomId, user]);
 
+  // Initialize voice chat when room data is available
+  useEffect(() => {
+    const initializeVoiceChat = async () => {
+      if (roomId && user && roomData?.room.voiceChatEnabled) {
+        try {
+          await voiceChatService.joinRoom(roomId, user.id.toString());
+          
+          // Set up voice chat event handlers
+          voiceChatService.onMicrophoneToggle((enabled) => {
+            setIsMicOn(enabled);
+          });
+
+          voiceChatService.onUserJoinedVoice((userId) => {
+            console.log(`User ${userId} joined voice chat`);
+          });
+
+          voiceChatService.onUserLeftVoice((userId) => {
+            console.log(`User ${userId} left voice chat`);
+          });
+
+          console.log('Voice chat initialized successfully');
+        } catch (error) {
+          console.error('Failed to initialize voice chat:', error);
+          toast({
+            title: "Voice Chat Error",
+            description: error instanceof Error ? error.message : "Could not access microphone",
+            variant: "destructive",
+          });
+        }
+      }
+    };
+
+    initializeVoiceChat();
+
+    // Cleanup when leaving the room
+    return () => {
+      voiceChatService.leaveRoom();
+    };
+  }, [roomId, user, roomData?.room.voiceChatEnabled]);
+
   // Leave room mutation
   const leaveRoomMutation = useMutation({
     mutationFn: () =>
@@ -221,29 +262,69 @@ export default function RoomInterfacePage() {
     setTimeout(() => setSelectedGift(null), 1000);
   };
 
-  // Handle mic toggle
-  const handleMicToggle = () => {
-    toggleMicMutation.mutate();
-    // Simulate speaking when mic is turned on
-    if (!isMicOn && currentUserInRoom?.seatNumber) {
-      const seatNum = currentUserInRoom.seatNumber;
-      setMicUsers(prev => ({
-        ...prev,
-        [seatNum]: {
-          isSpeaking: true,
-          isPlayingMusic: false
+  // Handle mic toggle with real voice chat
+  const handleMicToggle = async () => {
+    try {
+      if (roomData?.room.voiceChatEnabled && voiceChatService.hasAudioPermission()) {
+        // Use real voice chat service
+        const enabled = await voiceChatService.toggleMicrophone();
+        setIsMicOn(enabled);
+        
+        // Also update server state for visual consistency
+        toggleMicMutation.mutate();
+        
+        // Simulate speaking animation when mic is turned on
+        if (enabled && currentUserInRoom?.seatNumber) {
+          const seatNum = currentUserInRoom.seatNumber;
+          setMicUsers(prev => ({
+            ...prev,
+            [seatNum]: { isSpeaking: true, isPlayingMusic: false }
+          }));
+          
+          // Stop speaking animation after 3 seconds
+          setTimeout(() => {
+            setMicUsers(prev => ({
+              ...prev,
+              [seatNum]: { 
+                ...prev[seatNum] || {},
+                isSpeaking: false 
+              }
+            }));
+          }, 3000);
         }
-      }));
-      // Auto turn off speaking after 3 seconds
-      setTimeout(() => {
-        setMicUsers(prev => ({
-          ...prev,
-          [seatNum]: {
-            ...prev[seatNum] || {},
-            isSpeaking: false
-          }
-        }));
-      }, 3000);
+      } else {
+        // Fallback to old behavior if voice chat is not enabled
+        toggleMicMutation.mutate();
+        
+        // Simulate speaking when mic is turned on
+        if (!isMicOn && currentUserInRoom?.seatNumber) {
+          const seatNum = currentUserInRoom.seatNumber;
+          setMicUsers(prev => ({
+            ...prev,
+            [seatNum]: {
+              isSpeaking: true,
+              isPlayingMusic: false
+            }
+          }));
+          // Auto turn off speaking after 3 seconds
+          setTimeout(() => {
+            setMicUsers(prev => ({
+              ...prev,
+              [seatNum]: {
+                ...prev[seatNum] || {},
+                isSpeaking: false
+              }
+            }));
+          }, 3000);
+        }
+      }
+    } catch (error) {
+      console.error('Error toggling microphone:', error);
+      toast({
+        title: "Microphone Error",
+        description: "Failed to toggle microphone",
+        variant: "destructive",
+      });
     }
   };
 
