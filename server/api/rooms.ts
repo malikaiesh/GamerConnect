@@ -573,7 +573,7 @@ router.post("/:roomId/switch-seat", isAuthenticated, async (req: Request, res: R
     // Check if seat is available
     if (seatNumber !== null) {
       const seatTaken = await db.select().from(roomUsers).where(
-        and(eq(roomUsers.roomId, room[0].id), eq(roomUsers.seat, seatNumber))
+        and(eq(roomUsers.roomId, room[0].id), eq(roomUsers.seatNumber, seatNumber))
       ).limit(1);
 
       if (seatTaken.length > 0) {
@@ -583,7 +583,7 @@ router.post("/:roomId/switch-seat", isAuthenticated, async (req: Request, res: R
 
     // Update user's seat
     await db.update(roomUsers)
-      .set({ seat: seatNumber })
+      .set({ seatNumber: seatNumber })
       .where(
         and(eq(roomUsers.roomId, room[0].id), eq(roomUsers.userId, userId))
       );
