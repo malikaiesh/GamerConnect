@@ -22,6 +22,12 @@ export class VoiceChatService {
   }
 
   private setupWebSocket() {
+    // Don't create multiple connections
+    if (this.ws && this.ws.readyState === WebSocket.CONNECTING) {
+      console.log('VoiceChatService: WebSocket already connecting...');
+      return;
+    }
+    
     const protocol = window.location.protocol === "https:" ? "wss:" : "ws:";
     const wsUrl = `${protocol}//${window.location.host}/ws`;
     
@@ -58,8 +64,11 @@ export class VoiceChatService {
 
     this.ws.onclose = (event) => {
       console.log('VoiceChatService: WebSocket disconnected', event.code, event.reason);
-      // Attempt to reconnect after 3 seconds
-      setTimeout(() => this.setupWebSocket(), 3000);
+      // Only reconnect if it wasn't a clean close
+      if (event.code !== 1000) {
+        console.log('VoiceChatService: Attempting to reconnect...');
+        setTimeout(() => this.setupWebSocket(), 2000);
+      }
     };
 
     this.ws.onerror = (error) => {
