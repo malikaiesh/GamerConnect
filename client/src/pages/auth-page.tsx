@@ -123,12 +123,14 @@ export default function AuthPage() {
         body: JSON.stringify(values)
       });
     },
-    onSuccess: () => {
+    onSuccess: (userData) => {
       queryClient.invalidateQueries({ queryKey: ['/api/user'] });
       toast({
         title: "Registration successful",
         description: "Welcome to Gaming Portal!"
       });
+      // Redirect new users to their dashboard
+      setTimeout(() => navigate('/user-dashboard'), 1000);
     },
     onError: (error: Error) => {
       toast({
@@ -142,10 +144,13 @@ export default function AuthPage() {
   // Handle login form submission
   const onLoginSubmit = (values: LoginValues) => {
     loginMutation.mutate(values, {
-      onSuccess: () => {
-        // Redirect to admin dashboard if admin user
-        if (values.username === 'admin') {
+      onSuccess: (userData) => {
+        // Redirect based on user role
+        if (userData.isAdmin) {
           setTimeout(() => navigate('/admin/dashboard'), 1000);
+        } else {
+          // Redirect regular users to their dashboard
+          setTimeout(() => navigate('/user-dashboard'), 1000);
         }
       }
     });
@@ -157,8 +162,13 @@ export default function AuthPage() {
       username: "admin",
       password: "admin123"
     }, {
-      onSuccess: () => {
-        setTimeout(() => navigate('/admin/dashboard'), 1000);
+      onSuccess: (userData) => {
+        // Redirect based on user role
+        if (userData.isAdmin) {
+          setTimeout(() => navigate('/admin/dashboard'), 1000);
+        } else {
+          setTimeout(() => navigate('/user-dashboard'), 1000);
+        }
       }
     });
   };
