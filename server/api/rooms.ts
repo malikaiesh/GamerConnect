@@ -850,7 +850,7 @@ router.get("/:roomId/messages", isAuthenticated, async (req: Request, res: Respo
     // Transform messages to include user object
     const formattedMessages = messages.reverse().map(msg => ({
       id: msg.room_messages.id,
-      message: msg.room_messages.content,
+      message: msg.room_messages.message,
       messageType: msg.room_messages.messageType,
       createdAt: msg.room_messages.createdAt,
       user: {

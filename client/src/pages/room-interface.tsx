@@ -114,9 +114,11 @@ export default function RoomInterfacePage() {
         })
       }).then(res => res.json());
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
+      console.log('Message sent successfully:', data); // Debug log
       setNewMessage("");
-      queryClient.invalidateQueries({ queryKey: [`/api/rooms/${roomId}/messages`] });
+      // Force immediate refetch instead of just invalidating
+      queryClient.refetchQueries({ queryKey: [`/api/rooms/${roomId}/messages`] });
     }
   });
 
