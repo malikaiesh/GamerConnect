@@ -268,18 +268,47 @@ router.post("/", isAuthenticated, async (req: Request, res: Response) => {
       return res.status(401).json({ error: "User not authenticated" });
     }
 
+    // Check user's existing rooms count
+    const userRooms = await db.select({ count: count() }).from(rooms).where(eq(rooms.ownerId, userId));
+    const userRoomCount = userRooms[0].count;
+
+    // Enforce room creation limits: 1 free room, max 5 total
+    if (userRoomCount >= 5) {
+      return res.status(403).json({ 
+        error: "Maximum room limit reached", 
+        details: "You can only create a maximum of 5 rooms. Contact support for higher limits." 
+      });
+    }
+
+    // For non-admin users, enforce payment requirement after first free room
+    const isAdminUser = (req as any).user?.isAdmin;
+    if (!isAdminUser && userRoomCount >= 1) {
+      // In a real app, you would check payment status here
+      // For now, we'll allow up to 5 rooms but show a warning
+      console.log(`User ${userId} creating room ${userRoomCount + 1}/5 (payment required for additional rooms)`);
+    }
+
+    // Validate maxSeats - must be between 2-20, default to 5
+    const requestedMaxSeats = parseInt(req.body.maxSeats) || 5;
+    if (requestedMaxSeats < 2 || requestedMaxSeats > 20) {
+      return res.status(400).json({ 
+        error: "Invalid seat limit", 
+        details: "Room must have between 2-20 seats" 
+      });
+    }
+
     // Generate unique room ID
     const roomId = await generateRoomId();
 
-    // Set default values for new rooms
+    // Set validated room data
     const roomData = {
       ...req.body,
       roomId,
       ownerId: userId,
       // Default theme to Lunexa
       backgroundTheme: req.body.backgroundTheme || 'lunexa',
-      // Default max seats to 5 (users can pay for more)
-      maxSeats: req.body.maxSeats || 5
+      // Use validated maxSeats value
+      maxSeats: requestedMaxSeats
     };
 
     const validatedData = insertRoomSchema.parse(roomData);

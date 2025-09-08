@@ -117,7 +117,7 @@ export default function MyRoomsPage() {
       description: "",
       type: "public",
       password: "",
-      maxSeats: 8,
+      maxSeats: 5, // Default to 5 seats (free tier limit)
       category: "general",
       country: "",
       language: "en",
