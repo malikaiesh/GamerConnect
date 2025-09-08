@@ -237,7 +237,8 @@ router.get("/:roomId", async (req: Request, res: Response) => {
           id: users.id,
           username: users.username,
           displayName: users.displayName,
-          profilePicture: users.profilePicture
+          profilePicture: users.profilePicture,
+          isVerified: users.isVerified
         }
       })
       .from(roomUsers)
@@ -751,6 +752,11 @@ router.post("/:roomId/leave", isAuthenticated, async (req: Request, res: Respons
     await db.update(rooms)
       .set({ currentUsers: currentUsers[0].count, lastActivity: new Date() })
       .where(eq(rooms.id, room[0].id));
+
+    // If room is now empty, clear all messages
+    if (currentUsers[0].count === 0) {
+      await db.delete(roomMessages).where(eq(roomMessages.roomId, room[0].id));
+    }
 
     res.json({ message: "Left room successfully" });
   } catch (error) {

@@ -666,6 +666,26 @@ export default function RoomInterfacePage() {
                         </div>
                       )}
                       
+                      {/* Leave Mic Button */}
+                      {currentUserInRoom?.seatNumber && (
+                        <div className="relative">
+                          <Button
+                            variant="ghost"
+                            size="lg"
+                            className="relative rounded-full w-14 h-14 sm:w-16 sm:h-16 p-0 border-2 transition-all duration-200 shadow-lg hover:scale-105 bg-gradient-to-r from-orange-400 to-red-500 border-orange-300 text-white shadow-orange-200 hover:shadow-orange-300"
+                            onClick={() => switchSeatMutation.mutate(null)}
+                            disabled={switchSeatMutation.isPending}
+                          >
+                            <LogOut className="w-5 h-5 sm:w-6 sm:h-6" />
+                          </Button>
+                          <div className="absolute -bottom-2 left-1/2 transform -translate-x-1/2">
+                            <span className="text-xs font-medium px-2 py-1 bg-black/80 text-white rounded-full">
+                              LEAVE
+                            </span>
+                          </div>
+                        </div>
+                      )}
+                      
                       {/* Settings Button for Owner */}
                       {isOwner && (
                         <div className="relative">
