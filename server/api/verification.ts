@@ -1,6 +1,6 @@
 import express from "express";
 import { db } from "../../db";
-import { users, rooms, userWallets } from "@shared/schema";
+import { users, rooms, userWallets, gifts, roomGifts } from "@shared/schema";
 import { eq, sql } from "drizzle-orm";
 import { z } from "zod";
 
@@ -416,6 +416,106 @@ router.post("/user/:username/diamonds", async (req: any, res) => {
       return res.status(400).json({ error: "Validation error", details: error.errors });
     }
     res.status(500).json({ error: "Failed to update user diamonds" });
+  }
+});
+
+// Get current authenticated user's wallet
+router.get("/my-wallet", async (req: any, res) => {
+  try {
+    const userId = req.user?.id;
+    
+    if (!userId) {
+      return res.status(401).json({ error: "Authentication required" });
+    }
+
+    // Get user wallet
+    let [wallet] = await db
+      .select()
+      .from(userWallets)
+      .where(eq(userWallets.userId, userId))
+      .limit(1);
+
+    if (!wallet) {
+      // Create wallet if doesn't exist
+      [wallet] = await db
+        .insert(userWallets)
+        .values({
+          userId,
+          coins: 0,
+          diamonds: 0,
+          totalCoinsEarned: 0,
+          totalDiamondsEarned: 0,
+          totalCoinsSpent: 0,
+          totalDiamondsSpent: 0,
+        })
+        .returning();
+    }
+
+    res.json({ wallet });
+
+  } catch (error) {
+    console.error("Error fetching user wallet:", error);
+    res.status(500).json({ error: "Failed to fetch user wallet" });
+  }
+});
+
+// Get user wallet information
+router.get("/user/:username/wallet", async (req, res) => {
+  try {
+    const { username } = req.params;
+
+    // Get user
+    const [user] = await db
+      .select({
+        id: users.id,
+        username: users.username,
+        displayName: users.displayName,
+        isVerified: users.isVerified,
+      })
+      .from(users)
+      .where(eq(users.username, username))
+      .limit(1);
+
+    if (!user) {
+      return res.status(404).json({ error: "User not found" });
+    }
+
+    // Get user wallet
+    let [wallet] = await db
+      .select()
+      .from(userWallets)
+      .where(eq(userWallets.userId, user.id))
+      .limit(1);
+
+    if (!wallet) {
+      // Create wallet if doesn't exist
+      [wallet] = await db
+        .insert(userWallets)
+        .values({
+          userId: user.id,
+          coins: 0,
+          diamonds: 0,
+          totalCoinsEarned: 0,
+          totalDiamondsEarned: 0,
+          totalCoinsSpent: 0,
+          totalDiamondsSpent: 0,
+        })
+        .returning();
+    }
+
+    res.json({
+      user: {
+        id: user.id,
+        username: user.username,
+        displayName: user.displayName,
+        isVerified: user.isVerified,
+      },
+      wallet
+    });
+
+  } catch (error) {
+    console.error("Error fetching user wallet:", error);
+    res.status(500).json({ error: "Failed to fetch user wallet" });
   }
 });
 
