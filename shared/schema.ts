@@ -1744,7 +1744,7 @@ export const rooms = pgTable('rooms', {
   voiceChatEnabled: boolean('voice_chat_enabled').default(true).notNull(),
   textChatEnabled: boolean('text_chat_enabled').default(true).notNull(),
   giftsEnabled: boolean('gifts_enabled').default(true).notNull(),
-  backgroundTheme: text('background_theme').default('default'),
+  backgroundTheme: text('background_theme').default('lunexa'),
   backgroundMusic: text('background_music'),
   musicEnabled: boolean('music_enabled').default(false).notNull(),
   
