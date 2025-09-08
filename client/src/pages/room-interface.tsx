@@ -460,9 +460,6 @@ export default function RoomInterfacePage() {
                           </svg>
                         )}
                       </h1>
-                      {roomData.room.isVerified && (
-                        <ShieldCheck className="h-5 w-5 sm:h-6 sm:w-6 text-blue-600" />
-                      )}
                     </div>
                     <div className="flex flex-wrap items-center gap-1 sm:gap-2 text-xs sm:text-sm text-muted-foreground">
                       <span>ID: {roomData.room.roomId}</span>
