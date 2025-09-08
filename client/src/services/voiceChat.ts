@@ -23,9 +23,14 @@ export class VoiceChatService {
 
   private setupWebSocket() {
     // Don't create multiple connections
-    if (this.ws && this.ws.readyState === WebSocket.CONNECTING) {
-      console.log('VoiceChatService: WebSocket already connecting...');
+    if (this.ws && (this.ws.readyState === WebSocket.CONNECTING || this.ws.readyState === WebSocket.OPEN)) {
+      console.log('VoiceChatService: WebSocket already connecting or connected...');
       return;
+    }
+    
+    // Close existing connection if any
+    if (this.ws) {
+      this.ws.close();
     }
     
     const protocol = window.location.protocol === "https:" ? "wss:" : "ws:";
@@ -44,11 +49,14 @@ export class VoiceChatService {
       console.log('VoiceChatService: WebSocket connected successfully');
       // Auto-join room if we have the info
       if (this.roomId && this.userId) {
-        this.sendWebSocketMessage({
-          type: 'join-room',
-          roomId: this.roomId,
-          userId: this.userId
-        });
+        // Add a small delay to ensure connection is stable
+        setTimeout(() => {
+          this.sendWebSocketMessage({
+            type: 'join-room',
+            roomId: this.roomId,
+            userId: this.userId
+          });
+        }, 100);
       }
     };
 
@@ -152,6 +160,12 @@ export class VoiceChatService {
       this.ws.send(JSON.stringify(message));
     } else {
       console.warn('VoiceChatService: WebSocket not ready, message not sent:', message);
+      console.log('VoiceChatService: WebSocket readyState:', this.ws?.readyState);
+      // Try to reconnect if not connected
+      if (!this.ws || this.ws.readyState === WebSocket.CLOSED) {
+        console.log('VoiceChatService: Attempting to reconnect WebSocket...');
+        this.setupWebSocket();
+      }
     }
   }
 
