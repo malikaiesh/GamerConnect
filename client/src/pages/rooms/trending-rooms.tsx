@@ -48,6 +48,8 @@ function RoomCard({ room }: { room: TrendingRoom }) {
         return 'from-purple-500 via-indigo-500 to-blue-600';
       case 'galaxy':
         return 'from-indigo-600 via-purple-600 to-pink-600';
+      case 'lunexa':
+        return 'from-purple-600 via-indigo-600 to-purple-800';
       default:
         return 'from-green-500 via-emerald-500 to-teal-500';
     }
