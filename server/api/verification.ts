@@ -566,10 +566,10 @@ router.post("/user/:username/gift", async (req: any, res) => {
       return res.status(400).json({ error: "Gift is not available" });
     }
 
-    // Calculate total cost and 40% commission
+    // Calculate total cost (100% deduction from sender, 50% to recipient, 50% platform commission)
     const totalCost = gift.price * quantity;
-    const commission = Math.round(totalCost * 0.4); // 40% commission
-    const actualCost = totalCost + commission;
+    const actualCost = totalCost; // 100% deduction from sender
+    const recipientReward = Math.round(totalCost * 0.5); // 50% to recipient
 
     // Get sender's wallet
     let [senderWallet] = await db
@@ -594,13 +594,23 @@ router.post("/user/:username/gift", async (req: any, res) => {
         .returning();
     }
 
+    // Check if user has received gifts before (can send gifts only if they received some)
+    const receivedGifts = await db.select({ count: sql`count(*)` })
+      .from(roomGifts)
+      .where(eq(roomGifts.recipientId, senderId));
+    
+    if (receivedGifts[0].count === '0') {
+      return res.status(403).json({ 
+        error: "You must receive gifts from other users before you can send gifts"
+      });
+    }
+
     // Check if sender has enough diamonds
     if (senderWallet.diamonds < actualCost) {
       return res.status(400).json({
         error: "Insufficient diamonds",
         required: actualCost,
-        available: senderWallet.diamonds,
-        commission: commission
+        available: senderWallet.diamonds
       });
     }
 
@@ -641,7 +651,7 @@ router.post("/user/:username/gift", async (req: any, res) => {
       })
       .returning();
 
-    // Deduct diamonds from sender (including 40% commission)
+    // Deduct 100% diamonds from sender
     await db
       .update(userWallets)
       .set({
@@ -649,6 +659,31 @@ router.post("/user/:username/gift", async (req: any, res) => {
         totalDiamondsSpent: sql`${userWallets.totalDiamondsSpent} + ${actualCost}`
       })
       .where(eq(userWallets.userId, senderId));
+
+    // Add 50% diamonds to recipient
+    if (!recipientWallet) {
+      // Create wallet if doesn't exist
+      await db
+        .insert(userWallets)
+        .values({
+          userId: recipient.id,
+          coins: 0,
+          diamonds: recipientReward,
+          totalCoinsEarned: 0,
+          totalDiamondsEarned: recipientReward,
+          totalCoinsSpent: 0,
+          totalDiamondsSpent: 0,
+        });
+    } else {
+      // Update existing wallet
+      await db
+        .update(userWallets)
+        .set({
+          diamonds: sql`${userWallets.diamonds} + ${recipientReward}`,
+          totalDiamondsEarned: sql`${userWallets.totalDiamondsEarned} + ${recipientReward}`
+        })
+        .where(eq(userWallets.userId, recipient.id));
+    }
 
     res.status(201).json({
       ...sentGift,
@@ -659,8 +694,9 @@ router.post("/user/:username/gift", async (req: any, res) => {
         displayName: recipient.displayName
       },
       actualCost,
-      commission,
-      message: "Gift sent successfully! 40% commission applied."
+      recipientReward,
+      platformCommission: totalCost - recipientReward,
+      message: "Gift sent successfully! 100% deducted from sender, 50% rewarded to recipient."
     });
 
   } catch (error) {
