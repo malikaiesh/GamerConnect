@@ -97,8 +97,8 @@ export default function RoomInterfacePage() {
   // Fetch chat messages
   const { data: messages = [] } = useQuery<ChatMessage[]>({
     queryKey: [`/api/rooms/${roomId}/messages`],
-    enabled: !!roomId,
-    refetchInterval: 2000 // Refresh every 2 seconds for real-time feel
+    enabled: !!roomId && !!user,
+    refetchInterval: 5000 // Refresh every 5 seconds to reduce rate limiting
   });
 
   // Send message mutation

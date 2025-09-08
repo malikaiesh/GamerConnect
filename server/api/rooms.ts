@@ -544,6 +544,57 @@ router.post("/:roomId/auto-join", isAuthenticated, async (req: Request, res: Res
   }
 });
 
+// Switch seat endpoint
+router.post("/:roomId/switch-seat", isAuthenticated, async (req: Request, res: Response) => {
+  try {
+    const { roomId } = req.params;
+    const { seatNumber } = req.body;
+    const userId = (req as any).user?.id;
+
+    if (!userId) {
+      return res.status(401).json({ error: "User not authenticated" });
+    }
+
+    // Get room
+    const room = await db.select().from(rooms).where(eq(rooms.roomId, roomId)).limit(1);
+    if (room.length === 0) {
+      return res.status(404).json({ error: "Room not found" });
+    }
+
+    // Check if user is in room
+    const userInRoom = await db.select().from(roomUsers).where(
+      and(eq(roomUsers.roomId, room[0].id), eq(roomUsers.userId, userId))
+    ).limit(1);
+
+    if (userInRoom.length === 0) {
+      return res.status(400).json({ error: "User not in room" });
+    }
+
+    // Check if seat is available
+    if (seatNumber !== null) {
+      const seatTaken = await db.select().from(roomUsers).where(
+        and(eq(roomUsers.roomId, room[0].id), eq(roomUsers.seat, seatNumber))
+      ).limit(1);
+
+      if (seatTaken.length > 0) {
+        return res.status(400).json({ error: "Seat is already taken" });
+      }
+    }
+
+    // Update user's seat
+    await db.update(roomUsers)
+      .set({ seat: seatNumber })
+      .where(
+        and(eq(roomUsers.roomId, room[0].id), eq(roomUsers.userId, userId))
+      );
+
+    res.json({ message: "Seat switched successfully" });
+  } catch (error) {
+    console.error("Error switching seat:", error);
+    res.status(500).json({ error: "Failed to switch seat" });
+  }
+});
+
 // Get room statistics for dashboard
 router.get("/stats/overview", isAuthenticated, isAdmin, async (req: Request, res: Response) => {
   try {
