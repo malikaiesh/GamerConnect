@@ -84,6 +84,8 @@ export default function RoomInterfacePage() {
   const [newMessage, setNewMessage] = useState("");
   const [activeTab, setActiveTab] = useState("chat");
   const [selectedGift, setSelectedGift] = useState<any>(null);
+  const [isPlayingMusic, setIsPlayingMusic] = useState(false);
+  const [micUsers, setMicUsers] = useState<{[key: number]: {isSpeaking: boolean, isPlayingMusic: boolean}}>({});
 
   // Fetch room data
   const { data: roomData, isLoading } = useQuery<RoomData>({
@@ -188,13 +190,48 @@ export default function RoomInterfacePage() {
   // Handle mic toggle
   const handleMicToggle = () => {
     setIsMicOn(!isMicOn);
-    // TODO: Implement actual audio controls
+    // Simulate speaking when mic is turned on
+    if (!isMicOn && currentUserInRoom?.seatNumber) {
+      const seatNum = currentUserInRoom.seatNumber;
+      setMicUsers(prev => ({
+        ...prev,
+        [seatNum]: {
+          isSpeaking: true,
+          isPlayingMusic: false
+        }
+      }));
+      // Auto turn off speaking after 3 seconds
+      setTimeout(() => {
+        setMicUsers(prev => ({
+          ...prev,
+          [seatNum]: {
+            ...prev[seatNum] || {},
+            isSpeaking: false
+          }
+        }));
+      }, 3000);
+    }
   };
 
   // Handle speaker toggle
   const handleSpeakerToggle = () => {
     setIsSpeakerOn(!isSpeakerOn);
     // TODO: Implement actual audio controls
+  };
+  
+  // Handle music toggle
+  const handleMusicToggle = () => {
+    setIsPlayingMusic(!isPlayingMusic);
+    if (currentUserInRoom?.seatNumber) {
+      const seatNum = currentUserInRoom.seatNumber;
+      setMicUsers(prev => ({
+        ...prev,
+        [seatNum]: {
+          isSpeaking: false,
+          isPlayingMusic: !isPlayingMusic
+        }
+      }));
+    }
   };
 
   // Get current user's room status
