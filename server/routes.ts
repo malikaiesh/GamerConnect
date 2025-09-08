@@ -1,5 +1,6 @@
 import express, { type Express, Request, Response, NextFunction } from "express";
 import { createServer, type Server } from "http";
+import { WebSocketServer, WebSocket } from "ws";
 import { setupAuth } from "./auth";
 import { isAuthenticated, isAdmin } from "./middleware/auth";
 import { registerGameRoutes } from "./api/games";
@@ -1317,6 +1318,111 @@ Sitemap: ${req.protocol}://${req.get('host')}/sitemap.xml`);
   });
 
   const httpServer = createServer(app);
+
+  // Set up WebSocket server for voice chat signaling
+  const wss = new WebSocketServer({ server: httpServer, path: '/ws' });
+
+  // Store active connections by room and user
+  const roomConnections = new Map<string, Map<string, WebSocket>>();
+
+  wss.on('connection', (ws: WebSocket, req) => {
+    console.log('New WebSocket connection established');
+    
+    let currentRoom: string | null = null;
+    let currentUserId: string | null = null;
+
+    ws.on('message', (data: Buffer) => {
+      try {
+        const message = JSON.parse(data.toString());
+        
+        switch (message.type) {
+          case 'join-room':
+            currentRoom = message.roomId;
+            currentUserId = message.userId;
+            
+            // Add user to room connections
+            if (!roomConnections.has(currentRoom)) {
+              roomConnections.set(currentRoom, new Map());
+            }
+            roomConnections.get(currentRoom)!.set(currentUserId, ws);
+            
+            console.log(`User ${currentUserId} joined voice chat in room ${currentRoom}`);
+            
+            // Notify other users in the room
+            broadcastToRoom(currentRoom, {
+              type: 'user-joined',
+              userId: currentUserId
+            }, currentUserId);
+            break;
+
+          case 'webrtc-offer':
+          case 'webrtc-answer':
+          case 'webrtc-ice-candidate':
+            // Forward WebRTC signaling messages to the target user
+            if (currentRoom && message.targetUserId) {
+              const targetWs = roomConnections.get(currentRoom)?.get(message.targetUserId);
+              if (targetWs && targetWs.readyState === WebSocket.OPEN) {
+                targetWs.send(JSON.stringify({
+                  ...message,
+                  fromUserId: currentUserId
+                }));
+              }
+            }
+            break;
+
+          case 'mic-toggle':
+            // Broadcast mic status to other users in the room
+            if (currentRoom) {
+              broadcastToRoom(currentRoom, {
+                type: 'user-mic-toggle',
+                userId: currentUserId,
+                isMicOn: message.isMicOn
+              }, currentUserId);
+            }
+            break;
+        }
+      } catch (error) {
+        console.error('Error processing WebSocket message:', error);
+      }
+    });
+
+    ws.on('close', () => {
+      console.log('WebSocket connection closed');
+      
+      if (currentRoom && currentUserId) {
+        // Remove user from room connections
+        const roomUsers = roomConnections.get(currentRoom);
+        if (roomUsers) {
+          roomUsers.delete(currentUserId);
+          if (roomUsers.size === 0) {
+            roomConnections.delete(currentRoom);
+          }
+        }
+        
+        // Notify other users that this user left
+        broadcastToRoom(currentRoom, {
+          type: 'user-left',
+          userId: currentUserId
+        }, currentUserId);
+      }
+    });
+
+    ws.on('error', (error) => {
+      console.error('WebSocket error:', error);
+    });
+  });
+
+  // Helper function to broadcast messages to all users in a room except sender
+  function broadcastToRoom(roomId: string, message: any, excludeUserId?: string) {
+    const roomUsers = roomConnections.get(roomId);
+    if (roomUsers) {
+      roomUsers.forEach((userWs, userId) => {
+        if (userId !== excludeUserId && userWs.readyState === WebSocket.OPEN) {
+          userWs.send(JSON.stringify(message));
+        }
+      });
+    }
+  }
 
   return httpServer;
 }
