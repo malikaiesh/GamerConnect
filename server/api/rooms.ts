@@ -280,23 +280,51 @@ router.post("/", isAuthenticated, async (req: Request, res: Response) => {
       });
     }
 
-    // For non-admin users, enforce payment requirement after first free room
-    const isAdminUser = (req as any).user?.isAdmin;
-    if (!isAdminUser && userRoomCount >= 1) {
-      return res.status(402).json({ 
-        error: "Payment required", 
-        details: "You have used your free room. Upgrade to a paid plan to create more rooms.",
-        requiresPayment: true,
-        redirectTo: "/pricing-plans"
-      });
-    }
-
-    // Validate maxSeats - must be between 2-20, default to 5
+    // Calculate pricing for room and seats
     const requestedMaxSeats = parseInt(req.body.maxSeats) || 5;
     if (requestedMaxSeats < 2 || requestedMaxSeats > 20) {
       return res.status(400).json({ 
         error: "Invalid seat limit", 
         details: "Room must have between 2-20 seats" 
+      });
+    }
+
+    // Pricing calculation
+    const isAdminUser = (req as any).user?.isAdmin;
+    let totalCost = 0;
+    let costBreakdown = {
+      roomCost: 0,
+      seatCost: 0,
+      description: []
+    };
+
+    // Room pricing: First room free, $5 for each additional room
+    if (!isAdminUser && userRoomCount >= 1) {
+      costBreakdown.roomCost = 500; // $5.00 in cents
+      costBreakdown.description.push(`Additional room: $5.00`);
+    }
+
+    // Seat pricing: $1 per seat beyond 5 seats
+    if (requestedMaxSeats > 5) {
+      const extraSeats = requestedMaxSeats - 5;
+      costBreakdown.seatCost = extraSeats * 100; // $1.00 per seat in cents
+      costBreakdown.description.push(`${extraSeats} extra seats: $${extraSeats}.00`);
+    }
+
+    totalCost = costBreakdown.roomCost + costBreakdown.seatCost;
+
+    // If payment is required, return pricing info instead of blocking
+    if (!isAdminUser && totalCost > 0) {
+      return res.status(402).json({ 
+        error: "Payment required", 
+        details: `Total cost: $${(totalCost / 100).toFixed(2)}`,
+        requiresPayment: true,
+        pricing: {
+          totalCost,
+          costBreakdown,
+          currency: "USD"
+        },
+        redirectTo: "/checkout"
       });
     }
 
