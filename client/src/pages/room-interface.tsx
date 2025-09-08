@@ -467,28 +467,32 @@ export default function RoomInterfacePage() {
           {/* User Name or Seat Number */}
           <div className="text-center max-w-20">
             {seatUser ? (
-              <span className="text-xs sm:text-sm font-medium text-white truncate max-w-full flex items-center gap-1">
-                {seatUser.user.username}
-                {seatUser.user.isVerified && (
-                  <div className="inline-flex items-center justify-center w-6 h-6 flex-shrink-0 relative">
-                    <svg className="w-6 h-6 drop-shadow-md" viewBox="0 0 24 24" fill="none">
-                      <path d="M12 2L13.09 5.26L16 4L15.74 7.26L19 8.35L16.74 10.74L19 12.65L15.74 13.26L16 17L13.09 15.74L12 19L10.91 15.74L8 17L8.26 13.74L5 12.65L8.26 10.26L5 8.35L8.26 7.74L8 4L10.91 5.26L12 2Z" fill="url(#verifyGradientUser)" stroke="#1565C0" strokeWidth="0.5"/>
-                      <path d="M9 11.5L11 13.5L15 9.5" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-                      <defs>
-                        <linearGradient id="verifyGradientUser" x1="0%" y1="0%" x2="0%" y2="100%">
-                          <stop offset="0%" stopColor="#1877F2" />
-                          <stop offset="100%" stopColor="#166FE5" />
-                        </linearGradient>
-                      </defs>
-                    </svg>
-                    <div className="absolute inset-0 bg-gradient-to-t from-transparent to-white opacity-20 rounded-full"></div>
-                  </div>
-                )}
-              </span>
+              <div className="bg-black/80 px-2 py-1 rounded-full backdrop-blur-sm border border-white/20">
+                <span className="text-xs sm:text-sm font-medium text-white truncate max-w-full flex items-center gap-1">
+                  {seatUser.user.username}
+                  {seatUser.user.isVerified && (
+                    <div className="inline-flex items-center justify-center w-4 h-4 flex-shrink-0 relative">
+                      <svg className="w-4 h-4 drop-shadow-md" viewBox="0 0 24 24" fill="none">
+                        <path d="M12 2L13.09 5.26L16 4L15.74 7.26L19 8.35L16.74 10.74L19 12.65L15.74 13.26L16 17L13.09 15.74L12 19L10.91 15.74L8 17L8.26 13.74L5 12.65L8.26 10.26L5 8.35L8.26 7.74L8 4L10.91 5.26L12 2Z" fill="url(#verifyGradientUser)" stroke="#1565C0" strokeWidth="0.5"/>
+                        <path d="M9 11.5L11 13.5L15 9.5" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                        <defs>
+                          <linearGradient id="verifyGradientUser" x1="0%" y1="0%" x2="0%" y2="100%">
+                            <stop offset="0%" stopColor="#1877F2" />
+                            <stop offset="100%" stopColor="#166FE5" />
+                          </linearGradient>
+                        </defs>
+                      </svg>
+                      <div className="absolute inset-0 bg-gradient-to-t from-transparent to-white opacity-20 rounded-full"></div>
+                    </div>
+                  )}
+                </span>
+              </div>
             ) : (
-              <span className="text-sm sm:text-base md:text-lg font-bold text-white">
-                {seatNumber}
-              </span>
+              <div className="bg-black/60 px-2 py-1 rounded-full backdrop-blur-sm border border-white/20">
+                <span className="text-sm sm:text-base md:text-lg font-bold text-white">
+                  {seatNumber}
+                </span>
+              </div>
             )}
           </div>
         </div>
