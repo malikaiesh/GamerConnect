@@ -1320,7 +1320,11 @@ Sitemap: ${req.protocol}://${req.get('host')}/sitemap.xml`);
   const httpServer = createServer(app);
 
   // Set up WebSocket server for voice chat signaling
-  const wss = new WebSocketServer({ server: httpServer, path: '/ws' });
+  const wss = new WebSocketServer({ 
+    server: httpServer, 
+    path: '/ws',
+    perMessageDeflate: false
+  });
 
   // Store active connections by room and user
   const roomConnections = new Map<string, Map<string, WebSocket>>();

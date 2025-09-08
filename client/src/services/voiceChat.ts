@@ -25,7 +25,14 @@ export class VoiceChatService {
     const protocol = window.location.protocol === "https:" ? "wss:" : "ws:";
     const wsUrl = `${protocol}//${window.location.host}/ws`;
     
-    this.ws = new WebSocket(wsUrl);
+    console.log('VoiceChatService: Attempting WebSocket connection to:', wsUrl);
+    
+    try {
+      this.ws = new WebSocket(wsUrl);
+    } catch (error) {
+      console.error('VoiceChatService: Failed to create WebSocket:', error);
+      return;
+    }
 
     this.ws.onopen = () => {
       console.log('VoiceChatService: WebSocket connected successfully');
@@ -49,14 +56,14 @@ export class VoiceChatService {
       }
     };
 
-    this.ws.onclose = () => {
-      console.log('Voice chat WebSocket disconnected');
+    this.ws.onclose = (event) => {
+      console.log('VoiceChatService: WebSocket disconnected', event.code, event.reason);
       // Attempt to reconnect after 3 seconds
       setTimeout(() => this.setupWebSocket(), 3000);
     };
 
     this.ws.onerror = (error) => {
-      console.error('Voice chat WebSocket error:', error);
+      console.error('VoiceChatService: WebSocket error:', error);
     };
   }
 
