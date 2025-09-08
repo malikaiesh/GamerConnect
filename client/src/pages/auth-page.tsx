@@ -180,6 +180,18 @@ export default function AuthPage() {
 
   // Handle registration form submission
   const onRegisterSubmit = (values: RegisterValues) => {
+    // Check if reCAPTCHA is enabled and required
+    const recaptchaOption = enabledSignupOptions.find(option => option.provider === 'recaptcha' && option.isEnabled);
+    
+    if (recaptchaOption && !recaptchaToken) {
+      toast({
+        title: "Verification Required",
+        description: "Please complete the reCAPTCHA verification",
+        variant: "destructive"
+      });
+      return;
+    }
+
     registerMutation.mutate({
       username: values.username,
       password: values.password,
@@ -187,7 +199,22 @@ export default function AuthPage() {
       bio: values.bio || undefined,
       country: values.country || undefined,
       profilePicture: values.profilePicture || undefined,
+      recaptchaToken: recaptchaToken || undefined,
     });
+  };
+
+  // Handle reCAPTCHA change
+  const onRecaptchaChange = (token: string | null) => {
+    setRecaptchaToken(token || "");
+    registerForm.setValue("recaptchaToken", token || "");
+  };
+
+  // Reset reCAPTCHA on form reset
+  const resetRecaptcha = () => {
+    if (recaptchaRef.current) {
+      recaptchaRef.current.reset();
+    }
+    setRecaptchaToken("");
   };
   
   // Handle social login
@@ -647,6 +674,19 @@ export default function AuthPage() {
                         </FormItem>
                       )}
                     />
+
+                    {/* Google reCAPTCHA */}
+                    {enabledSignupOptions.find(option => option.provider === 'recaptcha' && option.isEnabled) && (
+                      <div className="flex justify-center">
+                        <ReCAPTCHA
+                          ref={recaptchaRef}
+                          sitekey={enabledSignupOptions.find(option => option.provider === 'recaptcha')?.configuration?.siteKey || ""}
+                          onChange={onRecaptchaChange}
+                          theme={enabledSignupOptions.find(option => option.provider === 'recaptcha')?.configuration?.theme || "light"}
+                          size={enabledSignupOptions.find(option => option.provider === 'recaptcha')?.configuration?.size || "normal"}
+                        />
+                      </div>
+                    )}
 
                     <Button
                       type="submit"
