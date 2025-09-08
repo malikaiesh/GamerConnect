@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useLocation } from "wouter";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
@@ -19,6 +19,7 @@ import { Loader2, Mail, Github, KeyRound, Phone } from "lucide-react";
 import { FaGoogle, FaFacebook, FaGithub, FaDiscord, FaTwitter, FaApple, FaMicrosoft } from "react-icons/fa";
 import { ForgotPasswordForm } from "@/components/auth/forgot-password-form";
 import { SiteSetting, SignupOption } from "@shared/schema";
+import ReCAPTCHA from "react-google-recaptcha";
 
 // Form validation schemas
 const loginSchema = z.object({
@@ -36,7 +37,8 @@ const registerSchema = z.object({
   confirmPassword: z.string(),
   bio: z.string().max(500, { message: "Bio should be less than 500 characters" }).optional().or(z.literal('')),
   country: z.string().optional().or(z.literal('')),
-  profilePicture: z.string().url({ message: "Please enter a valid URL" }).optional().or(z.literal(''))
+  profilePicture: z.string().url({ message: "Please enter a valid URL" }).optional().or(z.literal('')),
+  recaptchaToken: z.string().optional()
 }).refine((data) => data.password === data.confirmPassword, {
   message: "Passwords do not match",
   path: ["confirmPassword"],
@@ -50,6 +52,8 @@ export default function AuthPage() {
   const [showForgotPassword, setShowForgotPassword] = useState(false);
   const { user, isLoading } = useAuth();
   const [location, navigate] = useLocation();
+  const recaptchaRef = useRef<ReCAPTCHA>(null);
+  const [recaptchaToken, setRecaptchaToken] = useState<string>("");
   
   // Fetch site settings for logo configuration
   const { data: settings } = useQuery<SiteSetting>({
@@ -81,6 +85,7 @@ export default function AuthPage() {
       bio: "",
       country: "",
       profilePicture: "",
+      recaptchaToken: "",
     },
   });
 
