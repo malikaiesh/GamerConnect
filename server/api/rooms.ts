@@ -1087,7 +1087,7 @@ router.post("/:roomId/gifts", isAuthenticated, async (req: Request, res: Respons
       })
       .where(eq(roomAnalytics.roomId, room[0].id));
 
-    const message = recipientId 
+    const responseMessage = recipientId 
       ? "Gift sent successfully! 100% deducted from sender, 50% rewarded to recipient."
       : "Gift sent to room successfully! 100% deducted from sender, no diamonds to room admin.";
 
@@ -1097,7 +1097,7 @@ router.post("/:roomId/gifts", isAuthenticated, async (req: Request, res: Respons
       actualCost,
       recipientReward,
       platformCommission: totalCost - recipientReward,
-      message
+      message: responseMessage
     });
 
   } catch (error) {
