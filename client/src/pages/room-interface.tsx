@@ -86,6 +86,7 @@ export default function RoomInterfacePage() {
   const [selectedGift, setSelectedGift] = useState<any>(null);
   const [isPlayingMusic, setIsPlayingMusic] = useState(false);
   const [micUsers, setMicUsers] = useState<{[key: number]: {isSpeaking: boolean, isPlayingMusic: boolean}}>({});
+  const [emojiAnimations, setEmojiAnimations] = useState<{[key: number]: {emoji: string, timestamp: number}}>({});
 
   // Fetch room data
   const { data: roomData, isLoading } = useQuery<RoomData>({
@@ -146,6 +147,19 @@ export default function RoomInterfacePage() {
     onError: (error) => {
       console.error("Auto-join failed:", error);
     },
+  });
+
+  // Switch seat mutation
+  const switchSeatMutation = useMutation({
+    mutationFn: (newSeatNumber: number) =>
+      fetch(`/api/rooms/${roomId}/switch-seat`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ seatNumber: newSeatNumber })
+      }).then(res => res.json()),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: [`/api/rooms/${roomId}`] });
+    }
   });
 
   // Auto-join room on mount
@@ -234,6 +248,34 @@ export default function RoomInterfacePage() {
     }
   };
 
+  // Handle emoji selection
+  const handleEmojiSelect = (emoji: string) => {
+    if (!currentUserInRoom?.seatNumber) return;
+    
+    const seatNum = currentUserInRoom.seatNumber;
+    
+    // Add emoji animation to the seat
+    setEmojiAnimations(prev => ({
+      ...prev,
+      [seatNum]: {
+        emoji,
+        timestamp: Date.now()
+      }
+    }));
+    
+    // Remove animation after 3 seconds
+    setTimeout(() => {
+      setEmojiAnimations(prev => {
+        const newState = { ...prev };
+        delete newState[seatNum];
+        return newState;
+      });
+    }, 3000);
+    
+    // Send emoji as message
+    sendMessageMutation.mutate(`sent ${emoji}`);
+  };
+
   // Get current user's room status
   const currentUserInRoom = roomData?.users.find(ru => ru.user.id === user?.id);
   const isOwner = roomData?.room.ownerId === user?.id;
@@ -255,11 +297,17 @@ export default function RoomInterfacePage() {
                 ? (seatUser.isMicOn 
                     ? 'bg-gradient-to-br from-green-500/30 to-emerald-600/30 border-green-400/60 shadow-lg shadow-green-500/40 animate-pulse'
                     : 'bg-gradient-to-br from-blue-500/20 to-purple-600/20 border-blue-400/50 shadow-lg shadow-blue-500/25')
-                : 'bg-gradient-to-br from-gray-600/20 to-gray-800/20 border-gray-500/30 hover:border-purple-400/50 hover:shadow-lg hover:shadow-purple-500/25 hover:bg-gradient-to-br hover:from-purple-600/20 hover:to-indigo-600/20'
+                : (currentUserInRoom 
+                    ? 'bg-gradient-to-br from-purple-600/20 to-indigo-600/20 border-purple-400/50 hover:border-purple-400/70 hover:shadow-lg hover:shadow-purple-500/40 hover:bg-gradient-to-br hover:from-purple-600/30 hover:to-indigo-600/30'
+                    : 'bg-gradient-to-br from-gray-600/20 to-gray-800/20 border-gray-500/30 hover:border-purple-400/50 hover:shadow-lg hover:shadow-purple-500/25 hover:bg-gradient-to-br hover:from-purple-600/20 hover:to-indigo-600/20')
             }`}
             onClick={() => {
               if (!seatUser && !currentUserInRoom) {
+                // Join empty seat
                 joinRoomMutation.mutate(seatNumber);
+              } else if (!seatUser && currentUserInRoom) {
+                // Switch to empty seat
+                switchSeatMutation.mutate(seatNumber);
               } else if (seatUser && seatUser.user.id === user?.id) {
                 // Toggle mic for current user
                 handleMicToggle();
@@ -297,6 +345,15 @@ export default function RoomInterfacePage() {
                     </div>
                   )}
                 </div>
+                
+                {/* Emoji Animation Overlay */}
+                {emojiAnimations[seatNumber] && (
+                  <div className="absolute -top-8 left-1/2 transform -translate-x-1/2 animate-bounce z-10">
+                    <div className="text-3xl bg-white/90 rounded-full p-2 shadow-lg border-2 border-purple-400">
+                      {emojiAnimations[seatNumber].emoji}
+                    </div>
+                  </div>
+                )}
               </>
             ) : (
               /* Empty Mic Icon */
@@ -698,24 +755,33 @@ export default function RoomInterfacePage() {
 
                   {/* Emojis Tab */}
                   <TabsContent value="emojis" className="flex-1 flex flex-col mt-0">
-                    <div className="flex-1 overflow-y-auto max-h-[250px] sm:max-h-[300px] lg:max-h-[400px]">
-                      <div className="p-1">
-                        <div className="bg-gradient-to-br from-slate-900/50 to-purple-900/30 rounded-lg border border-purple-500/20 overflow-hidden">
-                          <EmojiPicker
-                            onEmojiClick={(emojiData) => {
-                              setNewMessage(prev => prev + emojiData.emoji);
-                              setActiveTab("chat"); // Switch back to chat after selecting emoji
-                            }}
-                            width="100%"
-                            height={typeof window !== 'undefined' && window.innerWidth < 640 ? 180 : 220}
-                            previewConfig={{
-                              showPreview: false
-                            }}
-                            searchDisabled={false}
-                            skinTonesDisabled={false}
-                            lazyLoadEmojis={true}
-                          />
-                        </div>
+                    <div className="flex-1 overflow-y-auto max-h-[250px] sm:max-h-[300px] lg:max-h-[400px] p-4">
+                      <div className="grid grid-cols-4 gap-3">
+                        {[
+                          { name: "Blowkiss", emoji: "😘" },
+                          { name: "Kiss (Left)", emoji: "😗" },
+                          { name: "Shocked", emoji: "😱" },
+                          { name: "Cry", emoji: "😭" },
+                          { name: "Like", emoji: "😍" },
+                          { name: "Grin", emoji: "😀" },
+                          { name: "Lol", emoji: "😂" },
+                          { name: "Sleep", emoji: "😴" },
+                          { name: "Clap", emoji: "🙊" },
+                          { name: "Gift Me", emoji: "😮" },
+                          { name: "Thinking", emoji: "🤔" },
+                          { name: "Dizzy", emoji: "😵" }
+                        ].map((reaction) => (
+                          <Button
+                            key={reaction.name}
+                            variant="ghost"
+                            className="h-20 flex-col gap-2 p-2 hover:bg-purple-500/20 border border-purple-400/30 rounded-lg transition-all hover:scale-105"
+                            disabled={!currentUserInRoom}
+                            onClick={() => handleEmojiSelect(reaction.emoji)}
+                          >
+                            <div className="text-3xl">{reaction.emoji}</div>
+                            <div className="text-xs font-medium text-white">{reaction.name}</div>
+                          </Button>
+                        ))}
                       </div>
                     </div>
                   </TabsContent>
