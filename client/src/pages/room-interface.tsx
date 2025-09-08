@@ -103,12 +103,17 @@ export default function RoomInterfacePage() {
 
   // Send message mutation
   const sendMessageMutation = useMutation({
-    mutationFn: (message: string) =>
-      fetch(`/api/rooms/${roomId}/messages`, {
+    mutationFn: (message: string) => {
+      console.log('Sending message:', message); // Debug log
+      return fetch(`/api/rooms/${roomId}/messages`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ message, messageType: 'text' })
-      }).then(res => res.json()),
+        body: JSON.stringify({ 
+          message: message, 
+          messageType: message.startsWith('sent ') ? 'emoji' : 'text' 
+        })
+      }).then(res => res.json());
+    },
     onSuccess: () => {
       setNewMessage("");
       queryClient.invalidateQueries({ queryKey: [`/api/rooms/${roomId}/messages`] });
@@ -273,7 +278,8 @@ export default function RoomInterfacePage() {
     }, 3000);
     
     // Send emoji as message with proper format
-    const emojiMessage = `sent ${emoji} ${emojiName}`;
+    const emojiMessage = `${emojiName} ${emoji}`;
+    console.log('Sending emoji message:', emojiMessage); // Debug log
     sendMessageMutation.mutate(emojiMessage);
   };
 
@@ -362,11 +368,27 @@ export default function RoomInterfacePage() {
             )}
           </div>
           
-          {/* Seat Number */}
-          <div className="text-center">
-            <span className="text-sm sm:text-base md:text-lg font-bold text-white">
-              {seatNumber}
-            </span>
+          {/* User Name or Seat Number */}
+          <div className="text-center max-w-20">
+            {seatUser ? (
+              <div className="flex flex-col items-center gap-1">
+                <span className="text-xs sm:text-sm font-medium text-white truncate max-w-full flex items-center gap-1">
+                  {seatUser.user.username}
+                  {seatUser.user.isVerified && (
+                    <svg className="w-3 h-3 text-blue-400 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                    </svg>
+                  )}
+                </span>
+                <span className="text-xs text-gray-400">
+                  {seatNumber}
+                </span>
+              </div>
+            ) : (
+              <span className="text-sm sm:text-base md:text-lg font-bold text-white">
+                {seatNumber}
+              </span>
+            )}
           </div>
         </div>
       );
