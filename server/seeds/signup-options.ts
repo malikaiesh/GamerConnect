@@ -119,15 +119,36 @@ export async function seedSignupOptions() {
       .select({ count: count() })
       .from(signupOptions);
 
-    // Only seed if no options exist (fresh deployment)
     if (existingCount.count === 0) {
+      // Fresh deployment - insert all options
       console.log('🌱 Seeding default signup options...');
       
       await db.insert(signupOptions).values(DEFAULT_SIGNUP_OPTIONS);
       
       console.log('✅ Default signup options seeded successfully');
     } else {
-      console.log('ℹ️  Signup options already exist, skipping seeding');
+      // Existing deployment - check for new options and add them
+      console.log('🌱 Checking for new signup options...');
+      
+      // Get existing providers
+      const existingOptions = await db.select().from(signupOptions);
+      const existingProviders = existingOptions.map(option => option.provider);
+      
+      // Find new options that don't exist yet
+      const newOptions = DEFAULT_SIGNUP_OPTIONS.filter(
+        option => !existingProviders.includes(option.provider)
+      );
+      
+      if (newOptions.length > 0) {
+        console.log(`🌱 Adding ${newOptions.length} new signup options...`);
+        console.log('New options:', newOptions.map(opt => opt.displayName).join(', '));
+        
+        await db.insert(signupOptions).values(newOptions);
+        
+        console.log('✅ New signup options added successfully');
+      } else {
+        console.log('ℹ️  No new signup options to add');
+      }
     }
   } catch (error) {
     console.error('❌ Error seeding signup options:', error);
