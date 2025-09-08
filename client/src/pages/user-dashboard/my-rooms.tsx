@@ -170,9 +170,9 @@ export default function MyRoomsPage() {
           };
           localStorage.setItem('roomPaymentData', JSON.stringify(paymentData));
           
-          // For now, redirect to pricing page
+          // Redirect to checkout page
           setTimeout(() => {
-            navigate('/pricing-plans');
+            navigate('/checkout-room');
           }, 2000);
         } else {
           toast({

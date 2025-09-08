@@ -9,6 +9,16 @@ async function throwIfResNotOk(res: Response) {
       throw new Error(`HTTP error ${res.status}: ${res.statusText}`);
     }
     
+    // For payment required errors (402), preserve all response data
+    if (res.status === 402) {
+      const error = new Error(errorJson.details || errorJson.message || `HTTP error ${res.status}: ${res.statusText}`);
+      (error as any).status = res.status;
+      (error as any).pricing = errorJson.pricing;
+      (error as any).redirectTo = errorJson.redirectTo;
+      (error as any).requiresPayment = errorJson.requiresPayment;
+      throw error;
+    }
+    
     if (errorJson && errorJson.message) {
       // If there are detailed validation errors, include them in the error message
       if (errorJson.errors && Array.isArray(errorJson.errors) && errorJson.errors.length > 0) {

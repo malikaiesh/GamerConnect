@@ -133,6 +133,7 @@ const FriendRequestsPage = lazy(() => import("@/pages/social/friend-requests"));
 // Public pricing and verification pages
 const PricingPlansPage = lazy(() => import("@/pages/pricing-plans"));
 const CheckoutPage = lazy(() => import("@/pages/checkout"));
+const CheckoutRoomPage = lazy(() => import("@/pages/checkout-room"));
 const VerificationPage = lazy(() => import("@/pages/verification"));
 const ReferEarnPage = lazy(() => import("@/pages/refer-earn"));
 
@@ -305,6 +306,9 @@ function Router() {
       </Route>
       <Route path="/checkout">
         <Suspense fallback={<LoadingFallback />}><CheckoutPage /></Suspense>
+      </Route>
+      <Route path="/checkout-room">
+        <Suspense fallback={<LoadingFallback />}><CheckoutRoomPage /></Suspense>
       </Route>
       <Route path="/verification">
         <Suspense fallback={<LoadingFallback />}><VerificationPage /></Suspense>
