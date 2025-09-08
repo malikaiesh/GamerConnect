@@ -27,7 +27,7 @@ export const sitemapTypeEnum = pgEnum('sitemap_type', ['games', 'blog', 'pages',
 export const userAccountTypeEnum = pgEnum('user_account_type', ['local', 'google', 'facebook', 'github', 'discord', 'twitter', 'apple', 'microsoft', 'phone']);
 
 // Signup Provider Enum
-export const signupProviderEnum = pgEnum('signup_provider', ['email', 'google', 'facebook', 'github', 'discord', 'twitter', 'apple', 'microsoft', 'phone']);
+export const signupProviderEnum = pgEnum('signup_provider', ['email', 'google', 'facebook', 'github', 'discord', 'twitter', 'apple', 'microsoft', 'phone', 'recaptcha', 'livechat']);
 
 // User Status Enum
 export const userStatusEnum = pgEnum('user_status', ['active', 'blocked']);

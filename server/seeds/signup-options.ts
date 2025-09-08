@@ -75,6 +75,40 @@ const DEFAULT_SIGNUP_OPTIONS = [
     color: '#00a1f1',
     sortOrder: 8,
     description: 'Sign up with your Microsoft account'
+  },
+  {
+    provider: 'recaptcha' as const,
+    displayName: 'Google reCAPTCHA',
+    isEnabled: false,
+    icon: 'lucide:shield-check',
+    color: '#4285f4',
+    sortOrder: 9,
+    description: 'Enable Google reCAPTCHA verification for signup forms',
+    configuration: {
+      siteKey: '',
+      secretKey: '',
+      version: 'v2',
+      theme: 'light',
+      size: 'normal'
+    }
+  },
+  {
+    provider: 'livechat' as const,
+    displayName: 'Live Chat Support',
+    isEnabled: false,
+    icon: 'lucide:message-circle',
+    color: '#00d4aa',
+    sortOrder: 10,
+    description: 'Enable live chat support widget on website',
+    configuration: {
+      chatProvider: 'tawk',
+      widgetId: '',
+      apiKey: '',
+      position: 'bottom-right',
+      theme: 'default',
+      autoShow: true,
+      offlineForm: true
+    }
   }
 ];
 
