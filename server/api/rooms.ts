@@ -797,7 +797,7 @@ router.post("/:roomId/messages", isAuthenticated, async (req: Request, res: Resp
     const [newMessage] = await db.insert(roomMessages).values({
       roomId: room[0].id,
       userId,
-      content: message.trim(),
+      message: message.trim(),
       messageType
     }).returning();
 
