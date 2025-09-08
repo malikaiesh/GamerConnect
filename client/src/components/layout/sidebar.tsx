@@ -15,11 +15,13 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { ThemeSwitcher } from "@/components/layout/theme-switcher";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { useTheme } from "@/hooks/use-theme";
 
 export function Sidebar() {
   const [location] = useLocation();
   const { user, isAuthenticated } = useAuth();
+  const { currentTheme, themes, changeTheme } = useTheme();
 
   const isActive = (path: string) => location === path;
   const isPathActive = (basePath: string) => location.startsWith(basePath);
@@ -163,12 +165,25 @@ export function Sidebar() {
         </div>
       </nav>
 
-      {/* Theme Switcher */}
+      {/* Theme Section */}
       <div className="p-4 border-t border-border">
-        <div className="flex items-center justify-between mb-3">
-          <h3 className="text-sm font-medium text-muted-foreground">Theme</h3>
-          <ThemeSwitcher />
-        </div>
+        <h3 className="text-sm font-medium text-muted-foreground mb-3">Theme</h3>
+        <ScrollArea className="h-32">
+          <div className="space-y-1">
+            {themes.map((theme) => (
+              <Button
+                key={theme.id}
+                variant={currentTheme === theme.id ? "default" : "ghost"}
+                size="sm"
+                className="w-full justify-start text-xs"
+                onClick={() => changeTheme(theme.id)}
+                data-testid={`theme-${theme.id}`}
+              >
+                {theme.name}
+              </Button>
+            ))}
+          </div>
+        </ScrollArea>
       </div>
 
       {/* Create Room Button */}
