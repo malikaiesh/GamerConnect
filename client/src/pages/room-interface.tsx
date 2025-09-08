@@ -370,18 +370,68 @@ export default function RoomInterfacePage() {
           </CardHeader>
         </Card>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 lg:gap-6">
+        <div className="space-y-4 lg:space-y-6">
           {/* Room Seats - Main Area */}
-          <div className="lg:col-span-2">
+          <div className="w-full">
             <Card>
               <CardHeader className="p-3 sm:p-6">
-                <CardTitle className="flex items-center gap-2 text-lg sm:text-xl">
-                  <Users className="w-4 h-4 sm:w-5 sm:h-5" />
-                  Room Seats
-                </CardTitle>
+                <div className="flex items-center justify-between">
+                  <CardTitle className="flex items-center gap-2 text-lg sm:text-xl">
+                    <Users className="w-4 h-4 sm:w-5 sm:h-5" />
+                    Gaming Arena
+                  </CardTitle>
+                  <div className="flex items-center gap-4">
+                    {/* People Count */}
+                    <div className="flex items-center gap-2 bg-muted/50 px-3 py-1 rounded-full">
+                      <Users className="w-4 h-4" />
+                      <span className="text-sm font-medium">{roomData.room.currentUsers}</span>
+                    </div>
+                    {/* Gift Summary */}
+                    <div className="flex items-center gap-2 bg-gradient-to-r from-yellow-500/10 to-orange-500/10 px-3 py-1 rounded-full border border-yellow-200/20">
+                      <span className="text-lg">🏆</span>
+                      <span className="text-sm font-medium text-yellow-600">0</span>
+                    </div>
+                  </div>
+                </div>
               </CardHeader>
               <CardContent className="p-3 sm:p-6">
-                <div className="py-8">
+                {/* Main Microphone Area */}
+                <div className="flex justify-center mb-6">
+                  <div className="relative">
+                    {/* Main microphone with current speaker */}
+                    <div className="w-24 h-24 sm:w-28 sm:h-28 bg-gradient-to-br from-blue-600 to-purple-700 rounded-full flex items-center justify-center shadow-xl border-4 border-white/20">
+                      {currentUserInRoom ? (
+                        <Avatar className="w-16 h-16 sm:w-20 sm:h-20">
+                          <AvatarImage src={currentUserInRoom.user.profilePicture || undefined} />
+                          <AvatarFallback className="text-lg font-bold">
+                            {currentUserInRoom.user.displayName?.[0] || currentUserInRoom.user.username[0]}
+                          </AvatarFallback>
+                        </Avatar>
+                      ) : (
+                        <Mic className="w-8 h-8 sm:w-10 sm:h-10 text-white" />
+                      )}
+                      
+                      {/* Mic status indicator */}
+                      {currentUserInRoom && (
+                        <div className="absolute -bottom-2 -right-2">
+                          <div className={`w-8 h-8 rounded-full flex items-center justify-center border-2 border-white ${
+                            isMicOn ? 'bg-green-500' : 'bg-red-500'
+                          }`}>
+                            {isMicOn ? <Mic className="w-4 h-4 text-white" /> : <MicOff className="w-4 h-4 text-white" />}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                    
+                    {/* Speaking animation */}
+                    {currentUserInRoom && isMicOn && (
+                      <div className="absolute inset-0 rounded-full border-4 border-green-400 animate-ping opacity-50"></div>
+                    )}
+                  </div>
+                </div>
+                
+                {/* Room seats grid */}
+                <div className="py-4">
                   {renderSeats()}
                 </div>
 
@@ -389,12 +439,12 @@ export default function RoomInterfacePage() {
                 {currentUserInRoom && (
                   <div className="mt-4 sm:mt-6 pt-4 sm:pt-6 border-t">
                     <div className="flex items-center justify-center gap-2 sm:gap-4 lg:gap-6 flex-wrap">
-                      {/* Mic Button - Enhanced Yalla Ludo Style */}
+                      {/* Mic Toggle */}
                       <div className="relative">
                         <Button
                           variant="ghost"
                           size="lg"
-                          className={`relative rounded-full w-12 h-12 sm:w-14 sm:h-14 lg:w-16 lg:h-16 p-0 border-2 transition-all duration-200 shadow-lg hover:scale-105 ${
+                          className={`relative rounded-full w-14 h-14 sm:w-16 sm:h-16 p-0 border-2 transition-all duration-200 shadow-lg hover:scale-105 ${
                             isMicOn 
                               ? 'bg-gradient-to-r from-green-400 to-emerald-500 border-green-300 text-white shadow-green-200 hover:shadow-green-300' 
                               : 'bg-gradient-to-r from-red-400 to-rose-500 border-red-300 text-white shadow-red-200 hover:shadow-red-300'
@@ -402,25 +452,21 @@ export default function RoomInterfacePage() {
                           onClick={handleMicToggle}
                           disabled={!roomData.room.voiceChatEnabled}
                         >
-                          {isMicOn ? <Mic className="w-4 h-4 sm:w-5 sm:h-5 lg:w-6 lg:h-6" /> : <MicOff className="w-4 h-4 sm:w-5 sm:h-5 lg:w-6 lg:h-6" />}
+                          {isMicOn ? <Mic className="w-5 h-5 sm:w-6 sm:h-6" /> : <MicOff className="w-5 h-5 sm:w-6 sm:h-6" />}
                         </Button>
-                        {/* Pulsing ring for active mic */}
-                        {isMicOn && (
-                          <div className="absolute inset-0 rounded-full border-2 border-green-400 animate-ping opacity-30"></div>
-                        )}
                         <div className="absolute -bottom-2 left-1/2 transform -translate-x-1/2">
-                          <span className="text-xs font-medium px-1 sm:px-2 py-1 bg-black/80 text-white rounded-full">
+                          <span className="text-xs font-medium px-2 py-1 bg-black/80 text-white rounded-full">
                             {isMicOn ? 'ON' : 'OFF'}
                           </span>
                         </div>
                       </div>
 
-                      {/* Speaker Button - Enhanced Style */}
+                      {/* Speaker Toggle */}
                       <div className="relative">
                         <Button
                           variant="ghost"
                           size="lg"
-                          className={`relative rounded-full w-16 h-16 p-0 border-2 transition-all duration-200 shadow-lg hover:scale-105 ${
+                          className={`relative rounded-full w-14 h-14 sm:w-16 sm:h-16 p-0 border-2 transition-all duration-200 shadow-lg hover:scale-105 ${
                             isSpeakerOn 
                               ? 'bg-gradient-to-r from-blue-400 to-cyan-500 border-blue-300 text-white shadow-blue-200 hover:shadow-blue-300' 
                               : 'bg-gradient-to-r from-gray-400 to-slate-500 border-gray-300 text-white shadow-gray-200 hover:shadow-gray-300'
@@ -428,7 +474,7 @@ export default function RoomInterfacePage() {
                           onClick={handleSpeakerToggle}
                           disabled={!roomData.room.voiceChatEnabled}
                         >
-                          {isSpeakerOn ? <Volume2 className="w-6 h-6" /> : <VolumeX className="w-6 h-6" />}
+                          {isSpeakerOn ? <Volume2 className="w-5 h-5 sm:w-6 sm:h-6" /> : <VolumeX className="w-5 h-5 sm:w-6 sm:h-6" />}
                         </Button>
                         <div className="absolute -bottom-2 left-1/2 transform -translate-x-1/2">
                           <span className="text-xs font-medium px-2 py-1 bg-black/80 text-white rounded-full">
@@ -479,8 +525,8 @@ export default function RoomInterfacePage() {
           </div>
 
           {/* Chat & Gifts Panel */}
-          <div className="lg:col-span-1 order-first lg:order-last">
-            <Card className="h-[400px] sm:h-[500px] lg:h-[600px] flex flex-col">
+          <div className="w-full">
+            <Card className="h-[400px] sm:h-[450px] flex flex-col">
               <CardHeader className="pb-3">
                 <Tabs value={activeTab} onValueChange={setActiveTab}>
                   <TabsList className="grid w-full grid-cols-2">
@@ -563,24 +609,26 @@ export default function RoomInterfacePage() {
                         </div>
                         {/* Emoji Picker */}
                         {showEmojiPicker && (
-                          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 sm:absolute sm:inset-auto sm:bg-transparent sm:bottom-20 sm:right-4">
-                            <div className="relative bg-white dark:bg-gray-800 rounded-lg shadow-lg">
+                          <div className="fixed inset-0 z-[999] flex items-center justify-center bg-black/50 p-4">
+                            <div className="relative bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-full max-h-full overflow-hidden">
                               <Button
                                 variant="ghost"
                                 size="sm"
-                                className="absolute top-2 right-2 z-10 sm:hidden"
+                                className="absolute top-2 right-2 z-10 bg-red-500 hover:bg-red-600 text-white rounded-full w-8 h-8 p-0"
                                 onClick={() => setShowEmojiPicker(false)}
                               >
                                 ×
                               </Button>
-                              <EmojiPicker
-                                onEmojiClick={(emojiData) => {
-                                  setNewMessage(prev => prev + emojiData.emoji);
-                                  setShowEmojiPicker(false);
-                                }}
-                                width={window.innerWidth < 640 ? Math.min(320, window.innerWidth - 40) : 280}
-                                height={window.innerWidth < 640 ? Math.min(400, window.innerHeight - 100) : 350}
-                              />
+                              <div className="emoji-picker-container">
+                                <EmojiPicker
+                                  onEmojiClick={(emojiData) => {
+                                    setNewMessage(prev => prev + emojiData.emoji);
+                                    setShowEmojiPicker(false);
+                                  }}
+                                  width={typeof window !== 'undefined' && window.innerWidth < 640 ? Math.min(320, window.innerWidth - 40) : 320}
+                                  height={typeof window !== 'undefined' && window.innerWidth < 640 ? Math.min(400, window.innerHeight - 120) : 400}
+                                />
+                              </div>
                             </div>
                           </div>
                         )}
