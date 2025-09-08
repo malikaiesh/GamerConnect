@@ -12,6 +12,7 @@ import {
   Users, Crown, LogOut, Send, Smile, Heart, Star, Diamond,
   Phone, PhoneOff, Video, VideoOff, MoreVertical, UserPlus, ShieldCheck
 } from "lucide-react";
+import EmojiPicker from 'emoji-picker-react';
 import { useAuth } from "@/hooks/use-auth";
 import { formatDistanceToNow } from "date-fns";
 
@@ -82,6 +83,8 @@ export default function RoomInterfacePage() {
   const [isSpeakerOn, setIsSpeakerOn] = useState(true);
   const [newMessage, setNewMessage] = useState("");
   const [activeTab, setActiveTab] = useState("chat");
+  const [showEmojiPicker, setShowEmojiPicker] = useState(false);
+  const [selectedGift, setSelectedGift] = useState<any>(null);
 
   // Fetch room data
   const { data: roomData, isLoading } = useQuery<RoomData>({
@@ -166,7 +169,22 @@ export default function RoomInterfacePage() {
   const handleSendMessage = () => {
     if (newMessage.trim() && roomData?.room.textChatEnabled) {
       sendMessageMutation.mutate(newMessage.trim());
+      setShowEmojiPicker(false);
     }
+  };
+
+  // Handle send gift
+  const handleSendGift = (gift: any) => {
+    if (!currentUserInRoom || !roomData?.room.giftsEnabled) return;
+    
+    setSelectedGift(gift);
+    
+    // Send gift as a special message
+    const giftMessage = `sent a ${gift.name} ${gift.emoji}`;
+    sendMessageMutation.mutate(giftMessage);
+    
+    // Reset selection after a short delay
+    setTimeout(() => setSelectedGift(null), 1000);
   };
 
   // Handle mic toggle
@@ -196,7 +214,7 @@ export default function RoomInterfacePage() {
       return (
         <div key={seatNumber} className="relative">
           <Card 
-            className={`w-24 h-24 flex items-center justify-center cursor-pointer transition-all ${
+            className={`w-16 h-16 sm:w-20 sm:h-20 md:w-24 md:h-24 flex items-center justify-center cursor-pointer transition-all ${
               seatUser 
                 ? 'bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800' 
                 : 'bg-gray-50 dark:bg-gray-800 border-gray-200 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-700'
@@ -206,13 +224,13 @@ export default function RoomInterfacePage() {
             <CardContent className="p-2">
               {seatUser ? (
                 <div className="text-center">
-                  <Avatar className="w-10 h-10 mx-auto mb-1">
+                  <Avatar className="w-6 h-6 sm:w-8 sm:h-8 md:w-10 md:h-10 mx-auto mb-1">
                     <AvatarImage src={seatUser.user.profilePicture || undefined} />
                     <AvatarFallback className="text-xs">
                       {seatUser.user.displayName?.[0] || seatUser.user.username[0]}
                     </AvatarFallback>
                   </Avatar>
-                  <div className="text-xs font-medium truncate">
+                  <div className="text-xs sm:text-xs md:text-sm font-medium truncate">
                     {seatUser.user.displayName || seatUser.user.username}
                   </div>
                   {seatUser.role === 'owner' && (
@@ -224,10 +242,10 @@ export default function RoomInterfacePage() {
                 </div>
               ) : (
                 <div className="text-center text-gray-400">
-                  <div className="w-10 h-10 rounded-full bg-gray-200 dark:bg-gray-600 mx-auto mb-1 flex items-center justify-center">
-                    <UserPlus className="w-4 h-4" />
+                  <div className="w-6 h-6 sm:w-8 sm:h-8 md:w-10 md:h-10 rounded-full bg-gray-200 dark:bg-gray-600 mx-auto mb-1 flex items-center justify-center">
+                    <UserPlus className="w-3 h-3 sm:w-4 sm:h-4" />
                   </div>
-                  <div className="text-xs">Seat {seatNumber}</div>
+                  <div className="text-xs sm:text-xs md:text-sm">Seat {seatNumber}</div>
                 </div>
               )}
             </CardContent>
@@ -252,7 +270,7 @@ export default function RoomInterfacePage() {
     });
 
     return (
-      <div className="grid grid-cols-4 gap-4 max-w-md mx-auto">
+      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2 sm:gap-3 md:gap-4 max-w-lg mx-auto">
         {seats}
       </div>
     );
@@ -299,33 +317,33 @@ export default function RoomInterfacePage() {
       
       <div className="relative z-10 container mx-auto px-4 py-6">
         {/* Room Header */}
-        <Card className="mb-6">
-          <CardHeader>
-            <div className="flex items-center justify-between">
-              <div>
-                <CardTitle className="flex items-center gap-3">
-                  <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg flex items-center justify-center text-white font-bold">
+        <Card className="mb-4 sm:mb-6">
+          <CardHeader className="p-3 sm:p-6">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-0">
+              <div className="flex-1">
+                <CardTitle className="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-3">
+                  <div className="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg flex items-center justify-center text-white font-bold text-sm sm:text-base">
                     {roomData.room.name[0]}
                   </div>
-                  <div>
+                  <div className="flex-1">
                     <div className="flex items-center gap-2">
-                      <h1 className="text-2xl font-bold">{roomData.room.name}</h1>
+                      <h1 className="text-lg sm:text-xl lg:text-2xl font-bold">{roomData.room.name}</h1>
                       {roomData.room.isVerified && (
-                        <ShieldCheck className="h-6 w-6 text-blue-600" />
+                        <ShieldCheck className="h-5 w-5 sm:h-6 sm:w-6 text-blue-600" />
                       )}
                     </div>
-                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                    <div className="flex flex-wrap items-center gap-1 sm:gap-2 text-xs sm:text-sm text-muted-foreground">
                       <span>ID: {roomData.room.roomId}</span>
-                      <Badge variant="outline">{roomData.room.type}</Badge>
-                      <Badge variant={roomData.room.status === 'active' ? 'default' : 'secondary'}>
+                      <Badge variant="outline" className="text-xs">{roomData.room.type}</Badge>
+                      <Badge variant={roomData.room.status === 'active' ? 'default' : 'secondary'} className="text-xs">
                         {roomData.room.status}
                       </Badge>
                     </div>
                   </div>
                 </CardTitle>
               </div>
-              <div className="flex items-center gap-2">
-                <div className="text-right">
+              <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 w-full sm:w-auto">
+                <div className="text-left sm:text-right">
                   <div className="text-sm font-medium">
                     {roomData.room.currentUsers}/{roomData.room.maxSeats} Users
                   </div>
@@ -341,9 +359,10 @@ export default function RoomInterfacePage() {
                     variant="outline" 
                     size="sm"
                     onClick={() => leaveRoomMutation.mutate()}
+                    className="self-start sm:self-auto"
                   >
                     <LogOut className="w-4 h-4 mr-2" />
-                    Leave
+                    <span className="hidden sm:inline">Leave</span>
                   </Button>
                 )}
               </div>
@@ -355,27 +374,27 @@ export default function RoomInterfacePage() {
           {/* Room Seats - Main Area */}
           <div className="lg:col-span-2">
             <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Users className="w-5 h-5" />
+              <CardHeader className="p-3 sm:p-6">
+                <CardTitle className="flex items-center gap-2 text-lg sm:text-xl">
+                  <Users className="w-4 h-4 sm:w-5 sm:h-5" />
                   Room Seats
                 </CardTitle>
               </CardHeader>
-              <CardContent>
+              <CardContent className="p-3 sm:p-6">
                 <div className="py-8">
                   {renderSeats()}
                 </div>
 
                 {/* Room Controls */}
                 {currentUserInRoom && (
-                  <div className="mt-6 pt-6 border-t">
-                    <div className="flex items-center justify-center gap-3 sm:gap-6 flex-wrap">
+                  <div className="mt-4 sm:mt-6 pt-4 sm:pt-6 border-t">
+                    <div className="flex items-center justify-center gap-2 sm:gap-4 lg:gap-6 flex-wrap">
                       {/* Mic Button - Enhanced Yalla Ludo Style */}
                       <div className="relative">
                         <Button
                           variant="ghost"
                           size="lg"
-                          className={`relative rounded-full w-16 h-16 p-0 border-2 transition-all duration-200 shadow-lg hover:scale-105 ${
+                          className={`relative rounded-full w-12 h-12 sm:w-14 sm:h-14 lg:w-16 lg:h-16 p-0 border-2 transition-all duration-200 shadow-lg hover:scale-105 ${
                             isMicOn 
                               ? 'bg-gradient-to-r from-green-400 to-emerald-500 border-green-300 text-white shadow-green-200 hover:shadow-green-300' 
                               : 'bg-gradient-to-r from-red-400 to-rose-500 border-red-300 text-white shadow-red-200 hover:shadow-red-300'
@@ -383,14 +402,14 @@ export default function RoomInterfacePage() {
                           onClick={handleMicToggle}
                           disabled={!roomData.room.voiceChatEnabled}
                         >
-                          {isMicOn ? <Mic className="w-6 h-6" /> : <MicOff className="w-6 h-6" />}
+                          {isMicOn ? <Mic className="w-4 h-4 sm:w-5 sm:h-5 lg:w-6 lg:h-6" /> : <MicOff className="w-4 h-4 sm:w-5 sm:h-5 lg:w-6 lg:h-6" />}
                         </Button>
                         {/* Pulsing ring for active mic */}
                         {isMicOn && (
                           <div className="absolute inset-0 rounded-full border-2 border-green-400 animate-ping opacity-30"></div>
                         )}
                         <div className="absolute -bottom-2 left-1/2 transform -translate-x-1/2">
-                          <span className="text-xs font-medium px-2 py-1 bg-black/80 text-white rounded-full">
+                          <span className="text-xs font-medium px-1 sm:px-2 py-1 bg-black/80 text-white rounded-full">
                             {isMicOn ? 'ON' : 'OFF'}
                           </span>
                         </div>
@@ -447,7 +466,7 @@ export default function RoomInterfacePage() {
                 {!currentUserInRoom && (
                   <div className="mt-6 pt-6 border-t text-center">
                     <Button 
-                      onClick={() => joinRoomMutation.mutate()}
+                      onClick={() => joinRoomMutation.mutate(undefined)}
                       disabled={roomData.room.currentUsers >= roomData.room.maxSeats}
                       size="lg"
                     >
@@ -460,8 +479,8 @@ export default function RoomInterfacePage() {
           </div>
 
           {/* Chat & Gifts Panel */}
-          <div className="lg:col-span-1">
-            <Card className="h-[600px] flex flex-col">
+          <div className="lg:col-span-1 order-first lg:order-last">
+            <Card className="h-[400px] sm:h-[500px] lg:h-[600px] flex flex-col">
               <CardHeader className="pb-3">
                 <Tabs value={activeTab} onValueChange={setActiveTab}>
                   <TabsList className="grid w-full grid-cols-2">
@@ -481,7 +500,7 @@ export default function RoomInterfacePage() {
                 <Tabs value={activeTab} className="flex-1 flex flex-col">
                   {/* Chat Tab */}
                   <TabsContent value="chat" className="flex-1 flex flex-col mt-0">
-                    <div className="flex-1 overflow-y-auto mb-4 space-y-3 max-h-[400px]">
+                    <div className="flex-1 overflow-y-auto mb-4 space-y-3 max-h-[250px] sm:max-h-[300px] lg:max-h-[400px]">
                       {messages.length === 0 ? (
                         <div className="text-center py-8 text-muted-foreground">
                           <MessageCircle className="w-12 h-12 mx-auto mb-2 opacity-50" />
@@ -514,21 +533,57 @@ export default function RoomInterfacePage() {
 
                     {/* Message Input */}
                     {currentUserInRoom && roomData.room.textChatEnabled && (
-                      <div className="flex gap-2">
-                        <Input
-                          placeholder="Type a message..."
-                          value={newMessage}
-                          onChange={(e) => setNewMessage(e.target.value)}
-                          onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()}
-                          disabled={sendMessageMutation.isPending}
-                        />
-                        <Button 
-                          onClick={handleSendMessage}
-                          disabled={!newMessage.trim() || sendMessageMutation.isPending}
-                          size="icon"
-                        >
-                          <Send className="w-4 h-4" />
-                        </Button>
+                      <div className="space-y-2">
+                        <div className="flex gap-2">
+                          <div className="flex-1 relative">
+                            <Input
+                              placeholder="Type a message..."
+                              value={newMessage}
+                              onChange={(e) => setNewMessage(e.target.value)}
+                              onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()}
+                              disabled={sendMessageMutation.isPending}
+                              className="pr-12"
+                            />
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="absolute right-1 top-1/2 transform -translate-y-1/2 h-8 w-8"
+                              onClick={() => setShowEmojiPicker(!showEmojiPicker)}
+                            >
+                              <Smile className="w-4 h-4" />
+                            </Button>
+                          </div>
+                          <Button 
+                            onClick={handleSendMessage}
+                            disabled={!newMessage.trim() || sendMessageMutation.isPending}
+                            size="icon"
+                          >
+                            <Send className="w-4 h-4" />
+                          </Button>
+                        </div>
+                        {/* Emoji Picker */}
+                        {showEmojiPicker && (
+                          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 sm:absolute sm:inset-auto sm:bg-transparent sm:bottom-20 sm:right-4">
+                            <div className="relative bg-white dark:bg-gray-800 rounded-lg shadow-lg">
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                className="absolute top-2 right-2 z-10 sm:hidden"
+                                onClick={() => setShowEmojiPicker(false)}
+                              >
+                                ×
+                              </Button>
+                              <EmojiPicker
+                                onEmojiClick={(emojiData) => {
+                                  setNewMessage(prev => prev + emojiData.emoji);
+                                  setShowEmojiPicker(false);
+                                }}
+                                width={window.innerWidth < 640 ? Math.min(320, window.innerWidth - 40) : 280}
+                                height={window.innerWidth < 640 ? Math.min(400, window.innerHeight - 100) : 350}
+                              />
+                            </div>
+                          </div>
+                        )}
                       </div>
                     )}
 
@@ -549,22 +604,26 @@ export default function RoomInterfacePage() {
                   <TabsContent value="gifts" className="flex-1 flex flex-col mt-0">
                     <div className="flex-1">
                       {roomData.room.giftsEnabled ? (
-                        <div className="grid grid-cols-2 gap-3">
+                        <div className="grid grid-cols-2 gap-2 sm:gap-3">
                           {[
-                            { icon: Heart, name: "Heart", price: 10, color: "text-red-500" },
-                            { icon: Star, name: "Star", price: 25, color: "text-yellow-500" },
-                            { icon: Diamond, name: "Diamond", price: 50, color: "text-blue-500" },
-                            { icon: Gift, name: "Gift", price: 100, color: "text-purple-500" }
+                            { icon: Heart, name: "Heart", price: 10, color: "text-red-500", emoji: "❤️" },
+                            { icon: Star, name: "Star", price: 25, color: "text-yellow-500", emoji: "⭐" },
+                            { icon: Diamond, name: "Diamond", price: 50, color: "text-blue-500", emoji: "💎" },
+                            { icon: Gift, name: "Gift", price: 100, color: "text-purple-500", emoji: "🎁" }
                           ].map((gift) => (
                             <Button
                               key={gift.name}
-                              variant="outline"
-                              className="h-16 flex-col gap-1"
+                              variant={selectedGift?.name === gift.name ? "default" : "outline"}
+                              className="h-14 sm:h-16 flex-col gap-1 transition-all hover:scale-105"
                               disabled={!currentUserInRoom}
+                              onClick={() => handleSendGift(gift)}
                             >
-                              <gift.icon className={`w-6 h-6 ${gift.color}`} />
+                              <div className="flex items-center gap-1">
+                                <span className="text-lg">{gift.emoji}</span>
+                                <gift.icon className={`w-4 h-4 sm:w-5 sm:h-5 ${gift.color}`} />
+                              </div>
                               <div className="text-xs">
-                                <div>{gift.name}</div>
+                                <div className="font-medium">{gift.name}</div>
                                 <div className="text-muted-foreground">{gift.price} coins</div>
                               </div>
                             </Button>
