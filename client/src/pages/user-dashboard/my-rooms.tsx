@@ -149,15 +149,41 @@ export default function MyRoomsPage() {
     onError: (error: any) => {
       // Check for payment required error (402 status)
       if (error.status === 402 || error.message?.includes('Payment required')) {
-        toast({
-          title: "Upgrade Required",
-          description: "You have used your free room. Upgrade to create more rooms.",
-          variant: "destructive",
-        });
-        // Redirect to pricing page after showing the message
-        setTimeout(() => {
-          navigate('/pricing-plans');
-        }, 1500);
+        // Check if we have pricing information
+        const pricing = error.pricing;
+        
+        if (pricing) {
+          // Show detailed pricing breakdown
+          const totalCost = (pricing.totalCost / 100).toFixed(2);
+          const breakdown = pricing.costBreakdown.description.join(", ");
+          
+          toast({
+            title: "Payment Required",
+            description: `Total cost: $${totalCost} (${breakdown})`,
+            variant: "destructive",
+          });
+          
+          // Store payment data for checkout (we'll create checkout page later)
+          const paymentData = {
+            roomData: form.getValues(),
+            pricing: pricing
+          };
+          localStorage.setItem('roomPaymentData', JSON.stringify(paymentData));
+          
+          // For now, redirect to pricing page
+          setTimeout(() => {
+            navigate('/pricing-plans');
+          }, 2000);
+        } else {
+          toast({
+            title: "Upgrade Required",
+            description: "You have used your free room. Upgrade to create more rooms.",
+            variant: "destructive",
+          });
+          setTimeout(() => {
+            navigate('/pricing-plans');
+          }, 1500);
+        }
       } else {
         toast({
           title: "Error",

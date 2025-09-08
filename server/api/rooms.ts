@@ -9,6 +9,7 @@ import {
   userWallets,
   userRelationships,
   roomAnalytics,
+  paymentTransactions,
   users,
   insertRoomSchema,
   insertRoomUserSchema,
@@ -26,6 +27,115 @@ import { z } from "zod";
 import { Request, Response } from "express";
 
 const router = Router();
+
+// Payment endpoint for room/seat purchases
+router.post("/purchase", isAuthenticated, async (req: Request, res: Response) => {
+  try {
+    const userId = (req as any).user?.id;
+    if (!userId) {
+      return res.status(401).json({ error: "User not authenticated" });
+    }
+
+    const { roomData, paymentMethod } = req.body;
+    
+    // Validate room data
+    if (!roomData || !roomData.maxSeats) {
+      return res.status(400).json({ error: "Invalid room data" });
+    }
+
+    // Calculate pricing again to verify
+    const userRooms = await db.select({ count: count() }).from(rooms).where(eq(rooms.ownerId, userId));
+    const userRoomCount = userRooms[0].count;
+    
+    const requestedMaxSeats = parseInt(roomData.maxSeats) || 5;
+    const isAdminUser = (req as any).user?.isAdmin;
+    
+    let totalCost = 0;
+    let costBreakdown = {
+      roomCost: 0,
+      seatCost: 0,
+      description: []
+    };
+
+    // Room pricing: First room free, $5 for each additional room
+    if (!isAdminUser && userRoomCount >= 1) {
+      costBreakdown.roomCost = 500; // $5.00 in cents
+      costBreakdown.description.push(`Additional room: $5.00`);
+    }
+
+    // Seat pricing: $1 per seat beyond 5 seats
+    if (requestedMaxSeats > 5) {
+      const extraSeats = requestedMaxSeats - 5;
+      costBreakdown.seatCost = extraSeats * 100; // $1.00 per seat in cents
+      costBreakdown.description.push(`${extraSeats} extra seats: $${extraSeats}.00`);
+    }
+
+    totalCost = costBreakdown.roomCost + costBreakdown.seatCost;
+
+    if (totalCost === 0) {
+      return res.status(400).json({ error: "No payment required for this room configuration" });
+    }
+
+    // Create payment transaction record
+    const transactionId = `ROOM_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+    
+    const [transaction] = await db
+      .insert(paymentTransactions)
+      .values({
+        transactionId: transactionId,
+        gatewayId: paymentMethod?.gatewayId || 1, // Default to first gateway
+        userId: userId,
+        amount: totalCost,
+        currency: 'USD',
+        status: 'completed', // For now, assume payment is completed
+        metadata: {
+          type: 'room_purchase',
+          roomData: roomData,
+          costBreakdown: costBreakdown,
+          createdVia: 'room_purchase'
+        }
+      })
+      .returning();
+
+    // Now create the room since payment is "completed"
+    const roomId = await generateRoomId();
+    const validatedRoomData = {
+      ...roomData,
+      roomId,
+      ownerId: userId,
+      backgroundTheme: roomData.backgroundTheme || 'lunexa',
+      maxSeats: requestedMaxSeats
+    };
+
+    const validatedData = insertRoomSchema.parse(validatedRoomData);
+    const [newRoom] = await db.insert(rooms).values(validatedData).returning();
+
+    // Add owner as room user
+    await db.insert(roomUsers).values({
+      roomId: newRoom.id,
+      userId,
+      role: 'owner',
+      seatNumber: 1
+    });
+
+    // Initialize room analytics
+    await db.insert(roomAnalytics).values({
+      roomId: newRoom.id,
+      date: new Date()
+    });
+
+    res.json({ 
+      success: true, 
+      room: newRoom, 
+      transaction: transaction,
+      totalPaid: totalCost / 100 
+    });
+
+  } catch (error) {
+    console.error("Error processing room purchase:", error);
+    res.status(500).json({ error: "Failed to process payment" });
+  }
+});
 
 // Generate unique room ID with SA or MAB prefix and sequential numbering
 async function generateRoomId(prefix?: 'SA' | 'MAB'): Promise<string> {
