@@ -185,6 +185,19 @@ export default function RoomInterfacePage() {
     }
   });
 
+  // Toggle mic mutation
+  const toggleMicMutation = useMutation({
+    mutationFn: () =>
+      fetch(`/api/rooms/${roomId}/toggle-mic`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' }
+      }).then(res => res.json()),
+    onSuccess: (data) => {
+      setIsMicOn(data.isMicOn);
+      queryClient.invalidateQueries({ queryKey: [`/api/rooms/${roomId}`] });
+    }
+  });
+
   // Handle send message
   const handleSendMessage = () => {
     if (newMessage.trim() && roomData?.room.textChatEnabled) {
@@ -208,7 +221,7 @@ export default function RoomInterfacePage() {
 
   // Handle mic toggle
   const handleMicToggle = () => {
-    setIsMicOn(!isMicOn);
+    toggleMicMutation.mutate();
     // Simulate speaking when mic is turned on
     if (!isMicOn && currentUserInRoom?.seatNumber) {
       const seatNum = currentUserInRoom.seatNumber;
