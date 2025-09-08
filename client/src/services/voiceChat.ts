@@ -210,13 +210,36 @@ export class VoiceChatService {
     peerConnection.ontrack = (event) => {
       const remoteStream = event.streams[0];
       this.remoteStreams.set(targetUserId, remoteStream);
+      console.log(`VoiceChatService: Received remote stream from user ${targetUserId}`, remoteStream);
       
       // Play remote audio
       const audioElement = new Audio();
       audioElement.srcObject = remoteStream;
-      audioElement.play().catch(error => {
-        console.error('Error playing remote audio:', error);
+      audioElement.autoplay = true;
+      audioElement.volume = 1.0;
+      audioElement.muted = false;
+      
+      // Add to DOM for better browser compatibility
+      audioElement.style.display = 'none';
+      document.body.appendChild(audioElement);
+      
+      // Attempt to play
+      audioElement.play().then(() => {
+        console.log(`VoiceChatService: Successfully playing audio from user ${targetUserId}`);
+      }).catch(error => {
+        console.error(`VoiceChatService: Error playing remote audio from user ${targetUserId}:`, error);
+        // Try to enable audio after user interaction
+        const enableAudio = () => {
+          audioElement.play().then(() => {
+            console.log(`VoiceChatService: Audio enabled after user interaction for user ${targetUserId}`);
+          });
+          document.removeEventListener('click', enableAudio);
+        };
+        document.addEventListener('click', enableAudio);
       });
+      
+      // Store reference for cleanup
+      audioElement.setAttribute('data-user-id', targetUserId);
     };
 
     // Handle ICE candidates
