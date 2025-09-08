@@ -923,4 +923,140 @@ router.post("/:roomId/toggle-mic", isAuthenticated, async (req: Request, res: Re
   }
 });
 
+// Send gift in room with 40% commission
+router.post("/:roomId/gifts", isAuthenticated, async (req: Request, res: Response) => {
+  try {
+    const { roomId } = req.params;
+    const { giftId, recipientId, quantity = 1, message } = req.body;
+    const senderId = (req as any).user?.id;
+
+    if (!senderId) {
+      return res.status(401).json({ error: "User not authenticated" });
+    }
+
+    // Get room
+    const room = await db.select().from(rooms).where(eq(rooms.roomId, roomId)).limit(1);
+    if (room.length === 0) {
+      return res.status(404).json({ error: "Room not found" });
+    }
+
+    // Check if gifts are enabled in room
+    if (!room[0].giftsEnabled) {
+      return res.status(403).json({ error: "Gifts are disabled in this room" });
+    }
+
+    // Check if sender is in room
+    const senderInRoom = await db.select().from(roomUsers).where(
+      and(eq(roomUsers.roomId, room[0].id), eq(roomUsers.userId, senderId))
+    ).limit(1);
+
+    if (senderInRoom.length === 0) {
+      return res.status(403).json({ error: "Must be in room to send gifts" });
+    }
+
+    // Get gift details
+    const gift = await db.select().from(gifts).where(eq(gifts.id, giftId)).limit(1);
+    if (gift.length === 0) {
+      return res.status(404).json({ error: "Gift not found" });
+    }
+
+    if (!gift[0].isActive) {
+      return res.status(400).json({ error: "Gift is not available" });
+    }
+
+    // Calculate total cost and 40% commission
+    const totalCost = gift[0].price * quantity;
+    const commission = Math.round(totalCost * 0.4); // 40% commission
+    const actualCost = totalCost + commission;
+
+    // Get sender's wallet
+    let [senderWallet] = await db.select().from(userWallets).where(eq(userWallets.userId, senderId)).limit(1);
+    
+    if (!senderWallet) {
+      // Create wallet if doesn't exist
+      [senderWallet] = await db.insert(userWallets).values({
+        userId: senderId,
+        coins: 0,
+        diamonds: 0,
+        totalCoinsEarned: 0,
+        totalDiamondsEarned: 0,
+        totalCoinsSpent: 0,
+        totalDiamondsSpent: 0,
+      }).returning();
+    }
+
+    // Check if sender has enough diamonds
+    if (senderWallet.diamonds < actualCost) {
+      return res.status(400).json({ 
+        error: "Insufficient diamonds", 
+        required: actualCost,
+        available: senderWallet.diamonds,
+        commission: commission
+      });
+    }
+
+    // If recipient specified, check if they're in room
+    if (recipientId) {
+      const recipientInRoom = await db.select().from(roomUsers).where(
+        and(eq(roomUsers.roomId, room[0].id), eq(roomUsers.userId, recipientId))
+      ).limit(1);
+
+      if (recipientInRoom.length === 0) {
+        return res.status(403).json({ error: "Recipient must be in room" });
+      }
+    }
+
+    // Start transaction for gift sending
+    const [sentGift] = await db.insert(roomGifts).values({
+      roomId: room[0].id,
+      senderId,
+      recipientId: recipientId || null,
+      giftId,
+      quantity,
+      totalValue: totalCost,
+      message: message || null
+    }).returning();
+
+    // Deduct diamonds from sender (including 40% commission)
+    await db.update(userWallets)
+      .set({ 
+        diamonds: sql`${userWallets.diamonds} - ${actualCost}`,
+        totalDiamondsSpent: sql`${userWallets.totalDiamondsSpent} + ${actualCost}`
+      })
+      .where(eq(userWallets.userId, senderId));
+
+    // Update sender's gift statistics
+    await db.update(roomUsers)
+      .set({ giftsSent: sql`${roomUsers.giftsSent} + ${quantity}` })
+      .where(and(eq(roomUsers.roomId, room[0].id), eq(roomUsers.userId, senderId)));
+
+    // Update recipient's gift statistics if specified
+    if (recipientId) {
+      await db.update(roomUsers)
+        .set({ giftsReceived: sql`${roomUsers.giftsReceived} + ${quantity}` })
+        .where(and(eq(roomUsers.roomId, room[0].id), eq(roomUsers.userId, recipientId)));
+    }
+
+    // Update room analytics
+    await db.update(roomAnalytics)
+      .set({
+        totalGifts: sql`${roomAnalytics.totalGifts} + ${quantity}`,
+        totalGiftValue: sql`${roomAnalytics.totalGiftValue} + ${totalCost}`
+      })
+      .where(eq(roomAnalytics.roomId, room[0].id));
+
+    res.status(201).json({
+      ...sentGift,
+      gift: gift[0],
+      actualCost,
+      commission,
+      message: "Gift sent successfully! 40% commission applied."
+    });
+
+  } catch (error) {
+    console.error("Error sending gift:", error);
+    res.status(500).json({ error: "Failed to send gift" });
+  }
+});
+
 export { router as roomsRouter };
