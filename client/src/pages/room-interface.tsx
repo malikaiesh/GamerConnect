@@ -249,7 +249,7 @@ export default function RoomInterfacePage() {
   };
 
   // Handle emoji selection
-  const handleEmojiSelect = (emoji: string) => {
+  const handleEmojiSelect = (emoji: string, emojiName: string) => {
     if (!currentUserInRoom?.seatNumber) return;
     
     const seatNum = currentUserInRoom.seatNumber;
@@ -272,8 +272,9 @@ export default function RoomInterfacePage() {
       });
     }, 3000);
     
-    // Send emoji as message
-    sendMessageMutation.mutate(`sent ${emoji}`);
+    // Send emoji as message with proper format
+    const emojiMessage = `sent ${emoji} ${emojiName}`;
+    sendMessageMutation.mutate(emojiMessage);
   };
 
   // Get current user's room status
@@ -766,17 +767,29 @@ export default function RoomInterfacePage() {
                           { name: "Grin", emoji: "😀" },
                           { name: "Lol", emoji: "😂" },
                           { name: "Sleep", emoji: "😴" },
-                          { name: "Clap", emoji: "🙊" },
-                          { name: "Gift Me", emoji: "😮" },
+                          { name: "Clap", emoji: "👏" },
+                          { name: "Gift Me", emoji: "🎁" },
                           { name: "Thinking", emoji: "🤔" },
-                          { name: "Dizzy", emoji: "😵" }
+                          { name: "Dizzy", emoji: "😵" },
+                          { name: "Cool", emoji: "😎" },
+                          { name: "Wink", emoji: "😉" },
+                          { name: "Angry", emoji: "😠" },
+                          { name: "Sad", emoji: "😢" },
+                          { name: "Surprised", emoji: "😲" },
+                          { name: "Confused", emoji: "😕" },
+                          { name: "Happy", emoji: "😊" },
+                          { name: "Thumbs Up", emoji: "👍" },
+                          { name: "Thumbs Down", emoji: "👎" },
+                          { name: "Heart", emoji: "❤️" },
+                          { name: "Fire", emoji: "🔥" },
+                          { name: "Party", emoji: "🎉" }
                         ].map((reaction) => (
                           <Button
                             key={reaction.name}
                             variant="ghost"
                             className="h-20 flex-col gap-2 p-2 hover:bg-purple-500/20 border border-purple-400/30 rounded-lg transition-all hover:scale-105"
                             disabled={!currentUserInRoom}
-                            onClick={() => handleEmojiSelect(reaction.emoji)}
+                            onClick={() => handleEmojiSelect(reaction.emoji, reaction.name)}
                           >
                             <div className="text-3xl">{reaction.emoji}</div>
                             <div className="text-xs font-medium text-white">{reaction.name}</div>
