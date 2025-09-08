@@ -964,10 +964,15 @@ router.post("/:roomId/gifts", isAuthenticated, async (req: Request, res: Respons
       return res.status(400).json({ error: "Gift is not available" });
     }
 
-    // Calculate total cost and 40% commission
+    // Check if admin is trying to send gift in their own room
+    if (room[0].ownerId === senderId) {
+      return res.status(403).json({ error: "Room owners cannot send gifts in their own rooms" });
+    }
+
+    // Calculate total cost (100% deduction from sender, 50% to recipient, 50% platform commission)
     const totalCost = gift[0].price * quantity;
-    const commission = Math.round(totalCost * 0.4); // 40% commission
-    const actualCost = totalCost + commission;
+    const actualCost = totalCost; // 100% deduction from sender
+    const recipientReward = Math.round(totalCost * 0.5); // 50% to recipient
 
     // Get sender's wallet
     let [senderWallet] = await db.select().from(userWallets).where(eq(userWallets.userId, senderId)).limit(1);
@@ -985,13 +990,23 @@ router.post("/:roomId/gifts", isAuthenticated, async (req: Request, res: Respons
       }).returning();
     }
 
+    // Check if user has received gifts before (can send gifts only if they received some)
+    const receivedGifts = await db.select({ count: sql`count(*)` })
+      .from(roomGifts)
+      .where(eq(roomGifts.recipientId, senderId));
+    
+    if (receivedGifts[0].count === '0') {
+      return res.status(403).json({ 
+        error: "You must receive gifts from other users before you can send gifts"
+      });
+    }
+
     // Check if sender has enough diamonds
     if (senderWallet.diamonds < actualCost) {
       return res.status(400).json({ 
         error: "Insufficient diamonds", 
         required: actualCost,
-        available: senderWallet.diamonds,
-        commission: commission
+        available: senderWallet.diamonds
       });
     }
 
@@ -1017,13 +1032,40 @@ router.post("/:roomId/gifts", isAuthenticated, async (req: Request, res: Respons
       message: message || null
     }).returning();
 
-    // Deduct diamonds from sender (including 40% commission)
+    // Deduct 100% diamonds from sender
     await db.update(userWallets)
       .set({ 
         diamonds: sql`${userWallets.diamonds} - ${actualCost}`,
         totalDiamondsSpent: sql`${userWallets.totalDiamondsSpent} + ${actualCost}`
       })
       .where(eq(userWallets.userId, senderId));
+
+    // Add 50% diamonds to recipient if specified
+    if (recipientId) {
+      // Get or create recipient's wallet
+      let [recipientWallet] = await db.select().from(userWallets).where(eq(userWallets.userId, recipientId)).limit(1);
+      
+      if (!recipientWallet) {
+        // Create wallet if doesn't exist
+        await db.insert(userWallets).values({
+          userId: recipientId,
+          coins: 0,
+          diamonds: recipientReward,
+          totalCoinsEarned: 0,
+          totalDiamondsEarned: recipientReward,
+          totalCoinsSpent: 0,
+          totalDiamondsSpent: 0,
+        });
+      } else {
+        // Update existing wallet
+        await db.update(userWallets)
+          .set({ 
+            diamonds: sql`${userWallets.diamonds} + ${recipientReward}`,
+            totalDiamondsEarned: sql`${userWallets.totalDiamondsEarned} + ${recipientReward}`
+          })
+          .where(eq(userWallets.userId, recipientId));
+      }
+    }
 
     // Update sender's gift statistics
     await db.update(roomUsers)
@@ -1049,8 +1091,9 @@ router.post("/:roomId/gifts", isAuthenticated, async (req: Request, res: Respons
       ...sentGift,
       gift: gift[0],
       actualCost,
-      commission,
-      message: "Gift sent successfully! 40% commission applied."
+      recipientReward,
+      platformCommission: totalCost - recipientReward,
+      message: "Gift sent successfully! 100% deducted from sender, 50% rewarded to recipient."
     });
 
   } catch (error) {
