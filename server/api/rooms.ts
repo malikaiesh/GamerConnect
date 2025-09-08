@@ -271,11 +271,18 @@ router.post("/", isAuthenticated, async (req: Request, res: Response) => {
     // Generate unique room ID
     const roomId = await generateRoomId();
 
-    const validatedData = insertRoomSchema.parse({
+    // Set default values for new rooms
+    const roomData = {
       ...req.body,
       roomId,
-      ownerId: userId
-    });
+      ownerId: userId,
+      // Default theme to Lunexa
+      backgroundTheme: req.body.backgroundTheme || 'lunexa',
+      // Default max seats to 5 (users can pay for more)
+      maxSeats: req.body.maxSeats || 5
+    };
+
+    const validatedData = insertRoomSchema.parse(roomData);
 
     const [newRoom] = await db.insert(rooms).values(validatedData).returning();
 
