@@ -146,12 +146,25 @@ export default function MyRoomsPage() {
       form.reset();
       queryClient.invalidateQueries({ queryKey: ["/api/rooms"] });
     },
-    onError: (error: Error) => {
-      toast({
-        title: "Error",
-        description: error.message,
-        variant: "destructive",
-      });
+    onError: (error: any) => {
+      // Check for payment required error (402 status)
+      if (error.status === 402 || error.message?.includes('Payment required')) {
+        toast({
+          title: "Upgrade Required",
+          description: "You have used your free room. Upgrade to create more rooms.",
+          variant: "destructive",
+        });
+        // Redirect to pricing page after showing the message
+        setTimeout(() => {
+          navigate('/pricing');
+        }, 1500);
+      } else {
+        toast({
+          title: "Error",
+          description: error.message || "Failed to create room",
+          variant: "destructive",
+        });
+      }
     },
   });
 

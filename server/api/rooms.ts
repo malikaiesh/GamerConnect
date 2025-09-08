@@ -283,9 +283,12 @@ router.post("/", isAuthenticated, async (req: Request, res: Response) => {
     // For non-admin users, enforce payment requirement after first free room
     const isAdminUser = (req as any).user?.isAdmin;
     if (!isAdminUser && userRoomCount >= 1) {
-      // In a real app, you would check payment status here
-      // For now, we'll allow up to 5 rooms but show a warning
-      console.log(`User ${userId} creating room ${userRoomCount + 1}/5 (payment required for additional rooms)`);
+      return res.status(402).json({ 
+        error: "Payment required", 
+        details: "You have used your free room. Upgrade to a paid plan to create more rooms.",
+        requiresPayment: true,
+        redirectTo: "/pricing"
+      });
     }
 
     // Validate maxSeats - must be between 2-20, default to 5
