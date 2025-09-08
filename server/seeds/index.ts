@@ -1,5 +1,6 @@
 import { seedSignupOptions } from './signup-options';
 import { seedSiteSettings } from './site-settings';
+import { seedDefaultUsers } from './default-users';
 import { seedGameCategories } from './game-categories';
 import { seedBlogCategories } from './blog-categories';
 import { seedBlogPosts } from './blog-posts';
@@ -25,6 +26,7 @@ export async function runSeeds() {
     // Run all seeds in proper order
     await seedSignupOptions();
     await seedSiteSettings(); // Add site settings seeding early since other features depend on it
+    await seedDefaultUsers(); // Add default admin and user accounts
     await seedGameCategories();
     await seedBlogCategories();
     await seedStaticPages();
