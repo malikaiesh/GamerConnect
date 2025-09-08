@@ -10,6 +10,9 @@ import { storage } from "./storage";
 import { User as SelectUser } from "@shared/schema";
 import { InsertUser } from "@shared/schema";
 import { setupSecurity, authRateLimit, sessionSecurity, validatePasswordStrength } from "./middleware/security";
+import { db } from "./db";
+import { signupOptions } from "@shared/schema";
+import { eq } from "drizzle-orm";
 
 declare global {
   namespace Express {
@@ -30,6 +33,30 @@ async function comparePasswords(supplied: string, stored: string) {
   const hashedBuf = Buffer.from(hashed, "hex");
   const suppliedBuf = (await scryptAsync(supplied, salt, 64)) as Buffer;
   return timingSafeEqual(hashedBuf, suppliedBuf);
+}
+
+// Function to verify reCAPTCHA token with Google
+async function verifyRecaptcha(token: string, secretKey?: string): Promise<boolean> {
+  if (!secretKey) {
+    console.error('reCAPTCHA secret key not configured');
+    return false;
+  }
+
+  try {
+    const response = await fetch('https://www.google.com/recaptcha/api/siteverify', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded',
+      },
+      body: `secret=${secretKey}&response=${token}`,
+    });
+
+    const data = await response.json();
+    return data.success === true;
+  } catch (error) {
+    console.error('Error verifying reCAPTCHA:', error);
+    return false;
+  }
 }
 
 // Function to get or update location information from IP
@@ -282,10 +309,26 @@ export function setupAuth(app: Express) {
 
   app.post("/api/register", authRateLimit, async (req, res, next) => {
     try {
-      const { username, password, email, profilePicture, bio, country } = req.body;
+      const { username, password, email, profilePicture, bio, country, recaptchaToken } = req.body;
       
       if (!username || !password) {
         return res.status(400).json({ message: "Username and password are required" });
+      }
+
+      // Check if reCAPTCHA is enabled and verify token
+      const allSignupOptions = await db.select().from(signupOptions);
+      const recaptchaOption = allSignupOptions.find(option => option.provider === 'recaptcha' && option.isEnabled);
+      
+      if (recaptchaOption) {
+        if (!recaptchaToken) {
+          return res.status(400).json({ message: "reCAPTCHA verification is required" });
+        }
+
+        // Verify reCAPTCHA token with Google
+        const isRecaptchaValid = await verifyRecaptcha(recaptchaToken, recaptchaOption.configuration?.secretKey);
+        if (!isRecaptchaValid) {
+          return res.status(400).json({ message: "reCAPTCHA verification failed" });
+        }
       }
       
       // Profile picture is optional - use empty string if not provided
