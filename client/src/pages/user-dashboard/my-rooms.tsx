@@ -156,7 +156,7 @@ export default function MyRoomsPage() {
         });
         // Redirect to pricing page after showing the message
         setTimeout(() => {
-          navigate('/pricing');
+          navigate('/pricing-plans');
         }, 1500);
       } else {
         toast({

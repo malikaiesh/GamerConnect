@@ -287,7 +287,7 @@ router.post("/", isAuthenticated, async (req: Request, res: Response) => {
         error: "Payment required", 
         details: "You have used your free room. Upgrade to a paid plan to create more rooms.",
         requiresPayment: true,
-        redirectTo: "/pricing"
+        redirectTo: "/pricing-plans"
       });
     }
 
