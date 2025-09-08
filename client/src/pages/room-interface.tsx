@@ -389,8 +389,8 @@ export default function RoomInterfacePage() {
               <span className="text-xs sm:text-sm font-medium text-white truncate max-w-full flex items-center gap-1">
                 {seatUser.user.username}
                 {seatUser.user.isVerified && (
-                  <div className="inline-flex items-center justify-center w-5 h-5 flex-shrink-0 relative">
-                    <svg className="w-5 h-5 drop-shadow-md" viewBox="0 0 24 24" fill="none">
+                  <div className="inline-flex items-center justify-center w-6 h-6 flex-shrink-0 relative">
+                    <svg className="w-6 h-6 drop-shadow-md" viewBox="0 0 24 24" fill="none">
                       <path d="M12 2L13.09 5.26L16 4L15.74 7.26L19 8.35L16.74 10.74L19 12.65L15.74 13.26L16 17L13.09 15.74L12 19L10.91 15.74L8 17L8.26 13.74L5 12.65L8.26 10.26L5 8.35L8.26 7.74L8 4L10.91 5.26L12 2Z" fill="url(#verifyGradientUser)" stroke="#1565C0" strokeWidth="0.5"/>
                       <path d="M9 11.5L11 13.5L15 9.5" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
                       <defs>
@@ -414,9 +414,21 @@ export default function RoomInterfacePage() {
       );
     });
 
+    // Separate first 2 seats from the rest
+    const topSeats = seats.slice(0, 2);
+    const bottomSeats = seats.slice(2);
+
     return (
-      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 sm:gap-6 md:gap-8 max-w-4xl mx-auto">
-        {seats}
+      <div className="space-y-6">
+        {/* Top Row - 2 Mics */}
+        <div className="flex justify-center gap-8 sm:gap-12 lg:gap-16">
+          {topSeats}
+        </div>
+        
+        {/* Bottom Rows - Remaining Mics */}
+        <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-4 sm:gap-6 lg:gap-8 justify-items-center max-w-4xl mx-auto">
+          {bottomSeats}
+        </div>
       </div>
     );
   };
@@ -554,42 +566,7 @@ export default function RoomInterfacePage() {
                 </div>
               </CardHeader>
               <CardContent className="p-3 sm:p-6">
-                {/* Main Microphone Area */}
-                <div className="flex justify-center mb-6">
-                  <div className="relative">
-                    {/* Main microphone with current speaker */}
-                    <div className="w-24 h-24 sm:w-28 sm:h-28 bg-gradient-to-br from-blue-600 to-purple-700 rounded-full flex items-center justify-center shadow-xl border-4 border-white/20">
-                      {currentUserInRoom ? (
-                        <Avatar className="w-16 h-16 sm:w-20 sm:h-20">
-                          <AvatarImage src={currentUserInRoom.user.profilePicture || undefined} />
-                          <AvatarFallback className="text-lg font-bold">
-                            {currentUserInRoom.user.displayName?.[0] || currentUserInRoom.user.username[0]}
-                          </AvatarFallback>
-                        </Avatar>
-                      ) : (
-                        <Mic className="w-8 h-8 sm:w-10 sm:h-10 text-white" />
-                      )}
-                      
-                      {/* Mic status indicator */}
-                      {currentUserInRoom && (
-                        <div className="absolute -bottom-2 -right-2">
-                          <div className={`w-8 h-8 rounded-full flex items-center justify-center border-2 border-white ${
-                            isMicOn ? 'bg-green-500' : 'bg-red-500'
-                          }`}>
-                            {isMicOn ? <Mic className="w-4 h-4 text-white" /> : <MicOff className="w-4 h-4 text-white" />}
-                          </div>
-                        </div>
-                      )}
-                    </div>
-                    
-                    {/* Speaking animation */}
-                    {currentUserInRoom && isMicOn && (
-                      <div className="absolute inset-0 rounded-full border-4 border-green-400 animate-ping opacity-50"></div>
-                    )}
-                  </div>
-                </div>
-                
-                {/* Room seats grid */}
+                {/* Room seats grid - Top 2 mics, then rest below */}
                 <div className="py-4">
                   {renderSeats()}
                 </div>
