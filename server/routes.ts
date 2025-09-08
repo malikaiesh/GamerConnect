@@ -1326,7 +1326,7 @@ Sitemap: ${req.protocol}://${req.get('host')}/sitemap.xml`);
   const roomConnections = new Map<string, Map<string, WebSocket>>();
 
   wss.on('connection', (ws: WebSocket, req) => {
-    console.log('New WebSocket connection established');
+    console.log('WebSocket: New connection established');
     
     let currentRoom: string | null = null;
     let currentUserId: string | null = null;
@@ -1334,6 +1334,7 @@ Sitemap: ${req.protocol}://${req.get('host')}/sitemap.xml`);
     ws.on('message', (data: Buffer) => {
       try {
         const message = JSON.parse(data.toString());
+        console.log('WebSocket: Received message:', message);
         
         switch (message.type) {
           case 'join-room':
@@ -1346,7 +1347,8 @@ Sitemap: ${req.protocol}://${req.get('host')}/sitemap.xml`);
             }
             roomConnections.get(currentRoom)!.set(currentUserId, ws);
             
-            console.log(`User ${currentUserId} joined voice chat in room ${currentRoom}`);
+            console.log(`WebSocket: User ${currentUserId} joined voice chat in room ${currentRoom}`);
+            console.log(`WebSocket: Room ${currentRoom} now has ${roomConnections.get(currentRoom)!.size} users`);
             
             // Notify other users in the room
             broadcastToRoom(currentRoom, {
@@ -1373,6 +1375,7 @@ Sitemap: ${req.protocol}://${req.get('host')}/sitemap.xml`);
           case 'mic-toggle':
             // Broadcast mic status to other users in the room
             if (currentRoom) {
+              console.log(`WebSocket: User ${currentUserId} toggled mic to ${message.isMicOn} in room ${currentRoom}`);
               broadcastToRoom(currentRoom, {
                 type: 'user-mic-toggle',
                 userId: currentUserId,

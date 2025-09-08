@@ -17,6 +17,7 @@ export class VoiceChatService {
   ];
 
   constructor() {
+    console.log('VoiceChatService: Initializing...');
     this.setupWebSocket();
   }
 
@@ -27,15 +28,24 @@ export class VoiceChatService {
     this.ws = new WebSocket(wsUrl);
 
     this.ws.onopen = () => {
-      console.log('Voice chat WebSocket connected');
+      console.log('VoiceChatService: WebSocket connected successfully');
+      // Auto-join room if we have the info
+      if (this.roomId && this.userId) {
+        this.sendWebSocketMessage({
+          type: 'join-room',
+          roomId: this.roomId,
+          userId: this.userId
+        });
+      }
     };
 
     this.ws.onmessage = async (event) => {
       try {
         const message = JSON.parse(event.data);
+        console.log('VoiceChatService: Received message:', message);
         await this.handleSignalingMessage(message);
       } catch (error) {
-        console.error('Error handling WebSocket message:', error);
+        console.error('VoiceChatService: Error handling WebSocket message:', error);
       }
     };
 
@@ -85,11 +95,13 @@ export class VoiceChatService {
   }
 
   async joinRoom(roomId: string, userId: string) {
+    console.log(`VoiceChatService: Joining room ${roomId} as user ${userId}`);
     this.roomId = roomId;
     this.userId = userId;
 
     // Get user media (microphone access)
     try {
+      console.log('VoiceChatService: Requesting microphone access...');
       this.localStream = await navigator.mediaDevices.getUserMedia({
         audio: {
           echoCancellation: true,
@@ -104,24 +116,32 @@ export class VoiceChatService {
         track.enabled = false;
       });
 
-      console.log('Microphone access granted');
+      console.log('VoiceChatService: Microphone access granted, tracks:', this.localStream.getAudioTracks().length);
     } catch (error) {
-      console.error('Error accessing microphone:', error);
+      console.error('VoiceChatService: Error accessing microphone:', error);
       throw new Error('Could not access microphone. Please check permissions.');
     }
 
     // Join room via WebSocket
+    this.sendWebSocketMessage({
+      type: 'join-room',
+      roomId,
+      userId
+    });
+  }
+
+  private sendWebSocketMessage(message: any) {
     if (this.ws && this.ws.readyState === WebSocket.OPEN) {
-      this.ws.send(JSON.stringify({
-        type: 'join-room',
-        roomId,
-        userId
-      }));
+      console.log('VoiceChatService: Sending message:', message);
+      this.ws.send(JSON.stringify(message));
+    } else {
+      console.warn('VoiceChatService: WebSocket not ready, message not sent:', message);
     }
   }
 
   async toggleMicrophone(): Promise<boolean> {
     if (!this.localStream) {
+      console.error('VoiceChatService: No audio stream available for mic toggle');
       throw new Error('No audio stream available');
     }
 
@@ -130,18 +150,17 @@ export class VoiceChatService {
     // Enable/disable audio tracks
     this.localStream.getAudioTracks().forEach(track => {
       track.enabled = this.isMicEnabled;
+      console.log(`VoiceChatService: Audio track ${track.id} enabled: ${track.enabled}`);
     });
 
     // Notify other users via WebSocket
-    if (this.ws && this.ws.readyState === WebSocket.OPEN) {
-      this.ws.send(JSON.stringify({
-        type: 'mic-toggle',
-        isMicOn: this.isMicEnabled
-      }));
-    }
+    this.sendWebSocketMessage({
+      type: 'mic-toggle',
+      isMicOn: this.isMicEnabled
+    });
 
     this.onMicToggle?.(this.isMicEnabled);
-    console.log(`Microphone ${this.isMicEnabled ? 'enabled' : 'disabled'}`);
+    console.log(`VoiceChatService: Microphone ${this.isMicEnabled ? 'enabled' : 'disabled'}`);
     
     return this.isMicEnabled;
   }
