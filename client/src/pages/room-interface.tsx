@@ -375,9 +375,19 @@ export default function RoomInterfacePage() {
                 <span className="text-xs sm:text-sm font-medium text-white truncate max-w-full flex items-center gap-1">
                   {seatUser.user.username}
                   {seatUser.user.isVerified && (
-                    <svg className="w-3 h-3 text-blue-400 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                      <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                    </svg>
+                    <div className="inline-flex items-center justify-center w-4 h-4 flex-shrink-0 relative">
+                      <svg className="w-4 h-4 drop-shadow-md" viewBox="0 0 24 24" fill="none">
+                        <path d="M12 2L13.09 5.26L16 4L15.74 7.26L19 8.35L16.74 10.74L19 12.65L15.74 13.26L16 17L13.09 15.74L12 19L10.91 15.74L8 17L8.26 13.74L5 12.65L8.26 10.26L5 8.35L8.26 7.74L8 4L10.91 5.26L12 2Z" fill="url(#verifyGradientUser)" stroke="#1565C0" strokeWidth="0.5"/>
+                        <path d="M9 11.5L11 13.5L15 9.5" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                        <defs>
+                          <linearGradient id="verifyGradientUser" x1="0%" y1="0%" x2="0%" y2="100%">
+                            <stop offset="0%" stopColor="#1877F2" />
+                            <stop offset="100%" stopColor="#166FE5" />
+                          </linearGradient>
+                        </defs>
+                      </svg>
+                      <div className="absolute inset-0 bg-gradient-to-t from-transparent to-white opacity-20 rounded-full"></div>
+                    </div>
                   )}
                 </span>
                 <span className="text-xs text-gray-400">
@@ -455,9 +465,19 @@ export default function RoomInterfacePage() {
                       <h1 className="text-lg sm:text-xl lg:text-2xl font-bold flex items-center gap-2">
                         {roomData.room.name}
                         {roomData.room.isVerified && (
-                          <svg className="w-5 h-5 text-blue-400 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                            <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                          </svg>
+                          <div className="inline-flex items-center justify-center w-6 h-6 flex-shrink-0 relative">
+                            <svg className="w-6 h-6 drop-shadow-md" viewBox="0 0 24 24" fill="none">
+                              <path d="M12 2L13.09 5.26L16 4L15.74 7.26L19 8.35L16.74 10.74L19 12.65L15.74 13.26L16 17L13.09 15.74L12 19L10.91 15.74L8 17L8.26 13.74L5 12.65L8.26 10.26L5 8.35L8.26 7.74L8 4L10.91 5.26L12 2Z" fill="url(#verifyGradientRoom)" stroke="#1565C0" strokeWidth="0.5"/>
+                              <path d="M9 11.5L11 13.5L15 9.5" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                              <defs>
+                                <linearGradient id="verifyGradientRoom" x1="0%" y1="0%" x2="0%" y2="100%">
+                                  <stop offset="0%" stopColor="#1877F2" />
+                                  <stop offset="100%" stopColor="#166FE5" />
+                                </linearGradient>
+                              </defs>
+                            </svg>
+                            <div className="absolute inset-0 bg-gradient-to-t from-transparent to-white opacity-20 rounded-full"></div>
+                          </div>
                         )}
                       </h1>
                     </div>
