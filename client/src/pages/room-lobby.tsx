@@ -109,6 +109,8 @@ export default function RoomLobbyPage() {
         return 'from-primary via-primary/80 to-accent/70';
       case 'galaxy':
         return 'from-primary/90 via-accent/60 to-primary/70';
+      case 'lunexa':
+        return 'from-purple-600 via-indigo-600 to-purple-800';
       default:
         return 'from-primary via-primary/80 to-accent/60';
     }
