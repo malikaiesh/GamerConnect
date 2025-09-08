@@ -419,4 +419,157 @@ router.post("/user/:username/diamonds", async (req: any, res) => {
   }
 });
 
+// Send gift to user with 40% commission
+router.post("/user/:username/gift", async (req: any, res) => {
+  try {
+    const { username } = req.params;
+    const { giftId, quantity = 1, message } = req.body;
+    const senderId = req.user?.id;
+
+    if (!senderId) {
+      return res.status(401).json({ error: "Admin authentication required" });
+    }
+
+    // Get recipient user
+    const [recipient] = await db
+      .select({
+        id: users.id,
+        username: users.username,
+        displayName: users.displayName,
+        isVerified: users.isVerified,
+      })
+      .from(users)
+      .where(eq(users.username, username))
+      .limit(1);
+
+    if (!recipient) {
+      return res.status(404).json({ error: "Recipient not found" });
+    }
+
+    // Cannot send gift to yourself
+    if (recipient.id === senderId) {
+      return res.status(400).json({ error: "Cannot send gift to yourself" });
+    }
+
+    // Get gift details
+    const [gift] = await db
+      .select()
+      .from(gifts)
+      .where(eq(gifts.id, giftId))
+      .limit(1);
+
+    if (!gift) {
+      return res.status(404).json({ error: "Gift not found" });
+    }
+
+    if (!gift.isActive) {
+      return res.status(400).json({ error: "Gift is not available" });
+    }
+
+    // Calculate total cost and 40% commission
+    const totalCost = gift.price * quantity;
+    const commission = Math.round(totalCost * 0.4); // 40% commission
+    const actualCost = totalCost + commission;
+
+    // Get sender's wallet
+    let [senderWallet] = await db
+      .select()
+      .from(userWallets)
+      .where(eq(userWallets.userId, senderId))
+      .limit(1);
+
+    if (!senderWallet) {
+      // Create wallet if doesn't exist
+      [senderWallet] = await db
+        .insert(userWallets)
+        .values({
+          userId: senderId,
+          coins: 0,
+          diamonds: 0,
+          totalCoinsEarned: 0,
+          totalDiamondsEarned: 0,
+          totalCoinsSpent: 0,
+          totalDiamondsSpent: 0,
+        })
+        .returning();
+    }
+
+    // Check if sender has enough diamonds
+    if (senderWallet.diamonds < actualCost) {
+      return res.status(400).json({
+        error: "Insufficient diamonds",
+        required: actualCost,
+        available: senderWallet.diamonds,
+        commission: commission
+      });
+    }
+
+    // Get or create recipient's wallet
+    let [recipientWallet] = await db
+      .select()
+      .from(userWallets)
+      .where(eq(userWallets.userId, recipient.id))
+      .limit(1);
+
+    if (!recipientWallet) {
+      // Create wallet if doesn't exist
+      [recipientWallet] = await db
+        .insert(userWallets)
+        .values({
+          userId: recipient.id,
+          coins: 0,
+          diamonds: 0,
+          totalCoinsEarned: 0,
+          totalDiamondsEarned: 0,
+          totalCoinsSpent: 0,
+          totalDiamondsSpent: 0,
+        })
+        .returning();
+    }
+
+    // Record gift transaction (we'll use roomGifts table with null roomId for user gifts)
+    const [sentGift] = await db
+      .insert(roomGifts)
+      .values({
+        roomId: null, // null for user-to-user gifts
+        senderId,
+        recipientId: recipient.id,
+        giftId,
+        quantity,
+        totalValue: totalCost,
+        message: message || null
+      })
+      .returning();
+
+    // Deduct diamonds from sender (including 40% commission)
+    await db
+      .update(userWallets)
+      .set({
+        diamonds: sql`${userWallets.diamonds} - ${actualCost}`,
+        totalDiamondsSpent: sql`${userWallets.totalDiamondsSpent} + ${actualCost}`
+      })
+      .where(eq(userWallets.userId, senderId));
+
+    res.status(201).json({
+      ...sentGift,
+      gift,
+      recipient: {
+        id: recipient.id,
+        username: recipient.username,
+        displayName: recipient.displayName
+      },
+      actualCost,
+      commission,
+      message: "Gift sent successfully! 40% commission applied."
+    });
+
+  } catch (error) {
+    console.error("Error sending user gift:", error);
+    if (error instanceof z.ZodError) {
+      return res.status(400).json({ error: "Validation error", details: error.errors });
+    }
+    res.status(500).json({ error: "Failed to send gift" });
+  }
+});
+
 export default router;
