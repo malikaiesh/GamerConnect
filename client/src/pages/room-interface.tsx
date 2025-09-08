@@ -215,10 +215,19 @@ export default function RoomInterfacePage() {
           <div
             className={`relative w-16 h-16 sm:w-20 sm:h-20 md:w-24 md:h-24 rounded-full flex items-center justify-center cursor-pointer transition-all duration-300 border-4 ${
               seatUser 
-                ? 'bg-gradient-to-br from-blue-500/20 to-purple-600/20 border-blue-400/50 shadow-lg shadow-blue-500/25' 
-                : 'bg-gradient-to-br from-gray-600/20 to-gray-800/20 border-gray-500/30 hover:border-gray-400/50 hover:shadow-lg hover:shadow-gray-500/25'
+                ? (seatUser.isMicOn 
+                    ? 'bg-gradient-to-br from-green-500/30 to-emerald-600/30 border-green-400/60 shadow-lg shadow-green-500/40 animate-pulse'
+                    : 'bg-gradient-to-br from-blue-500/20 to-purple-600/20 border-blue-400/50 shadow-lg shadow-blue-500/25')
+                : 'bg-gradient-to-br from-gray-600/20 to-gray-800/20 border-gray-500/30 hover:border-purple-400/50 hover:shadow-lg hover:shadow-purple-500/25 hover:bg-gradient-to-br hover:from-purple-600/20 hover:to-indigo-600/20'
             }`}
-            onClick={() => !seatUser && !currentUserInRoom && joinRoomMutation.mutate(seatNumber)}
+            onClick={() => {
+              if (!seatUser && !currentUserInRoom) {
+                joinRoomMutation.mutate(seatNumber);
+              } else if (seatUser && seatUser.user.id === user?.id) {
+                // Toggle mic for current user
+                handleMicToggle();
+              }
+            }}
           >
             {seatUser ? (
               <>
@@ -482,16 +491,40 @@ export default function RoomInterfacePage() {
                         </div>
                       </div>
 
+                      {/* Music Button for Current User */}
+                      {currentUserInRoom && (
+                        <div className="relative">
+                          <Button
+                            variant="ghost"
+                            size="lg"
+                            className={`relative rounded-full w-14 h-14 sm:w-16 sm:h-16 p-0 border-2 transition-all duration-200 shadow-lg hover:scale-105 ${
+                              isPlayingMusic 
+                                ? 'bg-gradient-to-r from-purple-400 to-pink-500 border-purple-300 text-white shadow-purple-200 hover:shadow-purple-300 animate-pulse' 
+                                : 'bg-gradient-to-r from-gray-400 to-slate-500 border-gray-300 text-white shadow-gray-200 hover:shadow-gray-300'
+                            }`}
+                            onClick={handleMusicToggle}
+                            disabled={!roomData.room.voiceChatEnabled}
+                          >
+                            <span className="text-lg">🎵</span>
+                          </Button>
+                          <div className="absolute -bottom-2 left-1/2 transform -translate-x-1/2">
+                            <span className="text-xs font-medium px-2 py-1 bg-black/80 text-white rounded-full">
+                              {isPlayingMusic ? 'MUSIC' : 'PLAY'}
+                            </span>
+                          </div>
+                        </div>
+                      )}
+                      
                       {/* Settings Button for Owner */}
                       {isOwner && (
                         <div className="relative">
                           <Button
                             variant="ghost"
                             size="lg"
-                            className="relative rounded-full w-16 h-16 p-0 border-2 bg-gradient-to-r from-purple-400 to-violet-500 border-purple-300 text-white shadow-purple-200 hover:shadow-purple-300 transition-all duration-200 shadow-lg hover:scale-105"
+                            className="relative rounded-full w-14 h-14 sm:w-16 sm:h-16 p-0 border-2 bg-gradient-to-r from-purple-400 to-violet-500 border-purple-300 text-white shadow-purple-200 hover:shadow-purple-300 transition-all duration-200 shadow-lg hover:scale-105"
                             onClick={() => navigate(`/my-rooms`)}
                           >
-                            <Settings className="w-6 h-6" />
+                            <Settings className="w-5 h-5 sm:w-6 sm:h-6" />
                           </Button>
                           <div className="absolute -bottom-2 left-1/2 transform -translate-x-1/2">
                             <span className="text-xs font-medium px-2 py-1 bg-black/80 text-white rounded-full">
@@ -629,21 +662,23 @@ export default function RoomInterfacePage() {
                   {/* Emojis Tab */}
                   <TabsContent value="emojis" className="flex-1 flex flex-col mt-0">
                     <div className="flex-1 overflow-y-auto max-h-[250px] sm:max-h-[300px] lg:max-h-[400px]">
-                      <div className="p-2">
-                        <EmojiPicker
-                          onEmojiClick={(emojiData) => {
-                            setNewMessage(prev => prev + emojiData.emoji);
-                            setActiveTab("chat"); // Switch back to chat after selecting emoji
-                          }}
-                          width="100%"
-                          height={200}
-                          previewConfig={{
-                            showPreview: false
-                          }}
-                          searchDisabled={false}
-                          skinTonesDisabled={false}
-                          lazyLoadEmojis={true}
-                        />
+                      <div className="p-1">
+                        <div className="bg-gradient-to-br from-slate-900/50 to-purple-900/30 rounded-lg border border-purple-500/20 overflow-hidden">
+                          <EmojiPicker
+                            onEmojiClick={(emojiData) => {
+                              setNewMessage(prev => prev + emojiData.emoji);
+                              setActiveTab("chat"); // Switch back to chat after selecting emoji
+                            }}
+                            width="100%"
+                            height={typeof window !== 'undefined' && window.innerWidth < 640 ? 180 : 220}
+                            previewConfig={{
+                              showPreview: false
+                            }}
+                            searchDisabled={false}
+                            skinTonesDisabled={false}
+                            lazyLoadEmojis={true}
+                          />
+                        </div>
                       </div>
                     </div>
                   </TabsContent>
