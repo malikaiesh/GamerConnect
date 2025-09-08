@@ -964,15 +964,15 @@ router.post("/:roomId/gifts", isAuthenticated, async (req: Request, res: Respons
       return res.status(400).json({ error: "Gift is not available" });
     }
 
-    // Check if admin is trying to send gift in their own room
-    if (room[0].ownerId === senderId) {
-      return res.status(403).json({ error: "Room owners cannot send gifts in their own rooms" });
-    }
+    // Room owners can now send gifts in their own rooms if they have diamonds
 
-    // Calculate total cost (100% deduction from sender, 50% to recipient, 50% platform commission)
+    // Calculate total cost (100% deduction from sender)
     const totalCost = gift[0].price * quantity;
     const actualCost = totalCost; // 100% deduction from sender
-    const recipientReward = Math.round(totalCost * 0.5); // 50% to recipient
+    
+    // For room gifts (not direct to user), no diamonds go to room admin
+    // For direct user gifts, 50% goes to recipient
+    const recipientReward = recipientId ? Math.round(totalCost * 0.5) : 0;
 
     // Get sender's wallet
     let [senderWallet] = await db.select().from(userWallets).where(eq(userWallets.userId, senderId)).limit(1);
@@ -1087,13 +1087,17 @@ router.post("/:roomId/gifts", isAuthenticated, async (req: Request, res: Respons
       })
       .where(eq(roomAnalytics.roomId, room[0].id));
 
+    const message = recipientId 
+      ? "Gift sent successfully! 100% deducted from sender, 50% rewarded to recipient."
+      : "Gift sent to room successfully! 100% deducted from sender, no diamonds to room admin.";
+
     res.status(201).json({
       ...sentGift,
       gift: gift[0],
       actualCost,
       recipientReward,
       platformCommission: totalCost - recipientReward,
-      message: "Gift sent successfully! 100% deducted from sender, 50% rewarded to recipient."
+      message
     });
 
   } catch (error) {
