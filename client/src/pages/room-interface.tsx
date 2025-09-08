@@ -83,7 +83,6 @@ export default function RoomInterfacePage() {
   const [isSpeakerOn, setIsSpeakerOn] = useState(true);
   const [newMessage, setNewMessage] = useState("");
   const [activeTab, setActiveTab] = useState("chat");
-  const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const [selectedGift, setSelectedGift] = useState<any>(null);
 
   // Fetch room data
@@ -169,7 +168,6 @@ export default function RoomInterfacePage() {
   const handleSendMessage = () => {
     if (newMessage.trim() && roomData?.room.textChatEnabled) {
       sendMessageMutation.mutate(newMessage.trim());
-      setShowEmojiPicker(false);
     }
   };
 
@@ -203,7 +201,7 @@ export default function RoomInterfacePage() {
   const currentUserInRoom = roomData?.users.find(ru => ru.user.id === user?.id);
   const isOwner = roomData?.room.ownerId === user?.id;
 
-  // Create seat grid (2x4 layout for 8 seats)
+  // Create seat grid with circular mic design
   const renderSeats = () => {
     if (!roomData) return null;
 
@@ -212,65 +210,66 @@ export default function RoomInterfacePage() {
       const seatUser = roomData.users.find(u => u.seatNumber === seatNumber);
       
       return (
-        <div key={seatNumber} className="relative">
-          <Card 
-            className={`w-16 h-16 sm:w-20 sm:h-20 md:w-24 md:h-24 flex items-center justify-center cursor-pointer transition-all ${
+        <div key={seatNumber} className="flex flex-col items-center gap-2">
+          {/* Circular Mic Design */}
+          <div
+            className={`relative w-16 h-16 sm:w-20 sm:h-20 md:w-24 md:h-24 rounded-full flex items-center justify-center cursor-pointer transition-all duration-300 border-4 ${
               seatUser 
-                ? 'bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800' 
-                : 'bg-gray-50 dark:bg-gray-800 border-gray-200 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-700'
+                ? 'bg-gradient-to-br from-blue-500/20 to-purple-600/20 border-blue-400/50 shadow-lg shadow-blue-500/25' 
+                : 'bg-gradient-to-br from-gray-600/20 to-gray-800/20 border-gray-500/30 hover:border-gray-400/50 hover:shadow-lg hover:shadow-gray-500/25'
             }`}
             onClick={() => !seatUser && !currentUserInRoom && joinRoomMutation.mutate(seatNumber)}
           >
-            <CardContent className="p-2">
-              {seatUser ? (
-                <div className="text-center">
-                  <Avatar className="w-6 h-6 sm:w-8 sm:h-8 md:w-10 md:h-10 mx-auto mb-1">
-                    <AvatarImage src={seatUser.user.profilePicture || undefined} />
-                    <AvatarFallback className="text-xs">
-                      {seatUser.user.displayName?.[0] || seatUser.user.username[0]}
-                    </AvatarFallback>
-                  </Avatar>
-                  <div className="text-xs sm:text-xs md:text-sm font-medium truncate">
-                    {seatUser.user.displayName || seatUser.user.username}
+            {seatUser ? (
+              <>
+                {/* User Avatar */}
+                <Avatar className="w-10 h-10 sm:w-12 sm:h-12 md:w-14 md:h-14">
+                  <AvatarImage src={seatUser.user.profilePicture || undefined} />
+                  <AvatarFallback className="text-sm font-bold">
+                    {seatUser.user.displayName?.[0] || seatUser.user.username[0]}
+                  </AvatarFallback>
+                </Avatar>
+                
+                {/* Owner Crown */}
+                {seatUser.role === 'owner' && (
+                  <div className="absolute -top-2 -right-2">
+                    <div className="w-6 h-6 bg-yellow-500 rounded-full flex items-center justify-center border-2 border-white">
+                      <Crown className="w-3 h-3 text-white" />
+                    </div>
                   </div>
-                  {seatUser.role === 'owner' && (
-                    <Crown className="w-3 h-3 text-yellow-500 mx-auto" />
+                )}
+                
+                {/* Mic Status Indicator */}
+                <div className="absolute -bottom-2 -right-2">
+                  {seatUser.isMicOn ? (
+                    <div className="w-6 h-6 bg-green-500 rounded-full flex items-center justify-center border-2 border-white animate-pulse">
+                      <Mic className="w-3 h-3 text-white" />
+                    </div>
+                  ) : (
+                    <div className="w-6 h-6 bg-red-500 rounded-full flex items-center justify-center border-2 border-white">
+                      <MicOff className="w-3 h-3 text-white" />
+                    </div>
                   )}
-                  {seatUser.isMicOn && (
-                    <Mic className="w-3 h-3 text-green-500 mx-auto" />
-                  )}
                 </div>
-              ) : (
-                <div className="text-center text-gray-400">
-                  <div className="w-6 h-6 sm:w-8 sm:h-8 md:w-10 md:h-10 rounded-full bg-gray-200 dark:bg-gray-600 mx-auto mb-1 flex items-center justify-center">
-                    <UserPlus className="w-3 h-3 sm:w-4 sm:h-4" />
-                  </div>
-                  <div className="text-xs sm:text-xs md:text-sm">Seat {seatNumber}</div>
-                </div>
-              )}
-            </CardContent>
-          </Card>
-
-          {/* Mic indicator */}
-          {seatUser && (
-            <div className="absolute -top-1 -right-1">
-              {seatUser.isMicOn ? (
-                <div className="w-6 h-6 bg-green-500 rounded-full flex items-center justify-center animate-pulse">
-                  <Mic className="w-3 h-3 text-white" />
-                </div>
-              ) : seatUser.isMuted ? (
-                <div className="w-6 h-6 bg-red-500 rounded-full flex items-center justify-center">
-                  <MicOff className="w-3 h-3 text-white" />
-                </div>
-              ) : null}
-            </div>
-          )}
+              </>
+            ) : (
+              /* Empty Mic Icon */
+              <Mic className="w-6 h-6 sm:w-8 sm:h-8 md:w-10 md:h-10 text-gray-400" />
+            )}
+          </div>
+          
+          {/* Seat Number */}
+          <div className="text-center">
+            <span className="text-sm sm:text-base md:text-lg font-bold text-white">
+              {seatNumber}
+            </span>
+          </div>
         </div>
       );
     });
 
     return (
-      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2 sm:gap-3 md:gap-4 max-w-lg mx-auto">
+      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 sm:gap-6 md:gap-8 max-w-4xl mx-auto">
         {seats}
       </div>
     );
@@ -529,10 +528,14 @@ export default function RoomInterfacePage() {
             <Card className="h-[400px] sm:h-[450px] flex flex-col">
               <CardHeader className="pb-3">
                 <Tabs value={activeTab} onValueChange={setActiveTab}>
-                  <TabsList className="grid w-full grid-cols-2">
+                  <TabsList className="grid w-full grid-cols-3">
                     <TabsTrigger value="chat" className="flex items-center gap-2">
                       <MessageCircle className="w-4 h-4" />
                       Chat
+                    </TabsTrigger>
+                    <TabsTrigger value="emojis" className="flex items-center gap-2">
+                      <Smile className="w-4 h-4" />
+                      Emojis
                     </TabsTrigger>
                     <TabsTrigger value="gifts" className="flex items-center gap-2">
                       <Gift className="w-4 h-4" />
@@ -594,7 +597,7 @@ export default function RoomInterfacePage() {
                               variant="ghost"
                               size="icon"
                               className="absolute right-1 top-1/2 transform -translate-y-1/2 h-8 w-8"
-                              onClick={() => setShowEmojiPicker(!showEmojiPicker)}
+                              onClick={() => setActiveTab("emojis")}
                             >
                               <Smile className="w-4 h-4" />
                             </Button>
@@ -607,31 +610,6 @@ export default function RoomInterfacePage() {
                             <Send className="w-4 h-4" />
                           </Button>
                         </div>
-                        {/* Emoji Picker */}
-                        {showEmojiPicker && (
-                          <div className="fixed inset-0 z-[999] flex items-center justify-center bg-black/50 p-4">
-                            <div className="relative bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-full max-h-full overflow-hidden">
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                className="absolute top-2 right-2 z-10 bg-red-500 hover:bg-red-600 text-white rounded-full w-8 h-8 p-0"
-                                onClick={() => setShowEmojiPicker(false)}
-                              >
-                                ×
-                              </Button>
-                              <div className="emoji-picker-container">
-                                <EmojiPicker
-                                  onEmojiClick={(emojiData) => {
-                                    setNewMessage(prev => prev + emojiData.emoji);
-                                    setShowEmojiPicker(false);
-                                  }}
-                                  width={typeof window !== 'undefined' && window.innerWidth < 640 ? Math.min(320, window.innerWidth - 40) : 320}
-                                  height={typeof window !== 'undefined' && window.innerWidth < 640 ? Math.min(400, window.innerHeight - 120) : 400}
-                                />
-                              </div>
-                            </div>
-                          </div>
-                        )}
                       </div>
                     )}
 
@@ -646,6 +624,28 @@ export default function RoomInterfacePage() {
                         Text chat is disabled in this room
                       </div>
                     )}
+                  </TabsContent>
+
+                  {/* Emojis Tab */}
+                  <TabsContent value="emojis" className="flex-1 flex flex-col mt-0">
+                    <div className="flex-1 overflow-y-auto max-h-[250px] sm:max-h-[300px] lg:max-h-[400px]">
+                      <div className="p-2">
+                        <EmojiPicker
+                          onEmojiClick={(emojiData) => {
+                            setNewMessage(prev => prev + emojiData.emoji);
+                            setActiveTab("chat"); // Switch back to chat after selecting emoji
+                          }}
+                          width="100%"
+                          height={200}
+                          previewConfig={{
+                            showPreview: false
+                          }}
+                          searchDisabled={false}
+                          skinTonesDisabled={false}
+                          lazyLoadEmojis={true}
+                        />
+                      </div>
+                    </div>
                   </TabsContent>
 
                   {/* Gifts Tab */}
