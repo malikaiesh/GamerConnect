@@ -30,7 +30,7 @@ export async function seedDefaultUsers() {
     // Create admin user if doesn't exist
     const adminExists = existingUsers.find(u => u.username === 'admin');
     if (!adminExists) {
-      const hashedAdminPassword = await hashPassword('admin123');
+      const hashedAdminPassword = await hashPassword('AdminSecure2025!');
       await db.insert(users).values({
         username: 'admin',
         email: 'admin@example.com',
@@ -45,7 +45,7 @@ export async function seedDefaultUsers() {
         createdAt: new Date(),
         updatedAt: new Date()
       });
-      console.log('✅ Created admin user (username: admin, password: admin123)');
+      console.log('✅ Created admin user (username: admin, password: AdminSecure2025!)');
     } else {
       console.log('ℹ️  Admin user already exists, skipping');
     }
@@ -53,7 +53,7 @@ export async function seedDefaultUsers() {
     // Create regular user if doesn't exist
     const userExists = existingUsers.find(u => u.username === 'user');
     if (!userExists) {
-      const hashedUserPassword = await hashPassword('user123');
+      const hashedUserPassword = await hashPassword('DemoUser2025!');
       await db.insert(users).values({
         username: 'user',
         email: 'user@example.com',
@@ -68,7 +68,7 @@ export async function seedDefaultUsers() {
         createdAt: new Date(),
         updatedAt: new Date()
       });
-      console.log('✅ Created user account (username: user, password: user123)');
+      console.log('✅ Created user account (username: user, password: DemoUser2025!)');
     } else {
       console.log('ℹ️  User account already exists, skipping');
     }
