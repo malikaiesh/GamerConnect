@@ -234,7 +234,12 @@ export default function RoomInterfacePage() {
         method: 'POST'
       }).then(res => res.json()),
     onSuccess: () => {
-      navigate('/rooms');
+      // Redirect to admin dashboard if user is admin, otherwise to rooms
+      if (user?.isAdmin) {
+        navigate('/admin/dashboard');
+      } else {
+        navigate('/rooms');
+      }
     }
   });
 
@@ -634,9 +639,12 @@ export default function RoomInterfacePage() {
                     size="sm"
                     onClick={() => leaveRoomMutation.mutate()}
                     className="self-start sm:self-auto"
+                    disabled={leaveRoomMutation.isPending}
                   >
                     <LogOut className="w-4 h-4 mr-2" />
-                    <span className="hidden sm:inline">Leave</span>
+                    <span className="hidden sm:inline">
+                      {leaveRoomMutation.isPending ? 'Leaving...' : 'Leave Room'}
+                    </span>
                   </Button>
                 )}
               </div>
