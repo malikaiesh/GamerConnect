@@ -285,6 +285,39 @@ router.get("/admin", isAuthenticated, isAdmin, async (req: Request, res: Respons
   }
 });
 
+// Get deleted rooms (for admin recovery) - MUST BE BEFORE parameterized routes
+router.get("/deleted", isAuthenticated, async (req: Request, res: Response) => {
+  try {
+    const userId = (req as any).user?.id;
+    const isAdminUser = (req as any).user?.isAdmin;
+    
+    if (!isAdminUser) {
+      return res.status(403).json({ error: "Admin access required" });
+    }
+
+    const deletedRooms = await db
+      .select({
+        room: rooms,
+        owner: {
+          id: users.id,
+          username: users.username,
+          displayName: users.displayName,
+          profilePicture: users.profilePicture,
+          isVerified: users.isVerified
+        }
+      })
+      .from(rooms)
+      .innerJoin(users, eq(rooms.ownerId, users.id))
+      .where(sql`${rooms.deletedAt} IS NOT NULL`)
+      .orderBy(desc(rooms.deletedAt));
+
+    res.json(deletedRooms);
+  } catch (error) {
+    console.error("Error fetching deleted rooms:", error);
+    res.status(500).json({ error: "Failed to fetch deleted rooms" });
+  }
+});
+
 // Get user's rooms (for user dashboard)
 router.get("/my-rooms", isAuthenticated, async (req: Request, res: Response) => {
   try {
@@ -1366,38 +1399,7 @@ router.post("/:roomId/gifts", isAuthenticated, async (req: Request, res: Respons
   }
 });
 
-// Get deleted rooms (for admin recovery)
-router.get("/deleted", isAuthenticated, async (req: Request, res: Response) => {
-  try {
-    const userId = (req as any).user?.id;
-    const isAdminUser = (req as any).user?.isAdmin;
-    
-    if (!isAdminUser) {
-      return res.status(403).json({ error: "Admin access required" });
-    }
-
-    const deletedRooms = await db
-      .select({
-        room: rooms,
-        owner: {
-          id: users.id,
-          username: users.username,
-          displayName: users.displayName,
-          profilePicture: users.profilePicture,
-          isVerified: users.isVerified
-        }
-      })
-      .from(rooms)
-      .innerJoin(users, eq(rooms.ownerId, users.id))
-      .where(sql`${rooms.deletedAt} IS NOT NULL`)
-      .orderBy(desc(rooms.deletedAt));
-
-    res.json(deletedRooms);
-  } catch (error) {
-    console.error("Error fetching deleted rooms:", error);
-    res.status(500).json({ error: "Failed to fetch deleted rooms" });
-  }
-});
+// Route moved above to avoid conflicts
 
 // Recover a deleted room
 router.post("/:roomId/recover", isAuthenticated, async (req: Request, res: Response) => {
