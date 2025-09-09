@@ -1,11 +1,10 @@
 import { Router, Request, Response } from "express";
 import { db } from "../db";
 import { 
-  friendRequests,
-  friends,
+  userRelationships,
   users,
 } from "@shared/schema";
-import { eq, desc, and, sql, count, gte, sum, asc, or } from "drizzle-orm";
+import { eq, desc, and, sql, count, gte, sum, asc, or, ne } from "drizzle-orm";
 import { isAuthenticated } from "../middleware/auth";
 
 const router = Router();
@@ -19,44 +18,98 @@ router.get("/", isAuthenticated, async (req: Request, res: Response) => {
       return res.status(401).json({ error: "User not authenticated" });
     }
 
-    // Mock friends data for now
-    const mockFriends = [
-      {
-        id: 1,
-        username: "john_gamer",
-        displayName: "John Smith",
-        status: 'online',
-        lastSeen: new Date().toISOString(),
-        friendsSince: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString(),
-        currentRoom: null
-      },
-      {
-        id: 2,
-        username: "sarah_plays",
-        displayName: "Sarah Johnson",
-        status: 'in-room',
-        lastSeen: new Date().toISOString(),
-        friendsSince: new Date(Date.now() - 15 * 24 * 60 * 60 * 1000).toISOString(),
-        currentRoom: {
-          roomId: "ABC123",
-          name: "Gaming Lounge"
-        }
-      },
-      {
-        id: 3,
-        username: "mike_pro",
-        displayName: "Mike Chen",
-        status: 'in-game',
-        lastSeen: new Date().toISOString(),
-        friendsSince: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString(),
-        currentRoom: null
-      }
-    ];
+    const friends = await db
+      .select({
+        id: userRelationships.id,
+        friend: {
+          id: users.id,
+          username: users.username,
+          displayName: users.displayName,
+          profilePicture: users.profilePicture,
+          isVerified: users.isVerified,
+          bio: users.bio,
+          country: users.country,
+          lastLogin: users.lastLogin
+        },
+        friendsSince: userRelationships.createdAt
+      })
+      .from(userRelationships)
+      .innerJoin(users, eq(userRelationships.targetUserId, users.id))
+      .where(and(
+        eq(userRelationships.userId, userId),
+        eq(userRelationships.relationshipType, 'friend'),
+        eq(userRelationships.status, 'accepted')
+      ))
+      .orderBy(desc(userRelationships.createdAt));
 
-    res.json(mockFriends);
+    // Transform to expected format
+    const formattedFriends = friends.map(f => ({
+      id: f.friend.id,
+      username: f.friend.username,
+      displayName: f.friend.displayName,
+      profilePicture: f.friend.profilePicture,
+      isVerified: f.friend.isVerified,
+      bio: f.friend.bio,
+      country: f.friend.country,
+      status: f.friend.lastLogin && new Date(f.friend.lastLogin) > new Date(Date.now() - 15 * 60 * 1000) ? 'online' : 'offline',
+      lastSeen: f.friend.lastLogin || f.friendsSince,
+      friendsSince: f.friendsSince,
+      currentRoom: null // TODO: Add room status integration
+    }));
+
+    res.json(formattedFriends);
   } catch (error) {
     console.error("Error fetching friends:", error);
     res.status(500).json({ error: "Failed to fetch friends" });
+  }
+});
+
+// Get all users for Find Friends page (exclude current user and existing relationships)
+router.get("/discover", isAuthenticated, async (req: Request, res: Response) => {
+  try {
+    const userId = (req as any).user?.id;
+    if (!userId) {
+      return res.status(401).json({ error: "User not authenticated" });
+    }
+
+    // Get all existing relationships for current user
+    const existingRelationships = await db
+      .select({ targetUserId: userRelationships.targetUserId })
+      .from(userRelationships)
+      .where(eq(userRelationships.userId, userId));
+
+    const existingUserIds = existingRelationships.map(rel => rel.targetUserId);
+    
+    // Get all users except current user and those with existing relationships
+    let query = db
+      .select({
+        id: users.id,
+        username: users.username,
+        displayName: users.displayName,
+        profilePicture: users.profilePicture,
+        isVerified: users.isVerified,
+        createdAt: users.createdAt,
+        bio: users.bio,
+        country: users.country,
+        lastLogin: users.lastLogin
+      })
+      .from(users)
+      .where(and(
+        ne(users.id, userId),
+        eq(users.status, 'active')
+      ));
+
+    const allUsers = await query
+      .orderBy(desc(users.createdAt))
+      .limit(100); // Limit to prevent overwhelming response
+
+    // Filter out users with existing relationships
+    const filteredUsers = allUsers.filter(user => !existingUserIds.includes(user.id));
+
+    res.json(filteredUsers);
+  } catch (error) {
+    console.error("Error fetching users for discovery:", error);
+    res.status(500).json({ error: "Failed to fetch users" });
   }
 });
 
@@ -69,75 +122,178 @@ router.get("/suggestions", isAuthenticated, async (req: Request, res: Response) 
       return res.status(401).json({ error: "User not authenticated" });
     }
 
-    // Mock friend suggestions
-    const mockSuggestions = [
-      {
-        id: 4,
-        username: "alex_stream",
-        displayName: "Alex Rivera",
-        mutualFriends: 2
-      },
-      {
-        id: 5,
-        username: "emma_games",
-        displayName: "Emma Wilson",
-        mutualFriends: 1
-      },
-      {
-        id: 6,
-        username: "chris_pro",
-        displayName: "Chris Taylor",
-        mutualFriends: 3
-      }
-    ];
+    // Get users who have mutual friends (simplified version)
+    const suggestions = await db
+      .select({
+        id: users.id,
+        username: users.username,
+        displayName: users.displayName,
+        profilePicture: users.profilePicture,
+        isVerified: users.isVerified,
+        bio: users.bio,
+        country: users.country
+      })
+      .from(users)
+      .where(and(
+        ne(users.id, userId),
+        eq(users.status, 'active')
+      ))
+      .orderBy(desc(users.createdAt))
+      .limit(10);
 
-    res.json(mockSuggestions);
+    // For now, add mock mutual friends count
+    const formattedSuggestions = suggestions.map(user => ({
+      ...user,
+      mutualFriends: Math.floor(Math.random() * 5) // TODO: Calculate real mutual friends
+    }));
+
+    res.json(formattedSuggestions);
   } catch (error) {
     console.error("Error fetching friend suggestions:", error);
     res.status(500).json({ error: "Failed to fetch friend suggestions" });
   }
 });
 
-// Get friend requests
-router.get("/requests", isAuthenticated, async (req: Request, res: Response) => {
+// Send friend request
+router.post("/request", isAuthenticated, async (req: Request, res: Response) => {
   try {
     const userId = (req as any).user?.id;
-
     if (!userId) {
       return res.status(401).json({ error: "User not authenticated" });
     }
 
-    // Mock friend requests
-    const mockRequests = [
-      {
-        id: 1,
-        senderId: 7,
-        receiverId: userId,
-        status: 'pending',
-        createdAt: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(),
-        sender: {
-          id: 7,
-          username: "david_gamer",
-          displayName: "David Brown",
-          status: 'online'
-        }
-      },
-      {
-        id: 2,
-        senderId: 8,
-        receiverId: userId,
-        status: 'pending',
-        createdAt: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString(),
-        sender: {
-          id: 8,
-          username: "lisa_plays",
-          displayName: "Lisa Davis",
-          status: 'offline'
-        }
-      }
-    ];
+    const { targetUserId } = req.body;
+    if (!targetUserId) {
+      return res.status(400).json({ error: "Target user ID is required" });
+    }
 
-    res.json(mockRequests);
+    if (userId === targetUserId) {
+      return res.status(400).json({ error: "Cannot send friend request to yourself" });
+    }
+
+    // Check if target user exists
+    const targetUser = await db
+      .select()
+      .from(users)
+      .where(eq(users.id, targetUserId))
+      .limit(1);
+
+    if (targetUser.length === 0) {
+      return res.status(404).json({ error: "User not found" });
+    }
+
+    // Check if relationship already exists
+    const existingRelationship = await db
+      .select()
+      .from(userRelationships)
+      .where(and(
+        eq(userRelationships.userId, userId),
+        eq(userRelationships.targetUserId, targetUserId)
+      ))
+      .limit(1);
+
+    if (existingRelationship.length > 0) {
+      return res.status(400).json({ 
+        error: "Relationship already exists",
+        type: existingRelationship[0].relationshipType,
+        status: existingRelationship[0].status
+      });
+    }
+
+    // Create friend request
+    const [friendRequest] = await db
+      .insert(userRelationships)
+      .values({
+        userId,
+        targetUserId,
+        relationshipType: 'friend_request',
+        status: 'pending'
+      })
+      .returning();
+
+    res.status(201).json({
+      message: "Friend request sent successfully",
+      relationship: friendRequest
+    });
+  } catch (error) {
+    console.error("Error sending friend request:", error);
+    res.status(500).json({ error: "Failed to send friend request" });
+  }
+});
+
+// Get incoming friend requests (requests sent to current user)
+router.get("/requests/incoming", isAuthenticated, async (req: Request, res: Response) => {
+  try {
+    const userId = (req as any).user?.id;
+    if (!userId) {
+      return res.status(401).json({ error: "User not authenticated" });
+    }
+
+    const incomingRequests = await db
+      .select({
+        id: userRelationships.id,
+        userId: userRelationships.userId,
+        relationshipType: userRelationships.relationshipType,
+        status: userRelationships.status,
+        createdAt: userRelationships.createdAt,
+        sender: {
+          id: users.id,
+          username: users.username,
+          displayName: users.displayName,
+          profilePicture: users.profilePicture,
+          isVerified: users.isVerified
+        }
+      })
+      .from(userRelationships)
+      .innerJoin(users, eq(userRelationships.userId, users.id))
+      .where(and(
+        eq(userRelationships.targetUserId, userId),
+        eq(userRelationships.relationshipType, 'friend_request'),
+        eq(userRelationships.status, 'pending')
+      ))
+      .orderBy(desc(userRelationships.createdAt));
+
+    res.json(incomingRequests);
+  } catch (error) {
+    console.error("Error fetching incoming friend requests:", error);
+    res.status(500).json({ error: "Failed to fetch friend requests" });
+  }
+});
+
+// Get friend requests (legacy endpoint for backward compatibility)
+router.get("/requests", isAuthenticated, async (req: Request, res: Response) => {
+  try {
+    const userId = (req as any).user?.id;
+    if (!userId) {
+      return res.status(401).json({ error: "User not authenticated" });
+    }
+
+    const incomingRequests = await db
+      .select({
+        id: userRelationships.id,
+        senderId: userRelationships.userId,
+        receiverId: userRelationships.targetUserId,
+        status: userRelationships.status,
+        createdAt: userRelationships.createdAt,
+        sender: {
+          id: users.id,
+          username: users.username,
+          displayName: users.displayName,
+          profilePicture: users.profilePicture,
+          isVerified: users.isVerified,
+          status: users.lastLogin && new Date(users.lastLogin) > new Date(Date.now() - 15 * 60 * 1000) ? 'online' : 'offline'
+        }
+      })
+      .from(userRelationships)
+      .innerJoin(users, eq(userRelationships.userId, users.id))
+      .where(and(
+        eq(userRelationships.targetUserId, userId),
+        eq(userRelationships.relationshipType, 'friend_request'),
+        eq(userRelationships.status, 'pending')
+      ))
+      .orderBy(desc(userRelationships.createdAt));
+
+    res.json(incomingRequests);
   } catch (error) {
     console.error("Error fetching friend requests:", error);
     res.status(500).json({ error: "Failed to fetch friend requests" });
@@ -154,8 +310,43 @@ router.post("/requests/:requestId/accept", isAuthenticated, async (req: Request,
       return res.status(401).json({ error: "User not authenticated" });
     }
 
-    // Mock acceptance
-    console.log(`User ${userId} accepted friend request ${requestId}`);
+    // Get the friend request
+    const friendRequest = await db
+      .select()
+      .from(userRelationships)
+      .where(and(
+        eq(userRelationships.id, parseInt(requestId)),
+        eq(userRelationships.targetUserId, userId),
+        eq(userRelationships.relationshipType, 'friend_request'),
+        eq(userRelationships.status, 'pending')
+      ))
+      .limit(1);
+
+    if (friendRequest.length === 0) {
+      return res.status(404).json({ error: "Friend request not found" });
+    }
+
+    const request = friendRequest[0];
+
+    // Update the original request to accepted friend relationship
+    await db
+      .update(userRelationships)
+      .set({
+        relationshipType: 'friend',
+        status: 'accepted',
+        updatedAt: new Date()
+      })
+      .where(eq(userRelationships.id, request.id));
+
+    // Create reciprocal friendship
+    await db
+      .insert(userRelationships)
+      .values({
+        userId: request.targetUserId,
+        targetUserId: request.userId,
+        relationshipType: 'friend',
+        status: 'accepted'
+      });
 
     res.json({ message: "Friend request accepted successfully" });
   } catch (error) {
@@ -174,13 +365,68 @@ router.post("/requests/:requestId/reject", isAuthenticated, async (req: Request,
       return res.status(401).json({ error: "User not authenticated" });
     }
 
-    // Mock rejection
-    console.log(`User ${userId} rejected friend request ${requestId}`);
+    // Get the friend request
+    const friendRequest = await db
+      .select()
+      .from(userRelationships)
+      .where(and(
+        eq(userRelationships.id, parseInt(requestId)),
+        eq(userRelationships.targetUserId, userId),
+        eq(userRelationships.relationshipType, 'friend_request'),
+        eq(userRelationships.status, 'pending')
+      ))
+      .limit(1);
+
+    if (friendRequest.length === 0) {
+      return res.status(404).json({ error: "Friend request not found" });
+    }
+
+    // Reject the request
+    await db
+      .update(userRelationships)
+      .set({
+        status: 'rejected',
+        updatedAt: new Date()
+      })
+      .where(eq(userRelationships.id, parseInt(requestId)));
 
     res.json({ message: "Friend request rejected successfully" });
   } catch (error) {
     console.error("Error rejecting friend request:", error);
     res.status(500).json({ error: "Failed to reject friend request" });
+  }
+});
+
+// Remove friend
+router.delete("/remove/:friendId", isAuthenticated, async (req: Request, res: Response) => {
+  try {
+    const userId = (req as any).user?.id;
+    if (!userId) {
+      return res.status(401).json({ error: "User not authenticated" });
+    }
+
+    const { friendId } = req.params;
+
+    // Remove both directions of the friendship
+    await db
+      .delete(userRelationships)
+      .where(or(
+        and(
+          eq(userRelationships.userId, userId),
+          eq(userRelationships.targetUserId, parseInt(friendId)),
+          eq(userRelationships.relationshipType, 'friend')
+        ),
+        and(
+          eq(userRelationships.userId, parseInt(friendId)),
+          eq(userRelationships.targetUserId, userId),
+          eq(userRelationships.relationshipType, 'friend')
+        )
+      ));
+
+    res.json({ message: "Friend removed successfully" });
+  } catch (error) {
+    console.error("Error removing friend:", error);
+    res.status(500).json({ error: "Failed to remove friend" });
   }
 });
 
