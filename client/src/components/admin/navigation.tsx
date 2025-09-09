@@ -768,19 +768,98 @@ export default function AdminNavigation() {
               Event Registrations
             </Link>
           </li>
-          <li>
-            <Link
-              href="/admin/seo/schemas"
+
+          {/* SEO Optimizations Section */}
+          <li className="space-y-1">
+            <button
+              onClick={(e) => toggleSubMenu('seoOptimizations', e)}
               className={cn(
-                "flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all",
-                isActive("/admin/seo/schemas")
+                "flex items-center justify-between w-full gap-3 px-3 py-2.5 rounded-lg transition-all",
+                (isActive("/admin/seo") || isActive("/admin/webmaster-tools") || isActive("/admin/google-indexing") || isActive("/admin/sitemaps") || isActive("/admin/robots-txt")) || expandedSubMenus.seoOptimizations
                   ? "bg-primary/15 text-primary shadow-sm"
                   : "text-card-foreground hover:bg-primary/10 hover:text-primary"
               )}
             >
-              <Code size={18} className="text-primary opacity-80" />
-              SEO Schemas
-            </Link>
+              <div className="flex items-center gap-3">
+                <BarChart size={18} className="text-primary opacity-80" />
+                <span>SEO Optimizations</span>
+              </div>
+              {expandedSubMenus.seoOptimizations ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
+            </button>
+            {expandedSubMenus.seoOptimizations && (
+              <ul className="ml-6 space-y-1">
+                <li>
+                  <Link
+                    href="/admin/seo/schemas"
+                    className={cn(
+                      "flex items-center gap-3 px-3 py-2 rounded-lg transition-all text-sm",
+                      isActive("/admin/seo/schemas")
+                        ? "bg-primary/15 text-primary shadow-sm"
+                        : "text-card-foreground hover:bg-primary/10 hover:text-primary"
+                    )}
+                  >
+                    <Code size={16} className="text-primary opacity-60" />
+                    SEO Schemas
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    href="/admin/webmaster-tools"
+                    className={cn(
+                      "flex items-center gap-3 px-3 py-2 rounded-lg transition-all text-sm",
+                      isActive("/admin/webmaster-tools")
+                        ? "bg-primary/15 text-primary shadow-sm"
+                        : "text-card-foreground hover:bg-primary/10 hover:text-primary"
+                    )}
+                  >
+                    <Settings size={16} className="text-primary opacity-60" />
+                    Webmaster Tools
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    href="/admin/google-indexing"
+                    className={cn(
+                      "flex items-center gap-3 px-3 py-2 rounded-lg transition-all text-sm",
+                      isActive("/admin/google-indexing")
+                        ? "bg-primary/15 text-primary shadow-sm"
+                        : "text-card-foreground hover:bg-primary/10 hover:text-primary"
+                    )}
+                  >
+                    <Cloud size={16} className="text-primary opacity-60" />
+                    Google Indexing
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    href="/admin/sitemaps"
+                    className={cn(
+                      "flex items-center gap-3 px-3 py-2 rounded-lg transition-all text-sm",
+                      isActive("/admin/sitemaps")
+                        ? "bg-primary/15 text-primary shadow-sm"
+                        : "text-card-foreground hover:bg-primary/10 hover:text-primary"
+                    )}
+                  >
+                    <Map size={16} className="text-primary opacity-60" />
+                    Sitemaps
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    href="/admin/robots-txt"
+                    className={cn(
+                      "flex items-center gap-3 px-3 py-2 rounded-lg transition-all text-sm",
+                      isActive("/admin/robots-txt")
+                        ? "bg-primary/15 text-primary shadow-sm"
+                        : "text-card-foreground hover:bg-primary/10 hover:text-primary"
+                    )}
+                  >
+                    <Bot size={16} className="text-primary opacity-60" />
+                    Robots.txt
+                  </Link>
+                </li>
+              </ul>
+            )}
           </li>
           <li>
             <Link
