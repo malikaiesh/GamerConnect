@@ -83,6 +83,7 @@ const AdminPushNotificationsSubscribersPage = lazy(() => import("@/pages/admin/p
 // Admin settings pages
 const AdminRedirectsPage = lazy(() => import("@/pages/admin/settings/redirects"));
 const AdminGeneralSettingsPage = lazy(() => import("@/pages/admin/settings/general"));
+const AdminCookieSettingsPage = lazy(() => import("@/pages/admin/settings/cookies"));
 // Admin SEO pages
 const AdminSeoSchemasPage = lazy(() => import("@/pages/admin/seo/schemas"));
 const AdminGoogleIndexingPage = lazy(() => import("@/pages/admin/google-indexing-page"));
@@ -588,6 +589,11 @@ function Router() {
       <Route path="/admin/settings/redirects">
         <AdminRoute>
           <Suspense fallback={<LoadingFallback />}><AdminRedirectsPage /></Suspense>
+        </AdminRoute>
+      </Route>
+      <Route path="/admin/settings/cookies">
+        <AdminRoute>
+          <Suspense fallback={<LoadingFallback />}><AdminCookieSettingsPage /></Suspense>
         </AdminRoute>
       </Route>
       <Route path="/admin/settings/general">

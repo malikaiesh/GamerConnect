@@ -1262,6 +1262,20 @@ export default function AdminNavigation() {
                     URL Redirects
                   </Link>
                 </li>
+                <li>
+                  <Link
+                    href="/admin/settings/cookies"
+                    className={cn(
+                      "flex items-center gap-3 px-3 py-2 rounded-lg transition-all text-sm",
+                      isActive("/admin/settings/cookies")
+                        ? "bg-primary/15 text-primary shadow-sm"
+                        : "text-card-foreground hover:bg-primary/10 hover:text-primary"
+                    )}
+                  >
+                    <Shield size={16} className="text-primary opacity-80" />
+                    Cookie Settings
+                  </Link>
+                </li>
               </ul>
             )}
           </li>
