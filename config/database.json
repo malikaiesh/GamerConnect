@@ -3,5 +3,5 @@
   "port": 5432,
   "database": "gaming_portal",
   "user": "postgres",
-  "password": "PGPASSWORD"
+  "password": ""
 }
