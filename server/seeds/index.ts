@@ -45,7 +45,7 @@ export async function runSeeds() {
     await seedApiKeys(); // Add API keys seeding
     await seedTranslations(); // Add translations and languages seeding
     await seedVerificationAssets(); // Ensure verification icons are available
-    // await seedAutomatedMessageTemplates(); // Add automated message templates - temporarily disabled
+    await seedAutomatedMessageTemplates(); // Add automated message templates
     await seedBlogPosts(); // Run this last since it depends on blog categories
     console.log('✅ All seeds completed successfully');
   } catch (error) {
