@@ -236,7 +236,7 @@ export default function AdminNavigation() {
               onClick={(e) => toggleSubMenu('allRooms', e)}
               className={cn(
                 "flex items-center justify-between w-full gap-3 px-3 py-2.5 rounded-lg transition-all",
-                (isActive("/admin/rooms") || isActive("/admin/create-rooms") || isActive("/admin/gifts")) || expandedSubMenus.allRooms
+                (isActive("/admin/rooms") || isActive("/admin/create-rooms") || isActive("/admin/own-rooms") || isActive("/admin/deleted-rooms") || isActive("/admin/gifts")) || expandedSubMenus.allRooms
                   ? "bg-primary/15 text-primary shadow-sm"
                   : "text-card-foreground hover:bg-primary/10 hover:text-primary"
               )}
@@ -275,6 +275,34 @@ export default function AdminNavigation() {
                   >
                     <PenTool size={16} className="text-primary opacity-60" />
                     Create Rooms
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    href="/admin/own-rooms"
+                    className={cn(
+                      "flex items-center gap-3 px-3 py-2 rounded-lg transition-all text-sm",
+                      isActive("/admin/own-rooms")
+                        ? "bg-primary/15 text-primary shadow-sm"
+                        : "text-card-foreground hover:bg-primary/10 hover:text-primary"
+                    )}
+                  >
+                    <UserRound size={16} className="text-primary opacity-60" />
+                    Own Rooms
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    href="/admin/deleted-rooms"
+                    className={cn(
+                      "flex items-center gap-3 px-3 py-2 rounded-lg transition-all text-sm",
+                      isActive("/admin/deleted-rooms")
+                        ? "bg-primary/15 text-primary shadow-sm"
+                        : "text-card-foreground hover:bg-primary/10 hover:text-primary"
+                    )}
+                  >
+                    <Archive size={16} className="text-primary opacity-60" />
+                    Deleted Rooms
                   </Link>
                 </li>
                 <li>
