@@ -1464,7 +1464,7 @@ Sitemap: ${req.protocol}://${req.get('host')}/sitemap.xml`);
   // ===== AUTOMATED MESSAGING ROUTES =====
 
   // Get all automated message templates (Admin only)
-  app.get("/api/admin/messaging/templates", requireAuth, requireAdmin, async (req, res) => {
+  app.get("/api/admin/messaging/templates", isAuthenticated, isAdmin, async (req, res) => {
     try {
       const templates = await db.select({
         id: automatedMessageTemplates.id,
@@ -1489,7 +1489,7 @@ Sitemap: ${req.protocol}://${req.get('host')}/sitemap.xml`);
   });
 
   // Create new automated message template (Admin only)
-  app.post("/api/admin/messaging/templates", requireAuth, requireAdmin, async (req, res) => {
+  app.post("/api/admin/messaging/templates", isAuthenticated, isAdmin, async (req, res) => {
     try {
       const { trigger, channel, title, content, isActive = true } = req.body;
 
@@ -1516,7 +1516,7 @@ Sitemap: ${req.protocol}://${req.get('host')}/sitemap.xml`);
   });
 
   // Update automated message template (Admin only)
-  app.put("/api/admin/messaging/templates/:id", requireAuth, requireAdmin, async (req, res) => {
+  app.put("/api/admin/messaging/templates/:id", isAuthenticated, isAdmin, async (req, res) => {
     try {
       const templateId = parseInt(req.params.id);
       const { trigger, channel, title, content, isActive } = req.body;
@@ -1549,7 +1549,7 @@ Sitemap: ${req.protocol}://${req.get('host')}/sitemap.xml`);
   });
 
   // Toggle template status (Admin only)
-  app.put("/api/admin/messaging/templates/:id/toggle", requireAuth, requireAdmin, async (req, res) => {
+  app.put("/api/admin/messaging/templates/:id/toggle", isAuthenticated, isAdmin, async (req, res) => {
     try {
       const templateId = parseInt(req.params.id);
       const { isActive } = req.body;
@@ -1574,7 +1574,7 @@ Sitemap: ${req.protocol}://${req.get('host')}/sitemap.xml`);
   });
 
   // Delete automated message template (Admin only)
-  app.delete("/api/admin/messaging/templates/:id", requireAuth, requireAdmin, async (req, res) => {
+  app.delete("/api/admin/messaging/templates/:id", isAuthenticated, isAdmin, async (req, res) => {
     try {
       const templateId = parseInt(req.params.id);
 
@@ -1594,7 +1594,7 @@ Sitemap: ${req.protocol}://${req.get('host')}/sitemap.xml`);
   });
 
   // Get automated message history (Admin only)
-  app.get("/api/admin/messaging/history", requireAuth, requireAdmin, async (req, res) => {
+  app.get("/api/admin/messaging/history", isAuthenticated, isAdmin, async (req, res) => {
     try {
       const history = await db.select({
         id: automatedMessageHistory.id,
