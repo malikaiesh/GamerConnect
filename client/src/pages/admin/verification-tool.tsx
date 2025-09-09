@@ -23,6 +23,7 @@ import {
   Plus,
   Minus
 } from "lucide-react";
+import { VerificationIcon } from "@/components/ui/verification-icon";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 
@@ -497,7 +498,7 @@ export default function VerificationTool() {
                           </h3>
                           {searchedUser.isVerified && (
                             <Badge className="bg-primary/10 text-primary border-primary/20">
-                              <CheckCircle className="w-3 h-3 mr-1" />
+                              <VerificationIcon className="mr-1" size={12} />
                               Verified
                             </Badge>
                           )}
@@ -516,7 +517,7 @@ export default function VerificationTool() {
                           </span>
                           {searchedUser.verifiedAt && (
                             <span className="flex items-center space-x-1">
-                              <CheckCircle className="w-3 h-3" />
+                              <VerificationIcon size={12} />
                               <span>Verified {new Date(searchedUser.verifiedAt).toLocaleDateString()}</span>
                             </span>
                           )}
@@ -614,7 +615,7 @@ export default function VerificationTool() {
                             <h3 className="text-lg font-semibold text-foreground">{searchedRoom.name}</h3>
                             {searchedRoom.isVerified && (
                               <Badge className="bg-primary/10 text-primary border-primary/20">
-                                <CheckCircle className="w-3 h-3 mr-1" />
+                                <VerificationIcon className="mr-1" size={12} />
                                 Verified
                               </Badge>
                             )}
