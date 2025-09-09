@@ -42,7 +42,7 @@ export default function AdminCreateRoomsPage() {
     mutationFn: async (data: CreateRoomData) => {
       console.log('Sending room creation request:', data);
       try {
-        const response = await fetch('/api/rooms/admin/create', {
+        const response = await fetch('/api/admin/rooms/create', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',

@@ -630,6 +630,125 @@ Sitemap: ${req.protocol}://${req.get('host')}/sitemap.xml`);
   
   // Room system routes
   app.use('/api/rooms', roomsRouter);
+  
+  // Admin room routes (to work with the admin middleware in auth.ts)
+  app.post('/api/admin/rooms/create', isAuthenticated, isAdmin, async (req, res) => {
+    try {
+      const userId = (req as any).user?.id;
+      if (!userId) {
+        return res.status(401).json({ error: "User not authenticated" });
+      }
+
+      const { name, description, category, maxUsers, isPrivate, requiresVerification, allowGuests, moderationLevel } = req.body;
+      
+      // Validate required fields
+      if (!name) {
+        return res.status(400).json({ error: "Room name is required" });
+      }
+
+      // Import room functions
+      const { roomsRouter } = await import("./api/rooms");
+      
+      // Forward to the rooms API handler with proper data structure
+      const roomData = {
+        roomId: `SA${Date.now()}`, // Generate temporary ID
+        name: name.trim(),
+        description: description || null,
+        category: category || 'general',
+        type: isPrivate ? 'private' : 'public',
+        maxSeats: maxUsers || 50,
+        ownerId: userId,
+        status: 'active',
+        language: 'en',
+        isLocked: false,
+        isFeatured: false,
+        requiresVerification: requiresVerification || false,
+        allowGuests: allowGuests !== false,
+        moderationLevel: moderationLevel || 'standard',
+        backgroundTheme: 'lunexa'
+      };
+
+      // Use the rooms creation logic
+      const { db } = await import("../db");
+      const { rooms, roomUsers, roomAnalytics, insertRoomSchema } = await import("@shared/schema");
+      
+      // Generate unique room ID
+      const generateRoomId = async (prefix?: 'SA' | 'MAB'): Promise<string> => {
+        const { count, sql } = await import("drizzle-orm");
+        
+        if (!prefix) {
+          const totalRooms = await db.select({ count: count() }).from(rooms);
+          prefix = totalRooms[0].count % 2 === 0 ? 'SA' : 'MAB';
+        }
+        
+        const existingRooms = await db
+          .select({ roomId: rooms.roomId })
+          .from(rooms)
+          .where(sql`${rooms.roomId} LIKE ${`${prefix}%`}`);
+
+        let nextNumber = 1994181;
+        
+        if (existingRooms.length > 0) {
+          const numbers = existingRooms
+            .map(room => {
+              const numStr = room.roomId.substring(prefix.length);
+              const num = parseInt(numStr);
+              return isNaN(num) ? 0 : num;
+            })
+            .filter(num => num >= 1994181);
+            
+          if (numbers.length > 0) {
+            nextNumber = Math.max(...numbers) + 1;
+          }
+        }
+        
+        return `${prefix}${nextNumber}`;
+      };
+
+      const roomId = await generateRoomId();
+      roomData.roomId = roomId;
+
+      const validatedData = insertRoomSchema.parse(roomData);
+      const [newRoom] = await db.insert(rooms).values(validatedData).returning();
+
+      // Add owner as room user
+      await db.insert(roomUsers).values({
+        roomId: newRoom.id,
+        userId,
+        role: 'owner',
+        seatNumber: 1,
+        isActive: true,
+        isMicOn: false,
+        isMuted: false
+      });
+
+      // Initialize room analytics
+      await db.insert(roomAnalytics).values({
+        roomId: newRoom.id,
+        date: new Date(),
+        totalVisits: 0,
+        uniqueVisitors: 0,
+        peakConcurrentUsers: 1,
+        averageSessionDuration: 0,
+        totalMessages: 0,
+        totalGifts: 0,
+        totalGiftValue: 0
+      });
+
+      res.json({ 
+        success: true, 
+        room: newRoom,
+        message: "Room created successfully"
+      });
+
+    } catch (error) {
+      console.error("Error creating admin room:", error);
+      if (error.name === 'ZodError') {
+        return res.status(400).json({ error: "Validation error", details: error.errors });
+      }
+      res.status(500).json({ error: "Failed to create room" });
+    }
+  });
   app.use('/api/friends', friendsRouter);
   app.use('/api/user', userProfileRouter);
   app.use('/api/messages', isAuthenticated, messageRoutes);
