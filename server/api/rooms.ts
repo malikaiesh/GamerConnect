@@ -597,15 +597,18 @@ router.patch("/:roomId", isAuthenticated, async (req: Request, res: Response) =>
   }
 });
 
-// Delete room
+// Soft delete room (updated to use deletedAt)
 router.delete("/:roomId", isAuthenticated, async (req: Request, res: Response) => {
   try {
     const { roomId } = req.params;
     const userId = (req as any).user?.id;
     const isAdminUser = (req as any).user?.isAdmin;
 
-    // Get room first
-    const room = await db.select().from(rooms).where(eq(rooms.roomId, roomId)).limit(1);
+    // Get room first (only non-deleted rooms)
+    const room = await db.select().from(rooms)
+      .where(and(eq(rooms.roomId, roomId), sql`${rooms.deletedAt} IS NULL`))
+      .limit(1);
+    
     if (room.length === 0) {
       return res.status(404).json({ error: "Room not found" });
     }
@@ -615,7 +618,10 @@ router.delete("/:roomId", isAuthenticated, async (req: Request, res: Response) =
       return res.status(403).json({ error: "Not authorized to delete this room" });
     }
 
-    await db.delete(rooms).where(eq(rooms.id, room[0].id));
+    // Soft delete by setting deletedAt timestamp
+    await db.update(rooms)
+      .set({ deletedAt: new Date() })
+      .where(eq(rooms.id, room[0].id));
 
     res.json({ message: "Room deleted successfully" });
   } catch (error) {
@@ -676,11 +682,16 @@ router.get("/", async (req: Request, res: Response) => {
       .innerJoin(users, eq(rooms.ownerId, users.id))
       .where(and(
         eq(rooms.type, 'public'),
-        eq(rooms.status, 'active')
+        eq(rooms.status, 'active'),
+        sql`${rooms.deletedAt} IS NULL`
       ));
 
     // Add search filter
-    const conditions = [eq(rooms.type, 'public'), eq(rooms.status, 'active')];
+    const conditions = [
+      eq(rooms.type, 'public'), 
+      eq(rooms.status, 'active'),
+      sql`${rooms.deletedAt} IS NULL`
+    ];
     if (search) {
       conditions.push(
         sql`${rooms.name} ILIKE ${`%${search}%`} OR ${rooms.roomId} ILIKE ${`%${search}%`}`
@@ -1355,7 +1366,7 @@ router.post("/:roomId/gifts", isAuthenticated, async (req: Request, res: Respons
   }
 });
 
-// Get deleted rooms (for admin recovery) - temporary implementation without deletedAt
+// Get deleted rooms (for admin recovery)
 router.get("/deleted", isAuthenticated, async (req: Request, res: Response) => {
   try {
     const userId = (req as any).user?.id;
@@ -1365,9 +1376,21 @@ router.get("/deleted", isAuthenticated, async (req: Request, res: Response) => {
       return res.status(403).json({ error: "Admin access required" });
     }
 
-    // For now, return empty array until database schema is updated
-    // TODO: Implement with deletedAt filter when database schema supports it
-    const deletedRooms: any[] = [];
+    const deletedRooms = await db
+      .select({
+        room: rooms,
+        owner: {
+          id: users.id,
+          username: users.username,
+          displayName: users.displayName,
+          profilePicture: users.profilePicture,
+          isVerified: users.isVerified
+        }
+      })
+      .from(rooms)
+      .innerJoin(users, eq(rooms.ownerId, users.id))
+      .where(sql`${rooms.deletedAt} IS NOT NULL`)
+      .orderBy(desc(rooms.deletedAt));
 
     res.json(deletedRooms);
   } catch (error) {
@@ -1376,7 +1399,7 @@ router.get("/deleted", isAuthenticated, async (req: Request, res: Response) => {
   }
 });
 
-// Recover a deleted room - temporary implementation
+// Recover a deleted room
 router.post("/:roomId/recover", isAuthenticated, async (req: Request, res: Response) => {
   try {
     const { roomId } = req.params;
@@ -1387,15 +1410,28 @@ router.post("/:roomId/recover", isAuthenticated, async (req: Request, res: Respo
       return res.status(403).json({ error: "Admin access required" });
     }
 
-    // For now, return an error message until database schema supports soft delete
-    res.status(501).json({ error: "Room recovery will be available once database schema is updated" });
+    // Get deleted room
+    const deletedRoom = await db.select().from(rooms)
+      .where(and(eq(rooms.roomId, roomId), sql`${rooms.deletedAt} IS NOT NULL`))
+      .limit(1);
+    
+    if (deletedRoom.length === 0) {
+      return res.status(404).json({ error: "Deleted room not found" });
+    }
+
+    // Recover room by clearing deletedAt
+    await db.update(rooms)
+      .set({ deletedAt: null, updatedAt: new Date() })
+      .where(eq(rooms.id, deletedRoom[0].id));
+
+    res.json({ message: "Room recovered successfully" });
   } catch (error) {
     console.error("Error recovering room:", error);
     res.status(500).json({ error: "Failed to recover room" });
   }
 });
 
-// Permanently delete a room - temporary implementation
+// Permanently delete a room
 router.delete("/:roomId/permanent-delete", isAuthenticated, async (req: Request, res: Response) => {
   try {
     const { roomId } = req.params;
@@ -1406,8 +1442,19 @@ router.delete("/:roomId/permanent-delete", isAuthenticated, async (req: Request,
       return res.status(403).json({ error: "Admin access required" });
     }
 
-    // For now, return an error message until database schema supports soft delete
-    res.status(501).json({ error: "Permanent deletion will be available once database schema is updated" });
+    // Get deleted room (only already soft-deleted rooms can be permanently deleted)
+    const deletedRoom = await db.select().from(rooms)
+      .where(and(eq(rooms.roomId, roomId), sql`${rooms.deletedAt} IS NOT NULL`))
+      .limit(1);
+    
+    if (deletedRoom.length === 0) {
+      return res.status(404).json({ error: "Deleted room not found" });
+    }
+
+    // Hard delete the room permanently
+    await db.delete(rooms).where(eq(rooms.id, deletedRoom[0].id));
+
+    res.json({ message: "Room permanently deleted" });
   } catch (error) {
     console.error("Error permanently deleting room:", error);
     res.status(500).json({ error: "Failed to permanently delete room" });
