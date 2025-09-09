@@ -392,11 +392,6 @@ export default function RoomInterfacePage() {
   // Get current user's room status
   const currentUserInRoom = roomData?.users.find(ru => ru.user.id === user?.id);
   const isOwner = roomData?.room.ownerId === user?.id;
-  
-  // Debug logging
-  console.log('Current user ID:', user?.id);
-  console.log('Room users:', roomData?.users?.map(u => ({ id: u.user.id, username: u.user.username, seatNumber: u.seatNumber })));
-  console.log('Current user in room:', currentUserInRoom);
 
   // Create seat grid with circular mic design
   const renderSeats = () => {
