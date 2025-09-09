@@ -1600,12 +1600,14 @@ Sitemap: ${req.protocol}://${req.get('host')}/sitemap.xml`);
         id: automatedMessageHistory.id,
         templateId: automatedMessageHistory.templateId,
         userId: automatedMessageHistory.userId,
-        trigger: automatedMessageHistory.trigger,
+        recipient: automatedMessageHistory.recipient,
         channel: automatedMessageHistory.channel,
+        subject: automatedMessageHistory.subject,
         content: automatedMessageHistory.content,
         status: automatedMessageHistory.status,
         sentAt: automatedMessageHistory.sentAt,
-        triggerData: automatedMessageHistory.triggerData,
+        deliveredAt: automatedMessageHistory.deliveredAt,
+        metadata: automatedMessageHistory.metadata,
       })
       .from(automatedMessageHistory)
       .orderBy(desc(automatedMessageHistory.sentAt))
