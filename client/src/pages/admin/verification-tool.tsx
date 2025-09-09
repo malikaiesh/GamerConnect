@@ -7,6 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { 
   Search, 
@@ -69,6 +70,10 @@ export default function VerificationTool() {
   const [searchedRoom, setSearchedRoom] = useState<Room | null>(null);
   const [userNotFound, setUserNotFound] = useState(false);
   const [roomNotFound, setRoomNotFound] = useState(false);
+  
+  // Duration states for timed verification
+  const [userVerificationDuration, setUserVerificationDuration] = useState<string>("1");
+  const [roomVerificationDuration, setRoomVerificationDuration] = useState<string>("1");
   
   // New state for room seats management
   const [roomSeatsSearch, setRoomSeatsSearch] = useState("");
@@ -152,10 +157,10 @@ export default function VerificationTool() {
 
   // Verify user mutation
   const verifyUserMutation = useMutation({
-    mutationFn: async ({ username, isVerified }: { username: string; isVerified: boolean }) => {
+    mutationFn: async ({ username, isVerified, durationMonths }: { username: string; isVerified: boolean; durationMonths?: number }) => {
       return apiRequest(`/api/verification/user/${encodeURIComponent(username)}`, {
         method: 'POST',
-        body: { isVerified },
+        body: { isVerified, durationMonths },
       });
     },
     onSuccess: (data) => {
@@ -177,10 +182,10 @@ export default function VerificationTool() {
 
   // Verify room mutation
   const verifyRoomMutation = useMutation({
-    mutationFn: async ({ roomId, isVerified }: { roomId: string; isVerified: boolean }) => {
+    mutationFn: async ({ roomId, isVerified, durationMonths }: { roomId: string; isVerified: boolean; durationMonths?: number }) => {
       return apiRequest(`/api/verification/room/${encodeURIComponent(roomId)}`, {
         method: 'POST',
-        body: { isVerified },
+        body: { isVerified, durationMonths },
       });
     },
     onSuccess: (data) => {
@@ -214,13 +219,15 @@ export default function VerificationTool() {
 
   const handleVerifyUser = (isVerified: boolean) => {
     if (searchedUser) {
-      verifyUserMutation.mutate({ username: searchedUser.username, isVerified });
+      const durationMonths = isVerified ? parseInt(userVerificationDuration) : undefined;
+      verifyUserMutation.mutate({ username: searchedUser.username, isVerified, durationMonths });
     }
   };
 
   const handleVerifyRoom = (isVerified: boolean) => {
     if (searchedRoom) {
-      verifyRoomMutation.mutate({ roomId: searchedRoom.roomId, isVerified });
+      const durationMonths = isVerified ? parseInt(roomVerificationDuration) : undefined;
+      verifyRoomMutation.mutate({ roomId: searchedRoom.roomId, isVerified, durationMonths });
     }
   };
 
@@ -524,28 +531,59 @@ export default function VerificationTool() {
                         </div>
                         
                         {/* Action Buttons */}
-                        <div className="flex space-x-2">
-                          {searchedUser.isVerified ? (
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => handleVerifyUser(false)}
-                              disabled={verifyUserMutation.isPending}
-                            >
-                              <ShieldX className="w-4 h-4 mr-2" />
-                              Remove Verification
-                            </Button>
-                          ) : (
-                            <Button
-                              size="sm"
-                              onClick={() => handleVerifyUser(true)}
-                              disabled={verifyUserMutation.isPending}
-                              className="bg-primary hover:bg-primary/90"
-                            >
-                              <ShieldCheck className="w-4 h-4 mr-2" />
-                              Verify User
-                            </Button>
+                        <div className="space-y-3">
+                          {/* Duration Selection for New Verification */}
+                          {!searchedUser.isVerified && (
+                            <div className="space-y-2">
+                              <Label className="text-sm font-medium text-foreground">Verification Duration</Label>
+                              <Select 
+                                value={userVerificationDuration} 
+                                onValueChange={setUserVerificationDuration}
+                              >
+                                <SelectTrigger className="w-full">
+                                  <SelectValue placeholder="Select duration" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  <SelectItem value="1">1 Month</SelectItem>
+                                  <SelectItem value="2">2 Months</SelectItem>
+                                  <SelectItem value="3">3 Months</SelectItem>
+                                  <SelectItem value="4">4 Months</SelectItem>
+                                  <SelectItem value="5">5 Months</SelectItem>
+                                  <SelectItem value="6">6 Months</SelectItem>
+                                  <SelectItem value="7">7 Months</SelectItem>
+                                  <SelectItem value="8">8 Months</SelectItem>
+                                  <SelectItem value="9">9 Months</SelectItem>
+                                  <SelectItem value="10">10 Months</SelectItem>
+                                  <SelectItem value="11">11 Months</SelectItem>
+                                  <SelectItem value="12">12 Months</SelectItem>
+                                </SelectContent>
+                              </Select>
+                            </div>
                           )}
+                          
+                          <div className="flex space-x-2">
+                            {searchedUser.isVerified ? (
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => handleVerifyUser(false)}
+                                disabled={verifyUserMutation.isPending}
+                              >
+                                <ShieldX className="w-4 h-4 mr-2" />
+                                Remove Verification
+                              </Button>
+                            ) : (
+                              <Button
+                                size="sm"
+                                onClick={() => handleVerifyUser(true)}
+                                disabled={verifyUserMutation.isPending}
+                                className="bg-primary hover:bg-primary/90"
+                              >
+                                <ShieldCheck className="w-4 h-4 mr-2" />
+                                Verify User ({userVerificationDuration} month{userVerificationDuration !== "1" ? "s" : ""})
+                              </Button>
+                            )}
+                          </div>
                         </div>
                       </div>
                     </div>
@@ -653,28 +691,59 @@ export default function VerificationTool() {
                       </div>
                       
                       {/* Action Buttons */}
-                      <div className="flex space-x-2 pt-2">
-                        {searchedRoom.isVerified ? (
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => handleVerifyRoom(false)}
-                            disabled={verifyRoomMutation.isPending}
-                          >
-                            <ShieldX className="w-4 h-4 mr-2" />
-                            Remove Verification
-                          </Button>
-                        ) : (
-                          <Button
-                            size="sm"
-                            onClick={() => handleVerifyRoom(true)}
-                            disabled={verifyRoomMutation.isPending}
-                            className="bg-primary hover:bg-primary/90"
-                          >
-                            <ShieldCheck className="w-4 h-4 mr-2" />
-                            Verify Room
-                          </Button>
+                      <div className="space-y-3 pt-2">
+                        {/* Duration Selection for New Verification */}
+                        {!searchedRoom.isVerified && (
+                          <div className="space-y-2">
+                            <Label className="text-sm font-medium text-foreground">Verification Duration</Label>
+                            <Select 
+                              value={roomVerificationDuration} 
+                              onValueChange={setRoomVerificationDuration}
+                            >
+                              <SelectTrigger className="w-full">
+                                <SelectValue placeholder="Select duration" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="1">1 Month</SelectItem>
+                                <SelectItem value="2">2 Months</SelectItem>
+                                <SelectItem value="3">3 Months</SelectItem>
+                                <SelectItem value="4">4 Months</SelectItem>
+                                <SelectItem value="5">5 Months</SelectItem>
+                                <SelectItem value="6">6 Months</SelectItem>
+                                <SelectItem value="7">7 Months</SelectItem>
+                                <SelectItem value="8">8 Months</SelectItem>
+                                <SelectItem value="9">9 Months</SelectItem>
+                                <SelectItem value="10">10 Months</SelectItem>
+                                <SelectItem value="11">11 Months</SelectItem>
+                                <SelectItem value="12">12 Months</SelectItem>
+                              </SelectContent>
+                            </Select>
+                          </div>
                         )}
+                        
+                        <div className="flex space-x-2">
+                          {searchedRoom.isVerified ? (
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => handleVerifyRoom(false)}
+                              disabled={verifyRoomMutation.isPending}
+                            >
+                              <ShieldX className="w-4 h-4 mr-2" />
+                              Remove Verification
+                            </Button>
+                          ) : (
+                            <Button
+                              size="sm"
+                              onClick={() => handleVerifyRoom(true)}
+                              disabled={verifyRoomMutation.isPending}
+                              className="bg-primary hover:bg-primary/90"
+                            >
+                              <ShieldCheck className="w-4 h-4 mr-2" />
+                              Verify Room ({roomVerificationDuration} month{roomVerificationDuration !== "1" ? "s" : ""})
+                            </Button>
+                          )}
+                        </div>
                       </div>
                     </div>
                   </CardContent>
