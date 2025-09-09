@@ -370,6 +370,85 @@ router.get("/:roomId", async (req: Request, res: Response) => {
   }
 });
 
+// Admin create room endpoint (bypasses payment logic)
+router.post("/admin/create", isAuthenticated, isAdmin, async (req: Request, res: Response) => {
+  try {
+    const userId = (req as any).user?.id;
+    if (!userId) {
+      return res.status(401).json({ error: "User not authenticated" });
+    }
+
+    const { name, description, category, maxUsers, isPrivate, requiresVerification, allowGuests, moderationLevel } = req.body;
+    
+    // Validate required fields
+    if (!name) {
+      return res.status(400).json({ error: "Room name is required" });
+    }
+
+    // Generate unique room ID
+    const roomId = await generateRoomId();
+    
+    // Prepare room data for admin creation (bypass payment logic)
+    const roomData = {
+      roomId,
+      name: name.trim(),
+      description: description || null,
+      category: category || 'general',
+      type: isPrivate ? 'private' : 'public',
+      maxSeats: maxUsers || 50,
+      ownerId: userId,
+      status: 'active',
+      language: 'en',
+      isLocked: false,
+      isFeatured: false,
+      requiresVerification: requiresVerification || false,
+      allowGuests: allowGuests !== false, // default to true
+      moderationLevel: moderationLevel || 'standard',
+      backgroundTheme: 'lunexa'
+    };
+
+    const validatedData = insertRoomSchema.parse(roomData);
+    const [newRoom] = await db.insert(rooms).values(validatedData).returning();
+
+    // Add owner as room user
+    await db.insert(roomUsers).values({
+      roomId: newRoom.id,
+      userId,
+      role: 'owner',
+      seatNumber: 1,
+      isActive: true,
+      isMicOn: false,
+      isMuted: false
+    });
+
+    // Initialize room analytics
+    await db.insert(roomAnalytics).values({
+      roomId: newRoom.id,
+      date: new Date(),
+      totalVisits: 0,
+      uniqueVisitors: 0,
+      peakConcurrentUsers: 1,
+      averageSessionDuration: 0,
+      totalMessages: 0,
+      totalGifts: 0,
+      totalGiftValue: 0
+    });
+
+    res.json({ 
+      success: true, 
+      room: newRoom,
+      message: "Room created successfully"
+    });
+
+  } catch (error) {
+    console.error("Error creating admin room:", error);
+    if (error.name === 'ZodError') {
+      return res.status(400).json({ error: "Validation error", details: error.errors });
+    }
+    res.status(500).json({ error: "Failed to create room" });
+  }
+});
+
 // Create new room
 router.post("/", isAuthenticated, async (req: Request, res: Response) => {
   try {
