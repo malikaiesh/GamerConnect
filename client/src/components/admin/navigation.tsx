@@ -18,7 +18,8 @@ export default function AdminNavigation() {
     manageGames: false,
     payments: false,
     pricing: false,
-    verification: false
+    verification: false,
+    seoOptimizations: false
   });
   const [location] = useLocation();
   const { user } = useAuth();
