@@ -123,6 +123,13 @@ export const referralRewardTypeEnum = pgEnum('referral_reward_type', ['registrat
 export const referralRewardStatusEnum = pgEnum('referral_reward_status', ['pending', 'approved', 'paid', 'cancelled']);
 export const referralTierEnum = pgEnum('referral_tier', ['tier_1', 'tier_2', 'tier_3']);
 export const referralCodeStatusEnum = pgEnum('referral_code_status', ['active', 'inactive', 'expired']);
+
+// Tournament System Enums
+export const tournamentStatusEnum = pgEnum('tournament_status', ['upcoming', 'active', 'completed', 'cancelled']);
+export const tournamentTypeEnum = pgEnum('tournament_type', ['gift_sender', 'gift_receiver', 'room_gifts', 'combined']);
+export const tournamentParticipationStatusEnum = pgEnum('tournament_participation_status', ['registered', 'active', 'completed', 'withdrawn']);
+export const milestoneTypeEnum = pgEnum('milestone_type', ['user_received', 'user_sent', 'room_received']);
+export const badgeRewardStatusEnum = pgEnum('badge_reward_status', ['pending', 'awarded', 'expired', 'revoked']);
 export const payoutMethodEnum = pgEnum('payout_method', ['paypal', 'binance', 'payoneer', 'bank_transfer', 'crypto', 'store_credit', 'gift_card', 'wise']);
 export const payoutStatusEnum = pgEnum('payout_status', ['pending', 'processing', 'completed', 'failed', 'cancelled']);
 
