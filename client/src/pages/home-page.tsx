@@ -172,6 +172,10 @@ export default function HomePage() {
                 <Link href="/games" className="bg-primary hover:bg-primary/90 text-primary-foreground font-bold py-3 px-6 rounded-lg transition-colors shadow-lg">
                   {t('common.play_now', 'Play Now')}
                 </Link>
+                <Link href="/find-friends" className="bg-gradient-to-r from-pink-600 to-pink-700 hover:from-pink-700 hover:to-pink-800 text-white font-bold py-3 px-6 rounded-lg transition-all shadow-lg flex items-center" data-testid="hero-find-friends-button">
+                  <i className="ri-user-search-line mr-2"></i>
+                  {t('buttons.find_friends', 'Find Friends')}
+                </Link>
                 <Link href="/rooms" className="bg-secondary hover:bg-secondary/90 text-secondary-foreground font-bold py-3 px-6 rounded-lg transition-colors shadow-lg">
                   {t('buttons.join_rooms', 'Join Rooms')}
                 </Link>
