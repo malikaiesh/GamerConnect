@@ -24,7 +24,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { Users, Lock, Globe, Clock, Settings, Trash2, Eye } from "lucide-react";
+import { Users, Lock, Globe, Clock, Settings, Trash2, Eye, User } from "lucide-react";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { formatDistanceToNow } from "date-fns";
@@ -87,6 +87,7 @@ export default function RoomsPage() {
   const [typeFilter, setTypeFilter] = useState<string>("all");
   const [verifiedFilter, setVerifiedFilter] = useState<string>("all");
   const [newRoomsFilter, setNewRoomsFilter] = useState<string>("all");
+  const [viewMode, setViewMode] = useState<"all" | "own">("all");
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
@@ -95,7 +96,7 @@ export default function RoomsPage() {
     queryKey: ["/api/rooms/stats/overview"],
   });
 
-  // Fetch rooms with filters
+  // Fetch all rooms with filters (for admin view)
   const { data: roomsData, isLoading } = useQuery<{
     rooms: Room[];
     pagination: {
@@ -112,7 +113,36 @@ export default function RoomsPage() {
       const verified = verifiedFilter === "all" ? "" : (verifiedFilter === "verified" ? "true" : "false");
       const newRooms = newRoomsFilter === "all" ? "" : (newRoomsFilter === "new" ? "true" : "false");
       return apiRequest(`/api/rooms/admin?page=${currentPage}&search=${searchTerm}&status=${status}&type=${type}&verified=${verified}&newRooms=${newRooms}`);
-    }
+    },
+    enabled: viewMode === "all"
+  });
+
+  // Fetch admin's own rooms
+  const { data: ownRoomsData, isLoading: isLoadingOwnRooms } = useQuery<{
+    room: {
+      id: number;
+      roomId: string;
+      name: string;
+      description: string | null;
+      type: "public" | "private";
+      status: "active" | "inactive" | "maintenance";
+      maxSeats: number;
+      category: string;
+      country: string | null;
+      language: string;
+      isLocked: boolean;
+      isFeatured: boolean;
+      totalVisits: number;
+      totalGiftsReceived: number;
+      totalGiftValue: number;
+      createdAt: string;
+      lastActivity: string;
+    };
+    userCount: number;
+  }[]>({
+    queryKey: ["/api/rooms/my-rooms"],
+    queryFn: () => apiRequest("/api/rooms/my-rooms"),
+    enabled: viewMode === "own"
   });
 
   // Delete room mutation
@@ -124,6 +154,7 @@ export default function RoomsPage() {
         description: "Room deleted successfully",
       });
       queryClient.invalidateQueries({ queryKey: ["/api/rooms"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/rooms/my-rooms"] });
     },
     onError: (error: Error) => {
       toast({
@@ -144,6 +175,7 @@ export default function RoomsPage() {
         description: "Room updated successfully",
       });
       queryClient.invalidateQueries({ queryKey: ["/api/rooms"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/rooms/my-rooms"] });
     },
     onError: (error: Error) => {
       toast({
@@ -180,7 +212,7 @@ export default function RoomsPage() {
     }
   };
 
-  if (isLoading) {
+  if (isLoading || isLoadingOwnRooms) {
     return (
       <div className="flex min-h-screen bg-background">
         <AdminNavigation />
@@ -203,6 +235,28 @@ export default function RoomsPage() {
         <p className="text-muted-foreground">
           Manage and monitor all user rooms, view statistics, and moderate content.
         </p>
+      </div>
+
+      {/* View Mode Toggle */}
+      <div className="flex gap-2 border-b border-border">
+        <Button
+          variant={viewMode === "all" ? "default" : "ghost"}
+          onClick={() => setViewMode("all")}
+          className="flex items-center gap-2"
+          data-testid="button-view-all-rooms"
+        >
+          <Users className="h-4 w-4" />
+          All Rooms
+        </Button>
+        <Button
+          variant={viewMode === "own" ? "default" : "ghost"}
+          onClick={() => setViewMode("own")}
+          className="flex items-center gap-2"
+          data-testid="button-view-own-rooms"
+        >
+          <User className="h-4 w-4" />
+          Own Rooms
+        </Button>
       </div>
 
       {/* Statistics Cards */}
@@ -272,71 +326,74 @@ export default function RoomsPage() {
       )}
 
 
-      {/* Filters */}
-      <Card data-testid="card-filters">
-        <CardHeader>
-          <CardTitle>Filter Rooms</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="flex flex-col md:flex-row gap-4">
-            <Input
-              placeholder="Search rooms..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="md:max-w-xs"
-              data-testid="input-search"
-            />
-            <Select value={statusFilter} onValueChange={setStatusFilter}>
-              <SelectTrigger className="md:max-w-xs" data-testid="select-status">
-                <SelectValue placeholder="Filter by status" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Statuses</SelectItem>
-                <SelectItem value="active">Active</SelectItem>
-                <SelectItem value="inactive">Inactive</SelectItem>
-                <SelectItem value="maintenance">Maintenance</SelectItem>
-              </SelectContent>
-            </Select>
-            <Select value={typeFilter} onValueChange={setTypeFilter}>
-              <SelectTrigger className="md:max-w-xs" data-testid="select-type">
-                <SelectValue placeholder="Filter by type" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Types</SelectItem>
-                <SelectItem value="public">Public</SelectItem>
-                <SelectItem value="private">Private</SelectItem>
-              </SelectContent>
-            </Select>
-            <Select value={verifiedFilter} onValueChange={setVerifiedFilter}>
-              <SelectTrigger className="md:max-w-xs" data-testid="select-verified">
-                <SelectValue placeholder="Filter by verification" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Rooms</SelectItem>
-                <SelectItem value="verified">Verified Only</SelectItem>
-                <SelectItem value="unverified">Unverified Only</SelectItem>
-              </SelectContent>
-            </Select>
-            <Select value={newRoomsFilter} onValueChange={setNewRoomsFilter}>
-              <SelectTrigger className="md:max-w-xs" data-testid="select-new-rooms">
-                <SelectValue placeholder="Filter by creation" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Rooms</SelectItem>
-                <SelectItem value="new">New Rooms (24h)</SelectItem>
-                <SelectItem value="older">Older Rooms</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-        </CardContent>
-      </Card>
+      {/* Filters - Only show for All Rooms view */}
+      {viewMode === "all" && (
+        <Card data-testid="card-filters">
+          <CardHeader>
+            <CardTitle>Filter Rooms</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="flex flex-col md:flex-row gap-4">
+              <Input
+                placeholder="Search rooms..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="md:max-w-xs"
+                data-testid="input-search"
+              />
+              <Select value={statusFilter} onValueChange={setStatusFilter}>
+                <SelectTrigger className="md:max-w-xs" data-testid="select-status">
+                  <SelectValue placeholder="Filter by status" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Statuses</SelectItem>
+                  <SelectItem value="active">Active</SelectItem>
+                  <SelectItem value="inactive">Inactive</SelectItem>
+                  <SelectItem value="maintenance">Maintenance</SelectItem>
+                </SelectContent>
+              </Select>
+              <Select value={typeFilter} onValueChange={setTypeFilter}>
+                <SelectTrigger className="md:max-w-xs" data-testid="select-type">
+                  <SelectValue placeholder="Filter by type" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Types</SelectItem>
+                  <SelectItem value="public">Public</SelectItem>
+                  <SelectItem value="private">Private</SelectItem>
+                </SelectContent>
+              </Select>
+              <Select value={verifiedFilter} onValueChange={setVerifiedFilter}>
+                <SelectTrigger className="md:max-w-xs" data-testid="select-verified">
+                  <SelectValue placeholder="Filter by verification" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Rooms</SelectItem>
+                  <SelectItem value="verified">Verified Only</SelectItem>
+                  <SelectItem value="unverified">Unverified Only</SelectItem>
+                </SelectContent>
+              </Select>
+              <Select value={newRoomsFilter} onValueChange={setNewRoomsFilter}>
+                <SelectTrigger className="md:max-w-xs" data-testid="select-new-rooms">
+                  <SelectValue placeholder="Filter by creation" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Rooms</SelectItem>
+                  <SelectItem value="new">New Rooms (24h)</SelectItem>
+                  <SelectItem value="older">Older Rooms</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
-      {/* Rooms Table */}
-      <Card data-testid="card-rooms-table">
-        <CardHeader>
-          <CardTitle>All Rooms</CardTitle>
-        </CardHeader>
-        <CardContent>
+      {/* All Rooms Table */}
+      {viewMode === "all" && (
+        <Card data-testid="card-rooms-table">
+          <CardHeader>
+            <CardTitle>All Rooms</CardTitle>
+          </CardHeader>
+          <CardContent>
           {isLoading ? (
             <div className="flex items-center justify-center py-8">
               <div className="text-muted-foreground">Loading rooms...</div>
@@ -504,6 +561,169 @@ export default function RoomsPage() {
           )}
         </CardContent>
       </Card>
+      )}
+
+      {/* Own Rooms Table */}
+      {viewMode === "own" && (
+        <Card data-testid="card-own-rooms-table">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <User className="h-5 w-5" />
+              Own Rooms
+              {ownRoomsData && (
+                <Badge variant="secondary" className="ml-2">
+                  {ownRoomsData.length} room{ownRoomsData.length !== 1 ? 's' : ''}
+                </Badge>
+              )}
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            {isLoadingOwnRooms ? (
+              <div className="flex items-center justify-center py-8">
+                <div className="text-muted-foreground">Loading your rooms...</div>
+              </div>
+            ) : !ownRoomsData?.length ? (
+              <div className="flex flex-col items-center justify-center py-12 space-y-4">
+                <User className="h-12 w-12 text-muted-foreground" />
+                <div className="text-center space-y-2">
+                  <div className="text-lg font-medium">No rooms created yet</div>
+                  <div className="text-muted-foreground">
+                    You haven't created any rooms yet. Create your first room to get started.
+                  </div>
+                </div>
+                <Button
+                  onClick={() => window.location.href = '/admin/create-rooms'}
+                  className="mt-4"
+                  data-testid="button-create-first-room"
+                >
+                  Create Your First Room
+                </Button>
+              </div>
+            ) : (
+              <>
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Room</TableHead>
+                      <TableHead>Type</TableHead>
+                      <TableHead>Status</TableHead>
+                      <TableHead>Users</TableHead>
+                      <TableHead>Created</TableHead>
+                      <TableHead>Actions</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {ownRoomsData.map((roomData) => (
+                      <TableRow key={roomData.room.id} data-testid={`row-own-room-${roomData.room.id}`}>
+                        <TableCell>
+                          <div>
+                            <div className="font-medium flex items-center gap-2">
+                              {roomData.room.name}
+                              {roomData.room.isFeatured && (
+                                <Badge variant="secondary" data-testid={`badge-featured-${roomData.room.id}`}>
+                                  Featured
+                                </Badge>
+                              )}
+                            </div>
+                            <div className="text-sm text-muted-foreground">
+                              ID: {roomData.room.roomId} • {roomData.room.category}
+                            </div>
+                            {roomData.room.description && (
+                              <div className="text-sm text-muted-foreground mt-1 max-w-md truncate">
+                                {roomData.room.description}
+                              </div>
+                            )}
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          <div className="flex items-center gap-2">
+                            {roomData.room.type === 'private' ? (
+                              <Lock className="h-4 w-4 text-muted-foreground" />
+                            ) : (
+                              <Globe className="h-4 w-4 text-muted-foreground" />
+                            )}
+                            <span className="capitalize">{roomData.room.type}</span>
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          <Badge
+                            className={getStatusColor(roomData.room.status)}
+                            data-testid={`badge-status-${roomData.room.id}`}
+                          >
+                            {roomData.room.status}
+                          </Badge>
+                        </TableCell>
+                        <TableCell>
+                          <div className="flex items-center gap-1">
+                            <Users className="h-4 w-4 text-muted-foreground" />
+                            <span>{roomData.userCount || 0}/{roomData.room.maxSeats}</span>
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          <div className="text-sm">
+                            {formatDistanceToNow(new Date(roomData.room.createdAt), { addSuffix: true })}
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          <div className="flex items-center gap-2">
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => handleToggleStatus(roomData.room.roomId, roomData.room.status)}
+                              disabled={updateRoomMutation.isPending}
+                              data-testid={`button-toggle-status-${roomData.room.id}`}
+                            >
+                              {roomData.room.status === 'active' ? 'Deactivate' : 'Activate'}
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => handleToggleFeatured(roomData.room.roomId, roomData.room.isFeatured)}
+                              disabled={updateRoomMutation.isPending}
+                              data-testid={`button-toggle-featured-${roomData.room.id}`}
+                            >
+                              {roomData.room.isFeatured ? 'Unfeature' : 'Feature'}
+                            </Button>
+                            <AlertDialog>
+                              <AlertDialogTrigger asChild>
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  className="text-destructive hover:text-destructive"
+                                  data-testid={`button-delete-${roomData.room.id}`}
+                                >
+                                  <Trash2 className="h-4 w-4" />
+                                </Button>
+                              </AlertDialogTrigger>
+                              <AlertDialogContent>
+                                <AlertDialogHeader>
+                                  <AlertDialogTitle>Delete Room</AlertDialogTitle>
+                                  <AlertDialogDescription>
+                                    Are you sure you want to delete "{roomData.room.name}"? This action cannot be undone.
+                                  </AlertDialogDescription>
+                                </AlertDialogHeader>
+                                <AlertDialogFooter>
+                                  <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                  <AlertDialogAction
+                                    onClick={() => handleDeleteRoom(roomData.room.roomId)}
+                                    className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                                  >
+                                    Delete
+                                  </AlertDialogAction>
+                                </AlertDialogFooter>
+                              </AlertDialogContent>
+                            </AlertDialog>
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </>
+            )}
+          </CardContent>
+        </Card>
+      )}
 
       {/* Recently Created Rooms - Moved to bottom */}
       {stats?.recentRooms && stats.recentRooms.length > 0 && (
