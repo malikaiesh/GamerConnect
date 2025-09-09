@@ -96,6 +96,8 @@ const AdminHeroImagesPage = lazy(() => import("@/pages/admin/hero-images"));
 const AdminLocationsPage = lazy(() => import("@/pages/admin/accounts/locations"));
 const AdminProfilePage = lazy(() => import("@/pages/admin/accounts/profile"));
 const AdminCreateRoomsPage = lazy(() => import("@/pages/admin/create-rooms-page"));
+const AdminOwnRoomsPage = lazy(() => import("@/pages/admin/own-rooms-page"));
+const AdminDeletedRoomsPage = lazy(() => import("@/pages/admin/deleted-rooms-page"));
 
 // Admin payment pages
 const AdminPaymentGatewaysPage = lazy(() => import("@/pages/admin/payment-gateways"));
@@ -392,6 +394,16 @@ function Router() {
       <Route path="/admin/create-rooms">
         <AdminRoute>
           <Suspense fallback={<LoadingFallback />}><AdminCreateRoomsPage /></Suspense>
+        </AdminRoute>
+      </Route>
+      <Route path="/admin/own-rooms">
+        <AdminRoute>
+          <Suspense fallback={<LoadingFallback />}><AdminOwnRoomsPage /></Suspense>
+        </AdminRoute>
+      </Route>
+      <Route path="/admin/deleted-rooms">
+        <AdminRoute>
+          <Suspense fallback={<LoadingFallback />}><AdminDeletedRoomsPage /></Suspense>
         </AdminRoute>
       </Route>
       <Route path="/admin/homepage-content">
