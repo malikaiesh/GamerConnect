@@ -13,6 +13,7 @@ import {
   Phone, PhoneOff, Video, VideoOff, MoreVertical, UserPlus, ShieldCheck
 } from "lucide-react";
 import EmojiPicker from 'emoji-picker-react';
+import { VerificationIcon } from "@/components/ui/verification-icon";
 import { useAuth } from "@/hooks/use-auth";
 import { voiceChatService } from "@/services/voiceChat";
 import { formatDistanceToNow } from "date-fns";
@@ -479,19 +480,7 @@ export default function RoomInterfacePage() {
                   <span className="text-xs sm:text-sm font-medium text-white truncate max-w-full flex items-center gap-1">
                     {seatUser.user.username}
                     {seatUser.user.isVerified && (
-                      <div className="inline-flex items-center justify-center w-4 h-4 flex-shrink-0 relative">
-                        <svg className="w-4 h-4 drop-shadow-md" viewBox="0 0 24 24" fill="none">
-                          <path d="M12 2L13.09 5.26L16 4L15.74 7.26L19 8.35L16.74 10.74L19 12.65L15.74 13.26L16 17L13.09 15.74L12 19L10.91 15.74L8 17L8.26 13.74L5 12.65L8.26 10.26L5 8.35L8.26 7.74L8 4L10.91 5.26L12 2Z" fill="url(#verifyGradientUser)" stroke="#1565C0" strokeWidth="0.5"/>
-                          <path d="M9 11.5L11 13.5L15 9.5" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-                          <defs>
-                            <linearGradient id="verifyGradientUser" x1="0%" y1="0%" x2="0%" y2="100%">
-                              <stop offset="0%" stopColor="#1877F2" />
-                              <stop offset="100%" stopColor="#166FE5" />
-                            </linearGradient>
-                          </defs>
-                        </svg>
-                        <div className="absolute inset-0 bg-gradient-to-t from-transparent to-white opacity-20 rounded-full"></div>
-                      </div>
+                      <VerificationIcon className="flex-shrink-0 drop-shadow-md" size={16} />
                     )}
                   </span>
                 </div>
@@ -610,19 +599,7 @@ export default function RoomInterfacePage() {
                       <h1 className="text-lg sm:text-xl lg:text-2xl font-bold flex items-center gap-2">
                         {roomData.room.name}
                         {roomData.room.isVerified && (
-                          <div className="inline-flex items-center justify-center w-7 h-7 flex-shrink-0 relative">
-                            <svg className="w-7 h-7 drop-shadow-md" viewBox="0 0 24 24" fill="none">
-                              <path d="M12 2L13.09 5.26L16 4L15.74 7.26L19 8.35L16.74 10.74L19 12.65L15.74 13.26L16 17L13.09 15.74L12 19L10.91 15.74L8 17L8.26 13.74L5 12.65L8.26 10.26L5 8.35L8.26 7.74L8 4L10.91 5.26L12 2Z" fill="url(#verifyGradientRoom)" stroke="#1565C0" strokeWidth="0.5"/>
-                              <path d="M9 11.5L11 13.5L15 9.5" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                              <defs>
-                                <linearGradient id="verifyGradientRoom" x1="0%" y1="0%" x2="0%" y2="100%">
-                                  <stop offset="0%" stopColor="#1877F2" />
-                                  <stop offset="100%" stopColor="#166FE5" />
-                                </linearGradient>
-                              </defs>
-                            </svg>
-                            <div className="absolute inset-0 bg-gradient-to-t from-transparent to-white opacity-20 rounded-full"></div>
-                          </div>
+                          <VerificationIcon className="flex-shrink-0 drop-shadow-md" size={28} />
                         )}
                       </h1>
                     </div>
@@ -644,7 +621,7 @@ export default function RoomInterfacePage() {
                   <div className="flex items-center gap-1 text-xs text-muted-foreground">
                     <span>Owner: @{roomData.owner.displayName || roomData.owner.username}</span>
                     {roomData.owner.isVerified && (
-                      <ShieldCheck className="h-3 w-3 text-blue-600" />
+                      <VerificationIcon size={12} />
                     )}
                   </div>
                 </div>
