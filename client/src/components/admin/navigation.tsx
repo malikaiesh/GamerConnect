@@ -863,34 +863,6 @@ export default function AdminNavigation() {
           </li>
           <li>
             <Link
-              href="/admin/webmaster-tools"
-              className={cn(
-                "flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all",
-                isActive("/admin/webmaster-tools")
-                  ? "bg-primary/15 text-primary shadow-sm"
-                  : "text-card-foreground hover:bg-primary/10 hover:text-primary"
-              )}
-            >
-              <Settings size={18} className="text-primary opacity-80" />
-              Webmaster Tools
-            </Link>
-          </li>
-          <li>
-            <Link
-              href="/admin/google-indexing"
-              className={cn(
-                "flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all",
-                isActive("/admin/google-indexing")
-                  ? "bg-primary/15 text-primary shadow-sm"
-                  : "text-card-foreground hover:bg-primary/10 hover:text-primary"
-              )}
-            >
-              <Cloud size={18} className="text-primary opacity-80" />
-              Google Indexing
-            </Link>
-          </li>
-          <li>
-            <Link
               href="/admin/backup-restore"
               className={cn(
                 "flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all",
@@ -1015,20 +987,6 @@ export default function AdminNavigation() {
               API Keys
             </Link>
           </li>
-          <li>
-            <Link
-              href="/admin/sitemaps"
-              className={cn(
-                "flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all",
-                isActive("/admin/sitemaps")
-                  ? "bg-primary/15 text-primary shadow-sm"
-                  : "text-card-foreground hover:bg-primary/10 hover:text-primary"
-              )}
-            >
-              <Map size={18} className="text-primary opacity-80" />
-              Sitemaps
-            </Link>
-          </li>
 
           <li>
             <Link
@@ -1056,20 +1014,6 @@ export default function AdminNavigation() {
             >
               <Code size={18} className="text-primary opacity-80" />
               Custom Code
-            </Link>
-          </li>
-          <li>
-            <Link
-              href="/admin/robots-txt"
-              className={cn(
-                "flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all",
-                isActive("/admin/robots-txt")
-                  ? "bg-primary/15 text-primary shadow-sm"
-                  : "text-card-foreground hover:bg-primary/10 hover:text-primary"
-              )}
-            >
-              <Bot size={18} className="text-primary opacity-80" />
-              Robots.txt
             </Link>
           </li>
           <li>
