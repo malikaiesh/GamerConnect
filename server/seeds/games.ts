@@ -4,14 +4,14 @@ import { count, eq } from 'drizzle-orm';
 
 export async function seedGames() {
   try {
-    // Check if games already exist
+    // Check if we need to add the additional 30 games
     const [existingCount] = await db
       .select({ count: count() })
       .from(games);
 
-    // Only seed if no games exist (fresh deployment)
-    if (existingCount.count === 0) {
-      console.log('🎮 Seeding sample games...');
+    // Add additional games if we have less than 38 total games
+    if (existingCount.count < 38) {
+      console.log(`🎮 Adding ${38 - existingCount.count} more games...`);
       
       // Get categories for reference
       const categories = await db.select().from(gameCategories);
@@ -681,12 +681,21 @@ export async function seedGames() {
           instructions: 'Arrow keys to move, eat dots and avoid ghosts!'
         }
       ];
-
-      await db.insert(games).values(SAMPLE_GAMES);
       
-      console.log(`✅ ${SAMPLE_GAMES.length} sample games seeded successfully`);
+      // Only insert games that don't already exist
+      const existingGames = await db.select({ slug: games.slug }).from(games);
+      const existingSlugs = new Set(existingGames.map(g => g.slug));
+      
+      const newGames = SAMPLE_GAMES.filter(game => !existingSlugs.has(game.slug));
+      
+      if (newGames.length > 0) {
+        await db.insert(games).values(newGames);
+        console.log(`✅ ${newGames.length} new games added successfully`);
+      } else {
+        console.log('ℹ️  All games already exist');
+      }
     } else {
-      console.log('ℹ️  Games already exist, skipping seeding');
+      console.log('ℹ️  Already have 38 games, skipping additional seeding');
     }
   } catch (error) {
     console.error('❌ Error seeding games:', error);
