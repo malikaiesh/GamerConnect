@@ -19,7 +19,8 @@ export default function AdminNavigation() {
     payments: false,
     pricing: false,
     verification: false,
-    seoOptimizations: false
+    seoOptimizations: false,
+    allRooms: false
   });
   const [location] = useLocation();
   const { user } = useAuth();
