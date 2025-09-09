@@ -229,33 +229,70 @@ export default function AdminNavigation() {
               Team
             </Link>
           </li>
-          <li>
-            <Link
-              href="/admin/rooms"
+
+          {/* All Rooms Section */}
+          <li className="space-y-1">
+            <button
+              onClick={(e) => toggleSubMenu('allRooms', e)}
               className={cn(
-                "flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all",
-                isActive("/admin/rooms")
+                "flex items-center justify-between w-full gap-3 px-3 py-2.5 rounded-lg transition-all",
+                (isActive("/admin/rooms") || isActive("/admin/create-rooms") || isActive("/admin/gifts")) || expandedSubMenus.allRooms
                   ? "bg-primary/15 text-primary shadow-sm"
                   : "text-card-foreground hover:bg-primary/10 hover:text-primary"
               )}
             >
-              <Users size={18} className="text-primary opacity-80" />
-              Rooms
-            </Link>
-          </li>
-          <li>
-            <Link
-              href="/admin/gifts"
-              className={cn(
-                "flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all",
-                isActive("/admin/gifts")
-                  ? "bg-primary/15 text-primary shadow-sm"
-                  : "text-card-foreground hover:bg-primary/10 hover:text-primary"
-              )}
-            >
-              <Gift size={18} className="text-primary opacity-80" />
-              Gifts
-            </Link>
+              <div className="flex items-center gap-3">
+                <Users size={18} className="text-primary opacity-80" />
+                <span>All Rooms</span>
+              </div>
+              {expandedSubMenus.allRooms ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
+            </button>
+            {expandedSubMenus.allRooms && (
+              <ul className="ml-6 space-y-1">
+                <li>
+                  <Link
+                    href="/admin/rooms"
+                    className={cn(
+                      "flex items-center gap-3 px-3 py-2 rounded-lg transition-all text-sm",
+                      isActive("/admin/rooms")
+                        ? "bg-primary/15 text-primary shadow-sm"
+                        : "text-card-foreground hover:bg-primary/10 hover:text-primary"
+                    )}
+                  >
+                    <Users size={16} className="text-primary opacity-60" />
+                    Manage Rooms
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    href="/admin/create-rooms"
+                    className={cn(
+                      "flex items-center gap-3 px-3 py-2 rounded-lg transition-all text-sm",
+                      isActive("/admin/create-rooms")
+                        ? "bg-primary/15 text-primary shadow-sm"
+                        : "text-card-foreground hover:bg-primary/10 hover:text-primary"
+                    )}
+                  >
+                    <PenTool size={16} className="text-primary opacity-60" />
+                    Create Rooms
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    href="/admin/gifts"
+                    className={cn(
+                      "flex items-center gap-3 px-3 py-2 rounded-lg transition-all text-sm",
+                      isActive("/admin/gifts")
+                        ? "bg-primary/15 text-primary shadow-sm"
+                        : "text-card-foreground hover:bg-primary/10 hover:text-primary"
+                    )}
+                  >
+                    <Gift size={16} className="text-primary opacity-60" />
+                    Gifts
+                  </Link>
+                </li>
+              </ul>
+            )}
           </li>
           {/* Verification Section */}
           <li className="space-y-1">
