@@ -17,6 +17,7 @@ import { VerificationIcon } from "@/components/ui/verification-icon";
 import { useAuth } from "@/hooks/use-auth";
 import { voiceChatService } from "@/services/voiceChat";
 import { formatDistanceToNow } from "date-fns";
+import { isVerificationValid } from "@/lib/verification-utils";
 
 interface RoomUser {
   id: number;
@@ -62,6 +63,7 @@ interface RoomData {
     ownerId: number;
     isVerified: boolean;
     verifiedAt?: string;
+    verificationExpiresAt?: string;
   };
   owner: {
     id: number;
@@ -70,6 +72,7 @@ interface RoomData {
     profilePicture: string | null;
     isVerified: boolean;
     verifiedAt?: string;
+    verificationExpiresAt?: string;
   };
   users: RoomUser[];
 }
@@ -598,7 +601,7 @@ export default function RoomInterfacePage() {
                     <div className="flex items-center gap-2">
                       <h1 className="text-lg sm:text-xl lg:text-2xl font-bold flex items-center gap-2">
                         {roomData.room.name}
-                        {roomData.room.isVerified && (
+                        {isVerificationValid(roomData.room) && (
                           <VerificationIcon className="flex-shrink-0 drop-shadow-md" size={28} />
                         )}
                       </h1>

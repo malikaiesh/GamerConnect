@@ -25,6 +25,7 @@ import {
   Minus
 } from "lucide-react";
 import { VerificationIcon } from "@/components/ui/verification-icon";
+import { isVerificationValid, getVerificationExpirationStatus } from "@/lib/verification-utils";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 
@@ -503,10 +504,15 @@ export default function VerificationTool() {
                           <h3 className="text-lg font-semibold text-foreground">
                             {searchedUser.displayName || searchedUser.username}
                           </h3>
-                          {searchedUser.isVerified && (
+                          {isVerificationValid(searchedUser) && (
                             <Badge className="bg-primary/10 text-primary border-primary/20">
                               <VerificationIcon className="mr-1" size={12} />
                               Verified
+                            </Badge>
+                          )}
+                          {searchedUser.isVerified && !isVerificationValid(searchedUser) && (
+                            <Badge variant="destructive" className="text-xs">
+                              Expired
                             </Badge>
                           )}
                         </div>
@@ -533,7 +539,7 @@ export default function VerificationTool() {
                         {/* Action Buttons */}
                         <div className="space-y-3">
                           {/* Duration Selection for New Verification */}
-                          {!searchedUser.isVerified && (
+                          {!isVerificationValid(searchedUser) && (
                             <div className="space-y-2">
                               <Label className="text-sm font-medium text-foreground">Verification Duration</Label>
                               <Select 
@@ -562,7 +568,7 @@ export default function VerificationTool() {
                           )}
                           
                           <div className="flex space-x-2">
-                            {searchedUser.isVerified ? (
+                            {isVerificationValid(searchedUser) ? (
                               <Button
                                 variant="outline"
                                 size="sm"
@@ -651,10 +657,15 @@ export default function VerificationTool() {
                         <div className="flex-1">
                           <div className="flex items-center space-x-2 mb-1">
                             <h3 className="text-lg font-semibold text-foreground">{searchedRoom.name}</h3>
-                            {searchedRoom.isVerified && (
+                            {isVerificationValid(searchedRoom) && (
                               <Badge className="bg-primary/10 text-primary border-primary/20">
                                 <VerificationIcon className="mr-1" size={12} />
                                 Verified
+                              </Badge>
+                            )}
+                            {searchedRoom.isVerified && !isVerificationValid(searchedRoom) && (
+                              <Badge variant="destructive" className="text-xs">
+                                Expired
                               </Badge>
                             )}
                           </div>
@@ -693,7 +704,7 @@ export default function VerificationTool() {
                       {/* Action Buttons */}
                       <div className="space-y-3 pt-2">
                         {/* Duration Selection for New Verification */}
-                        {!searchedRoom.isVerified && (
+                        {!isVerificationValid(searchedRoom) && (
                           <div className="space-y-2">
                             <Label className="text-sm font-medium text-foreground">Verification Duration</Label>
                             <Select 
@@ -722,7 +733,7 @@ export default function VerificationTool() {
                         )}
                         
                         <div className="flex space-x-2">
-                          {searchedRoom.isVerified ? (
+                          {isVerificationValid(searchedRoom) ? (
                             <Button
                               variant="outline"
                               size="sm"
