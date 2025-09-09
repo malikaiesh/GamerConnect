@@ -185,7 +185,7 @@ export default function BlogPostPage() {
     
     // Create a temporary div to parse the HTML content
     const tempDiv = document.createElement('div');
-    tempDiv.innerHTML = post.content;
+    tempDiv.innerHTML = DOMPurify.sanitize(post.content);
     
     // Find all headings and paragraphs
     const allElements = Array.from(tempDiv.children);
