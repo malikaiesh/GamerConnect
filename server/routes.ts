@@ -117,6 +117,7 @@ import { ObjectPermission } from "./objectAcl";
 import { users, events, eventRegistrations, eventCategories } from "@shared/schema";
 import { games, blogPosts, staticPages, pushSubscribers, pushCampaigns } from "@shared/schema";
 import { paymentTransactions, paymentGateways } from "@shared/schema";
+import { automatedMessageTemplates, automatedMessageHistory } from "@shared/schema";
 import { insertEventSchema, insertEventRegistrationSchema } from "@shared/schema";
 import { eq, count, gte, sql, desc, and } from "drizzle-orm";
 import { z } from "zod";
@@ -1459,6 +1460,163 @@ Sitemap: ${req.protocol}://${req.get('host')}/sitemap.xml`);
       console.error("❌ Initial verification expiry check failed:", error);
     }
   }, 10000); // 10 seconds after startup
+
+  // ===== AUTOMATED MESSAGING ROUTES =====
+
+  // Get all automated message templates (Admin only)
+  app.get("/api/admin/messaging/templates", requireAuth, requireAdmin, async (req, res) => {
+    try {
+      const templates = await db.select({
+        id: automatedMessageTemplates.id,
+        trigger: automatedMessageTemplates.trigger,
+        channel: automatedMessageTemplates.channel,
+        title: automatedMessageTemplates.title,
+        content: automatedMessageTemplates.content,
+        isActive: automatedMessageTemplates.isActive,
+        variables: automatedMessageTemplates.variables,
+        createdAt: automatedMessageTemplates.createdAt,
+        updatedAt: automatedMessageTemplates.updatedAt,
+        createdBy: automatedMessageTemplates.createdBy,
+      })
+      .from(automatedMessageTemplates)
+      .orderBy(desc(automatedMessageTemplates.createdAt));
+
+      res.json(templates);
+    } catch (error) {
+      console.error('Error fetching message templates:', error);
+      res.status(500).json({ error: 'Internal server error' });
+    }
+  });
+
+  // Create new automated message template (Admin only)
+  app.post("/api/admin/messaging/templates", requireAuth, requireAdmin, async (req, res) => {
+    try {
+      const { trigger, channel, title, content, isActive = true } = req.body;
+
+      if (!trigger || !channel || !title || !content) {
+        return res.status(400).json({ error: 'Missing required fields' });
+      }
+
+      const [newTemplate] = await db.insert(automatedMessageTemplates)
+        .values({
+          trigger,
+          channel,
+          title,
+          content,
+          isActive,
+          createdBy: req.user!.id,
+        })
+        .returning();
+
+      res.status(201).json(newTemplate);
+    } catch (error) {
+      console.error('Error creating message template:', error);
+      res.status(500).json({ error: 'Internal server error' });
+    }
+  });
+
+  // Update automated message template (Admin only)
+  app.put("/api/admin/messaging/templates/:id", requireAuth, requireAdmin, async (req, res) => {
+    try {
+      const templateId = parseInt(req.params.id);
+      const { trigger, channel, title, content, isActive } = req.body;
+
+      if (!trigger || !channel || !title || !content) {
+        return res.status(400).json({ error: 'Missing required fields' });
+      }
+
+      const [updatedTemplate] = await db.update(automatedMessageTemplates)
+        .set({
+          trigger,
+          channel,
+          title,
+          content,
+          isActive,
+          updatedAt: new Date(),
+        })
+        .where(eq(automatedMessageTemplates.id, templateId))
+        .returning();
+
+      if (!updatedTemplate) {
+        return res.status(404).json({ error: 'Template not found' });
+      }
+
+      res.json(updatedTemplate);
+    } catch (error) {
+      console.error('Error updating message template:', error);
+      res.status(500).json({ error: 'Internal server error' });
+    }
+  });
+
+  // Toggle template status (Admin only)
+  app.put("/api/admin/messaging/templates/:id/toggle", requireAuth, requireAdmin, async (req, res) => {
+    try {
+      const templateId = parseInt(req.params.id);
+      const { isActive } = req.body;
+
+      const [updatedTemplate] = await db.update(automatedMessageTemplates)
+        .set({
+          isActive,
+          updatedAt: new Date(),
+        })
+        .where(eq(automatedMessageTemplates.id, templateId))
+        .returning();
+
+      if (!updatedTemplate) {
+        return res.status(404).json({ error: 'Template not found' });
+      }
+
+      res.json(updatedTemplate);
+    } catch (error) {
+      console.error('Error toggling template status:', error);
+      res.status(500).json({ error: 'Internal server error' });
+    }
+  });
+
+  // Delete automated message template (Admin only)
+  app.delete("/api/admin/messaging/templates/:id", requireAuth, requireAdmin, async (req, res) => {
+    try {
+      const templateId = parseInt(req.params.id);
+
+      const [deletedTemplate] = await db.delete(automatedMessageTemplates)
+        .where(eq(automatedMessageTemplates.id, templateId))
+        .returning();
+
+      if (!deletedTemplate) {
+        return res.status(404).json({ error: 'Template not found' });
+      }
+
+      res.json({ message: 'Template deleted successfully' });
+    } catch (error) {
+      console.error('Error deleting message template:', error);
+      res.status(500).json({ error: 'Internal server error' });
+    }
+  });
+
+  // Get automated message history (Admin only)
+  app.get("/api/admin/messaging/history", requireAuth, requireAdmin, async (req, res) => {
+    try {
+      const history = await db.select({
+        id: automatedMessageHistory.id,
+        templateId: automatedMessageHistory.templateId,
+        userId: automatedMessageHistory.userId,
+        trigger: automatedMessageHistory.trigger,
+        channel: automatedMessageHistory.channel,
+        content: automatedMessageHistory.content,
+        status: automatedMessageHistory.status,
+        sentAt: automatedMessageHistory.sentAt,
+        triggerData: automatedMessageHistory.triggerData,
+      })
+      .from(automatedMessageHistory)
+      .orderBy(desc(automatedMessageHistory.sentAt))
+      .limit(100); // Limit to last 100 messages
+
+      res.json(history);
+    } catch (error) {
+      console.error('Error fetching message history:', error);
+      res.status(500).json({ error: 'Internal server error' });
+    }
+  });
 
   return httpServer;
 }

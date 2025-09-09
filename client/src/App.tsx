@@ -106,6 +106,9 @@ const AdminReferralsPage = lazy(() => import("@/pages/admin/referrals"));
 const AdminPayoutMethodsPage = lazy(() => import("@/pages/admin/payout-methods"));
 const AdminRevenuePage = lazy(() => import("@/pages/admin/revenue"));
 
+// Admin Messaging Pages
+const AdminAutomatedMessagesPage = lazy(() => import("@/pages/admin/messaging/automated"));
+
 // Admin image upload demo
 const AdminImageUploadDemo = lazy(() => import("@/pages/admin/image-upload-demo"));
 const AdminImagesGalleryPage = lazy(() => import("@/pages/admin/images-gallery"));
@@ -477,6 +480,13 @@ function Router() {
       <Route path="/admin/revenue">
         <AdminRoute>
           <Suspense fallback={<LoadingFallback />}><AdminRevenuePage /></Suspense>
+        </AdminRoute>
+      </Route>
+      
+      {/* Admin Messaging Routes */}
+      <Route path="/admin/messaging/automated">
+        <AdminRoute>
+          <Suspense fallback={<LoadingFallback />}><AdminAutomatedMessagesPage /></Suspense>
         </AdminRoute>
       </Route>
       <Route path="/admin/payments/gateways">
