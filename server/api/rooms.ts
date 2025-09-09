@@ -1355,4 +1355,63 @@ router.post("/:roomId/gifts", isAuthenticated, async (req: Request, res: Respons
   }
 });
 
+// Get deleted rooms (for admin recovery) - temporary implementation without deletedAt
+router.get("/deleted", isAuthenticated, async (req: Request, res: Response) => {
+  try {
+    const userId = (req as any).user?.id;
+    const isAdminUser = (req as any).user?.isAdmin;
+    
+    if (!isAdminUser) {
+      return res.status(403).json({ error: "Admin access required" });
+    }
+
+    // For now, return empty array until database schema is updated
+    // TODO: Implement with deletedAt filter when database schema supports it
+    const deletedRooms: any[] = [];
+
+    res.json(deletedRooms);
+  } catch (error) {
+    console.error("Error fetching deleted rooms:", error);
+    res.status(500).json({ error: "Failed to fetch deleted rooms" });
+  }
+});
+
+// Recover a deleted room - temporary implementation
+router.post("/:roomId/recover", isAuthenticated, async (req: Request, res: Response) => {
+  try {
+    const { roomId } = req.params;
+    const userId = (req as any).user?.id;
+    const isAdminUser = (req as any).user?.isAdmin;
+
+    if (!isAdminUser) {
+      return res.status(403).json({ error: "Admin access required" });
+    }
+
+    // For now, return an error message until database schema supports soft delete
+    res.status(501).json({ error: "Room recovery will be available once database schema is updated" });
+  } catch (error) {
+    console.error("Error recovering room:", error);
+    res.status(500).json({ error: "Failed to recover room" });
+  }
+});
+
+// Permanently delete a room - temporary implementation
+router.delete("/:roomId/permanent-delete", isAuthenticated, async (req: Request, res: Response) => {
+  try {
+    const { roomId } = req.params;
+    const userId = (req as any).user?.id;
+    const isAdminUser = (req as any).user?.isAdmin;
+
+    if (!isAdminUser) {
+      return res.status(403).json({ error: "Admin access required" });
+    }
+
+    // For now, return an error message until database schema supports soft delete
+    res.status(501).json({ error: "Permanent deletion will be available once database schema is updated" });
+  } catch (error) {
+    console.error("Error permanently deleting room:", error);
+    res.status(500).json({ error: "Failed to permanently delete room" });
+  }
+});
+
 export { router as roomsRouter };
