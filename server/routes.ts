@@ -1,6 +1,7 @@
 import express, { type Express, Request, Response, NextFunction } from "express";
 import { createServer, type Server } from "http";
 import { WebSocketServer, WebSocket } from "ws";
+import { checkAndRemoveExpiredVerifications } from "./api/verification-expiry";
 import { setupAuth } from "./auth";
 import { isAuthenticated, isAdmin } from "./middleware/auth";
 import { registerGameRoutes } from "./api/games";
@@ -47,6 +48,7 @@ import { roomsRouter } from "./api/rooms";
 import friendsRouter from "./api/friends";
 import userProfileRouter from "./api/user-profile";
 import verificationRouter from "./api/verification";
+import verificationExpiryRouter from "./api/verification-expiry";
 import { 
   getPaymentGateways, 
   createPaymentGateway, 
@@ -629,6 +631,7 @@ Sitemap: ${req.protocol}://${req.get('host')}/sitemap.xml`);
   app.use('/api/friends', friendsRouter);
   app.use('/api/user', userProfileRouter);
   app.use('/api/verification', isAdmin, verificationRouter);
+  app.use('/api/verification-expiry', isAdmin, verificationExpiryRouter);
   
   // Quick test route to verify our demo endpoint
   app.post('/api/demo-schemas/test', (req, res) => {
@@ -1434,6 +1437,26 @@ Sitemap: ${req.protocol}://${req.get('host')}/sitemap.xml`);
       });
     }
   }
+
+  // Start automatic verification expiry checker
+  // Check every hour for expired verifications
+  setInterval(async () => {
+    try {
+      await checkAndRemoveExpiredVerifications();
+    } catch (error) {
+      console.error("❌ Scheduled verification expiry check failed:", error);
+    }
+  }, 60 * 60 * 1000); // 1 hour = 60 * 60 * 1000 milliseconds
+
+  // Run initial check on startup
+  setTimeout(async () => {
+    try {
+      console.log("🚀 Running initial verification expiry check...");
+      await checkAndRemoveExpiredVerifications();
+    } catch (error) {
+      console.error("❌ Initial verification expiry check failed:", error);
+    }
+  }, 10000); // 10 seconds after startup
 
   return httpServer;
 }
