@@ -8,12 +8,13 @@ const router = express.Router();
 
 // Validation schemas
 const verifyUserSchema = z.object({
-  username: z.string().min(1, "Username is required"),
   isVerified: z.boolean(),
+  durationMonths: z.number().min(1).max(12).optional(), // 1-12 months
 });
 
 const verifyRoomSchema = z.object({
   isVerified: z.boolean(),
+  durationMonths: z.number().min(1).max(12).optional(), // 1-12 months
 });
 
 const updateRoomSeatsSchema = z.object({
@@ -101,12 +102,21 @@ router.post("/user/:username", async (req: any, res) => {
 
     const validatedData = verifyUserSchema.parse(req.body);
 
+    // Calculate expiration date if verification is being enabled and duration is provided
+    let verificationExpiresAt = null;
+    if (validatedData.isVerified && validatedData.durationMonths) {
+      const expirationDate = new Date();
+      expirationDate.setMonth(expirationDate.getMonth() + validatedData.durationMonths);
+      verificationExpiresAt = expirationDate;
+    }
+
     const [updatedUser] = await db
       .update(users)
       .set({
         isVerified: validatedData.isVerified,
         verifiedAt: validatedData.isVerified ? new Date() : null,
         verifiedBy: validatedData.isVerified ? adminId : null,
+        verificationExpiresAt,
         updatedAt: new Date(),
       })
       .where(eq(users.username, username))
@@ -122,8 +132,9 @@ router.post("/user/:username", async (req: any, res) => {
       return res.status(404).json({ error: "User not found" });
     }
 
+    const durationText = validatedData.durationMonths ? ` for ${validatedData.durationMonths} month${validatedData.durationMonths > 1 ? 's' : ''}` : '';
     res.json({ 
-      message: `User ${validatedData.isVerified ? 'verified' : 'unverified'} successfully`,
+      message: `User ${validatedData.isVerified ? `verified${durationText}` : 'unverified'} successfully`,
       user: updatedUser 
     });
   } catch (error) {
@@ -147,12 +158,21 @@ router.post("/room/:roomId", async (req: any, res) => {
 
     const validatedData = verifyRoomSchema.parse(req.body);
 
+    // Calculate expiration date if verification is being enabled and duration is provided
+    let verificationExpiresAt = null;
+    if (validatedData.isVerified && validatedData.durationMonths) {
+      const expirationDate = new Date();
+      expirationDate.setMonth(expirationDate.getMonth() + validatedData.durationMonths);
+      verificationExpiresAt = expirationDate;
+    }
+
     const [updatedRoom] = await db
       .update(rooms)
       .set({
         isVerified: validatedData.isVerified,
         verifiedAt: validatedData.isVerified ? new Date() : null,
         verifiedBy: validatedData.isVerified ? adminId : null,
+        verificationExpiresAt,
         updatedAt: new Date(),
       })
       .where(eq(rooms.roomId, roomId))
@@ -168,8 +188,9 @@ router.post("/room/:roomId", async (req: any, res) => {
       return res.status(404).json({ error: "Room not found" });
     }
 
+    const durationText = validatedData.durationMonths ? ` for ${validatedData.durationMonths} month${validatedData.durationMonths > 1 ? 's' : ''}` : '';
     res.json({ 
-      message: `Room ${validatedData.isVerified ? 'verified' : 'unverified'} successfully`,
+      message: `Room ${validatedData.isVerified ? `verified${durationText}` : 'unverified'} successfully`,
       room: updatedRoom 
     });
   } catch (error) {
