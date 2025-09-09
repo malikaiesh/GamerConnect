@@ -1,4 +1,4 @@
-import { pgTable, text, serial, integer, boolean, timestamp, json, pgEnum, uniqueIndex, date, index, decimal, varchar, unique } from 'drizzle-orm/pg-core';
+import { pgTable, text, serial, integer, boolean, timestamp, json, pgEnum, uniqueIndex, date, index, decimal, varchar, unique, sql } from 'drizzle-orm/pg-core';
 import { createInsertSchema, createSelectSchema } from 'drizzle-zod';
 import { relations } from 'drizzle-orm';
 import { z } from 'zod';
@@ -81,6 +81,11 @@ export const roomUserRoleEnum = pgEnum('room_user_role', ['owner', 'manager', 'm
 export const roomUserStatusEnum = pgEnum('room_user_status', ['active', 'muted', 'kicked', 'banned']);
 export const giftTypeEnum = pgEnum('gift_type', ['basic', 'premium', 'exclusive', 'special', 'animated']);
 export const giftCategoryEnum = pgEnum('gift_category', ['general', 'love', 'celebration', 'friendship', 'appreciation', 'seasonal', 'luxury']);
+
+// Messaging System Enums
+export const messageTypeEnum = pgEnum('message_type', ['text', 'image', 'file', 'system', 'emoji']);
+export const conversationTypeEnum = pgEnum('conversation_type', ['direct', 'group']);
+export const messageStatusEnum = pgEnum('message_status', ['sent', 'delivered', 'read', 'failed']);
 
 // Short Links Enum
 export const shortLinkTypeEnum = pgEnum('short_link_type', ['game', 'blog', 'category', 'page']);
@@ -622,7 +627,15 @@ export const usersRelations = relations(users, ({ many, one }) => ({
   referralRewards: many(referralRewards),
   referralPayouts: many(referralPayouts),
   referralAnalytics: many(referralAnalytics),
-  referralMilestones: many(referralMilestones)
+  referralMilestones: many(referralMilestones),
+  
+  // Messaging relations
+  conversationsAsUser1: many(conversations, { relationName: 'conversationsAsUser1' }),
+  conversationsAsUser2: many(conversations, { relationName: 'conversationsAsUser2' }),
+  sentMessages: many(messages, { relationName: 'sentMessages' }),
+  receivedMessages: many(messages, { relationName: 'receivedMessages' }),
+  messageReadStatus: many(messageReadStatus),
+  conversationParticipants: many(conversationParticipants)
 }));
 
 export const userSessionsRelations = relations(userSessions, ({ one }) => ({
@@ -1895,6 +1908,93 @@ export const userRelationships = pgTable('user_relationships', {
   updatedAt: timestamp('updated_at').defaultNow().notNull()
 });
 
+// Conversations table for organizing message threads between users
+export const conversations = pgTable('conversations', {
+  id: serial('id').primaryKey(),
+  type: conversationTypeEnum('type').default('direct').notNull(),
+  user1Id: integer('user1_id').references(() => users.id, { onDelete: 'cascade' }).notNull(),
+  user2Id: integer('user2_id').references(() => users.id, { onDelete: 'cascade' }), // Null for group chats
+  groupName: text('group_name'), // For group conversations
+  groupDescription: text('group_description'), // For group conversations
+  groupAvatar: text('group_avatar'), // For group conversations
+  lastMessageId: integer('last_message_id').references(() => messages.id),
+  lastMessageAt: timestamp('last_message_at').defaultNow().notNull(),
+  user1UnreadCount: integer('user1_unread_count').default(0).notNull(),
+  user2UnreadCount: integer('user2_unread_count').default(0).notNull(),
+  isArchived: boolean('is_archived').default(false).notNull(),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+  updatedAt: timestamp('updated_at').defaultNow().notNull(),
+}, (table) => {
+  return {
+    // Ensure unique conversation between two users
+    uniqueDirectConversation: uniqueIndex('unique_direct_conversation_idx')
+      .on(table.user1Id, table.user2Id)
+      .where(sql`${table.type} = 'direct'`)
+  };
+});
+
+// Messages table for user-to-user messaging
+export const messages = pgTable('messages', {
+  id: serial('id').primaryKey(),
+  conversationId: integer('conversation_id').references(() => conversations.id, { onDelete: 'cascade' }).notNull(),
+  senderId: integer('sender_id').references(() => users.id, { onDelete: 'cascade' }).notNull(),
+  receiverId: integer('receiver_id').references(() => users.id, { onDelete: 'cascade' }), // For direct messages
+  content: text('content').notNull(),
+  type: messageTypeEnum('type').default('text').notNull(),
+  status: messageStatusEnum('status').default('sent').notNull(),
+  fileUrl: text('file_url'), // For file attachments
+  fileName: text('file_name'), // Original filename
+  fileSize: integer('file_size'), // File size in bytes
+  thumbnailUrl: text('thumbnail_url'), // For image/video thumbnails
+  isEdited: boolean('is_edited').default(false).notNull(),
+  editedAt: timestamp('edited_at'),
+  replyToId: integer('reply_to_id').references(() => messages.id),
+  isDeleted: boolean('is_deleted').default(false).notNull(),
+  deletedAt: timestamp('deleted_at'),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+  updatedAt: timestamp('updated_at').defaultNow().notNull(),
+}, (table) => {
+  return {
+    conversationIdx: index('messages_conversation_idx').on(table.conversationId),
+    senderIdx: index('messages_sender_idx').on(table.senderId),
+    createdAtIdx: index('messages_created_at_idx').on(table.createdAt),
+  };
+});
+
+// Message read status for tracking when messages were read
+export const messageReadStatus = pgTable('message_read_status', {
+  id: serial('id').primaryKey(),
+  messageId: integer('message_id').references(() => messages.id, { onDelete: 'cascade' }).notNull(),
+  userId: integer('user_id').references(() => users.id, { onDelete: 'cascade' }).notNull(),
+  readAt: timestamp('read_at').defaultNow().notNull(),
+}, (table) => {
+  return {
+    // One read status per user per message
+    uniqueUserMessage: uniqueIndex('unique_user_message_read_idx').on(table.userId, table.messageId),
+    messageIdx: index('message_read_status_message_idx').on(table.messageId),
+    userIdx: index('message_read_status_user_idx').on(table.userId),
+  };
+});
+
+// Conversation participants for group chats
+export const conversationParticipants = pgTable('conversation_participants', {
+  id: serial('id').primaryKey(),
+  conversationId: integer('conversation_id').references(() => conversations.id, { onDelete: 'cascade' }).notNull(),
+  userId: integer('user_id').references(() => users.id, { onDelete: 'cascade' }).notNull(),
+  role: text('role').default('member').notNull(), // 'admin', 'member'
+  joinedAt: timestamp('joined_at').defaultNow().notNull(),
+  leftAt: timestamp('left_at'),
+  isActive: boolean('is_active').default(true).notNull(),
+  unreadCount: integer('unread_count').default(0).notNull(),
+}, (table) => {
+  return {
+    // One participation record per user per conversation
+    uniqueUserConversation: uniqueIndex('unique_user_conversation_idx').on(table.userId, table.conversationId),
+    conversationIdx: index('conversation_participants_conversation_idx').on(table.conversationId),
+    userIdx: index('conversation_participants_user_idx').on(table.userId),
+  };
+});
+
 // Room Analytics table
 export const roomAnalytics = pgTable('room_analytics', {
   id: serial('id').primaryKey(),
@@ -1989,6 +2089,71 @@ export const userRelationshipsRelations = relations(userRelationships, ({ one })
   })
 }));
 
+// Messaging System Relations
+export const conversationsRelations = relations(conversations, ({ one, many }) => ({
+  user1: one(users, {
+    fields: [conversations.user1Id],
+    references: [users.id],
+    relationName: 'conversationsAsUser1'
+  }),
+  user2: one(users, {
+    fields: [conversations.user2Id],
+    references: [users.id],
+    relationName: 'conversationsAsUser2'
+  }),
+  lastMessage: one(messages, {
+    fields: [conversations.lastMessageId],
+    references: [messages.id]
+  }),
+  messages: many(messages),
+  participants: many(conversationParticipants)
+}));
+
+export const messagesRelations = relations(messages, ({ one }) => ({
+  conversation: one(conversations, {
+    fields: [messages.conversationId],
+    references: [conversations.id]
+  }),
+  sender: one(users, {
+    fields: [messages.senderId],
+    references: [users.id],
+    relationName: 'sentMessages'
+  }),
+  receiver: one(users, {
+    fields: [messages.receiverId],
+    references: [users.id],
+    relationName: 'receivedMessages'
+  }),
+  replyTo: one(messages, {
+    fields: [messages.replyToId],
+    references: [messages.id],
+    relationName: 'messageReplies'
+  }),
+  readStatus: many(messageReadStatus)
+}));
+
+export const messageReadStatusRelations = relations(messageReadStatus, ({ one }) => ({
+  message: one(messages, {
+    fields: [messageReadStatus.messageId],
+    references: [messages.id]
+  }),
+  user: one(users, {
+    fields: [messageReadStatus.userId],
+    references: [users.id]
+  })
+}));
+
+export const conversationParticipantsRelations = relations(conversationParticipants, ({ one }) => ({
+  conversation: one(conversations, {
+    fields: [conversationParticipants.conversationId],
+    references: [conversations.id]
+  }),
+  user: one(users, {
+    fields: [conversationParticipants.userId],
+    references: [users.id]
+  })
+}));
+
 export const roomAnalyticsRelations = relations(roomAnalytics, ({ one }) => ({
   room: one(rooms, {
     fields: [roomAnalytics.roomId],
@@ -2028,6 +2193,40 @@ export const insertUserWalletSchema = createInsertSchema(userWallets);
 export const insertUserRelationshipSchema = createInsertSchema(userRelationships);
 export const insertRoomAnalyticsSchema = createInsertSchema(roomAnalytics);
 
+// Messaging System Schemas
+export const insertConversationSchema = createInsertSchema(conversations).omit({
+  id: true,
+  lastMessageId: true,
+  lastMessageAt: true,
+  user1UnreadCount: true,
+  user2UnreadCount: true,
+  isArchived: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export const insertMessageSchema = createInsertSchema(messages).omit({
+  id: true,
+  isEdited: true,
+  editedAt: true,
+  isDeleted: true,
+  deletedAt: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export const insertMessageReadStatusSchema = createInsertSchema(messageReadStatus).omit({
+  id: true,
+  readAt: true,
+});
+
+export const insertConversationParticipantSchema = createInsertSchema(conversationParticipants).omit({
+  id: true,
+  joinedAt: true,
+  leftAt: true,
+  unreadCount: true,
+});
+
 // Room System Type Exports
 export type Room = typeof rooms.$inferSelect;
 export type InsertRoom = z.infer<typeof insertRoomSchema>;
@@ -2045,6 +2244,16 @@ export type UserRelationship = typeof userRelationships.$inferSelect;
 export type InsertUserRelationship = z.infer<typeof insertUserRelationshipSchema>;
 export type RoomAnalytics = typeof roomAnalytics.$inferSelect;
 export type InsertRoomAnalytics = z.infer<typeof insertRoomAnalyticsSchema>;
+
+// Messaging System Type Exports
+export type Conversation = typeof conversations.$inferSelect;
+export type InsertConversation = z.infer<typeof insertConversationSchema>;
+export type Message = typeof messages.$inferSelect;
+export type InsertMessage = z.infer<typeof insertMessageSchema>;
+export type MessageReadStatus = typeof messageReadStatus.$inferSelect;
+export type InsertMessageReadStatus = z.infer<typeof insertMessageReadStatusSchema>;
+export type ConversationParticipant = typeof conversationParticipants.$inferSelect;
+export type InsertConversationParticipant = z.infer<typeof insertConversationParticipantSchema>;
 
 // Payment Gateway Tables
 export const paymentGateways = pgTable('payment_gateways', {
