@@ -144,8 +144,7 @@ export default function HomeAdsPage() {
   // Mutation for adding home ads
   const addMutation = useMutation({
     mutationFn: async (values: z.infer<typeof homeAdFormSchema>) => {
-      const res = await apiRequest("POST", "/api/home-ads", values);
-      return await res.json();
+      return await apiRequest("POST", "/api/home-ads", values);
     },
     onSuccess: () => {
       toast({
@@ -168,12 +167,11 @@ export default function HomeAdsPage() {
   // Mutation for updating home ads
   const updateMutation = useMutation({
     mutationFn: async (values: z.infer<typeof homeAdFormSchema>) => {
-      const res = await apiRequest(
+      return await apiRequest(
         "PUT",
         `/api/home-ads/${currentAdId}`,
         values
       );
-      return await res.json();
     },
     onSuccess: () => {
       toast({
@@ -202,10 +200,9 @@ export default function HomeAdsPage() {
       id: number;
       adEnabled: boolean;
     }) => {
-      const res = await apiRequest("PATCH", `/api/home-ads/${id}`, {
+      return await apiRequest("PATCH", `/api/home-ads/${id}`, {
         adEnabled,
       });
-      return await res.json();
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/home-ads"] });
@@ -222,10 +219,9 @@ export default function HomeAdsPage() {
   // Mutation for toggling all ads at once
   const toggleAllAdsMutation = useMutation({
     mutationFn: async (adEnabled: boolean) => {
-      const res = await apiRequest("POST", "/api/home-ads/toggle-all", {
+      return await apiRequest("POST", "/api/home-ads/toggle-all", {
         adEnabled,
       });
-      return await res.json();
     },
     onSuccess: () => {
       toast({
@@ -277,9 +273,6 @@ export default function HomeAdsPage() {
     queryKey: ["/api/home-ads"],
     queryFn: async () => {
       const response = await fetch("/api/home-ads");
-      if (!response.ok) {
-        throw new Error("Failed to fetch home ads");
-      }
       return await response.json();
     },
   });
