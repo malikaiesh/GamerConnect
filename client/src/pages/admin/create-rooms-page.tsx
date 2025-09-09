@@ -40,12 +40,36 @@ export default function AdminCreateRoomsPage() {
 
   const createRoomMutation = useMutation({
     mutationFn: async (data: CreateRoomData) => {
-      return apiRequest('/api/rooms/admin/create', {
-        method: 'POST',
-        body: data
-      });
+      console.log('Sending room creation request:', data);
+      try {
+        const response = await fetch('/api/rooms/admin/create', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          credentials: 'include',
+          body: JSON.stringify(data)
+        });
+        
+        console.log('Response status:', response.status);
+        console.log('Response headers:', response.headers);
+        
+        if (!response.ok) {
+          const errorText = await response.text();
+          console.log('Error response:', errorText);
+          throw new Error(`HTTP ${response.status}: ${errorText}`);
+        }
+        
+        const result = await response.json();
+        console.log('Success response:', result);
+        return result;
+      } catch (error) {
+        console.error('Request failed:', error);
+        throw error;
+      }
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
+      console.log('Room created successfully:', data);
       toast({
         title: "Success",
         description: "Room created successfully!",
@@ -65,8 +89,9 @@ export default function AdminCreateRoomsPage() {
       queryClient.invalidateQueries({ queryKey: ['/api/admin/rooms'] });
     },
     onError: (error: any) => {
+      console.error('Room creation failed:', error);
       toast({
-        title: "Error",
+        title: "Error", 
         description: error.message || "Failed to create room",
         variant: "destructive",
       });
