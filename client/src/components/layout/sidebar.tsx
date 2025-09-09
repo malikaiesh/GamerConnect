@@ -5,6 +5,7 @@ import {
   GamepadIcon, 
   Users, 
   UserPlus, 
+  MessageCircle,
   Search,
   TrendingUp,
   Star,
@@ -159,6 +160,17 @@ export function Sidebar() {
                 <UserPlus className="w-4 h-4 mr-2" />
                 Friend Requests
                 <Badge variant="secondary" className="ml-auto text-xs">2</Badge>
+              </Button>
+            </Link>
+            
+            <Link href="/messages">
+              <Button 
+                variant={isActive("/messages") ? "default" : "ghost"} 
+                className="w-full justify-start"
+                data-testid="nav-messages"
+              >
+                <MessageCircle className="w-4 h-4 mr-2" />
+                Messages
               </Button>
             </Link>
           </div>
