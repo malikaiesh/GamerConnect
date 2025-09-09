@@ -182,11 +182,12 @@ export function setupAuth(app: Express) {
   setupSecurity(app);
   
   if (!process.env.SESSION_SECRET) {
-    console.warn("No SESSION_SECRET environment variable set, using a default insecure secret");
+    console.error("❌ SESSION_SECRET environment variable is required for secure session management");
+    process.exit(1);
   }
 
   const sessionSettings: session.SessionOptions = {
-    secret: process.env.SESSION_SECRET || "gamezone_insecure_session_secret",
+    secret: process.env.SESSION_SECRET,
     resave: false,
     saveUninitialized: false,
     store: storage.sessionStore,
