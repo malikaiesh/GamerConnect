@@ -1,7 +1,7 @@
 import { Express, Request, Response } from "express";
 import { storage } from "../storage";
 import { z } from "zod";
-import * as XLSX from 'xlsx';
+import * as ExcelJS from 'exceljs';
 import jsPDF from 'jspdf';
 import 'jspdf-autotable';
 
@@ -119,7 +119,7 @@ export function registerAnalyticsRoutes(app: Express) {
         res.send(csv);
       } else if (format === 'excel') {
         // Convert to Excel format
-        const excelBuffer = convertAnalyticsToExcel(analyticsData, timeframe);
+        const excelBuffer = await convertAnalyticsToExcel(analyticsData, timeframe);
         res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
         res.setHeader('Content-Disposition', `attachment; filename="${filename}.xlsx"`);
         res.send(excelBuffer);
@@ -225,11 +225,12 @@ function convertAnalyticsToCSV(data: any, timeframe: string): string {
 }
 
 // Helper function to convert analytics data to Excel format
-function convertAnalyticsToExcel(data: any, timeframe: string): Buffer {
-  const workbook = XLSX.utils.book_new();
+async function convertAnalyticsToExcel(data: any, timeframe: string): Promise<Buffer> {
+  const workbook = new ExcelJS.Workbook();
   
   // Summary sheet
-  const summaryData = [
+  const summarySheet = workbook.addWorksheet('Summary');
+  summarySheet.addRows([
     ['Analytics Report', timeframe],
     ['Export Date', new Date().toISOString()],
     [''],
@@ -239,52 +240,45 @@ function convertAnalyticsToExcel(data: any, timeframe: string): Buffer {
     ['Unique Visitors', data.uniqueVisitors],
     ['Average Time on Site', `${data.avgTimeOnSite}m`],
     ['Bounce Rate', `${data.bounceRate}%`]
-  ];
-  
-  const summarySheet = XLSX.utils.aoa_to_sheet(summaryData);
-  XLSX.utils.book_append_sheet(workbook, summarySheet, 'Summary');
+  ]);
   
   // Top Pages sheet
   if (data.topPages && data.topPages.length > 0) {
-    const pagesData = [
-      ['Page Path', 'Views'],
-      ...data.topPages.map((page: any) => [page.path, page.views])
-    ];
-    const pagesSheet = XLSX.utils.aoa_to_sheet(pagesData);
-    XLSX.utils.book_append_sheet(workbook, pagesSheet, 'Top Pages');
+    const pagesSheet = workbook.addWorksheet('Top Pages');
+    pagesSheet.addRow(['Page Path', 'Views']);
+    data.topPages.forEach((page: any) => {
+      pagesSheet.addRow([page.path, page.views]);
+    });
   }
   
   // Top Games sheet
   if (data.topGames && data.topGames.length > 0) {
-    const gamesData = [
-      ['Game Name', 'Plays'],
-      ...data.topGames.map((game: any) => [game.name, game.plays])
-    ];
-    const gamesSheet = XLSX.utils.aoa_to_sheet(gamesData);
-    XLSX.utils.book_append_sheet(workbook, gamesSheet, 'Top Games');
+    const gamesSheet = workbook.addWorksheet('Top Games');
+    gamesSheet.addRow(['Game Name', 'Plays']);
+    data.topGames.forEach((game: any) => {
+      gamesSheet.addRow([game.name, game.plays]);
+    });
   }
   
   // Daily Visitors sheet
   if (data.dailyVisitors && data.dailyVisitors.length > 0) {
-    const visitorsData = [
-      ['Date', 'Visitors'],
-      ...data.dailyVisitors.map((day: any) => [day.date, day.visitors])
-    ];
-    const visitorsSheet = XLSX.utils.aoa_to_sheet(visitorsData);
-    XLSX.utils.book_append_sheet(workbook, visitorsSheet, 'Daily Visitors');
+    const visitorsSheet = workbook.addWorksheet('Daily Visitors');
+    visitorsSheet.addRow(['Date', 'Visitors']);
+    data.dailyVisitors.forEach((day: any) => {
+      visitorsSheet.addRow([day.date, day.visitors]);
+    });
   }
   
   // Device Distribution sheet
   if (data.userDevices && data.userDevices.length > 0) {
-    const devicesData = [
-      ['Device', 'Count'],
-      ...data.userDevices.map((device: any) => [device.device, device.count])
-    ];
-    const devicesSheet = XLSX.utils.aoa_to_sheet(devicesData);
-    XLSX.utils.book_append_sheet(workbook, devicesSheet, 'Device Distribution');
+    const devicesSheet = workbook.addWorksheet('Device Distribution');
+    devicesSheet.addRow(['Device', 'Count']);
+    data.userDevices.forEach((device: any) => {
+      devicesSheet.addRow([device.device, device.count]);
+    });
   }
   
-  return XLSX.write(workbook, { type: 'buffer', bookType: 'xlsx' });
+  return await workbook.xlsx.writeBuffer();
 }
 
 // Helper function to convert analytics data to PDF format
