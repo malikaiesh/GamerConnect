@@ -19,6 +19,8 @@ import { seedTranslations } from './translations';
 import { seedApiKeys } from './api-keys';
 import { seedVerificationAssets } from './verification-assets';
 import { seedAutomatedMessageTemplates } from './automated-messaging-templates';
+import { seedGames } from './games';
+import { seedPushNotifications } from './push-notifications';
 
 // Main seeding function that runs all seeds
 export async function runSeeds() {
@@ -30,6 +32,7 @@ export async function runSeeds() {
     await seedSiteSettings(); // Add site settings seeding early since other features depend on it
     await seedDefaultUsers(); // Add default admin and user accounts
     await seedGameCategories();
+    await seedGames(); // Run after game categories
     await seedBlogCategories();
     await seedStaticPages();
     await seedTeamMembers();
@@ -46,6 +49,7 @@ export async function runSeeds() {
     await seedTranslations(); // Add translations and languages seeding
     await seedVerificationAssets(); // Ensure verification icons are available
     await seedAutomatedMessageTemplates(); // Add automated message templates
+    await seedPushNotifications(); // Add sample push notifications
     await seedBlogPosts(); // Run this last since it depends on blog categories
     console.log('✅ All seeds completed successfully');
   } catch (error) {
