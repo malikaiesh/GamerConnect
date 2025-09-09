@@ -40,7 +40,7 @@ export default function AdminCreateRoomsPage() {
 
   const createRoomMutation = useMutation({
     mutationFn: async (data: CreateRoomData) => {
-      return apiRequest('/api/admin/rooms/create', {
+      return apiRequest('/api/rooms/admin/create', {
         method: 'POST',
         body: data
       });
