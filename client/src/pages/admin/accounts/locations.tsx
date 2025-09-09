@@ -15,8 +15,8 @@ import {
 } from "react-simple-maps";
 import { Loader2 } from "lucide-react";
 
-// Path to the world map GeoJSON
-const geoUrl = "https://raw.githubusercontent.com/deldersveld/topojson/master/world-countries.json";
+// Path to the world map TopoJSON
+const geoUrl = "https://raw.githubusercontent.com/subyfly/topojson/master/world-countries.json";
 
 interface CountryData {
   country: string;
