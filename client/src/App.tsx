@@ -98,6 +98,9 @@ const AdminProfilePage = lazy(() => import("@/pages/admin/accounts/profile"));
 const AdminCreateRoomsPage = lazy(() => import("@/pages/admin/create-rooms-page"));
 const AdminOwnRoomsPage = lazy(() => import("@/pages/admin/own-rooms-page"));
 const AdminDeletedRoomsPage = lazy(() => import("@/pages/admin/deleted-rooms-page"));
+const AdminHotRoomsPage = lazy(() => import("@/pages/admin/hot-rooms-page"));
+const AdminNewRoomsPage = lazy(() => import("@/pages/admin/new-rooms-page"));
+const AdminVerifiedRoomsPage = lazy(() => import("@/pages/admin/verified-rooms-page"));
 
 // Admin payment pages
 const AdminPaymentGatewaysPage = lazy(() => import("@/pages/admin/payment-gateways"));
@@ -404,6 +407,21 @@ function Router() {
       <Route path="/admin/deleted-rooms">
         <AdminRoute>
           <Suspense fallback={<LoadingFallback />}><AdminDeletedRoomsPage /></Suspense>
+        </AdminRoute>
+      </Route>
+      <Route path="/admin/hot-rooms">
+        <AdminRoute>
+          <Suspense fallback={<LoadingFallback />}><AdminHotRoomsPage /></Suspense>
+        </AdminRoute>
+      </Route>
+      <Route path="/admin/new-rooms">
+        <AdminRoute>
+          <Suspense fallback={<LoadingFallback />}><AdminNewRoomsPage /></Suspense>
+        </AdminRoute>
+      </Route>
+      <Route path="/admin/verified-rooms">
+        <AdminRoute>
+          <Suspense fallback={<LoadingFallback />}><AdminVerifiedRoomsPage /></Suspense>
         </AdminRoute>
       </Route>
       <Route path="/admin/homepage-content">

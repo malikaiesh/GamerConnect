@@ -236,7 +236,7 @@ export default function AdminNavigation() {
               onClick={(e) => toggleSubMenu('allRooms', e)}
               className={cn(
                 "flex items-center justify-between w-full gap-3 px-3 py-2.5 rounded-lg transition-all",
-                (isActive("/admin/rooms") || isActive("/admin/create-rooms") || isActive("/admin/own-rooms") || isActive("/admin/deleted-rooms") || isActive("/admin/gifts")) || expandedSubMenus.allRooms
+                (isActive("/admin/rooms") || isActive("/admin/create-rooms") || isActive("/admin/own-rooms") || isActive("/admin/deleted-rooms") || isActive("/admin/hot-rooms") || isActive("/admin/new-rooms") || isActive("/admin/verified-rooms") || isActive("/admin/gifts")) || expandedSubMenus.allRooms
                   ? "bg-primary/15 text-primary shadow-sm"
                   : "text-card-foreground hover:bg-primary/10 hover:text-primary"
               )}
@@ -289,6 +289,48 @@ export default function AdminNavigation() {
                   >
                     <UserRound size={16} className="text-primary opacity-60" />
                     Own Rooms
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    href="/admin/hot-rooms"
+                    className={cn(
+                      "flex items-center gap-3 px-3 py-2 rounded-lg transition-all text-sm",
+                      isActive("/admin/hot-rooms")
+                        ? "bg-primary/15 text-primary shadow-sm"
+                        : "text-card-foreground hover:bg-primary/10 hover:text-primary"
+                    )}
+                  >
+                    <Zap size={16} className="text-red-500 opacity-60" />
+                    Hot Rooms
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    href="/admin/new-rooms"
+                    className={cn(
+                      "flex items-center gap-3 px-3 py-2 rounded-lg transition-all text-sm",
+                      isActive("/admin/new-rooms")
+                        ? "bg-primary/15 text-primary shadow-sm"
+                        : "text-card-foreground hover:bg-primary/10 hover:text-primary"
+                    )}
+                  >
+                    <Star size={16} className="text-yellow-500 opacity-60" />
+                    New Rooms
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    href="/admin/verified-rooms"
+                    className={cn(
+                      "flex items-center gap-3 px-3 py-2 rounded-lg transition-all text-sm",
+                      isActive("/admin/verified-rooms")
+                        ? "bg-primary/15 text-primary shadow-sm"
+                        : "text-card-foreground hover:bg-primary/10 hover:text-primary"
+                    )}
+                  >
+                    <Shield size={16} className="text-green-500 opacity-60" />
+                    Verified Rooms
                   </Link>
                 </li>
                 <li>
