@@ -130,6 +130,7 @@ const NewRoomsPage = lazy(() => import("@/pages/rooms/new-rooms"));
 // Social pages
 const FriendsPage = lazy(() => import("@/pages/social/friends"));
 const FriendRequestsPage = lazy(() => import("@/pages/social/friend-requests"));
+const MessagesPage = lazy(() => import("@/pages/messages"));
 
 // Public pricing and verification pages
 const PricingPlansPage = lazy(() => import("@/pages/pricing-plans"));
@@ -249,6 +250,9 @@ function Router() {
       </Route>
       <Route path="/friends/requests">
         <Suspense fallback={<LoadingFallback />}><FriendRequestsPage /></Suspense>
+      </Route>
+      <Route path="/messages">
+        <Suspense fallback={<LoadingFallback />}><MessagesPage /></Suspense>
       </Route>
       
       {/* User Dashboard pages */}
