@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Users, Crown, Globe, Lock, Eye, Mic, MessageCircle, Gift, Play, CheckCircle, TrendingUp, Flame, Sparkles, Compass } from "lucide-react";
+import { VerificationIcon } from "@/components/ui/verification-icon";
 import { formatDistanceToNow } from "date-fns";
 
 interface Room {
@@ -82,7 +83,7 @@ export function PublicRoomsSection() {
       case 'new':
         return <Sparkles className="h-4 w-4" />;
       case 'verified':
-        return <CheckCircle className="h-4 w-4" />;
+        return <VerificationIcon size={16} />;
       case 'explore':
         return <Compass className="h-4 w-4" />;
       default:
@@ -218,7 +219,7 @@ export function PublicRoomsSection() {
                 value="verified" 
                 className="flex flex-col items-center gap-1 text-[11px] font-medium px-2 py-3 hover:bg-primary/15 hover:text-primary data-[state=active]:bg-primary data-[state=active]:text-white data-[state=active]:shadow-md transition-all duration-300 rounded-md"
               >
-                <CheckCircle className="h-4 w-4" />
+                <VerificationIcon size={16} />
                 Verify
               </TabsTrigger>
               <TabsTrigger 
@@ -265,7 +266,7 @@ export function PublicRoomsSection() {
                   value="verified" 
                   className="flex items-center gap-2 text-sm font-medium px-4 py-2 hover:bg-primary/15 hover:text-primary data-[state=active]:bg-primary data-[state=active]:text-white data-[state=active]:shadow-md transition-all duration-300 rounded-md"
                 >
-                  <CheckCircle className="h-4 w-4" />
+                  <VerificationIcon size={16} />
                   Verified
                 </TabsTrigger>
                 <TabsTrigger 
