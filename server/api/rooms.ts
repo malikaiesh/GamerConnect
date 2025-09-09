@@ -299,7 +299,7 @@ router.get("/my-rooms", isAuthenticated, async (req: Request, res: Response) => 
         userCount: sql<number>`(SELECT COUNT(*) FROM ${roomUsers} WHERE ${roomUsers.roomId} = ${rooms.id} AND ${roomUsers.status} = 'active')`
       })
       .from(rooms)
-      .where(eq(rooms.ownerId, userId))
+      .where(and(eq(rooms.ownerId, userId), sql`${rooms.deletedAt} IS NULL`))
       .orderBy(desc(rooms.lastActivity));
 
     res.json(userRooms);
