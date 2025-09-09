@@ -1796,7 +1796,8 @@ export const rooms = pgTable('rooms', {
   
   createdAt: timestamp('created_at').defaultNow().notNull(),
   updatedAt: timestamp('updated_at').defaultNow().notNull(),
-  lastActivity: timestamp('last_activity').defaultNow().notNull()
+  lastActivity: timestamp('last_activity').defaultNow().notNull(),
+  deletedAt: timestamp('deleted_at') // For soft delete functionality
 });
 
 // Room Users table (junction table for users in rooms)
