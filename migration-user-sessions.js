@@ -1,29 +1,37 @@
-import pg from 'pg';
-const { Client } = pg;
+import { db, pool } from './db/index.js';
+import { sql } from 'drizzle-orm';
 
 async function createUserSessionsTable() {
-  const client = new Client({ connectionString: process.env.DATABASE_URL });
-  await client.connect();
-
   try {
+    console.log('Starting user sessions table migration...');
+
     // Check if session_status type exists
-    const typeResult = await client.query(`SELECT EXISTS (
-      SELECT FROM pg_type WHERE typname = 'session_status'
-    );`);
+    const typeResult = await db.execute(sql`
+      SELECT EXISTS (
+        SELECT FROM pg_type WHERE typname = 'session_status'
+      );
+    `);
     
-    if (!typeResult.rows[0].exists) {
+    if (!typeResult.rows[0]?.exists) {
       console.log('Creating session_status enum type...');
-      await client.query(`CREATE TYPE session_status AS ENUM ('active', 'expired', 'revoked');`);
+      await db.execute(sql`
+        DO $$ BEGIN
+          CREATE TYPE session_status AS ENUM ('active', 'expired', 'revoked');
+          EXCEPTION WHEN duplicate_object THEN NULL;
+        END $$;
+      `);
     }
 
     // Check if user_sessions table already exists
-    const tableResult = await client.query(`SELECT EXISTS (
-      SELECT FROM information_schema.tables WHERE table_name = 'user_sessions'
-    );`);
-
-    if (!tableResult.rows[0].exists) {
+    const tableResult = await db.execute(sql`
+      SELECT EXISTS (
+        SELECT FROM information_schema.tables WHERE table_name = 'user_sessions'
+      );
+    `);
+    
+    if (!tableResult.rows[0]?.exists) {
       console.log('Creating user_sessions table...');
-      await client.query(`
+      await db.execute(sql`
         CREATE TABLE user_sessions (
           id SERIAL PRIMARY KEY,
           user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
@@ -40,11 +48,11 @@ async function createUserSessionsTable() {
       `);
       
       // Create index on user_id for faster lookup
-      await client.query(`CREATE INDEX idx_user_sessions_user_id ON user_sessions(user_id);`);
+      await db.execute(sql`CREATE INDEX idx_user_sessions_user_id ON user_sessions(user_id);`);
       // Create index on token for faster lookup during validation
-      await client.query(`CREATE INDEX idx_user_sessions_token ON user_sessions(token);`);
+      await db.execute(sql`CREATE INDEX idx_user_sessions_token ON user_sessions(token);`);
       // Create index on status + expires_at for cleanup jobs
-      await client.query(`CREATE INDEX idx_user_sessions_status_expires ON user_sessions(status, expires_at);`);
+      await db.execute(sql`CREATE INDEX idx_user_sessions_status_expires ON user_sessions(status, expires_at);`);
       
       console.log('User sessions table created successfully');
     } else {
@@ -55,7 +63,7 @@ async function createUserSessionsTable() {
     console.error('Error creating user_sessions table:', error);
     throw error;
   } finally {
-    await client.end();
+    await pool.end();
   }
 }
 
