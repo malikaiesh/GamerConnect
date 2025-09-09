@@ -2,6 +2,11 @@ import { db } from '../db';
 import { apiKeys } from '@shared/schema';
 import { eq } from 'drizzle-orm';
 
+/**
+ * IMPORTANT: These are EXAMPLE keys for development seeding only.
+ * In production, API keys should be stored as environment variables.
+ * Never replace these examples with real API keys in this file.
+ */
 const defaultApiKeys = [
   // Existing Service API Keys (using current enum values only)
   {
@@ -60,7 +65,7 @@ const defaultApiKeys = [
   {
     name: "OpenAI API Key",
     type: "chatgpt" as const,
-    key: "sk-example_openai_api_key_for_testing",
+    key: "EXAMPLE_OPENAI_KEY_REPLACE_WITH_ENV_VAR",
     description: "OpenAI API key for ChatGPT and AI content generation",
     isActive: true
   },
