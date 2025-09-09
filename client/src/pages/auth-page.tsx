@@ -161,20 +161,17 @@ export default function AuthPage() {
     });
   };
 
-  // Auto login function for development
+  // Auto login function for development - disabled for security
   const autoLogin = () => {
-    loginMutation.mutate({
-      username: "admin",
-      password: "admin123"
-    }, {
-      onSuccess: (userData) => {
-        // Redirect based on user role
-        if (userData.isAdmin) {
-          setTimeout(() => navigate('/admin/dashboard'), 1000);
-        } else {
-          setTimeout(() => navigate('/user-dashboard'), 1000);
-        }
-      }
+    if (import.meta.env.NODE_ENV !== 'development') {
+      console.warn('Auto-login is only available in development mode');
+      return;
+    }
+    // Removed hardcoded credentials for security
+    toast({
+      title: "Auto-login disabled",
+      description: "Please use regular login for security",
+      variant: "destructive"
     });
   };
 
@@ -426,18 +423,20 @@ export default function AuthPage() {
                         Sign In
                       </Button>
 
-                      {/* Auto Login Button for Development */}
-                      <Button
-                        type="button"
-                        onClick={autoLogin}
-                        className="w-full bg-green-600 hover:bg-green-700 mt-3"
-                        disabled={loginMutation.isPending}
-                      >
-                        {loginMutation.isPending && (
-                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                        )}
-                        🚀 Auto Login as Admin
-                      </Button>
+                      {/* Auto Login Button for Development - Hidden for security */}
+                      {import.meta.env.NODE_ENV === 'development' && false && (
+                        <Button
+                          type="button"
+                          onClick={autoLogin}
+                          className="w-full bg-green-600 hover:bg-green-700 mt-3"
+                          disabled={loginMutation.isPending}
+                        >
+                          {loginMutation.isPending && (
+                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                          )}
+                          🚀 Auto Login as Admin
+                        </Button>
+                      )}
                       
                       <div className="text-center text-gray-400 text-sm mt-4">
                         Have social media accounts? Check the signup options on the left!
