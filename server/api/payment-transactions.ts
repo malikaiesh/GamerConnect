@@ -3,6 +3,7 @@ import { db } from '../db';
 import { paymentTransactions, paymentGateways, users } from '@shared/schema';
 import { eq, desc, and } from 'drizzle-orm';
 import { z } from 'zod';
+import { automatedMessaging } from '../services/automated-messaging';
 
 const VerifyTransactionSchema = z.object({
   status: z.enum(['completed', 'failed']),
@@ -135,6 +136,27 @@ export async function verifyPaymentTransaction(req: Request, res: Response) {
 
     if (!transaction) {
       return res.status(404).json({ error: 'Payment transaction not found' });
+    }
+
+    // Trigger automated messaging for completed purchases
+    if (validatedData.status === 'completed') {
+      try {
+        // Get gateway information for the message
+        const [gateway] = await db.select()
+          .from(paymentGateways)
+          .where(eq(paymentGateways.id, transaction.gatewayId));
+
+        await automatedMessaging.triggerPurchaseConfirmation({
+          userId: transaction.userId,
+          transactionId: transaction.transactionId,
+          amount: transaction.amount,
+          currency: transaction.currency,
+          item: gateway?.displayName || 'Purchase'
+        });
+      } catch (error) {
+        console.error('Error sending purchase confirmation message:', error);
+        // Don't fail the main transaction if messaging fails
+      }
     }
 
     res.json(transaction);

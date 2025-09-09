@@ -3,6 +3,7 @@ import { db } from "../../db";
 import { users, rooms, userWallets, gifts, roomGifts } from "@shared/schema";
 import { eq, sql } from "drizzle-orm";
 import { z } from "zod";
+import { automatedMessaging } from "../services/automated-messaging";
 
 const router = express.Router();
 
@@ -132,6 +133,20 @@ router.post("/user/:username", async (req: any, res) => {
       return res.status(404).json({ error: "User not found" });
     }
 
+    // Trigger automated messaging for verification status changes
+    try {
+      if (validatedData.isVerified) {
+        await automatedMessaging.triggerVerificationApproval({
+          userId: updatedUser.id,
+          type: 'user',
+          badgeType: 'blue_check'
+        });
+      }
+    } catch (error) {
+      console.error('Error sending verification approval message:', error);
+      // Don't fail the main operation if messaging fails
+    }
+
     const durationText = validatedData.durationMonths ? ` for ${validatedData.durationMonths} month${validatedData.durationMonths > 1 ? 's' : ''}` : '';
     res.json({ 
       message: `User ${validatedData.isVerified ? `verified${durationText}` : 'unverified'} successfully`,
@@ -186,6 +201,27 @@ router.post("/room/:roomId", async (req: any, res) => {
 
     if (!updatedRoom) {
       return res.status(404).json({ error: "Room not found" });
+    }
+
+    // Trigger automated messaging for room verification status changes
+    try {
+      if (validatedData.isVerified) {
+        // Get room owner to send message to
+        const [roomDetails] = await db.select()
+          .from(rooms)
+          .where(eq(rooms.id, updatedRoom.id));
+        
+        if (roomDetails?.createdBy) {
+          await automatedMessaging.triggerVerificationApproval({
+            userId: roomDetails.createdBy,
+            type: 'room',
+            badgeType: 'verified_room'
+          });
+        }
+      }
+    } catch (error) {
+      console.error('Error sending room verification approval message:', error);
+      // Don't fail the main operation if messaging fails
     }
 
     const durationText = validatedData.durationMonths ? ` for ${validatedData.durationMonths} month${validatedData.durationMonths > 1 ? 's' : ''}` : '';

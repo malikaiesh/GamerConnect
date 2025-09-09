@@ -3,6 +3,7 @@ import { db } from '../db';
 import { verificationRequests, pricingPlans, users, rooms, insertVerificationRequestSchema } from '@shared/schema';
 import { eq, desc, and, sql } from 'drizzle-orm';
 import { z } from 'zod';
+import { automatedMessaging } from '../services/automated-messaging';
 
 // Get all verification requests (Admin only)
 export const getVerificationRequests = async (req: Request, res: Response) => {
@@ -225,6 +226,20 @@ export const createVerificationRequest = async (req: Request, res: Response) => 
         }
       })
       .returning();
+
+    // Trigger automated messaging for verification request processing
+    if (targetUserId) {
+      try {
+        await automatedMessaging.triggerVerificationProcessing({
+          userId: targetUserId,
+          requestId: newRequest.id,
+          type: validatedData.requestType
+        });
+      } catch (error) {
+        console.error('Error sending verification processing message:', error);
+        // Don't fail the main operation if messaging fails
+      }
+    }
 
     res.status(201).json(newRequest);
   } catch (error) {
