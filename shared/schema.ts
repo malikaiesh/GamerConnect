@@ -188,6 +188,7 @@ export const users = pgTable('users', {
   isVerified: boolean('is_verified').default(false).notNull(),
   verifiedAt: timestamp('verified_at'),
   verifiedBy: integer('verified_by').references(() => users.id),
+  verificationExpiresAt: timestamp('verification_expires_at'), // When verification expires
   
   createdAt: timestamp('created_at').defaultNow().notNull(),
   updatedAt: timestamp('updated_at').defaultNow().notNull()
@@ -1773,6 +1774,7 @@ export const rooms = pgTable('rooms', {
   isVerified: boolean('is_verified').default(false).notNull(),
   verifiedAt: timestamp('verified_at'),
   verifiedBy: integer('verified_by').references(() => users.id),
+  verificationExpiresAt: timestamp('verification_expires_at'), // When verification expires
   
   createdAt: timestamp('created_at').defaultNow().notNull(),
   updatedAt: timestamp('updated_at').defaultNow().notNull(),
