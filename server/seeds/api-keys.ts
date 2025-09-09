@@ -44,7 +44,7 @@ const defaultApiKeys = [
   {
     name: "PayPal Sandbox Key",
     type: "paypal" as const,
-    key: "AXkquBDf1zctJOWGKWUEtKXm6qVhueUEMvXO_-MRAOGCyMxXYvSPmHPW8vmLZGLjm8zUv2WKaGy7tL2",
+    key: "AX_example_paypal_sandbox_client_id_for_testing_purposes_only",
     description: "PayPal sandbox environment client ID for development and testing",
     isActive: true
   },
