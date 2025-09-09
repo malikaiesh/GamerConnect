@@ -30,7 +30,13 @@ async function addSendgridApiKeyType() {
     }
 
     // Add or update SendGrid API key
-    const sendgridKey = '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';
+    const sendgridKey = process.env.SENDGRID_API_KEY;
+    
+    if (!sendgridKey) {
+      console.log('SENDGRID_API_KEY environment variable not set, skipping API key migration');
+      await pool.end();
+      return;
+    }
     
     // Check if a SendGrid API key already exists
     const existingKeyQuery = `
