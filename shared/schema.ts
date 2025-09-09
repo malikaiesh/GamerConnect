@@ -87,6 +87,11 @@ export const messageTypeEnum = pgEnum('message_type', ['text', 'image', 'file', 
 export const conversationTypeEnum = pgEnum('conversation_type', ['direct', 'group']);
 export const messageStatusEnum = pgEnum('message_status', ['sent', 'delivered', 'read', 'failed']);
 
+// Automated Messaging System Enums
+export const automatedMessageTriggerEnum = pgEnum('automated_message_trigger', ['purchase_confirmation', 'verification_processing', 'verification_approved', 'verification_rejected', 'room_verification_processing', 'room_verification_approved', 'room_verification_rejected', 'welcome_message', 'subscription_renewal', 'diamond_purchase']);
+export const messageChannelEnum = pgEnum('message_channel', ['in_app', 'sms', 'email', 'push_notification']);
+export const bulkMessageStatusEnum = pgEnum('bulk_message_status', ['draft', 'sending', 'sent', 'failed', 'cancelled']);
+
 // Short Links Enum
 export const shortLinkTypeEnum = pgEnum('short_link_type', ['game', 'blog', 'category', 'page']);
 
@@ -1994,6 +1999,100 @@ export const conversationParticipants = pgTable('conversation_participants', {
   };
 });
 
+// Automated Message Templates
+export const automatedMessageTemplates = pgTable('automated_message_templates', {
+  id: serial('id').primaryKey(),
+  trigger: automatedMessageTriggerEnum('trigger').notNull(),
+  channel: messageChannelEnum('channel').notNull(),
+  title: text('title').notNull(),
+  content: text('content').notNull(),
+  isActive: boolean('is_active').default(true).notNull(),
+  // Personalization placeholders: {username}, {amount}, {badge_type}, etc.
+  variables: json('variables'), // Store available variables for this template
+  createdBy: integer('created_by').references(() => users.id).notNull(),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+  updatedAt: timestamp('updated_at').defaultNow().notNull(),
+}, (table) => {
+  return {
+    triggerIdx: index('automated_message_templates_trigger_idx').on(table.trigger),
+    channelIdx: index('automated_message_templates_channel_idx').on(table.channel),
+    activeIdx: index('automated_message_templates_active_idx').on(table.isActive),
+  };
+});
+
+// Automated Message History (tracks sent automated messages)
+export const automatedMessageHistory = pgTable('automated_message_history', {
+  id: serial('id').primaryKey(),
+  templateId: integer('template_id').references(() => automatedMessageTemplates.id, { onDelete: 'cascade' }).notNull(),
+  userId: integer('user_id').references(() => users.id, { onDelete: 'cascade' }).notNull(),
+  trigger: automatedMessageTriggerEnum('trigger').notNull(),
+  channel: messageChannelEnum('channel').notNull(),
+  content: text('content').notNull(), // Final content after variable substitution
+  status: messageStatusEnum('status').default('sent').notNull(),
+  sentAt: timestamp('sent_at').defaultNow().notNull(),
+  // Metadata for the trigger event
+  triggerData: json('trigger_data'), // Store context data (purchase amount, verification type, etc.)
+}, (table) => {
+  return {
+    templateIdx: index('automated_message_history_template_idx').on(table.templateId),
+    userIdx: index('automated_message_history_user_idx').on(table.userId),
+    triggerIdx: index('automated_message_history_trigger_idx').on(table.trigger),
+    sentAtIdx: index('automated_message_history_sent_at_idx').on(table.sentAt),
+  };
+});
+
+// Bulk Messages (for admin broadcast messaging)
+export const bulkMessages = pgTable('bulk_messages', {
+  id: serial('id').primaryKey(),
+  title: text('title').notNull(),
+  content: text('content').notNull(),
+  channel: messageChannelEnum('channel').notNull(),
+  targetAudience: text('target_audience').default('all').notNull(), // 'all', 'verified_users', 'premium_users', etc.
+  scheduledFor: timestamp('scheduled_for'),
+  status: bulkMessageStatusEnum('status').default('draft').notNull(),
+  totalRecipients: integer('total_recipients').default(0).notNull(),
+  sentCount: integer('sent_count').default(0).notNull(),
+  failedCount: integer('failed_count').default(0).notNull(),
+  createdBy: integer('created_by').references(() => users.id).notNull(),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+  sentAt: timestamp('sent_at'),
+}, (table) => {
+  return {
+    statusIdx: index('bulk_messages_status_idx').on(table.status),
+    scheduledIdx: index('bulk_messages_scheduled_idx').on(table.scheduledFor),
+    createdByIdx: index('bulk_messages_created_by_idx').on(table.createdBy),
+  };
+});
+
+// Bulk Message Recipients (tracking who received bulk messages)
+export const bulkMessageRecipients = pgTable('bulk_message_recipients', {
+  id: serial('id').primaryKey(),
+  bulkMessageId: integer('bulk_message_id').references(() => bulkMessages.id, { onDelete: 'cascade' }).notNull(),
+  userId: integer('user_id').references(() => users.id, { onDelete: 'cascade' }).notNull(),
+  status: messageStatusEnum('status').default('sent').notNull(),
+  sentAt: timestamp('sent_at').defaultNow().notNull(),
+  errorMessage: text('error_message'), // For failed deliveries
+}, (table) => {
+  return {
+    bulkMessageIdx: index('bulk_message_recipients_bulk_message_idx').on(table.bulkMessageId),
+    userIdx: index('bulk_message_recipients_user_idx').on(table.userId),
+    statusIdx: index('bulk_message_recipients_status_idx').on(table.status),
+    uniqueBulkMessageUser: uniqueIndex('unique_bulk_message_user_idx').on(table.bulkMessageId, table.userId),
+  };
+});
+
+// SMS Configuration (for bulk SMS settings)
+export const smsConfiguration = pgTable('sms_configuration', {
+  id: serial('id').primaryKey(),
+  provider: text('provider').notNull(), // 'twilio', 'sendgrid', etc.
+  apiKey: text('api_key').notNull(),
+  apiSecret: text('api_secret'),
+  phoneNumber: text('phone_number'), // Sender phone number
+  isActive: boolean('is_active').default(false).notNull(),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+  updatedAt: timestamp('updated_at').defaultNow().notNull(),
+});
+
 // Room Analytics table
 export const roomAnalytics = pgTable('room_analytics', {
   id: serial('id').primaryKey(),
@@ -2153,6 +2252,45 @@ export const conversationParticipantsRelations = relations(conversationParticipa
   })
 }));
 
+// Automated Messaging Relations
+export const automatedMessageTemplatesRelations = relations(automatedMessageTemplates, ({ one, many }) => ({
+  createdByUser: one(users, {
+    fields: [automatedMessageTemplates.createdBy],
+    references: [users.id]
+  }),
+  messageHistory: many(automatedMessageHistory)
+}));
+
+export const automatedMessageHistoryRelations = relations(automatedMessageHistory, ({ one }) => ({
+  template: one(automatedMessageTemplates, {
+    fields: [automatedMessageHistory.templateId],
+    references: [automatedMessageTemplates.id]
+  }),
+  user: one(users, {
+    fields: [automatedMessageHistory.userId],
+    references: [users.id]
+  })
+}));
+
+export const bulkMessagesRelations = relations(bulkMessages, ({ one, many }) => ({
+  createdByUser: one(users, {
+    fields: [bulkMessages.createdBy],
+    references: [users.id]
+  }),
+  recipients: many(bulkMessageRecipients)
+}));
+
+export const bulkMessageRecipientsRelations = relations(bulkMessageRecipients, ({ one }) => ({
+  bulkMessage: one(bulkMessages, {
+    fields: [bulkMessageRecipients.bulkMessageId],
+    references: [bulkMessages.id]
+  }),
+  user: one(users, {
+    fields: [bulkMessageRecipients.userId],
+    references: [users.id]
+  })
+}));
+
 export const roomAnalyticsRelations = relations(roomAnalytics, ({ one }) => ({
   room: one(rooms, {
     fields: [roomAnalytics.roomId],
@@ -2226,6 +2364,49 @@ export const insertConversationParticipantSchema = createInsertSchema(conversati
   unreadCount: true,
 });
 
+// Automated Messaging Validation Schemas
+export const insertAutomatedMessageTemplateSchema = createInsertSchema(automatedMessageTemplates, {
+  title: (schema) => schema.min(1, "Template title is required").max(200, "Title must be less than 200 characters"),
+  content: (schema) => schema.min(1, "Template content is required").max(2000, "Content must be less than 2000 characters")
+}).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export const insertAutomatedMessageHistorySchema = createInsertSchema(automatedMessageHistory, {
+  content: (schema) => schema.min(1, "Message content is required")
+}).omit({
+  id: true,
+  sentAt: true,
+});
+
+export const insertBulkMessageSchema = createInsertSchema(bulkMessages, {
+  title: (schema) => schema.min(1, "Message title is required").max(200, "Title must be less than 200 characters"),
+  content: (schema) => schema.min(1, "Message content is required").max(2000, "Content must be less than 2000 characters")
+}).omit({
+  id: true,
+  totalRecipients: true,
+  sentCount: true,
+  failedCount: true,
+  createdAt: true,
+  sentAt: true,
+});
+
+export const insertBulkMessageRecipientSchema = createInsertSchema(bulkMessageRecipients).omit({
+  id: true,
+  sentAt: true,
+});
+
+export const insertSmsConfigurationSchema = createInsertSchema(smsConfiguration, {
+  provider: (schema) => schema.min(1, "SMS provider is required"),
+  apiKey: (schema) => schema.min(1, "API key is required")
+}).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
 // Room System Type Exports
 export type Room = typeof rooms.$inferSelect;
 export type InsertRoom = z.infer<typeof insertRoomSchema>;
@@ -2253,6 +2434,18 @@ export type MessageReadStatus = typeof messageReadStatus.$inferSelect;
 export type InsertMessageReadStatus = z.infer<typeof insertMessageReadStatusSchema>;
 export type ConversationParticipant = typeof conversationParticipants.$inferSelect;
 export type InsertConversationParticipant = z.infer<typeof insertConversationParticipantSchema>;
+
+// Automated Messaging Type Exports
+export type AutomatedMessageTemplate = typeof automatedMessageTemplates.$inferSelect;
+export type InsertAutomatedMessageTemplate = z.infer<typeof insertAutomatedMessageTemplateSchema>;
+export type AutomatedMessageHistory = typeof automatedMessageHistory.$inferSelect;
+export type InsertAutomatedMessageHistory = z.infer<typeof insertAutomatedMessageHistorySchema>;
+export type BulkMessage = typeof bulkMessages.$inferSelect;
+export type InsertBulkMessage = z.infer<typeof insertBulkMessageSchema>;
+export type BulkMessageRecipient = typeof bulkMessageRecipients.$inferSelect;
+export type InsertBulkMessageRecipient = z.infer<typeof insertBulkMessageRecipientSchema>;
+export type SmsConfiguration = typeof smsConfiguration.$inferSelect;
+export type InsertSmsConfiguration = z.infer<typeof insertSmsConfigurationSchema>;
 
 // Payment Gateway Tables
 export const paymentGateways = pgTable('payment_gateways', {

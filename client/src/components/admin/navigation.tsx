@@ -10,6 +10,7 @@ import { AdminThemeSwitcher } from "./theme-switcher";
 export default function AdminNavigation() {
   const [expandedSubMenus, setExpandedSubMenus] = useState<Record<string, boolean>>({
     pushNotifications: false,
+    messaging: false,
     accounts: false,
     adminUsers: false,
     settings: false,
@@ -588,6 +589,85 @@ export default function AdminNavigation() {
                   >
                     <Activity size={16} className="text-primary opacity-80" />
                     Analytics
+                  </Link>
+                </li>
+              </ul>
+            )}
+          </li>
+
+          {/* Messages/Communications Section */}
+          <li className="space-y-1">
+            <button
+              onClick={(e) => toggleSubMenu('messaging', e)}
+              className={cn(
+                "flex items-center justify-between w-full gap-3 px-3 py-2.5 rounded-lg transition-all",
+                (isActive("/admin/messaging")) || expandedSubMenus.messaging
+                  ? "bg-primary/15 text-primary shadow-sm"
+                  : "text-card-foreground hover:bg-primary/10 hover:text-primary"
+              )}
+            >
+              <div className="flex items-center gap-3">
+                <Send size={18} className="text-primary opacity-80" />
+                <span>Communications</span>
+              </div>
+              {expandedSubMenus.messaging ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
+            </button>
+            {expandedSubMenus.messaging && (
+              <ul className="ml-6 space-y-1">
+                <li>
+                  <Link
+                    href="/admin/messaging/automated"
+                    className={cn(
+                      "flex items-center gap-3 px-3 py-2 rounded-lg transition-all text-sm",
+                      isActive("/admin/messaging/automated")
+                        ? "bg-primary/15 text-primary shadow-sm"
+                        : "text-card-foreground hover:bg-primary/10 hover:text-primary"
+                    )}
+                  >
+                    <Bot size={16} className="text-primary opacity-60" />
+                    Automated Messages
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    href="/admin/messaging/templates"
+                    className={cn(
+                      "flex items-center gap-3 px-3 py-2 rounded-lg transition-all text-sm",
+                      isActive("/admin/messaging/templates")
+                        ? "bg-primary/15 text-primary shadow-sm"
+                        : "text-card-foreground hover:bg-primary/10 hover:text-primary"
+                    )}
+                  >
+                    <FileText size={16} className="text-primary opacity-60" />
+                    Message Templates
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    href="/admin/messaging/bulk-sms"
+                    className={cn(
+                      "flex items-center gap-3 px-3 py-2 rounded-lg transition-all text-sm",
+                      isActive("/admin/messaging/bulk-sms")
+                        ? "bg-primary/15 text-primary shadow-sm"
+                        : "text-card-foreground hover:bg-primary/10 hover:text-primary"
+                    )}
+                  >
+                    <Send size={16} className="text-primary opacity-60" />
+                    Bulk Messaging
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    href="/admin/messaging/history"
+                    className={cn(
+                      "flex items-center gap-3 px-3 py-2 rounded-lg transition-all text-sm",
+                      isActive("/admin/messaging/history")
+                        ? "bg-primary/15 text-primary shadow-sm"
+                        : "text-card-foreground hover:bg-primary/10 hover:text-primary"
+                    )}
+                  >
+                    <Clock size={16} className="text-primary opacity-60" />
+                    Message History
                   </Link>
                 </li>
               </ul>
