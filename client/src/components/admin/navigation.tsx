@@ -1238,3 +1238,5 @@ export default function AdminNavigation() {
     </div>
   );
 }
+
+export { AdminNavigation };

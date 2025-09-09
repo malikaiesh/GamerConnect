@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { AdminNavigation } from "@/components/admin/navigation";
+import AdminNavigation from "@/components/admin/navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 export default function OwnRoomsPage() {
