@@ -79,7 +79,8 @@ export const roomTypeEnum = pgEnum('room_type', ['public', 'private']);
 export const roomStatusEnum = pgEnum('room_status', ['active', 'inactive', 'maintenance']);
 export const roomUserRoleEnum = pgEnum('room_user_role', ['owner', 'manager', 'member', 'guest']);
 export const roomUserStatusEnum = pgEnum('room_user_status', ['active', 'muted', 'kicked', 'banned']);
-export const giftTypeEnum = pgEnum('gift_type', ['flower', 'car', 'diamond', 'crown', 'castle', 'ring', 'heart']);
+export const giftTypeEnum = pgEnum('gift_type', ['basic', 'premium', 'exclusive', 'special', 'animated']);
+export const giftCategoryEnum = pgEnum('gift_category', ['general', 'love', 'celebration', 'friendship', 'appreciation', 'seasonal', 'luxury']);
 
 // Short Links Enum
 export const shortLinkTypeEnum = pgEnum('short_link_type', ['game', 'blog', 'category', 'page']);
@@ -90,7 +91,7 @@ export const paymentStatusEnum = pgEnum('payment_status', ['enabled', 'disabled'
 export const paymentMethodTypeEnum = pgEnum('payment_method_type', ['automated', 'manual']);
 export const paymentCurrencyEnum = pgEnum('payment_currency', ['USD', 'EUR', 'GBP', 'INR', 'NGN', 'KES', 'ZAR', 'GHS', 'UGX', 'TZS', 'CAD', 'AUD', 'BTC', 'ETH', 'USDT']);
 export const transactionStatusEnum = pgEnum('transaction_status', ['pending', 'processing', 'completed', 'failed', 'cancelled', 'refunded']);
-export const giftAnimationEnum = pgEnum('gift_animation', ['default', 'sparkle', 'confetti', 'fireworks']);
+export const giftAnimationEnum = pgEnum('gift_animation', ['default', 'bounce', 'pulse', 'glow', 'float', 'spin', 'zoom']);
 
 // Pricing Plan Enums
 export const planTypeEnum = pgEnum('plan_type', ['diamonds', 'verification', 'room_creation', 'premium_features']);
@@ -1826,9 +1827,20 @@ export const gifts = pgTable('gifts', {
   animation: giftAnimationEnum('animation').default('default').notNull(),
   
   price: integer('price').notNull(), // Price in coins/diamonds
-  rarity: text('rarity').default('common').notNull(), // 'common', 'rare', 'epic', 'legendary'
+  category: giftCategoryEnum('category').default('general').notNull(),
   
   isActive: boolean('is_active').default(true).notNull(),
+  isLimited: boolean('is_limited').default(false).notNull(),
+  limitedQuantity: integer('limited_quantity'),
+  availableFrom: timestamp('available_from'),
+  availableUntil: timestamp('available_until'),
+  
+  hasSound: boolean('has_sound').default(false).notNull(),
+  soundFile: text('sound_file'),
+  hasAnimation: boolean('has_animation').default(true).notNull(),
+  animationDuration: integer('animation_duration').default(3).notNull(),
+  
+  tags: text('tags').array().default([]).notNull(),
   sortOrder: integer('sort_order').default(0).notNull(),
   
   createdAt: timestamp('created_at').defaultNow().notNull(),
