@@ -764,10 +764,46 @@ class DatabaseStorage implements IStorage {
     return result.length ? result[0] : null;
   }
 
-  async getGames(options: { page?: number, limit?: number, status?: string, source?: string, category?: string } = {}): Promise<{ games: Game[], total: number, totalPages: number }> {
-    // Default implementation
-    const gamesData = await db.select().from(games).limit(10);
-    return { games: gamesData, total: gamesData.length, totalPages: 1 };
+  async getGames(options: { page?: number, limit?: number, offset?: number, status?: string, source?: string, category?: string } = {}): Promise<{ games: Game[], total: number, totalPages: number }> {
+    const { page = 1, limit = 10, offset, status, source, category } = options;
+    const actualOffset = offset !== undefined ? offset : (page - 1) * limit;
+
+    console.log(`getGames called with options:`, options);
+
+    // Build where conditions
+    const conditions = [];
+    if (status) {
+      conditions.push(eq(games.status, status));
+    }
+    if (source) {
+      conditions.push(eq(games.source, source));
+    }
+    if (category) {
+      conditions.push(eq(games.category, category));
+    }
+
+    console.log(`Built ${conditions.length} conditions:`, conditions.map(c => c.toString()));
+
+    // Get total count
+    const [{ total }] = await db.select({
+      total: count()
+    }).from(games)
+      .where(conditions.length > 0 ? and(...conditions) : undefined);
+
+    console.log(`Total games found: ${total}`);
+
+    // Get games with pagination
+    const gamesData = await db.select()
+      .from(games)
+      .where(conditions.length > 0 ? and(...conditions) : undefined)
+      .limit(limit)
+      .offset(actualOffset)
+      .orderBy(desc(games.plays), desc(games.createdAt));
+
+    console.log(`Retrieved ${gamesData.length} games for page ${page}`);
+
+    const totalPages = Math.ceil(total / limit);
+    return { games: gamesData, total, totalPages };
   }
 
   async createGame(game: Omit<InsertGame, "createdAt" | "updatedAt">): Promise<Game> {

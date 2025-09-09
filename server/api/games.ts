@@ -223,12 +223,12 @@ export function registerGameRoutes(app: Express) {
       const page = req.query.page ? parseInt(req.query.page as string) : 1;
       const offset = (page - 1) * limit; // Calculate proper offset based on page
       
-      // Use getGames instead to get all active games with proper pagination
+      // Use getGames to get both active and featured games with proper pagination
       const { games, total } = await storage.getGames({
         page,
         limit,
         offset, // Add explicit offset
-        status: 'active',
+        status: undefined, // Include all statuses to show both active and featured games
         category: category === 'all' ? undefined : category
       });
       
