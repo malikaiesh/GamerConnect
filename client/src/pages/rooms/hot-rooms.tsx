@@ -16,26 +16,30 @@ import { Header } from "@/components/layout/header";
 import { Footer } from "@/components/layout/footer";
 
 interface HotRoom {
-  id: number;
-  roomId: string;
-  name: string;
-  description: string;
-  theme: string;
-  maxUsers: number;
-  currentUsers: number;
-  isPublic: boolean;
-  hasVoice: boolean;
-  hasText: boolean;
-  hasGifts: boolean;
-  createdAt: string;
+  room: {
+    id: number;
+    roomId: string;
+    name: string;
+    description: string;
+    backgroundTheme: string;
+    maxSeats: number;
+    currentUsers: number;
+    type: string;
+    voiceChatEnabled: boolean;
+    textChatEnabled: boolean;
+    giftsEnabled: boolean;
+    createdAt: string;
+    totalVisits: number;
+    totalGiftsReceived: number;
+    isVerified: boolean;
+  };
+  userCount: string;
   owner: {
+    id: number;
     username: string;
     displayName: string;
-  };
-  stats: {
-    totalVisits: number;
-    messagesCount: number;
-    giftsReceived: number;
+    profilePicture: string | null;
+    isVerified: boolean;
   };
 }
 
@@ -60,9 +64,9 @@ function RoomCard({ room }: { room: HotRoom }) {
   };
 
   return (
-    <Card className="overflow-hidden hover:shadow-lg transition-shadow duration-200" data-testid={`room-card-${room.roomId}`}>
+    <Card className="overflow-hidden hover:shadow-lg transition-shadow duration-200" data-testid={`room-card-${room.room.roomId}`}>
       {/* Theme Header */}
-      <div className={`h-20 bg-gradient-to-r ${getThemeGradient(room.theme)} relative`}>
+      <div className={`h-20 bg-gradient-to-r ${getThemeGradient(room.room.backgroundTheme)} relative`}>
         <div className="absolute top-2 left-2">
           <Badge variant="secondary" className="bg-black/20 text-white border-0">
             🔥 Hot
@@ -70,7 +74,7 @@ function RoomCard({ room }: { room: HotRoom }) {
         </div>
         <div className="absolute top-2 right-2">
           <Badge variant="secondary" className="bg-black/20 text-white border-0">
-            {room.currentUsers}/{room.maxUsers}
+            {room.userCount}/{room.room.maxSeats}
           </Badge>
         </div>
       </div>
@@ -78,7 +82,7 @@ function RoomCard({ room }: { room: HotRoom }) {
       <CardHeader className="pb-2">
         <div className="flex items-start justify-between">
           <div>
-            <CardTitle className="text-lg font-bold">{room.name}</CardTitle>
+            <CardTitle className="text-lg font-bold">{room.room.name}</CardTitle>
             <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
               by {room.owner.displayName || room.owner.username}
             </p>
@@ -89,24 +93,24 @@ function RoomCard({ room }: { room: HotRoom }) {
 
       <CardContent className="space-y-3">
         <p className="text-sm text-gray-600 dark:text-gray-300 line-clamp-2">
-          {room.description}
+          {room.room.description}
         </p>
 
         {/* Features */}
         <div className="flex flex-wrap gap-2">
-          {room.hasVoice && (
+          {room.room.voiceChatEnabled && (
             <Badge variant="outline" className="text-xs">
               <Volume2 className="w-3 h-3 mr-1" />
               Voice
             </Badge>
           )}
-          {room.hasText && (
+          {room.room.textChatEnabled && (
             <Badge variant="outline" className="text-xs">
               <MessageCircle className="w-3 h-3 mr-1" />
               Chat
             </Badge>
           )}
-          {room.hasGifts && (
+          {room.room.giftsEnabled && (
             <Badge variant="outline" className="text-xs">
               <Gift className="w-3 h-3 mr-1" />
               Gifts
@@ -116,15 +120,15 @@ function RoomCard({ room }: { room: HotRoom }) {
 
         {/* Statistics */}
         <div className="flex justify-between text-xs text-gray-500 dark:text-gray-400">
-          <span>{room.stats.totalVisits} visits</span>
-          <span>{room.stats.messagesCount} messages</span>
-          <span>{room.stats.giftsReceived} gifts</span>
+          <span>{room.room.totalVisits} visits</span>
+          <span>{room.userCount} users</span>
+          <span>{room.room.totalGiftsReceived} gifts</span>
         </div>
 
         {/* Actions */}
         <div className="flex gap-2">
-          <Link href={`/rooms/${room.roomId}`} className="flex-1">
-            <Button className="w-full" size="sm" data-testid={`button-enter-room-${room.roomId}`}>
+          <Link href={`/rooms/${room.room.roomId}`} className="flex-1">
+            <Button className="w-full" size="sm" data-testid={`button-enter-room-${room.room.roomId}`}>
               Enter Room
             </Button>
           </Link>
@@ -196,7 +200,7 @@ export default function HotRoomsPage() {
             <div className="text-center py-12">
               <p className="text-red-500">Failed to load hot rooms. Please try again.</p>
             </div>
-          ) : !rooms?.length ? (
+          ) : !rooms?.rooms?.length ? (
             <div className="text-center py-12">
               <div className="p-4 bg-yellow-50 dark:bg-yellow-900/20 rounded-lg inline-block">
                 <Zap className="w-8 h-8 text-yellow-500 mx-auto mb-2" />
@@ -206,8 +210,8 @@ export default function HotRoomsPage() {
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-              {rooms?.map((room: HotRoom) => (
-                <RoomCard key={room.id} room={room} />
+              {rooms?.rooms?.map((room: HotRoom) => (
+                <RoomCard key={room.room.id} room={room} />
               ))}
             </div>
           )}
