@@ -1926,10 +1926,9 @@ export const conversations = pgTable('conversations', {
   updatedAt: timestamp('updated_at').defaultNow().notNull(),
 }, (table) => {
   return {
-    // Ensure unique conversation between two users
+    // Ensure unique conversation between two users (for direct conversations)
     uniqueDirectConversation: uniqueIndex('unique_direct_conversation_idx')
       .on(table.user1Id, table.user2Id)
-      .where(sql`${table.type} = 'direct'`)
   };
 });
 
@@ -2109,7 +2108,7 @@ export const conversationsRelations = relations(conversations, ({ one, many }) =
   participants: many(conversationParticipants)
 }));
 
-export const messagesRelations = relations(messages, ({ one }) => ({
+export const messagesRelations = relations(messages, ({ one, many }) => ({
   conversation: one(conversations, {
     fields: [messages.conversationId],
     references: [conversations.id]

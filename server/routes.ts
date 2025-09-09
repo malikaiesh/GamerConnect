@@ -47,6 +47,7 @@ import objectsRoutes from "./api/objects";
 import { roomsRouter } from "./api/rooms";
 import friendsRouter from "./api/friends";
 import userProfileRouter from "./api/user-profile";
+import messageRoutes from "./api/messages";
 import verificationRouter from "./api/verification";
 import verificationExpiryRouter from "./api/verification-expiry";
 import { 
@@ -630,6 +631,7 @@ Sitemap: ${req.protocol}://${req.get('host')}/sitemap.xml`);
   app.use('/api/rooms', roomsRouter);
   app.use('/api/friends', friendsRouter);
   app.use('/api/user', userProfileRouter);
+  app.use('/api/messages', isAuthenticated, messageRoutes);
   app.use('/api/verification', isAdmin, verificationRouter);
   app.use('/api/verification-expiry', isAdmin, verificationExpiryRouter);
   
