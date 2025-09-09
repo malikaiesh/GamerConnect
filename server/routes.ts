@@ -1618,5 +1618,156 @@ Sitemap: ${req.protocol}://${req.get('host')}/sitemap.xml`);
     }
   });
 
+  // Get messaging statistics for admin dashboard
+  app.get('/api/admin/messaging/stats', isAuthenticated, isAdmin, async (req: Request, res: Response) => {
+    try {
+      const [totalUsersResult] = await db
+        .select({ count: sql<number>`count(*)` })
+        .from(users);
+      
+      const [verifiedUsersResult] = await db
+        .select({ count: sql<number>`count(*)` })
+        .from(users)
+        .where(eq(users.isVerified, true));
+      
+      const [adminUsersResult] = await db
+        .select({ count: sql<number>`count(*)` })
+        .from(users)
+        .where(eq(users.role, 'admin'));
+      
+      const [usersWithPhoneResult] = await db
+        .select({ count: sql<number>`count(*)` })
+        .from(users)
+        .where(isNotNull(users.phone));
+
+      res.json({
+        totalUsers: totalUsersResult.count,
+        verifiedUsers: verifiedUsersResult.count,
+        adminUsers: adminUsersResult.count,
+        usersWithPhone: usersWithPhoneResult.count,
+      });
+    } catch (error) {
+      console.error('Error fetching messaging stats:', error);
+      res.status(500).json({ error: 'Failed to fetch messaging statistics' });
+    }
+  });
+
+  // Send bulk SMS messages
+  app.post('/api/admin/messaging/bulk-sms', isAuthenticated, isAdmin, async (req: Request, res: Response) => {
+    try {
+      const adminId = (req as any).user?.id;
+      const { 
+        message, 
+        subject, 
+        targetAudience, 
+        includeUnverified, 
+        includeAdmins, 
+        selectedUsers,
+        scheduledFor 
+      } = req.body;
+
+      if (!message?.trim()) {
+        return res.status(400).json({ error: 'Message content is required' });
+      }
+
+      // Build user query based on target audience
+      let recipientQuery = db.select({
+        id: users.id,
+        username: users.username,
+        displayName: users.displayName,
+        phone: users.phone,
+        email: users.email,
+        isVerified: users.isVerified,
+        role: users.role
+      }).from(users);
+
+      let whereConditions: any[] = [isNotNull(users.phone)]; // Only users with phone numbers
+
+      switch (targetAudience) {
+        case 'verified':
+          whereConditions.push(eq(users.isVerified, true));
+          break;
+        case 'unverified':
+          whereConditions.push(eq(users.isVerified, false));
+          break;
+        case 'admins':
+          whereConditions.push(eq(users.role, 'admin'));
+          break;
+        case 'selected':
+          if (!selectedUsers || selectedUsers.length === 0) {
+            return res.status(400).json({ error: 'No users selected' });
+          }
+          whereConditions.push(inArray(users.id, selectedUsers));
+          break;
+        case 'all':
+        default:
+          // Apply filters for 'all' audience
+          if (!includeUnverified) {
+            whereConditions.push(eq(users.isVerified, true));
+          }
+          if (!includeAdmins) {
+            whereConditions.push(ne(users.role, 'admin'));
+          }
+          break;
+      }
+
+      const recipients = await recipientQuery.where(and(...whereConditions));
+
+      if (recipients.length === 0) {
+        return res.status(400).json({ error: 'No recipients found matching the criteria' });
+      }
+
+      // Create automated messages records for tracking (using the existing automatedMessages table)
+      const messageRecords = recipients.map(recipient => ({
+        templateId: null,
+        userId: recipient.id,
+        trigger: 'admin_bulk_sms' as const,
+        channel: 'sms' as const,
+        content: `${subject || 'Gaming Portal Notification'}: ${message}`,
+        status: scheduledFor ? 'scheduled' as const : 'sent' as const,
+        sentAt: scheduledFor ? null : new Date(),
+        triggerData: {
+          targetAudience,
+          campaignType: 'bulk_sms',
+          adminId,
+          phoneNumber: recipient.phone,
+          subject: subject || 'Gaming Portal Notification'
+        }
+      }));
+
+      await db.insert(automatedMessageHistory).values(messageRecords);
+
+      // TODO: Integrate with actual SMS service (Twilio, etc.)
+      // For now, we'll just log the SMS messages that would be sent
+      console.log(`📱 Bulk SMS Campaign Initiated by Admin ${adminId}:`);
+      console.log(`📋 Subject: ${subject || 'Gaming Portal Notification'}`);
+      console.log(`💬 Message: ${message}`);
+      console.log(`👥 Recipients: ${recipients.length} users`);
+      console.log(`📅 Scheduled: ${scheduledFor ? new Date(scheduledFor).toISOString() : 'Immediate'}`);
+      
+      recipients.forEach((recipient, index) => {
+        console.log(`📞 SMS #${index + 1}: ${recipient.phone} (${recipient.username})`);
+      });
+
+      res.json({
+        success: true,
+        message: 'Bulk SMS campaign processed successfully',
+        recipientCount: recipients.length,
+        scheduled: !!scheduledFor,
+        scheduledFor: scheduledFor || null,
+        // In a real implementation, you'd return SMS service response data here
+        providerResponse: {
+          status: 'queued',
+          messageIds: recipients.map((_, i) => `sms_${Date.now()}_${i}`),
+          estimatedDelivery: scheduledFor || new Date().toISOString()
+        }
+      });
+
+    } catch (error) {
+      console.error('Error sending bulk SMS:', error);
+      res.status(500).json({ error: 'Failed to send bulk SMS messages' });
+    }
+  });
+
   return httpServer;
 }

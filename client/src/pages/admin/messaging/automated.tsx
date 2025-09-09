@@ -21,8 +21,10 @@ import {
   Activity,
   Eye,
   Settings,
-  Wand2
+  Wand2,
+  MessageCircle
 } from "lucide-react";
+import { Link } from "wouter";
 import {
   Dialog,
   DialogContent,
@@ -273,13 +275,20 @@ export default function AutomatedMessagesPage() {
             Manage automated message templates for purchases, verifications, and user engagement
           </p>
         </div>
-        <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-          <DialogTrigger asChild>
-            <Button onClick={() => setEditingTemplate(null)} data-testid="create-template">
-              <Plus className="w-4 h-4 mr-2" />
-              Create Template
-            </Button>
-          </DialogTrigger>
+        <div className="flex items-center gap-3">
+          <Button variant="outline" size="sm" asChild data-testid="button-bulk-sms">
+            <Link to="/admin/messaging/bulk-sms">
+              <Phone className="h-4 w-4 mr-2" />
+              Bulk SMS
+            </Link>
+          </Button>
+          <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+            <DialogTrigger asChild>
+              <Button onClick={() => setEditingTemplate(null)} data-testid="create-template">
+                <Plus className="w-4 h-4 mr-2" />
+                Create Template
+              </Button>
+            </DialogTrigger>
           <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle>
@@ -403,6 +412,7 @@ export default function AutomatedMessagesPage() {
             </div>
           </DialogContent>
         </Dialog>
+        </div>
       </div>
 
       <Tabs defaultValue="templates" className="space-y-4">
