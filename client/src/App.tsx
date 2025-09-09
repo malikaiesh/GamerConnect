@@ -495,6 +495,16 @@ function Router() {
           <Suspense fallback={<LoadingFallback />}><AdminBulkSMSPage /></Suspense>
         </AdminRoute>
       </Route>
+      <Route path="/admin/messaging/templates">
+        <AdminRoute>
+          <Suspense fallback={<LoadingFallback />}><AdminAutomatedMessagesPage /></Suspense>
+        </AdminRoute>
+      </Route>
+      <Route path="/admin/messaging/history">
+        <AdminRoute>
+          <Suspense fallback={<LoadingFallback />}><AdminAutomatedMessagesPage /></Suspense>
+        </AdminRoute>
+      </Route>
       <Route path="/admin/payments/gateways">
         <AdminRoute>
           <Suspense fallback={<LoadingFallback />}><AdminPaymentGatewaysPage /></Suspense>
