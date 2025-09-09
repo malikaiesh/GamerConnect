@@ -25,6 +25,7 @@ import {
   MessageCircle
 } from "lucide-react";
 import { Link } from "wouter";
+import { AdminLayout } from "@/components/admin/layout";
 import {
   Dialog,
   DialogContent,
@@ -267,7 +268,8 @@ export default function AutomatedMessagesPage() {
   ];
 
   return (
-    <div className="space-y-6">
+    <AdminLayout>
+      <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-3xl font-bold tracking-tight">Automated Messages</h2>
@@ -588,6 +590,7 @@ export default function AutomatedMessagesPage() {
           </Card>
         </TabsContent>
       </Tabs>
-    </div>
+      </div>
+    </AdminLayout>
   );
 }

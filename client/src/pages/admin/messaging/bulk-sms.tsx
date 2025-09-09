@@ -25,6 +25,7 @@ import {
   MessageSquare,
   Phone
 } from "lucide-react";
+import { AdminLayout } from "@/components/admin/layout";
 
 interface User {
   id: number;
@@ -152,7 +153,8 @@ export default function BulkSMSPage() {
   const estimatedCost = getRecipientCount() * 0.05; // $0.05 per SMS
 
   return (
-    <div className="space-y-6">
+    <AdminLayout>
+      <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Bulk SMS Messaging</h1>
@@ -448,6 +450,7 @@ export default function BulkSMSPage() {
           Message delivery depends on users having valid phone numbers in their profiles.
         </AlertDescription>
       </Alert>
-    </div>
+      </div>
+    </AdminLayout>
   );
 }
