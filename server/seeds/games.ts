@@ -35,7 +35,7 @@ export async function seedGames() {
           title: 'Space Explorer',
           slug: 'space-explorer',
           description: 'An exciting space adventure game where you explore galaxies and fight alien enemies. Collect power-ups and upgrade your spacecraft to survive in the vast universe.',
-          thumbnail: 'https://via.placeholder.com/400x300/4A90E2/FFFFFF?text=Space+Explorer',
+          thumbnail: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjMwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjNEE5MEUyIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIyNCIgZmlsbD0iI0ZGRkZGRiIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPlNwYWNlIEV4cGxvcmVyPC90ZXh0Pjwvc3ZnPg==',
           url: '/games/space-explorer',
           category: 'Action',
           categoryId: actionCategory?.id || 1,
@@ -53,7 +53,7 @@ export async function seedGames() {
           title: 'Puzzle Master',
           slug: 'puzzle-master',
           description: 'Challenge your mind with this addictive puzzle game featuring over 100 levels of brain-teasing fun. Match colors, solve patterns, and unlock new challenges.',
-          thumbnail: 'https://via.placeholder.com/400x300/9B59B6/FFFFFF?text=Puzzle+Master',
+          thumbnail: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjMwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjOUI1OUI2Ii8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIyNCIgZmlsbD0iI0ZGRkZGRiIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPlB1enpsZSBNYXN0ZXI8L3RleHQ+PC9zdmc+'
           url: '/games/puzzle-master',
           category: 'Puzzle',
           categoryId: puzzleCategory?.id || 3,
@@ -71,7 +71,7 @@ export async function seedGames() {
           title: 'Racing Thunder',
           slug: 'racing-thunder',
           description: 'High-speed racing action with stunning graphics and realistic physics. Choose your car, customize it, and race against AI opponents on various tracks.',
-          thumbnail: 'https://via.placeholder.com/400x300/E74C3C/FFFFFF?text=Racing+Thunder',
+          thumbnail: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjMwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjRTc0QzNDIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIyNCIgZmlsbD0iI0ZGRkZGRiIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPlJhY2luZyBUaHVuZGVyPC90ZXh0Pjwvc3ZnPg=='
           url: '/games/racing-thunder',
           category: 'Racing',
           categoryId: racingCategory?.id || 6,
@@ -89,7 +89,7 @@ export async function seedGames() {
           title: 'Retro Arcade',
           slug: 'retro-arcade',
           description: 'Classic arcade-style gameplay that brings back the golden age of gaming. Simple controls, addictive gameplay, and endless fun for all ages.',
-          thumbnail: 'https://via.placeholder.com/400x300/F39C12/FFFFFF?text=Retro+Arcade',
+          thumbnail: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjMwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjRjM5QzEyIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIyNCIgZmlsbD0iI0ZGRkZGRiIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPlJldHJvIEFyY2FkZTwvdGV4dD48L3N2Zz4='
           url: '/games/retro-arcade',
           category: 'Arcade',
           categoryId: arcadeCategory?.id || 7,
@@ -107,7 +107,7 @@ export async function seedGames() {
           title: 'Mystery Island',
           slug: 'mystery-island',
           description: 'Explore a mysterious island filled with secrets, puzzles, and hidden treasures. Uncover the island\'s dark past and find your way home.',
-          thumbnail: 'https://via.placeholder.com/400x300/27AE60/FFFFFF?text=Mystery+Island',
+          thumbnail: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjMwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjMjdBRTYwIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIyNCIgZmlsbD0iI0ZGRkZGRiIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPk15c3RlcnkgSXNsYW5kPC90ZXh0Pjwvc3ZnPg=='
           url: '/games/mystery-island',
           category: 'Adventure',
           categoryId: adventureCategory?.id || 2,
@@ -125,7 +125,7 @@ export async function seedGames() {
           title: 'Strategy Wars',
           slug: 'strategy-wars',
           description: 'Build your empire, manage resources, and lead your army to victory in this turn-based strategy game. Plan your moves carefully to outsmart your enemies.',
-          thumbnail: 'https://via.placeholder.com/400x300/8E44AD/FFFFFF?text=Strategy+Wars',
+          thumbnail: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjMwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjOEU0NEFEIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIyNCIgZmlsbD0iI0ZGRkZGRiIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPlN0cmF0ZWd5IFdhcnM8L3RleHQ+PC9zdmc+'
           url: '/games/strategy-wars',
           category: 'Strategy',
           categoryId: strategyCategory?.id || 4,
@@ -143,7 +143,7 @@ export async function seedGames() {
           title: 'Ninja Runner',
           slug: 'ninja-runner',
           description: 'Fast-paced endless runner game featuring a skilled ninja. Jump, slide, and use special abilities to overcome obstacles and collect coins.',
-          thumbnail: 'https://via.placeholder.com/400x300/34495E/FFFFFF?text=Ninja+Runner',
+          thumbnail: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjMwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjMzQ0OTVFIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIyNCIgZmlsbD0iI0ZGRkZGRiIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPk5pbmphIFJ1bm5lcjwvdGV4dD48L3N2Zz4='
           url: '/games/ninja-runner',
           category: 'Action',
           categoryId: actionCategory?.id || 1,
@@ -161,7 +161,7 @@ export async function seedGames() {
           title: 'Color Match',
           slug: 'color-match',
           description: 'Simple yet addictive color matching puzzle game. Match 3 or more colors to clear them and achieve high scores. Perfect for quick gaming sessions.',
-          thumbnail: 'https://via.placeholder.com/400x300/E67E22/FFFFFF?text=Color+Match',
+          thumbnail: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjMwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjRTY3RTIyIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIyNCIgZmlsbD0iI0ZGRkZGRiIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPkNvbG9yIE1hdGNoPC90ZXh0Pjwvc3ZnPg=='
           url: '/games/color-match',
           category: 'Puzzle',
           categoryId: puzzleCategory?.id || 3,
@@ -180,7 +180,7 @@ export async function seedGames() {
           title: 'Soccer Championship',
           slug: 'soccer-championship',
           description: 'Lead your team to victory in this exciting soccer simulation. Master tactics, train players, and compete in international tournaments.',
-          thumbnail: 'https://via.placeholder.com/400x300/2ECC71/FFFFFF?text=Soccer+Championship',
+          thumbnail: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjMwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjMkVDQzcxIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIyMCIgZmlsbD0iI0ZGRkZGRiIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPlNvY2NlciBDaGFtcGlvbnNoaXA8L3RleHQ+PC9zdmc+'
           url: '/games/soccer-championship',
           category: 'Sports',
           categoryId: sportsCategory?.id || 5,
@@ -198,7 +198,7 @@ export async function seedGames() {
           title: 'Street Fighter Arena',
           slug: 'street-fighter-arena',
           description: 'Master martial arts in this intense fighting game. Learn combos, special moves, and defeat opponents in epic battles.',
-          thumbnail: 'https://via.placeholder.com/400x300/C0392B/FFFFFF?text=Street+Fighter',
+          thumbnail: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjMwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjQzAzOTJCIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIyNCIgZmlsbD0iI0ZGRkZGRiIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPlN0cmVldCBGaWdodGVyPC90ZXh0Pjwvc3ZnPg=='
           url: '/games/street-fighter-arena',
           category: 'Fighting',
           categoryId: fightingCategory?.id || 11,
@@ -216,7 +216,7 @@ export async function seedGames() {
           title: 'Zombie Shooter',
           slug: 'zombie-shooter',
           description: 'Survive the zombie apocalypse in this action-packed shooter. Collect weapons, build defenses, and fight waves of undead.',
-          thumbnail: 'https://via.placeholder.com/400x300/8B4513/FFFFFF?text=Zombie+Shooter',
+          thumbnail: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjMwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjOEI0NTEzIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIyNCIgZmlsbD0iI0ZGRkZGRiIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPlovbWJpZSBTaG9vdGVyPC90ZXh0Pjwvc3ZnPg=='
           url: '/games/zombie-shooter',
           category: 'Shooting',
           categoryId: shootingCategory?.id || 12,
@@ -234,7 +234,7 @@ export async function seedGames() {
           title: 'City Builder',
           slug: 'city-builder',
           description: 'Build and manage your dream city. Plan infrastructure, manage resources, and keep citizens happy in this simulation game.',
-          thumbnail: 'https://via.placeholder.com/400x300/3498DB/FFFFFF?text=City+Builder',
+          thumbnail: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjMwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjMzQ5OERCIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIyNCIgZmlsbD0iI0ZGRkZGRiIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPkNpdHkgQnVpbGRlcjwvdGV4dD48L3N2Zz4='
           url: '/games/city-builder',
           category: 'Simulation',
           categoryId: simulationCategory?.id || 8,
@@ -252,7 +252,7 @@ export async function seedGames() {
           title: 'Jump Master',
           slug: 'jump-master',
           description: 'Navigate through challenging platformer levels. Jump, climb, and solve puzzles to reach the end of each stage.',
-          thumbnail: 'https://via.placeholder.com/400x300/16A085/FFFFFF?text=Jump+Master',
+          thumbnail: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjMwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjMTZBMDg1Ii8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIyNCIgZmlsbD0iI0ZGRkZGRiIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPkp1bXAgTWFzdGVyPC90ZXh0Pjwvc3ZnPg=='
           url: '/games/jump-master',
           category: 'Platform',
           categoryId: platformCategory?.id || 9,
@@ -270,7 +270,7 @@ export async function seedGames() {
           title: 'Rhythm Beat',
           slug: 'rhythm-beat',
           description: 'Hit the notes to the beat in this musical rhythm game. Perfect your timing and unlock new songs and challenges.',
-          thumbnail: 'https://via.placeholder.com/400x300/9B59B6/FFFFFF?text=Rhythm+Beat',
+          thumbnail: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjMwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjOUI1OUI2Ii8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIyNCIgZmlsbD0iI0ZGRkZGRiIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPlJoeXRobSBCZWF0PC90ZXh0Pjwvc3ZnPg=='
           url: '/games/rhythm-beat',
           category: 'Music',
           categoryId: musicCategory?.id || 10,
@@ -288,7 +288,7 @@ export async function seedGames() {
           title: 'Bubble Pop',
           slug: 'bubble-pop',
           description: 'Pop colorful bubbles in this relaxing casual game. Match colors, create combos, and clear all bubbles to advance.',
-          thumbnail: 'https://via.placeholder.com/400x300/F39C12/FFFFFF?text=Bubble+Pop',
+          thumbnail: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjMwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjRjM5QzEyIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIyNCIgZmlsbD0iI0ZGRkZGRiIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPkJ1YmJsZSBQb3A8L3RleHQ+PC9zdmc+'
           url: '/games/bubble-pop',
           category: 'Casual',
           categoryId: casualCategory?.id || 25,
@@ -306,7 +306,7 @@ export async function seedGames() {
           title: 'Horror Mansion',
           slug: 'horror-mansion',
           description: 'Explore a haunted mansion filled with dark secrets. Solve puzzles, avoid dangers, and uncover the truth behind the horror.',
-          thumbnail: 'https://via.placeholder.com/400x300/2C3E50/FFFFFF?text=Horror+Mansion',
+          thumbnail: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjMwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjMkMzRTUwIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIyMiIgZmlsbD0iI0ZGRkZGRiIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPkhvcnJvciBNYW5zaW9uPC90ZXh0Pjwvc3ZnPg=='
           url: '/games/horror-mansion',
           category: 'Horror',
           categoryId: horrorCategory?.id || 15,
@@ -324,7 +324,7 @@ export async function seedGames() {
           title: 'Tank Battle',
           slug: 'tank-battle',
           description: 'Command powerful tanks in epic battlefield combat. Destroy enemy vehicles and capture strategic points.',
-          thumbnail: 'https://via.placeholder.com/400x300/95A5A6/FFFFFF?text=Tank+Battle',
+          thumbnail: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjMwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjOTVBNUE2Ii8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIyNCIgZmlsbD0iI0ZGRkZGRiIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPlRhbmsgQmF0dGxlPC90ZXh0Pjwvc3ZnPg=='
           url: '/games/tank-battle',
           category: 'Action',
           categoryId: actionCategory?.id || 1,
@@ -342,7 +342,7 @@ export async function seedGames() {
           title: 'Word Quest',
           slug: 'word-quest',
           description: 'Challenge your vocabulary in this word puzzle adventure. Find hidden words, solve anagrams, and unlock new levels.',
-          thumbnail: 'https://via.placeholder.com/400x300/E74C3C/FFFFFF?text=Word+Quest',
+          thumbnail: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjMwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjRTc0QzNDIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIyNCIgZmlsbD0iI0ZGRkZGRiIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPlFvcmQgUXVlc3Q8L3RleHQ+PC9zdmc+'
           url: '/games/word-quest',
           category: 'Puzzle',
           categoryId: puzzleCategory?.id || 3,
@@ -360,7 +360,7 @@ export async function seedGames() {
           title: 'Drift King',
           slug: 'drift-king',
           description: 'Master the art of drifting in this high-speed racing game. Perfect your techniques on mountain roads and city streets.',
-          thumbnail: 'https://via.placeholder.com/400x300/34495E/FFFFFF?text=Drift+King',
+          thumbnail: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjMwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjMzQ0OTVFIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIyNCIgZmlsbD0iI0ZGRkZGRiIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPkRyaWZ0IEtpbmc8L3RleHQ+PC9zdmc+'
           url: '/games/drift-king',
           category: 'Racing',
           categoryId: racingCategory?.id || 6,
@@ -378,7 +378,7 @@ export async function seedGames() {
           title: 'Magic Tower Defense',
           slug: 'magic-tower-defense',
           description: 'Defend your kingdom with magical towers. Use spells, upgrade defenses, and stop enemy waves from reaching your castle.',
-          thumbnail: 'https://via.placeholder.com/400x300/8E44AD/FFFFFF?text=Tower+Defense',
+          thumbnail: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjMwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjOEU0NEFEIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIyMCIgZmlsbD0iI0ZGRkZGRiIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPlRvd2VyIERlZmVuc2U8L3RleHQ+PC9zdmc+'
           url: '/games/magic-tower-defense',
           category: 'Strategy',
           categoryId: strategyCategory?.id || 4,
@@ -396,7 +396,7 @@ export async function seedGames() {
           title: 'Flying Adventure',
           slug: 'flying-adventure',
           description: 'Soar through the skies in this adventure game. Navigate obstacles, collect items, and explore beautiful landscapes.',
-          thumbnail: 'https://via.placeholder.com/400x300/52C9CC/FFFFFF?text=Flying+Adventure',
+          thumbnail: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjMwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjNTJDOUNDIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIyMCIgZmlsbD0iI0ZGRkZGRiIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPkZseWluZyBBZHZlbnR1cmU8L3RleHQ+PC9zdmc+'
           url: '/games/flying-adventure',
           category: 'Adventure',
           categoryId: adventureCategory?.id || 2,
@@ -414,7 +414,7 @@ export async function seedGames() {
           title: 'Pinball Classic',
           slug: 'pinball-classic',
           description: 'Experience classic pinball action with modern graphics. Hit targets, activate bonuses, and achieve high scores.',
-          thumbnail: 'https://via.placeholder.com/400x300/D35400/FFFFFF?text=Pinball+Classic',
+          thumbnail: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjMwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjRDM1NDAwIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIyMiIgZmlsbD0iI0ZGRkZGRiIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPlBpbmJhbGwgQ2xhc3NpYzwvdGV4dD48L3N2Zz4='
           url: '/games/pinball-classic',
           category: 'Arcade',
           categoryId: arcadeCategory?.id || 7,
@@ -432,7 +432,7 @@ export async function seedGames() {
           title: 'Basketball Pro',
           slug: 'basketball-pro',
           description: 'Shoot hoops like a pro in this basketball game. Perfect your aim, make trick shots, and dominate the court.',
-          thumbnail: 'https://via.placeholder.com/400x300/E67E22/FFFFFF?text=Basketball+Pro',
+          thumbnail: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjMwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjRTY3RTIyIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIyMiIgZmlsbD0iI0ZGRkZGRiIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPkJhc2tldGJhbGwgUHJvPC90ZXh0Pjwvc3ZnPg=='
           url: '/games/basketball-pro',
           category: 'Sports',
           categoryId: sportsCategory?.id || 5,
@@ -450,7 +450,7 @@ export async function seedGames() {
           title: 'Martial Arts Master',
           slug: 'martial-arts-master',
           description: 'Train in various martial arts disciplines. Learn techniques, compete in tournaments, and become the ultimate fighter.',
-          thumbnail: 'https://via.placeholder.com/400x300/A569BD/FFFFFF?text=Martial+Arts',
+          thumbnail: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjMwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjQTU2OUJEIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIyMiIgZmlsbD0iI0ZGRkZGRiIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPk1hcnRpYWwgQXJ0czwvdGV4dD48L3N2Zz4='
           url: '/games/martial-arts-master',
           category: 'Fighting',
           categoryId: fightingCategory?.id || 11,
@@ -468,7 +468,7 @@ export async function seedGames() {
           title: 'Sniper Elite',
           slug: 'sniper-elite',
           description: 'Take on the role of an elite sniper. Complete stealth missions, take precise shots, and eliminate targets.',
-          thumbnail: 'https://via.placeholder.com/400x300/5D4037/FFFFFF?text=Sniper+Elite',
+          thumbnail: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjMwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjNUQ0MDM3Ii8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIyNCIgZmlsbD0iI0ZGRkZGRiIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPlNuaXBlciBFbGl0ZTwvdGV4dD48L3N2Zz4='
           url: '/games/sniper-elite',
           category: 'Shooting',
           categoryId: shootingCategory?.id || 12,
@@ -486,7 +486,7 @@ export async function seedGames() {
           title: 'Farm Simulator',
           slug: 'farm-simulator',
           description: 'Build and manage your own farm. Grow crops, raise animals, and expand your agricultural empire.',
-          thumbnail: 'https://via.placeholder.com/400x300/27AE60/FFFFFF?text=Farm+Simulator',
+          thumbnail: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjMwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjMjdBRTYwIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIyMiIgZmlsbD0iI0ZGRkZGRiIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPkZhcm0gU2ltdWxhdG9yPC90ZXh0Pjwvc3ZnPg=='
           url: '/games/farm-simulator',
           category: 'Simulation',
           categoryId: simulationCategory?.id || 8,
@@ -504,7 +504,7 @@ export async function seedGames() {
           title: 'Super Jumper',
           slug: 'super-jumper',
           description: 'Jump your way through challenging platforms. Time your jumps perfectly and collect power-ups to reach new heights.',
-          thumbnail: 'https://via.placeholder.com/400x300/F1C40F/FFFFFF?text=Super+Jumper',
+          thumbnail: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjMwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjRjFDNDBGIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIyNCIgZmlsbD0iI0ZGRkZGRiIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPlN1cGVyIEp1bXBlcjwvdGV4dD48L3N2Zz4='
           url: '/games/super-jumper',
           category: 'Platform',
           categoryId: platformCategory?.id || 9,
@@ -522,7 +522,7 @@ export async function seedGames() {
           title: 'DJ Mixer',
           slug: 'dj-mixer',
           description: 'Create amazing music mixes in this DJ simulation. Mix tracks, add effects, and become the ultimate party DJ.',
-          thumbnail: 'https://via.placeholder.com/400x300/9C27B0/FFFFFF?text=DJ+Mixer',
+          thumbnail: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjMwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjOUMyN0IwIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIyNCIgZmlsbD0iI0ZGRkZGRiIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPkRKIE1peGVyPC90ZXh0Pjwvc3ZnPg=='
           url: '/games/dj-mixer',
           category: 'Music',
           categoryId: musicCategory?.id || 10,
@@ -540,7 +540,7 @@ export async function seedGames() {
           title: 'Candy Crush',
           slug: 'candy-crush',
           description: 'Match delicious candies in this sweet puzzle game. Create combos, clear obstacles, and progress through hundreds of levels.',
-          thumbnail: 'https://via.placeholder.com/400x300/E91E63/FFFFFF?text=Candy+Crush',
+          thumbnail: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjMwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjRTkxRTYzIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIyNCIgZmlsbD0iI0ZGRkZGRiIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPkNhbmR5IENydXNoPC90ZXh0Pjwvc3ZnPg=='
           url: '/games/candy-crush',
           category: 'Casual',
           categoryId: casualCategory?.id || 25,
@@ -558,7 +558,7 @@ export async function seedGames() {
           title: 'Haunted House',
           slug: 'haunted-house',
           description: 'Explore a terrifying haunted house. Collect clues, solve mysteries, and survive the supernatural encounters.',
-          thumbnail: 'https://via.placeholder.com/400x300/424242/FFFFFF?text=Haunted+House',
+          thumbnail: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjMwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjNDI0MjQyIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIyMiIgZmlsbD0iI0ZGRkZGRiIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPkhhbnRlZCBIb3VzZTwvdGV4dD48L3N2Zz4='
           url: '/games/haunted-house',
           category: 'Horror',
           categoryId: horrorCategory?.id || 15,
@@ -576,7 +576,7 @@ export async function seedGames() {
           title: 'Mech Warrior',
           slug: 'mech-warrior',
           description: 'Pilot giant mechs in futuristic battles. Customize your mech, engage in combat, and dominate the battlefield.',
-          thumbnail: 'https://via.placeholder.com/400x300/607D8B/FFFFFF?text=Mech+Warrior',
+          thumbnail: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjMwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjNjA3RDhCIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIyMiIgZmlsbD0iI0ZGRkZGRiIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPk1lY2ggV2FycmlvcjwvdGV4dD48L3N2Zz4='
           url: '/games/mech-warrior',
           category: 'Action',
           categoryId: actionCategory?.id || 1,
@@ -594,7 +594,7 @@ export async function seedGames() {
           title: 'Crossword Champion',
           slug: 'crossword-champion',
           description: 'Solve challenging crossword puzzles. Test your knowledge across various topics and become a word master.',
-          thumbnail: 'https://via.placeholder.com/400x300/795548/FFFFFF?text=Crossword+Champion',
+          thumbnail: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjMwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjNzk1NTQ4Ii8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIxOCIgZmlsbD0iI0ZGRkZGRiIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPkNyb3Nzd29yZCBDaGFtcGlvbjwvdGV4dD48L3N2Zz4='
           url: '/games/crossword-champion',
           category: 'Puzzle',
           categoryId: puzzleCategory?.id || 3,
@@ -612,7 +612,7 @@ export async function seedGames() {
           title: 'Motorcycle Racing',
           slug: 'motorcycle-racing',
           description: 'Race high-speed motorcycles on dangerous tracks. Lean into turns, avoid crashes, and cross the finish line first.',
-          thumbnail: 'https://via.placeholder.com/400x300/FF5722/FFFFFF?text=Motorcycle+Racing',
+          thumbnail: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjMwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjRkY1NzIyIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIxOCIgZmlsbD0iI0ZGRkZGRiIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPk1vdG9yY3ljbGUgUmFjaW5nPC90ZXh0Pjwvc3ZnPg=='
           url: '/games/motorcycle-racing',
           category: 'Racing',
           categoryId: racingCategory?.id || 6,
@@ -630,7 +630,7 @@ export async function seedGames() {
           title: 'Chess Master',
           slug: 'chess-master',
           description: 'Play the classic game of chess against AI opponents of varying difficulty. Improve your strategy and become a grandmaster.',
-          thumbnail: 'https://via.placeholder.com/400x300/455A64/FFFFFF?text=Chess+Master',
+          thumbnail: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjMwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjNDU1QTY0Ii8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIyNCIgZmlsbD0iI0ZGRkZGRiIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPkNoZXNzIE1hc3RlcjwvdGV4dD48L3N2Zz4='
           url: '/games/chess-master',
           category: 'Strategy',
           categoryId: strategyCategory?.id || 4,
@@ -648,7 +648,7 @@ export async function seedGames() {
           title: 'Treasure Hunt',
           slug: 'treasure-hunt',
           description: 'Embark on an epic treasure hunting adventure. Solve puzzles, find clues, and discover hidden riches.',
-          thumbnail: 'https://via.placeholder.com/400x300/FF9800/FFFFFF?text=Treasure+Hunt',
+          thumbnail: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjMwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjRkY5ODAwIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIyMiIgZmlsbD0iI0ZGRkZGRiIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPlRyZWFzdXJlIEh1bnQ8L3RleHQ+PC9zdmc+'
           url: '/games/treasure-hunt',
           category: 'Adventure',
           categoryId: adventureCategory?.id || 2,
@@ -666,7 +666,7 @@ export async function seedGames() {
           title: 'Pac-Man Classic',
           slug: 'pac-man-classic',
           description: 'Relive the classic arcade experience. Navigate mazes, collect dots, and avoid ghosts in this timeless game.',
-          thumbnail: 'https://via.placeholder.com/400x300/FFEB3B/FFFFFF?text=Pac-Man+Classic',
+          thumbnail: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjMwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjRkZFQjNCIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIyMCIgZmlsbD0iIzMzMzMzMyIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPlBhYy1NYW4gQ2xhc3NpYzwvdGV4dD48L3N2Zz4='
           url: '/games/pac-man-classic',
           category: 'Arcade',
           categoryId: arcadeCategory?.id || 7,
