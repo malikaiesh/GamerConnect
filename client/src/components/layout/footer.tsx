@@ -193,6 +193,40 @@ export function Footer() {
           </div>
         </div>
         
+        {/* Hero-Style Call-to-Action Section */}
+        <div className="mt-12 mb-8">
+          <div className="text-center mb-8">
+            <h2 className="text-3xl font-bold text-white mb-4">Ready to Start Your Gaming Journey?</h2>
+            <p className="text-gray-400 text-lg">Join millions of players worldwide and discover amazing games</p>
+          </div>
+          <div className="flex flex-wrap justify-center gap-4">
+            <Link href="/verification" className="bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-bold py-3 px-6 rounded-lg transition-all shadow-lg flex items-center">
+              <i className="ri-verified-badge-line mr-2"></i>
+              Get Verified
+            </Link>
+            <Link href="/pricing-plans" className="bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white font-bold py-3 px-6 rounded-lg transition-all shadow-lg flex items-center">
+              <i className="ri-money-dollar-circle-line mr-2"></i>
+              Pricing Plans
+            </Link>
+            <Link href="/games" className="bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800 text-white font-bold py-3 px-6 rounded-lg transition-all shadow-lg flex items-center">
+              <i className="ri-gamepad-line mr-2"></i>
+              Play Now
+            </Link>
+            <Link href="/find-friends" className="bg-gradient-to-r from-pink-600 to-pink-700 hover:from-pink-700 hover:to-pink-800 text-white font-bold py-3 px-6 rounded-lg transition-all shadow-lg flex items-center">
+              <i className="ri-user-search-line mr-2"></i>
+              Find Friends
+            </Link>
+            <Link href="/rooms" className="bg-gradient-to-r from-orange-600 to-orange-700 hover:from-orange-700 hover:to-orange-800 text-white font-bold py-3 px-6 rounded-lg transition-all shadow-lg flex items-center">
+              <i className="ri-team-line mr-2"></i>
+              Join Rooms
+            </Link>
+            <Link href="/tournaments" className="bg-gradient-to-r from-yellow-600 to-yellow-700 hover:from-yellow-700 hover:to-yellow-800 text-white font-bold py-3 px-6 rounded-lg transition-all shadow-lg flex items-center">
+              <i className="ri-trophy-line mr-2"></i>
+              Tournaments
+            </Link>
+          </div>
+        </div>
+        
         <div className="border-t border-gray-800 pt-6 mt-6">
           <div className="flex flex-col md:flex-row justify-between items-center">
             <p className="text-gray-500 text-sm mb-4 md:mb-0">
