@@ -182,6 +182,10 @@ export default function HomePage() {
                 <Link href="/events" className="bg-gradient-to-r from-orange-600 to-orange-700 hover:from-orange-700 hover:to-orange-800 text-white font-bold py-3 px-6 rounded-lg transition-all shadow-lg" data-testid="hero-events-button">
                   {t('buttons.gaming_events', 'Gaming Events')}
                 </Link>
+                <Link href="/tournaments" className="bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800 text-white font-bold py-3 px-6 rounded-lg transition-all shadow-lg flex items-center" data-testid="hero-tournaments-button">
+                  <i className="ri-trophy-line mr-2"></i>
+                  {t('buttons.tournaments', 'Tournaments')}
+                </Link>
               </div>
               
               {/* Language Selector */}
