@@ -16,6 +16,8 @@ import { HomeAd } from '@/components/ads/home-ad';
 import { HeroSlider } from '@/components/HeroSlider';
 import { PublicRoomsSection } from '@/components/home/public-rooms-section';
 import { LanguageSelector, useTranslations } from '@/components/language-selector';
+import { GoogleAccountPopup } from '@/components/auth/google-account-popup';
+import { useGooglePopup } from '@/hooks/use-google-popup';
 import { Game, BlogPost, PushNotification as PushNotificationType } from '@shared/schema';
 import { apiRequest } from '@/lib/queryClient';
 
@@ -28,6 +30,9 @@ export default function HomePage() {
   const [popularGamesLimit] = useState(15); // Show 15 games per page
   const [hasMorePopularGames, setHasMorePopularGames] = useState(true);
   const [activeNotification, setActiveNotification] = useState<PushNotificationType | null>(null);
+  
+  // Google account popup hook
+  const { showPopup: showGooglePopup, hidePopup: hideGooglePopup } = useGooglePopup();
   
   // Fetch featured games
   const { data: featuredGames = [], isLoading: loadingFeatured } = useQuery<Game[]>({
@@ -374,6 +379,12 @@ export default function HomePage() {
           }}
         />
       )} */}
+      
+      {/* Google Account Selection Popup - like Canva */}
+      <GoogleAccountPopup 
+        isVisible={showGooglePopup}
+        onClose={hideGooglePopup}
+      />
     </div>
   );
 }
