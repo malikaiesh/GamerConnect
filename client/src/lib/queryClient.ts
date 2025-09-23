@@ -147,7 +147,21 @@ export const getQueryFn: <T>(options: {
     const timeoutId = setTimeout(() => controller.abort(), 30000); // 30-second timeout
     
     try {
-      const url = queryKey[0] as string;
+      const baseUrl = queryKey[0] as string;
+      const params = queryKey[1] as Record<string, any> | undefined;
+      
+      // Build URL with query parameters
+      let url = baseUrl;
+      if (params && Object.keys(params).length > 0) {
+        const searchParams = new URLSearchParams();
+        Object.entries(params).forEach(([key, value]) => {
+          if (value !== undefined && value !== null) {
+            searchParams.append(key, String(value));
+          }
+        });
+        url = `${baseUrl}?${searchParams.toString()}`;
+      }
+      
       const res = await fetch(url, {
         credentials: "include",
         signal: controller.signal,
