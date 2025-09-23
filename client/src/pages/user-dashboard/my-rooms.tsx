@@ -95,7 +95,7 @@ const roomFormSchema = z.object({
   voiceChatEnabled: z.boolean().default(true),
   textChatEnabled: z.boolean().default(true),
   giftsEnabled: z.boolean().default(true),
-  backgroundTheme: z.string().default("default"),
+  backgroundTheme: z.string().default("lunexa"),
   tags: z.array(z.string()).default([]),
 });
 
@@ -124,7 +124,7 @@ export default function MyRoomsPage() {
       voiceChatEnabled: true,
       textChatEnabled: true,
       giftsEnabled: true,
-      backgroundTheme: "default",
+      backgroundTheme: "lunexa",
       tags: [],
     },
   });

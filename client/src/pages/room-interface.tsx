@@ -194,6 +194,17 @@ export default function RoomInterfacePage() {
     }
   }, [roomId, user]);
 
+  // Apply Lunexa theme when entering room and cleanup when leaving
+  useEffect(() => {
+    // Apply lunexa-theme class to document when entering room
+    document.documentElement.classList.add('lunexa-theme');
+    
+    // Cleanup: Remove lunexa-theme class when leaving room
+    return () => {
+      document.documentElement.classList.remove('lunexa-theme');
+    };
+  }, []);
+
   // Initialize voice chat when room data is available
   useEffect(() => {
     const initializeVoiceChat = async () => {
@@ -571,22 +582,8 @@ export default function RoomInterfacePage() {
   }
 
   const getThemeGradient = (theme: string) => {
-    switch (theme) {
-      case 'ocean':
-        return 'from-blue-500 via-blue-600 to-cyan-600';
-      case 'sunset':
-        return 'from-orange-500 via-red-500 to-pink-600';
-      case 'forest':
-        return 'from-green-500 via-green-600 to-emerald-600';
-      case 'purple':
-        return 'from-purple-500 via-indigo-500 to-blue-600';
-      case 'galaxy':
-        return 'from-indigo-600 via-purple-600 to-pink-600';
-      case 'lunexa':
-        return 'from-purple-600 via-indigo-600 to-purple-800';
-      default:
-        return 'from-slate-900 via-purple-900 to-indigo-900';
-    }
+    // Always return Lunexa theme gradient regardless of the theme parameter
+    return 'from-purple-600 via-indigo-600 to-purple-800';
   };
 
   return (
