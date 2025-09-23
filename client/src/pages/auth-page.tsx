@@ -50,7 +50,7 @@ type RegisterValues = z.infer<typeof registerSchema>;
 export default function AuthPage() {
   const [activeTab, setActiveTab] = useState<string>("login");
   const [showForgotPassword, setShowForgotPassword] = useState(false);
-  const { user, isLoading } = useAuth();
+  const { user, isLoading, socialLogin } = useAuth();
   const [location, navigate] = useLocation();
   const recaptchaRef = useRef<ReCAPTCHA>(null);
   const [recaptchaToken, setRecaptchaToken] = useState<string>("");
@@ -294,38 +294,56 @@ export default function AuthPage() {
           {enabledSignupOptions.length > 0 && (
             <div className="mt-8">
               <h3 className="text-xl font-semibold mb-4">Sign up with:</h3>
-              <div className="grid grid-cols-1 gap-3">
+              <div className="flex flex-col gap-3">
+                {/* Email and Social options in separate rows for better mobile experience */}
                 {enabledSignupOptions
+                  .filter(option => option.provider === 'email')
                   .sort((a, b) => a.sortOrder - b.sortOrder)
                   .map((option) => (
                     <Button 
                       key={option.id}
                       type="button" 
                       variant="outline" 
-                      className="bg-white/10 text-white border-white/30 hover:bg-white/20 justify-start"
-                      onClick={() => {
-                        if (option.provider === 'email') {
-                          // For email, just switch to register tab
-                          setActiveTab('register');
-                        } else if (option.provider === 'phone') {
-                          // Handle phone signup - for now just switch to register
-                          setActiveTab('register');
-                        } else {
-                          // Handle social login
-                          handleSocialLogin(option.provider as 'google' | 'facebook');
-                        }
-                      }}
-                      style={{
-                        borderColor: 'rgba(255, 255, 255, 0.3)',
-                      }}
+                      className="bg-purple-600 hover:bg-purple-700 text-white border-purple-500 justify-center font-medium py-3"
+                      onClick={() => setActiveTab('register')}
+                      data-testid="button-signup-email"
                     >
-                      <span style={{ color: option.color }}>
+                      <span className="text-white">
                         {getProviderIcon(option.provider, 'h-5 w-5')}
                       </span>
                       {option.displayName}
                     </Button>
                   ))
                 }
+                
+                {/* Social login options inline */}
+                <div className="grid grid-cols-2 gap-3">
+                  {enabledSignupOptions
+                    .filter(option => option.provider !== 'email' && option.provider !== 'phone' && option.provider !== 'recaptcha' && option.provider !== 'livechat')
+                    .sort((a, b) => a.sortOrder - b.sortOrder)
+                    .map((option) => (
+                      <Button 
+                        key={option.id}
+                        type="button" 
+                        variant="outline" 
+                        className={`${
+                          option.provider === 'google' 
+                            ? 'bg-white hover:bg-gray-50 text-gray-700 border-gray-300' 
+                            : option.provider === 'facebook'
+                            ? 'bg-blue-600 hover:bg-blue-700 text-white border-blue-500'
+                            : 'bg-gray-600 hover:bg-gray-700 text-white border-gray-500'
+                        } justify-center font-medium py-3`}
+                        onClick={() => handleSocialLogin(option.provider as 'google' | 'facebook')}
+                        data-testid={`button-signup-${option.provider}`}
+                      >
+                        <span className={option.provider === 'google' ? 'text-red-500' : 'text-white'}>
+                          {getProviderIcon(option.provider, 'h-5 w-5')}
+                        </span>
+                        {option.displayName}
+                      </Button>
+                    ))
+                  }
+                </div>
               </div>
             </div>
           )}

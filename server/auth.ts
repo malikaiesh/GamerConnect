@@ -423,9 +423,20 @@ export function setupAuth(app: Express) {
   });
   
   // Social login routes - Google
-  app.get('/api/auth/google', passport.authenticate('google', { 
-    scope: ['profile', 'email'] 
-  }));
+  app.get('/api/auth/google', (req, res, next) => {
+    // Handle account selection prompt like Canva
+    const prompt = req.query.prompt as string;
+    const authOptions: any = {
+      scope: ['profile', 'email'],
+    };
+    
+    // Add prompt parameter for account selection
+    if (prompt === 'select_account') {
+      authOptions.prompt = 'select_account';
+    }
+    
+    passport.authenticate('google', authOptions)(req, res, next);
+  });
   
   app.get('/api/auth/google/callback', 
     passport.authenticate('google', { 

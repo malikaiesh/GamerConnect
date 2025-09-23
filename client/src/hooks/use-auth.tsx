@@ -7,6 +7,7 @@ const AuthContext = createContext<{
   isLoading: boolean;
   isAuthenticated: boolean;
   logoutMutation: any;
+  socialLogin: (provider: 'google' | 'facebook') => void;
 } | null>(null);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
@@ -36,7 +37,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   });
 
-  const value = { user, isLoading, isAuthenticated: !!user, logoutMutation };
+  const socialLogin = (provider: 'google' | 'facebook') => {
+    if (provider === 'google') {
+      // Add account selection prompt to force Google account picker like Canva
+      window.location.href = '/api/auth/google?prompt=select_account';
+    } else if (provider === 'facebook') {
+      window.location.href = '/api/auth/facebook';
+    }
+  };
+
+  const value = { user, isLoading, isAuthenticated: !!user, logoutMutation, socialLogin };
   return (
     <AuthContext.Provider value={value}>
       {children}
