@@ -84,6 +84,11 @@ export function GameCard({
             className={`${sizeClasses[size].image} hover:opacity-90 transition-opacity`}
             loading="lazy"
             onClick={handleImageClick}
+            onError={(e) => {
+              // Fallback to a default SVG placeholder if image fails to load
+              const img = e.target as HTMLImageElement;
+              img.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjMwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjNkI3Mjg2Ii8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIyNCIgZmlsbD0iI0ZGRkZGRiIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPk5vIEltYWdlPC90ZXh0Pjwvc3ZnPg==';
+            }}
           />
         </Link>
         
