@@ -3413,6 +3413,204 @@ export const translations = pgTable('translations', {
   };
 });
 
+// ===== TOURNAMENT SYSTEM TABLES =====
+
+// Tournaments table - main tournament information
+export const tournaments = pgTable('tournaments', {
+  id: serial('id').primaryKey(),
+  name: text('name').notNull(),
+  description: text('description'),
+  type: tournamentTypeEnum('type').notNull(),
+  status: tournamentStatusEnum('status').default('upcoming').notNull(),
+  
+  // Tournament timing
+  startDate: timestamp('start_date').notNull(),
+  endDate: timestamp('end_date').notNull(),
+  registrationDeadline: timestamp('registration_deadline').notNull(),
+  
+  // Tournament rules
+  maxParticipants: integer('max_participants').default(100).notNull(),
+  entryFee: integer('entry_fee').default(0).notNull(), // In coins/diamonds
+  minimumGiftValue: integer('minimum_gift_value').default(100).notNull(), // Minimum $ value for gifts to count
+  
+  // Prize configuration
+  prizes: json('prizes'), // JSON object with prize tiers and rewards
+  verificationRewards: json('verification_rewards'), // Auto verification badge rules
+  
+  // Tournament settings
+  isPublic: boolean('is_public').default(true).notNull(),
+  allowRoomGifts: boolean('allow_room_gifts').default(true).notNull(),
+  allowDirectGifts: boolean('allow_direct_gifts').default(false).notNull(),
+  featuredImageUrl: text('featured_image_url'),
+  
+  // Statistics
+  totalParticipants: integer('total_participants').default(0).notNull(),
+  totalGiftsValue: integer('total_gifts_value').default(0).notNull(), // Total $ value of gifts sent
+  totalGiftsCount: integer('total_gifts_count').default(0).notNull(),
+  
+  createdBy: integer('created_by').references(() => users.id).notNull(),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+  updatedAt: timestamp('updated_at').defaultNow().notNull()
+});
+
+// Tournament Participants table
+export const tournamentParticipants = pgTable('tournament_participants', {
+  id: serial('id').primaryKey(),
+  tournamentId: integer('tournament_id').notNull().references(() => tournaments.id, { onDelete: 'cascade' }),
+  userId: integer('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
+  roomId: integer('room_id').references(() => rooms.id, { onDelete: 'cascade' }), // Optional: room where they participate
+  
+  status: tournamentParticipationStatusEnum('status').default('registered').notNull(),
+  
+  // Participation statistics
+  giftsReceived: integer('gifts_received').default(0).notNull(),
+  giftsSent: integer('gifts_sent').default(0).notNull(),
+  totalGiftValueReceived: integer('total_gift_value_received').default(0).notNull(), // Total $ value received
+  totalGiftValueSent: integer('total_gift_value_sent').default(0).notNull(), // Total $ value sent
+  
+  // Leaderboard position
+  currentRank: integer('current_rank'),
+  bestRank: integer('best_rank'),
+  
+  registeredAt: timestamp('registered_at').defaultNow().notNull(),
+  completedAt: timestamp('completed_at')
+}, (table) => {
+  return {
+    // Unique participation per user per tournament
+    uniqueParticipation: uniqueIndex('unique_tournament_participant_idx').on(table.tournamentId, table.userId),
+    tournamentIdx: index('tournament_participants_tournament_idx').on(table.tournamentId),
+    userIdx: index('tournament_participants_user_idx').on(table.userId),
+    rankIdx: index('tournament_participants_rank_idx').on(table.currentRank)
+  };
+});
+
+// Tournament Gifts table - gifts sent specifically during tournaments
+export const tournamentGifts = pgTable('tournament_gifts', {
+  id: serial('id').primaryKey(),
+  tournamentId: integer('tournament_id').notNull().references(() => tournaments.id, { onDelete: 'cascade' }),
+  roomGiftId: integer('room_gift_id').references(() => roomGifts.id, { onDelete: 'cascade' }), // Link to room gift if sent in room
+  
+  senderId: integer('sender_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
+  recipientId: integer('recipient_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
+  giftId: integer('gift_id').notNull().references(() => gifts.id, { onDelete: 'cascade' }),
+  
+  quantity: integer('quantity').default(1).notNull(),
+  unitPrice: integer('unit_price').notNull(), // Price per gift in coins/diamonds
+  totalCoins: integer('total_coins').notNull(), // Total coins spent
+  totalDollars: decimal('total_dollars', { precision: 10, scale: 2 }).notNull(), // Total $ value for leaderboard
+  
+  message: text('message'), // Optional message with gift
+  
+  // Tournament context
+  isCountedForLeaderboard: boolean('is_counted_for_leaderboard').default(true).notNull(),
+  leaderboardPointsAwarded: integer('leaderboard_points_awarded').default(0).notNull(),
+  
+  createdAt: timestamp('created_at').defaultNow().notNull()
+}, (table) => {
+  return {
+    tournamentIdx: index('tournament_gifts_tournament_idx').on(table.tournamentId),
+    senderIdx: index('tournament_gifts_sender_idx').on(table.senderId),
+    recipientIdx: index('tournament_gifts_recipient_idx').on(table.recipientId),
+    createdAtIdx: index('tournament_gifts_created_at_idx').on(table.createdAt)
+  };
+});
+
+// Tournament Leaderboards table - real-time leaderboard tracking
+export const tournamentLeaderboards = pgTable('tournament_leaderboards', {
+  id: serial('id').primaryKey(),
+  tournamentId: integer('tournament_id').notNull().references(() => tournaments.id, { onDelete: 'cascade' }),
+  userId: integer('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
+  
+  // Leaderboard metrics
+  totalGiftsReceived: integer('total_gifts_received').default(0).notNull(),
+  totalValueReceived: decimal('total_value_received', { precision: 10, scale: 2 }).default('0').notNull(), // $ value
+  totalGiftsSent: integer('total_gifts_sent').default(0).notNull(),
+  totalValueSent: decimal('total_value_sent', { precision: 10, scale: 2 }).default('0').notNull(), // $ value
+  
+  // Calculated score (based on tournament type)
+  leaderboardScore: decimal('leaderboard_score', { precision: 10, scale: 2 }).default('0').notNull(),
+  currentRank: integer('current_rank'),
+  previousRank: integer('previous_rank'),
+  
+  // Achievements
+  hasEarnedVerificationBadge: boolean('has_earned_verification_badge').default(false).notNull(),
+  verificationBadgeEarnedAt: timestamp('verification_badge_earned_at'),
+  verificationBadgeDuration: integer('verification_badge_duration'), // In months
+  
+  lastUpdated: timestamp('last_updated').defaultNow().notNull()
+}, (table) => {
+  return {
+    // Unique leaderboard entry per user per tournament
+    uniqueLeaderboard: uniqueIndex('unique_tournament_leaderboard_idx').on(table.tournamentId, table.userId),
+    tournamentIdx: index('tournament_leaderboards_tournament_idx').on(table.tournamentId),
+    rankIdx: index('tournament_leaderboards_rank_idx').on(table.currentRank),
+    scoreIdx: index('tournament_leaderboards_score_idx').on(table.leaderboardScore)
+  };
+});
+
+// Gift Transactions table - track gift purchases for verification badge rewards
+export const giftTransactions = pgTable('gift_transactions', {
+  id: serial('id').primaryKey(),
+  userId: integer('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
+  giftId: integer('gift_id').notNull().references(() => gifts.id, { onDelete: 'cascade' }),
+  
+  // Transaction details
+  transactionType: text('transaction_type').notNull(), // 'purchase', 'tournament_gift', 'room_gift'
+  quantity: integer('quantity').default(1).notNull(),
+  totalCoins: integer('total_coins').notNull(),
+  totalDollars: decimal('total_dollars', { precision: 10, scale: 2 }).notNull(),
+  
+  // Context
+  tournamentId: integer('tournament_id').references(() => tournaments.id, { onDelete: 'cascade' }),
+  roomId: integer('room_id').references(() => rooms.id, { onDelete: 'cascade' }),
+  recipientId: integer('recipient_id').references(() => users.id, { onDelete: 'cascade' }),
+  
+  // Payment
+  paymentTransactionId: integer('payment_transaction_id').references(() => paymentTransactions.id),
+  
+  createdAt: timestamp('created_at').defaultNow().notNull()
+}, (table) => {
+  return {
+    userIdx: index('gift_transactions_user_idx').on(table.userId),
+    tournamentIdx: index('gift_transactions_tournament_idx').on(table.tournamentId),
+    createdAtIdx: index('gift_transactions_created_at_idx').on(table.createdAt)
+  };
+});
+
+// Verification Badge Rewards table - track automatic verification rewards
+export const verificationBadgeRewards = pgTable('verification_badge_rewards', {
+  id: serial('id').primaryKey(),
+  userId: integer('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
+  
+  // Reward details
+  rewardType: text('reward_type').notNull(), // 'tournament_gifts', 'direct_gifts', 'room_gifts'
+  triggerAmount: decimal('trigger_amount', { precision: 10, scale: 2 }).notNull(), // $ amount that triggered reward
+  badgeDuration: integer('badge_duration').notNull(), // Duration in months
+  
+  // Context
+  tournamentId: integer('tournament_id').references(() => tournaments.id, { onDelete: 'cascade' }),
+  giftTransactionIds: json('gift_transaction_ids'), // Array of gift transaction IDs that contributed
+  
+  // Status
+  isActive: boolean('is_active').default(true).notNull(),
+  wasApplied: boolean('was_applied').default(false).notNull(),
+  appliedAt: timestamp('applied_at'),
+  expiresAt: timestamp('expires_at'),
+  
+  // Automatic verification
+  oldVerificationExpiresAt: timestamp('old_verification_expires_at'), // Original expiry before extension
+  newVerificationExpiresAt: timestamp('new_verification_expires_at'), // New expiry after extension
+  
+  createdAt: timestamp('created_at').defaultNow().notNull()
+}, (table) => {
+  return {
+    userIdx: index('verification_badge_rewards_user_idx').on(table.userId),
+    tournamentIdx: index('verification_badge_rewards_tournament_idx').on(table.tournamentId),
+    activeIdx: index('verification_badge_rewards_active_idx').on(table.isActive),
+    expiresAtIdx: index('verification_badge_rewards_expires_at_idx').on(table.expiresAt)
+  };
+});
+
 // ===== SHORT LINKS VALIDATION SCHEMAS =====
 
 export const insertShortLinkSchema = createInsertSchema(shortLinks, {
@@ -3440,6 +3638,91 @@ export const insertTranslationSchema = createInsertSchema(translations, {
 
 export type ShortLink = typeof shortLinks.$inferSelect;
 export type InsertShortLink = z.infer<typeof insertShortLinkSchema>;
+
+// ===== TOURNAMENT VALIDATION SCHEMAS =====
+
+export const insertTournamentSchema = createInsertSchema(tournaments, {
+  name: (schema) => schema.min(3, "Tournament name must be at least 3 characters").max(100, "Name must be less than 100 characters"),
+  description: (schema) => schema.optional(),
+  startDate: (schema) => schema.refine((date) => new Date(date) > new Date(), "Start date must be in the future"),
+  endDate: (schema) => schema.refine((date) => new Date(date) > new Date(), "End date must be in the future"),
+  registrationDeadline: (schema) => schema.refine((date) => new Date(date) > new Date(), "Registration deadline must be in the future"),
+  maxParticipants: (schema) => schema.min(2, "Must allow at least 2 participants").max(10000, "Cannot exceed 10,000 participants"),
+  entryFee: (schema) => schema.min(0, "Entry fee cannot be negative"),
+  minimumGiftValue: (schema) => schema.min(1, "Minimum gift value must be at least $1")
+}).omit({ id: true, totalParticipants: true, totalGiftsValue: true, totalGiftsCount: true, createdAt: true, updatedAt: true })
+.refine((data) => new Date(data.endDate) > new Date(data.startDate), {
+  message: "End date must be after start date",
+  path: ["endDate"]
+})
+.refine((data) => new Date(data.registrationDeadline) <= new Date(data.startDate), {
+  message: "Registration deadline must be before or on start date",
+  path: ["registrationDeadline"]
+});
+
+export const insertTournamentParticipantSchema = createInsertSchema(tournamentParticipants, {
+  tournamentId: (schema) => schema.positive("Tournament ID must be positive"),
+  userId: (schema) => schema.positive("User ID must be positive"),
+  roomId: (schema) => schema.positive("Room ID must be positive").optional()
+}).omit({ 
+  id: true, 
+  giftsReceived: true, 
+  giftsSent: true, 
+  totalGiftValueReceived: true, 
+  totalGiftValueSent: true,
+  currentRank: true,
+  bestRank: true,
+  registeredAt: true, 
+  completedAt: true 
+});
+
+export const insertTournamentGiftSchema = createInsertSchema(tournamentGifts, {
+  quantity: (schema) => schema.min(1, "Quantity must be at least 1"),
+  unitPrice: (schema) => schema.min(1, "Unit price must be positive"),
+  totalCoins: (schema) => schema.min(1, "Total coins must be positive"),
+  totalDollars: (schema) => schema.min(0.01, "Total dollars must be at least $0.01"),
+  message: (schema) => schema.max(500, "Message must be less than 500 characters").optional()
+}).omit({ id: true, leaderboardPointsAwarded: true, createdAt: true });
+
+export const insertGiftTransactionSchema = createInsertSchema(giftTransactions, {
+  transactionType: (schema) => schema.refine(
+    (val) => ['purchase', 'tournament_gift', 'room_gift'].includes(val),
+    "Transaction type must be 'purchase', 'tournament_gift', or 'room_gift'"
+  ),
+  quantity: (schema) => schema.min(1, "Quantity must be at least 1"),
+  totalCoins: (schema) => schema.min(1, "Total coins must be positive"),
+  totalDollars: (schema) => schema.min(0.01, "Total dollars must be at least $0.01")
+}).omit({ id: true, createdAt: true });
+
+export const insertVerificationBadgeRewardSchema = createInsertSchema(verificationBadgeRewards, {
+  rewardType: (schema) => schema.refine(
+    (val) => ['tournament_gifts', 'direct_gifts', 'room_gifts'].includes(val),
+    "Reward type must be 'tournament_gifts', 'direct_gifts', or 'room_gifts'"
+  ),
+  badgeDuration: (schema) => schema.min(1, "Badge duration must be at least 1 month").max(120, "Badge duration cannot exceed 120 months"),
+  triggerAmount: (schema) => schema.min(1, "Trigger amount must be at least $1")
+}).omit({ 
+  id: true, 
+  wasApplied: true, 
+  appliedAt: true, 
+  oldVerificationExpiresAt: true, 
+  newVerificationExpiresAt: true, 
+  createdAt: true 
+});
+
+// ===== TOURNAMENT TYPE EXPORTS =====
+
+export type Tournament = typeof tournaments.$inferSelect;
+export type InsertTournament = z.infer<typeof insertTournamentSchema>;
+export type TournamentParticipant = typeof tournamentParticipants.$inferSelect;
+export type InsertTournamentParticipant = z.infer<typeof insertTournamentParticipantSchema>;
+export type TournamentGift = typeof tournamentGifts.$inferSelect;
+export type InsertTournamentGift = z.infer<typeof insertTournamentGiftSchema>;
+export type TournamentLeaderboard = typeof tournamentLeaderboards.$inferSelect;
+export type GiftTransaction = typeof giftTransactions.$inferSelect;
+export type InsertGiftTransaction = z.infer<typeof insertGiftTransactionSchema>;
+export type VerificationBadgeReward = typeof verificationBadgeRewards.$inferSelect;
+export type InsertVerificationBadgeReward = z.infer<typeof insertVerificationBadgeRewardSchema>;
 
 // ===== TRANSLATION TYPE EXPORTS =====
 
