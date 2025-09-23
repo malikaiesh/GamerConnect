@@ -1463,4 +1463,246 @@ router.delete("/:roomId/permanent-delete", isAuthenticated, async (req: Request,
   }
 });
 
+// Get room members
+router.get("/:roomId/members", isAuthenticated, async (req: Request, res: Response) => {
+  try {
+    const { roomId } = req.params;
+    const userId = (req as any).user?.id;
+
+    if (!userId) {
+      return res.status(401).json({ error: "User not authenticated" });
+    }
+
+    // Get room
+    const room = await db.select().from(rooms).where(eq(rooms.roomId, roomId)).limit(1);
+    if (room.length === 0) {
+      return res.status(404).json({ error: "Room not found" });
+    }
+
+    // Check if user is owner or admin
+    const isOwner = room[0].ownerId === userId;
+    const isAdminUser = (req as any).user?.isAdmin;
+    
+    if (!isOwner && !isAdminUser) {
+      return res.status(403).json({ error: "Access denied. Only room owners and admins can view members." });
+    }
+
+    // Get room members
+    const members = await db
+      .select({
+        id: roomUsers.id,
+        role: roomUsers.role,
+        seatNumber: roomUsers.seatNumber,
+        isActive: roomUsers.isActive,
+        joinedAt: roomUsers.createdAt,
+        user: {
+          id: users.id,
+          username: users.username,
+          displayName: users.displayName,
+          profilePicture: users.profilePicture
+        }
+      })
+      .from(roomUsers)
+      .innerJoin(users, eq(roomUsers.userId, users.id))
+      .where(eq(roomUsers.roomId, room[0].id))
+      .orderBy(asc(roomUsers.role), asc(roomUsers.createdAt));
+
+    res.json(members);
+  } catch (error) {
+    console.error("Error fetching room members:", error);
+    res.status(500).json({ error: "Failed to fetch room members" });
+  }
+});
+
+// Add member to room
+router.post("/:roomId/members", isAuthenticated, async (req: Request, res: Response) => {
+  try {
+    const { roomId } = req.params;
+    const { username, role = "member" } = req.body;
+    const userId = (req as any).user?.id;
+
+    if (!userId) {
+      return res.status(401).json({ error: "User not authenticated" });
+    }
+
+    if (!username) {
+      return res.status(400).json({ error: "Username is required" });
+    }
+
+    // Get room
+    const room = await db.select().from(rooms).where(eq(rooms.roomId, roomId)).limit(1);
+    if (room.length === 0) {
+      return res.status(404).json({ error: "Room not found" });
+    }
+
+    // Check if user is owner or admin
+    const isOwner = room[0].ownerId === userId;
+    const isAdminUser = (req as any).user?.isAdmin;
+    
+    if (!isOwner && !isAdminUser) {
+      return res.status(403).json({ error: "Access denied. Only room owners and admins can add members." });
+    }
+
+    // Find user by username
+    const targetUser = await db.select().from(users).where(eq(users.username, username)).limit(1);
+    if (targetUser.length === 0) {
+      return res.status(404).json({ error: "User not found" });
+    }
+
+    // Check if user is already in room
+    const existingMember = await db.select().from(roomUsers)
+      .where(and(eq(roomUsers.roomId, room[0].id), eq(roomUsers.userId, targetUser[0].id)))
+      .limit(1);
+
+    if (existingMember.length > 0) {
+      return res.status(400).json({ error: "User is already a member of this room" });
+    }
+
+    // Check room capacity
+    const currentUsersCount = await db.select({ count: count() })
+      .from(roomUsers)
+      .where(and(eq(roomUsers.roomId, room[0].id), eq(roomUsers.isActive, true)));
+    
+    if (currentUsersCount[0].count >= room[0].maxSeats) {
+      return res.status(400).json({ error: "Room is full" });
+    }
+
+    // Add member to room
+    await db.insert(roomUsers).values({
+      roomId: room[0].id,
+      userId: targetUser[0].id,
+      role: role as any,
+      isActive: true,
+      isMicOn: false,
+      isMuted: false,
+      seatNumber: null
+    });
+
+    // Update room current users count
+    await db.update(rooms)
+      .set({ 
+        currentUsers: sql`${rooms.currentUsers} + 1`,
+        updatedAt: new Date()
+      })
+      .where(eq(rooms.id, room[0].id));
+
+    res.json({ message: "Member added successfully" });
+  } catch (error) {
+    console.error("Error adding room member:", error);
+    res.status(500).json({ error: "Failed to add member" });
+  }
+});
+
+// Update member role
+router.patch("/:roomId/members/:memberId/role", isAuthenticated, async (req: Request, res: Response) => {
+  try {
+    const { roomId, memberId } = req.params;
+    const { role } = req.body;
+    const userId = (req as any).user?.id;
+
+    if (!userId) {
+      return res.status(401).json({ error: "User not authenticated" });
+    }
+
+    if (!role || !["manager", "member", "guest"].includes(role)) {
+      return res.status(400).json({ error: "Invalid role. Must be 'manager', 'member', or 'guest'" });
+    }
+
+    // Get room
+    const room = await db.select().from(rooms).where(eq(rooms.roomId, roomId)).limit(1);
+    if (room.length === 0) {
+      return res.status(404).json({ error: "Room not found" });
+    }
+
+    // Check if user is owner or admin
+    const isOwner = room[0].ownerId === userId;
+    const isAdminUser = (req as any).user?.isAdmin;
+    
+    if (!isOwner && !isAdminUser) {
+      return res.status(403).json({ error: "Access denied. Only room owners and admins can update member roles." });
+    }
+
+    // Find member
+    const member = await db.select().from(roomUsers)
+      .where(and(eq(roomUsers.roomId, room[0].id), eq(roomUsers.userId, parseInt(memberId))))
+      .limit(1);
+
+    if (member.length === 0) {
+      return res.status(404).json({ error: "Member not found in this room" });
+    }
+
+    // Prevent changing owner role
+    if (member[0].role === "owner") {
+      return res.status(400).json({ error: "Cannot change room owner role" });
+    }
+
+    // Update member role
+    await db.update(roomUsers)
+      .set({ role: role as any })
+      .where(and(eq(roomUsers.roomId, room[0].id), eq(roomUsers.userId, parseInt(memberId))));
+
+    res.json({ message: "Member role updated successfully" });
+  } catch (error) {
+    console.error("Error updating member role:", error);
+    res.status(500).json({ error: "Failed to update member role" });
+  }
+});
+
+// Remove member from room
+router.delete("/:roomId/members/:memberId", isAuthenticated, async (req: Request, res: Response) => {
+  try {
+    const { roomId, memberId } = req.params;
+    const userId = (req as any).user?.id;
+
+    if (!userId) {
+      return res.status(401).json({ error: "User not authenticated" });
+    }
+
+    // Get room
+    const room = await db.select().from(rooms).where(eq(rooms.roomId, roomId)).limit(1);
+    if (room.length === 0) {
+      return res.status(404).json({ error: "Room not found" });
+    }
+
+    // Check if user is owner or admin
+    const isOwner = room[0].ownerId === userId;
+    const isAdminUser = (req as any).user?.isAdmin;
+    
+    if (!isOwner && !isAdminUser) {
+      return res.status(403).json({ error: "Access denied. Only room owners and admins can remove members." });
+    }
+
+    // Find member
+    const member = await db.select().from(roomUsers)
+      .where(and(eq(roomUsers.roomId, room[0].id), eq(roomUsers.userId, parseInt(memberId))))
+      .limit(1);
+
+    if (member.length === 0) {
+      return res.status(404).json({ error: "Member not found in this room" });
+    }
+
+    // Prevent removing owner
+    if (member[0].role === "owner") {
+      return res.status(400).json({ error: "Cannot remove room owner" });
+    }
+
+    // Remove member from room
+    await db.delete(roomUsers)
+      .where(and(eq(roomUsers.roomId, room[0].id), eq(roomUsers.userId, parseInt(memberId))));
+
+    // Update room current users count
+    await db.update(rooms)
+      .set({ 
+        currentUsers: sql`${rooms.currentUsers} - 1`,
+        updatedAt: new Date()
+      })
+      .where(eq(rooms.id, room[0].id));
+
+    res.json({ message: "Member removed successfully" });
+  } catch (error) {
+    console.error("Error removing member:", error);
+    res.status(500).json({ error: "Failed to remove member" });
+  }
+});
+
 export { router as roomsRouter };

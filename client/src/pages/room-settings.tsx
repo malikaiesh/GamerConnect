@@ -31,7 +31,11 @@ import {
   Save,
   ArrowLeft,
   Trash2,
-  AlertTriangle
+  AlertTriangle,
+  ShieldCheck,
+  Crown,
+  UserX,
+  UserPlus
 } from "lucide-react";
 
 interface RoomData {
@@ -84,6 +88,329 @@ interface RoomSettingsFormData {
   musicEnabled: boolean;
   bannerImage: string;
   tags: string[];
+}
+
+interface RoomMember {
+  id: number;
+  user: {
+    id: number;
+    username: string;
+    displayName: string | null;
+    profilePicture: string | null;
+  };
+  role: "owner" | "manager" | "member" | "guest";
+  seatNumber: number | null;
+  isActive: boolean;
+  joinedAt: string;
+}
+
+// Admin Permissions Tab Component
+function AdminPermissionsTab({ roomId }: { roomId: string | undefined }) {
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
+  const [newMemberUsername, setNewMemberUsername] = useState("");
+
+  // Fetch room members
+  const { data: roomMembers, isLoading: isLoadingMembers } = useQuery<RoomMember[]>({
+    queryKey: [`/api/rooms/${roomId}/members`],
+    enabled: !!roomId
+  });
+
+  // Update member role mutation
+  const updateMemberRoleMutation = useMutation({
+    mutationFn: ({ userId, newRole }: { userId: number; newRole: string }) =>
+      apiRequest(`/api/rooms/${roomId}/members/${userId}/role`, { 
+        method: "PATCH", 
+        body: { role: newRole } 
+      }),
+    onSuccess: () => {
+      toast({
+        title: "Success",
+        description: "Member role updated successfully",
+      });
+      queryClient.invalidateQueries({ queryKey: [`/api/rooms/${roomId}/members`] });
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Error",
+        description: error.message,
+        variant: "destructive",
+      });
+    },
+  });
+
+  // Remove member mutation
+  const removeMemberMutation = useMutation({
+    mutationFn: (userId: number) =>
+      apiRequest(`/api/rooms/${roomId}/members/${userId}`, { method: "DELETE" }),
+    onSuccess: () => {
+      toast({
+        title: "Success",
+        description: "Member removed successfully",
+      });
+      queryClient.invalidateQueries({ queryKey: [`/api/rooms/${roomId}/members`] });
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Error",
+        description: error.message,
+        variant: "destructive",
+      });
+    },
+  });
+
+  // Add member mutation
+  const addMemberMutation = useMutation({
+    mutationFn: (username: string) =>
+      apiRequest(`/api/rooms/${roomId}/members`, { 
+        method: "POST", 
+        body: { username, role: "member" } 
+      }),
+    onSuccess: () => {
+      toast({
+        title: "Success",
+        description: "Member added successfully",
+      });
+      setNewMemberUsername("");
+      queryClient.invalidateQueries({ queryKey: [`/api/rooms/${roomId}/members`] });
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Error",
+        description: error.message,
+        variant: "destructive",
+      });
+    },
+  });
+
+  const getRoleColor = (role: string) => {
+    switch (role) {
+      case "owner":
+        return "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300";
+      case "manager":
+        return "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300";
+      case "member":
+        return "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300";
+      case "guest":
+        return "bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-300";
+      default:
+        return "bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-300";
+    }
+  };
+
+  const getRoleIcon = (role: string) => {
+    switch (role) {
+      case "owner":
+        return <Crown className="w-4 h-4" />;
+      case "manager":
+        return <ShieldCheck className="w-4 h-4" />;
+      case "member":
+        return <Users className="w-4 h-4" />;
+      case "guest":
+        return <Eye className="w-4 h-4" />;
+      default:
+        return <Users className="w-4 h-4" />;
+    }
+  };
+
+  const handleAddMember = () => {
+    if (newMemberUsername.trim()) {
+      addMemberMutation.mutate(newMemberUsername.trim());
+    }
+  };
+
+  if (isLoadingMembers) {
+    return (
+      <Card data-testid="card-permissions-loading">
+        <CardContent className="p-6">
+          <div className="flex items-center justify-center">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  return (
+    <Card data-testid="card-admin-permissions">
+      <CardHeader>
+        <CardTitle className="flex items-center gap-2">
+          <ShieldCheck className="w-5 h-5" />
+          Admin Permissions
+        </CardTitle>
+      </CardHeader>
+      <CardContent className="space-y-6">
+        {/* Add New Member */}
+        <div className="space-y-2">
+          <Label htmlFor="newMember">Add New Member</Label>
+          <div className="flex gap-2">
+            <Input
+              id="newMember"
+              value={newMemberUsername}
+              onChange={(e) => setNewMemberUsername(e.target.value)}
+              placeholder="Enter username"
+              onKeyPress={(e) => e.key === 'Enter' && handleAddMember()}
+              data-testid="input-new-member"
+            />
+            <Button 
+              onClick={handleAddMember}
+              disabled={addMemberMutation.isPending || !newMemberUsername.trim()}
+              data-testid="button-add-member"
+            >
+              <UserPlus className="w-4 h-4 mr-2" />
+              Add
+            </Button>
+          </div>
+        </div>
+
+        <Separator />
+
+        {/* Current Members */}
+        <div className="space-y-4">
+          <h3 className="font-semibold">Current Members ({roomMembers?.length || 0})</h3>
+          
+          {roomMembers && roomMembers.length > 0 ? (
+            <div className="space-y-3">
+              {roomMembers.map((member) => (
+                <div
+                  key={member.id}
+                  className="flex items-center justify-between p-4 border rounded-lg"
+                  data-testid={`member-${member.user.id}`}
+                >
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-full bg-gradient-to-r from-blue-500 to-purple-600 flex items-center justify-center text-white font-bold">
+                      {member.user.displayName?.[0] || member.user.username[0]}
+                    </div>
+                    <div>
+                      <div className="font-medium">
+                        {member.user.displayName || member.user.username}
+                      </div>
+                      <div className="text-sm text-muted-foreground">
+                        @{member.user.username}
+                        {member.seatNumber && ` • Seat ${member.seatNumber}`}
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-2">
+                    {/* Role Badge */}
+                    <Badge className={`${getRoleColor(member.role)} capitalize`} data-testid={`badge-role-${member.user.id}`}>
+                      {getRoleIcon(member.role)}
+                      {member.role}
+                    </Badge>
+
+                    {/* Role Change Dropdown (only for non-owners) */}
+                    {member.role !== "owner" && (
+                      <Select
+                        value={member.role}
+                        onValueChange={(newRole) => updateMemberRoleMutation.mutate({ 
+                          userId: member.user.id, 
+                          newRole 
+                        })}
+                        disabled={updateMemberRoleMutation.isPending}
+                      >
+                        <SelectTrigger className="w-32" data-testid={`select-role-${member.user.id}`}>
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="manager">
+                            <div className="flex items-center gap-2">
+                              <ShieldCheck className="w-4 h-4" />
+                              Manager
+                            </div>
+                          </SelectItem>
+                          <SelectItem value="member">
+                            <div className="flex items-center gap-2">
+                              <Users className="w-4 h-4" />
+                              Member
+                            </div>
+                          </SelectItem>
+                          <SelectItem value="guest">
+                            <div className="flex items-center gap-2">
+                              <Eye className="w-4 h-4" />
+                              Guest
+                            </div>
+                          </SelectItem>
+                        </SelectContent>
+                      </Select>
+                    )}
+
+                    {/* Remove Member Button (only for non-owners) */}
+                    {member.role !== "owner" && (
+                      <AlertDialog>
+                        <AlertDialogTrigger asChild>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="text-destructive hover:text-destructive"
+                            data-testid={`button-remove-${member.user.id}`}
+                          >
+                            <UserX className="w-4 h-4" />
+                          </Button>
+                        </AlertDialogTrigger>
+                        <AlertDialogContent>
+                          <AlertDialogHeader>
+                            <AlertDialogTitle>Remove Member</AlertDialogTitle>
+                            <AlertDialogDescription>
+                              Are you sure you want to remove {member.user.displayName || member.user.username} from this room?
+                              This action cannot be undone.
+                            </AlertDialogDescription>
+                          </AlertDialogHeader>
+                          <AlertDialogFooter>
+                            <AlertDialogCancel>Cancel</AlertDialogCancel>
+                            <AlertDialogAction
+                              onClick={() => removeMemberMutation.mutate(member.user.id)}
+                              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                              disabled={removeMemberMutation.isPending}
+                              data-testid={`button-confirm-remove-${member.user.id}`}
+                            >
+                              {removeMemberMutation.isPending ? "Removing..." : "Remove"}
+                            </AlertDialogAction>
+                          </AlertDialogFooter>
+                        </AlertDialogContent>
+                      </AlertDialog>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="text-center py-8 text-muted-foreground">
+              <Users className="w-12 h-12 mx-auto mb-4 opacity-50" />
+              <p>No members found</p>
+            </div>
+          )}
+        </div>
+
+        {/* Role Descriptions */}
+        <div className="space-y-3 pt-4 border-t">
+          <h4 className="font-medium">Role Descriptions</h4>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
+            <div className="flex items-center gap-2">
+              <Crown className="w-4 h-4 text-yellow-600" />
+              <span className="font-medium">Owner:</span>
+              <span className="text-muted-foreground">Full control over room</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <ShieldCheck className="w-4 h-4 text-blue-600" />
+              <span className="font-medium">Manager:</span>
+              <span className="text-muted-foreground">Can moderate and manage users</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <Users className="w-4 h-4 text-green-600" />
+              <span className="font-medium">Member:</span>
+              <span className="text-muted-foreground">Regular participant</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <Eye className="w-4 h-4 text-gray-600" />
+              <span className="font-medium">Guest:</span>
+              <span className="text-muted-foreground">Limited access visitor</span>
+            </div>
+          </div>
+        </div>
+      </CardContent>
+    </Card>
+  );
 }
 
 export default function RoomSettingsPage() {
@@ -284,7 +611,7 @@ export default function RoomSettingsPage() {
 
       {/* Settings Tabs */}
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-        <TabsList className="grid grid-cols-5 w-full">
+        <TabsList className="grid grid-cols-6 w-full">
           <TabsTrigger value="general" data-testid="tab-general">
             <Settings className="w-4 h-4 mr-2" />
             General
@@ -296,6 +623,10 @@ export default function RoomSettingsPage() {
           <TabsTrigger value="features" data-testid="tab-features">
             <Users className="w-4 h-4 mr-2" />
             Features
+          </TabsTrigger>
+          <TabsTrigger value="permissions" data-testid="tab-permissions">
+            <ShieldCheck className="w-4 h-4 mr-2" />
+            Admin Permissions
           </TabsTrigger>
           <TabsTrigger value="appearance" data-testid="tab-appearance">
             <Palette className="w-4 h-4 mr-2" />
@@ -499,6 +830,11 @@ export default function RoomSettingsPage() {
               </div>
             </CardContent>
           </Card>
+        </TabsContent>
+
+        {/* Admin Permissions Settings */}
+        <TabsContent value="permissions">
+          <AdminPermissionsTab roomId={roomId} />
         </TabsContent>
 
         {/* Features Settings */}
