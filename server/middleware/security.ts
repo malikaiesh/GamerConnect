@@ -11,9 +11,9 @@ export const securityHeaders = helmet({
       defaultSrc: ["'self'"],
       styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com", "https://cdn.jsdelivr.net"],
       fontSrc: ["'self'", "https://fonts.gstatic.com", "https://cdn.jsdelivr.net"],
-      scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'"], // Allow inline scripts for development
+      scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'", "*.replit.dev", "*.spock.replit.dev"], // Allow inline scripts for development
       imgSrc: ["'self'", "data:", "https:", "http:"],
-      connectSrc: ["'self'", "wss:", "ws:", "https://storage.googleapis.com"],
+      connectSrc: ["'self'", "wss:", "ws:", "https://storage.googleapis.com", "*.replit.dev", "*.spock.replit.dev"],
       frameSrc: ["'none'"],
       objectSrc: ["'none'"],
       mediaSrc: ["'self'"],

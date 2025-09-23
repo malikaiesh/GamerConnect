@@ -57,8 +57,10 @@ export function setTheme(themeId: string) {
     document.documentElement.classList.add(theme.class);
   }
   
-  // For debugging
-  console.log(`Theme changed to: ${themeId}, applied class: ${theme?.class || 'none'}`);
+  // Only log in development mode
+  if (import.meta.env.DEV) {
+    console.log(`Theme changed to: ${themeId}, applied class: ${theme?.class || 'none'}`);
+  }
   
   // Save to localStorage
   localStorage.setItem('theme', themeId);
