@@ -12,7 +12,8 @@ import {
   Zap,
   PlusCircle,
   Settings,
-  Palette
+  Palette,
+  Trophy
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -131,6 +132,17 @@ export function Sidebar() {
               >
                 <Star className="w-4 h-4 mr-2 text-accent" />
                 New Rooms
+              </Button>
+            </Link>
+            
+            <Link href="/tournaments">
+              <Button 
+                variant={isActive("/tournaments") || isPathActive("/tournaments") ? "default" : "ghost"} 
+                className="w-full justify-start"
+                data-testid="nav-tournaments"
+              >
+                <Trophy className="w-4 h-4 mr-2 text-yellow-500" />
+                Tournaments
               </Button>
             </Link>
           </div>
