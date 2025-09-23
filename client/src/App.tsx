@@ -240,15 +240,9 @@ function Router() {
         <Suspense fallback={<LoadingFallback />}><DevLogin /></Suspense>
       </Route>
       
-      {/* Room pages */}
+      {/* Room pages - IMPORTANT: Specific routes must come before catch-all /:roomId route */}
       <Route path="/rooms">
         <Suspense fallback={<LoadingFallback />}><RoomLobbyPage /></Suspense>
-      </Route>
-      <Route path="/room/:roomId">
-        <Suspense fallback={<LoadingFallback />}><RoomInterfacePage /></Suspense>
-      </Route>
-      <Route path="/rooms/:roomId">
-        <Suspense fallback={<LoadingFallback />}><RoomInterfacePage /></Suspense>
       </Route>
       <Route path="/rooms/hot">
         <Suspense fallback={<LoadingFallback />}><HotRoomsPage /></Suspense>
@@ -261,6 +255,12 @@ function Router() {
       </Route>
       <Route path="/rooms/new">
         <Suspense fallback={<LoadingFallback />}><NewRoomsPage /></Suspense>
+      </Route>
+      <Route path="/room/:roomId">
+        <Suspense fallback={<LoadingFallback />}><RoomInterfacePage /></Suspense>
+      </Route>
+      <Route path="/rooms/:roomId">
+        <Suspense fallback={<LoadingFallback />}><RoomInterfacePage /></Suspense>
       </Route>
       <Route path="/friends">
         <Suspense fallback={<LoadingFallback />}><FriendsPage /></Suspense>
