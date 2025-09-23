@@ -90,12 +90,12 @@ Remember: the best game is a finished game!
 
 Good luck on your indie game development journey!
           `,
-          featuredImage: '/uploads/blog-indie-game-dev.jpg',
+          featuredImage: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAwIiBoZWlnaHQ9IjQwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjOEI1QTJCIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIyOCIgZmlsbD0iI0ZGRkZGRiIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPkluZGllIEdhbWUgRGV2ZWxvcG1lbnQ8L3RleHQ+PC9zdmc+',
           categoryId: gameDev?.id || 1,
           tags: ['indie', 'beginner', 'tutorial', 'gamedev'],
           status: 'published' as const,
           author: 'Game Dev Team',
-          authorAvatar: '/uploads/author-gamedev.jpg',
+          authorAvatar: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjNEE5MEUyIiByeD0iNTAiLz48dGV4dCB4PSI1MCUiIHk9IjUwJSIgZm9udC1mYW1pbHk9IkFyaWFsIiBmb250LXNpemU9IjIwIiBmaWxsPSIjRkZGRkZGIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkeT0iLjNlbSI+RGV2PC90ZXh0Pjwvc3ZnPg==',
           publishedAt: new Date('2024-01-15')
         },
         {
@@ -161,12 +161,12 @@ Lightweight code editor with excellent game development extensions.
 
 Choose tools based on your project needs, budget, and team size. Many successful games have been made with free tools!
           `,
-          featuredImage: '/uploads/blog-game-tools.jpg',
+          featuredImage: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAwIiBoZWlnaHQ9IjQwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjMkU4NkFCIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIyOCIgZmlsbD0iI0ZGRkZGRiIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPkdhbWUgRGV2IFRvb2xzPC90ZXh0Pjwvc3ZnPg==',
           categoryId: tutorials?.id || 2,
           tags: ['tools', 'software', 'development', '2024'],
           status: 'published' as const,
           author: 'Tech Writer',
-          authorAvatar: '/uploads/author-tech.jpg',
+          authorAvatar: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjMjdBRTYwIiByeD0iNTAiLz48dGV4dCB4PSI1MCUiIHk9IjUwJSIgZm9udC1mYW1pbHk9IkFyaWFsIiBmb250LXNpemU9IjIwIiBmaWxsPSIjRkZGRkZGIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkeT0iLjNlbSI+VGVjaDwvdGV4dD48L3N2Zz4=',
           publishedAt: new Date('2024-02-01')
         },
         {
@@ -221,12 +221,12 @@ The eternal puzzle game shows:
 
 Great puzzle games are about the "Aha!" moment - that satisfying click when the solution becomes clear. The best designers craft experiences that make players feel clever, not confused.
           `,
-          featuredImage: '/uploads/blog-puzzle-review.jpg',
+          featuredImage: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAwIiBoZWlnaHQ9IjQwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjQTIzQjcyIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIyOCIgZmlsbD0iI0ZGRkZGRiIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPlB1enpsZSBHYW1lIFJldmlldzwvdGV4dD48L3N2Zz4=',
           categoryId: reviews?.id || 3,
           tags: ['puzzle', 'design', 'analysis', 'review'],
           status: 'published' as const,
           author: 'Game Critic',
-          authorAvatar: '/uploads/author-critic.jpg',
+          authorAvatar: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjRTc0QzNDIiByeD0iNTAiLz48dGV4dCB4PSI1MCUiIHk9IjUwJSIgZm9udC1mYW1pbHk9IkFyaWFsIiBmb250LXNpemU9IjIwIiBmaWxsPSIjRkZGRkZGIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkeT0iLjNlbSI+Q3JpdGljPC90ZXh0Pjwvc3ZnPg==',
           publishedAt: new Date('2024-02-15')
         },
         {
@@ -299,12 +299,12 @@ Gaming as social platform continues:
 
 Stay tuned for what promises to be an incredible year in gaming!
           `,
-          featuredImage: '/uploads/blog-gaming-future.jpg',
+          featuredImage: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAwIiBoZWlnaHQ9IjQwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjRkY2QjZCIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIyOCIgZmlsbD0iI0ZGRkZGRiIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPkdhbWluZyBGdXR1cmU8L3RleHQ+PC9zdmc+',
           categoryId: industry?.id || 4,
           tags: ['trends', 'future', 'technology', 'industry'],
           status: 'published' as const,
           author: 'Industry Analyst',
-          authorAvatar: '/uploads/author-analyst.jpg',
+          authorAvatar: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjRTY3RTIyIiByeD0iNTAiLz48dGV4dCB4PSI1MCUiIHk9IjUwJSIgZm9udC1mYW1pbHk9IkFyaWFsIiBmb250LXNpemU9IjIwIiBmaWxsPSIjRkZGRkZGIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkeT0iLjNlbSI+V3JpdGVyPC90ZXh0Pjwvc3ZnPg==',
           publishedAt: new Date('2024-03-01')
         }
       ];
