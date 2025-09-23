@@ -265,6 +265,13 @@ function Router() {
           </ProtectedRoute>
         </Suspense>
       </Route>
+      <Route path="/rooms/my-rooms">
+        <Suspense fallback={<LoadingFallback />}>
+          <ProtectedRoute>
+            <MyRoomsPage />
+          </ProtectedRoute>
+        </Suspense>
+      </Route>
       <Route path="/room/:roomId">
         <Suspense fallback={<LoadingFallback />}><RoomInterfacePage /></Suspense>
       </Route>
@@ -293,13 +300,6 @@ function Router() {
         </Suspense>
       </Route>
       <Route path="/my-rooms">
-        <Suspense fallback={<LoadingFallback />}>
-          <ProtectedRoute>
-            <MyRoomsPage />
-          </ProtectedRoute>
-        </Suspense>
-      </Route>
-      <Route path="/rooms/my-rooms">
         <Suspense fallback={<LoadingFallback />}>
           <ProtectedRoute>
             <MyRoomsPage />

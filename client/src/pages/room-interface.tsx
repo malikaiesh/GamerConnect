@@ -154,6 +154,10 @@ export default function RoomInterfacePage() {
         headers: { 'Content-Type': 'application/json' }
       });
       if (!response.ok) {
+        if (response.status === 404) {
+          // Auto-join endpoint doesn't exist, skip silently
+          return { joined: false, message: "Auto-join not available" };
+        }
         throw new Error('Failed to auto-join room');
       }
       return response.json();
@@ -163,7 +167,10 @@ export default function RoomInterfacePage() {
       queryClient.invalidateQueries({ queryKey: [`/api/rooms/${roomId}/messages`] });
     },
     onError: (error) => {
-      console.error("Auto-join failed:", error);
+      // Only log non-404 errors to avoid console spam
+      if (!error.message.includes('404')) {
+        console.error("Auto-join failed:", error);
+      }
     },
   });
 
@@ -225,7 +232,7 @@ export default function RoomInterfacePage() {
     return () => {
       voiceChatService.leaveRoom();
     };
-  }, [roomId, user, roomData?.room.voiceChatEnabled]);
+  }, [roomId, user, roomData?.room?.voiceChatEnabled]);
 
   // Leave room mutation
   const leaveRoomMutation = useMutation({
@@ -258,14 +265,14 @@ export default function RoomInterfacePage() {
 
   // Handle send message
   const handleSendMessage = () => {
-    if (newMessage.trim() && roomData?.room.textChatEnabled) {
+    if (newMessage.trim() && roomData?.room?.textChatEnabled) {
       sendMessageMutation.mutate(newMessage.trim());
     }
   };
 
   // Handle send gift
   const handleSendGift = (gift: any) => {
-    if (!currentUserInRoom || !roomData?.room.giftsEnabled) return;
+    if (!currentUserInRoom || !roomData?.room?.giftsEnabled) return;
     
     setSelectedGift(gift);
     
