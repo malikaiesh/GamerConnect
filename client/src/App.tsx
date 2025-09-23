@@ -37,7 +37,7 @@ const CategoriesPage = lazy(() => import("@/pages/categories-page"));
 const TopGamesPage = lazy(() => import("@/pages/top-games-page"));
 const InstallPage = lazy(() => import("@/pages/install-page"));
 const ResetPasswordPage = lazy(() => import("@/pages/reset-password-page"));
-const GamesPage = lazy(() => import("@/pages/categories-page")); // Use categories page for games listing
+const GamesPage = lazy(() => import("@/pages/games-page")); // All games page
 
 // Static pages
 const AboutPage = lazy(() => import("@/pages/about-page"));
