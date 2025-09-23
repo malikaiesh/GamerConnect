@@ -130,7 +130,7 @@ export default function MyRoomsPage() {
   });
 
   // Fetch user's rooms
-  const { data: rooms, isLoading } = useQuery<Room[]>({
+  const { data: rooms, isLoading, error } = useQuery<Room[]>({
     queryKey: ["/api/rooms/my-rooms"],
   });
 
@@ -636,6 +636,20 @@ export default function MyRoomsPage() {
         <div className="flex items-center justify-center py-8">
           <div className="text-muted-foreground">Loading your rooms...</div>
         </div>
+      ) : error ? (
+        <Card data-testid="card-error-state">
+          <CardContent className="flex flex-col items-center justify-center py-8">
+            <Lock className="h-16 w-16 text-muted-foreground mb-4" />
+            <h3 className="text-lg font-medium mb-2">Authentication Required</h3>
+            <p className="text-muted-foreground text-center mb-4">
+              Please log in to view and manage your rooms.
+            </p>
+            <Button onClick={() => navigate('/auth')} data-testid="button-login">
+              <Users className="h-4 w-4 mr-2" />
+              Log In
+            </Button>
+          </CardContent>
+        </Card>
       ) : !rooms?.length ? (
         <Card data-testid="card-empty-state">
           <CardContent className="flex flex-col items-center justify-center py-8">
