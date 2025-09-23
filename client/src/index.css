@@ -217,8 +217,8 @@
     --popover: 260 35% 12%;
     --popover-foreground: 0 0% 98%;
     
-    /* Purple accent (similar to the 'Connect' button) */
-    --primary: 270 75% 60%;
+    /* Updated to match lunexa gradient: purple-600 via indigo-600 to purple-800 */
+    --primary: 262 83% 58%;
     --primary-foreground: 0 0% 100%;
     
     /* Light blue for highlights and icons */
@@ -238,7 +238,7 @@
     
     --border: 260 20% 18%;
     --input: 260 20% 20%;
-    --ring: 270 75% 60%;
+    --ring: 262 83% 58%;
     
     --radius: 0.75rem;
     
@@ -250,7 +250,7 @@
     --admin-text-muted: 210 10% 70%;
     --admin-nav-bg: 260 35% 12%;
     --admin-nav-hover: 260 20% 15%;
-    --admin-nav-active: 270 75% 20%;
+    --admin-nav-active: 262 83% 25%;
     --admin-shadow: 0 0% 0% / 0.5;
   }
 
