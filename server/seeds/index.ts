@@ -21,6 +21,7 @@ import { seedVerificationAssets } from './verification-assets';
 import { seedAutomatedMessageTemplates } from './automated-messaging-templates';
 import { seedGames } from './games';
 import { seedPushNotifications } from './push-notifications';
+import { seedTournaments } from './tournaments';
 
 // Main seeding function that runs all seeds
 export async function runSeeds() {
@@ -50,6 +51,7 @@ export async function runSeeds() {
     await seedVerificationAssets(); // Ensure verification icons are available
     await seedAutomatedMessageTemplates(); // Add automated message templates
     await seedPushNotifications(); // Add sample push notifications
+    await seedTournaments(); // Add tournament seeding with sample data
     await seedBlogPosts(); // Run this last since it depends on blog categories
     console.log('✅ All seeds completed successfully');
   } catch (error) {
