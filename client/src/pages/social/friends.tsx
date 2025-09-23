@@ -149,10 +149,10 @@ export default function FriendsPage() {
         </div>
 
         {/* Content */}
-        <div className="p-6 space-y-6 bg-[hsl(260,40%,8%)]">
+        <div className="p-6 space-y-6 bg-background">
           {/* Friend Suggestions */}
           <div>
-            <h2 className="text-lg font-semibold text-[hsl(0,0%,98%)] mb-4">Suggested Friends</h2>
+            <h2 className="text-lg font-semibold text-foreground mb-4">Suggested Friends</h2>
             {suggestionsLoading ? (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 {Array.from({ length: 3 }).map((_, i) => (
