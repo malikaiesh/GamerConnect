@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useMutation, useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Sidebar } from "@/components/layout/sidebar";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -35,6 +35,7 @@ type FeedbackFormData = InsertFeedback;
 export default function FeedbackPage() {
   const { user } = useAuth();
   const { toast } = useToast();
+  const queryClient = useQueryClient();
   const [activeTab, setActiveTab] = useState("submit");
 
   const form = useForm<FeedbackFormData>({
@@ -50,7 +51,7 @@ export default function FeedbackPage() {
 
   // Fetch user's feedback history
   const { data: feedbackHistory = [], isLoading: isLoadingHistory } = useQuery<Feedback[]>({
-    queryKey: ["/api/feedback/my-feedback"],
+    queryKey: ["/api/feedback/my"],
     enabled: !!user?.id
   });
 
@@ -64,6 +65,8 @@ export default function FeedbackPage() {
       });
       form.reset();
       setActiveTab("history");
+      // Invalidate and refetch feedback history
+      queryClient.invalidateQueries({ queryKey: ["/api/feedback/my"] });
     },
     onError: (error: any) => {
       toast({
