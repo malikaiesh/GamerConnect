@@ -55,6 +55,7 @@ const AdminGames = lazy(() => import("@/pages/admin/games"));
 const AdminBlog = lazy(() => import("@/pages/admin/blog"));
 const AdminContentWritingPage = lazy(() => import("@/pages/admin/content-writing-page"));
 const AdminTeam = lazy(() => import("@/pages/admin/team"));
+const AdminTournaments = lazy(() => import("@/pages/admin/tournaments-page"));
 const AdminEvents = lazy(() => import("@/pages/admin/events-page"));
 const AdminEventRegistrations = lazy(() => import("@/pages/admin/event-registrations"));
 const AdminRoomsPage = lazy(() => import("@/pages/admin/rooms-page"));
@@ -377,6 +378,11 @@ function Router() {
       <Route path="/admin/team">
         <AdminRoute>
           <Suspense fallback={<LoadingFallback />}><AdminTeam /></Suspense>
+        </AdminRoute>
+      </Route>
+      <Route path="/admin/tournaments">
+        <AdminRoute>
+          <Suspense fallback={<LoadingFallback />}><AdminTournaments /></Suspense>
         </AdminRoute>
       </Route>
       <Route path="/admin/events">
