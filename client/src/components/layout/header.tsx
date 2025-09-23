@@ -11,6 +11,7 @@ export function Header() {
   const { t } = useTranslations();
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const { user } = useAuth();
   const { darkMode, toggleMode } = useTheme();
@@ -128,35 +129,59 @@ export function Header() {
             
             {/* Auth Links */}
             {user ? (
-              <div className="relative dropdown-container">
-                <button className="p-2 text-muted-foreground hover:text-primary flex items-center dropdown-trigger">
+              <div 
+                className="relative dropdown-container"
+                onMouseEnter={() => setIsDropdownOpen(true)}
+                onMouseLeave={() => setIsDropdownOpen(false)}
+              >
+                <button 
+                  className="p-2 text-muted-foreground hover:text-primary flex items-center dropdown-trigger"
+                  onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+                >
                   <span className="hidden md:inline-block mr-2">{user.username}</span>
                   <i className="ri-user-line text-xl"></i>
                 </button>
-                <div className="absolute right-0 mt-2 w-48 bg-card rounded-md shadow-lg py-1 z-10 dropdown-menu">
-                  <Link href="/user-dashboard" className="block px-4 py-2 text-sm text-foreground hover:bg-muted">
-                    <i className="ri-dashboard-line mr-2"></i>
-                    Dashboard
-                  </Link>
-                  <Link href="/profile" className="block px-4 py-2 text-sm text-foreground hover:bg-muted">
-                    <i className="ri-user-settings-line mr-2"></i>
-                    Profile Settings
-                  </Link>
-                  {user.isAdmin && (
-                    <Link href="/admin/dashboard" className="block px-4 py-2 text-sm text-foreground hover:bg-muted">
-                      <i className="ri-admin-line mr-2"></i>
-                      Admin Dashboard
+                {isDropdownOpen && (
+                  <div className="absolute right-0 mt-2 w-48 bg-card rounded-md shadow-lg py-1 z-50 dropdown-menu border border-border">
+                    <Link 
+                      href="/user-dashboard" 
+                      className="block px-4 py-2 text-sm text-foreground hover:bg-muted transition-colors"
+                      onClick={() => setIsDropdownOpen(false)}
+                    >
+                      <i className="ri-dashboard-line mr-2"></i>
+                      Dashboard
                     </Link>
-                  )}
-                  <div className="border-t border-border my-1"></div>
-                  <button 
-                    onClick={handleLogout}
-                    className="block w-full text-left px-4 py-2 text-sm text-foreground hover:bg-muted"
-                  >
-                    <i className="ri-logout-circle-line mr-2"></i>
-                    Logout
-                  </button>
-                </div>
+                    <Link 
+                      href="/profile" 
+                      className="block px-4 py-2 text-sm text-foreground hover:bg-muted transition-colors"
+                      onClick={() => setIsDropdownOpen(false)}
+                    >
+                      <i className="ri-user-settings-line mr-2"></i>
+                      Profile Settings
+                    </Link>
+                    {user.isAdmin && (
+                      <Link 
+                        href="/admin/dashboard" 
+                        className="block px-4 py-2 text-sm text-foreground hover:bg-muted transition-colors"
+                        onClick={() => setIsDropdownOpen(false)}
+                      >
+                        <i className="ri-admin-line mr-2"></i>
+                        Admin Dashboard
+                      </Link>
+                    )}
+                    <div className="border-t border-border my-1"></div>
+                    <button 
+                      onClick={() => {
+                        setIsDropdownOpen(false);
+                        handleLogout();
+                      }}
+                      className="block w-full text-left px-4 py-2 text-sm text-foreground hover:bg-muted transition-colors"
+                    >
+                      <i className="ri-logout-circle-line mr-2"></i>
+                      Logout
+                    </button>
+                  </div>
+                )}
               </div>
             ) : (
               <Link href="/auth" className="p-2 text-muted-foreground hover:text-primary">
