@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { AdminLayout } from "@/components/admin/layout";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -179,16 +180,11 @@ export default function AdminFeedbackPage() {
   };
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <MessageSquare className="w-8 h-8 text-primary" />
-          <div>
-            <h1 className="text-3xl font-bold">Feedback Management</h1>
-            <p className="text-muted-foreground">Manage user feedback and support requests</p>
-          </div>
-        </div>
-      </div>
+    <AdminLayout 
+      title="Feedback Management"
+      description="Manage user feedback and support requests"
+    >
+      <div className="p-6 space-y-6">
 
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
@@ -507,6 +503,7 @@ export default function AdminFeedbackPage() {
           )}
         </DialogContent>
       </Dialog>
-    </div>
+      </div>
+    </AdminLayout>
   );
 }

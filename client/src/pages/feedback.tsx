@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQuery } from "@tanstack/react-query";
+import { Sidebar } from "@/components/layout/sidebar";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -130,14 +131,17 @@ export default function FeedbackPage() {
   }
 
   return (
-    <div className="container mx-auto p-6 space-y-6">
-      <div className="flex items-center gap-3">
-        <MessageSquare className="w-8 h-8 text-primary" />
-        <div>
-          <h1 className="text-3xl font-bold">Feedback Center</h1>
-          <p className="text-muted-foreground">Share your thoughts and help us improve</p>
-        </div>
-      </div>
+    <div className="flex min-h-screen bg-background">
+      <Sidebar />
+      <div className="flex-1 ml-64">
+        <div className="container mx-auto p-6 space-y-6">
+          <div className="flex items-center gap-3">
+            <MessageSquare className="w-8 h-8 text-primary" />
+            <div>
+              <h1 className="text-3xl font-bold">Feedback Center</h1>
+              <p className="text-muted-foreground">Share your thoughts and help us improve</p>
+            </div>
+          </div>
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
         <TabsList className="grid w-full grid-cols-2">
@@ -369,6 +373,8 @@ export default function FeedbackPage() {
           </Card>
         </TabsContent>
       </Tabs>
+        </div>
+      </div>
     </div>
   );
 }
