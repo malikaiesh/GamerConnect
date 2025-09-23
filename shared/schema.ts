@@ -122,6 +122,11 @@ export const referralStatusEnum = pgEnum('referral_status', ['pending', 'confirm
 export const referralRewardTypeEnum = pgEnum('referral_reward_type', ['registration', 'first_game', 'profile_complete', 'subscription', 'activity_bonus', 'milestone', 'recurring_commission']);
 export const referralRewardStatusEnum = pgEnum('referral_reward_status', ['pending', 'approved', 'paid', 'cancelled']);
 export const referralTierEnum = pgEnum('referral_tier', ['tier_1', 'tier_2', 'tier_3']);
+
+// Feedback System Enums
+export const feedbackStatusEnum = pgEnum('feedback_status', ['pending', 'in_review', 'resolved', 'closed']);
+export const feedbackTypeEnum = pgEnum('feedback_type', ['bug_report', 'feature_request', 'general_feedback', 'complaint', 'suggestion', 'praise']);
+export const feedbackPriorityEnum = pgEnum('feedback_priority', ['low', 'medium', 'high', 'urgent']);
 export const referralCodeStatusEnum = pgEnum('referral_code_status', ['active', 'inactive', 'expired']);
 
 // Tournament System Enums
@@ -3710,6 +3715,37 @@ export const insertVerificationBadgeRewardSchema = createInsertSchema(verificati
   createdAt: true 
 });
 
+// Feedback table
+export const feedback = pgTable('feedback', {
+  id: serial('id').primaryKey(),
+  userId: integer('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
+  type: feedbackTypeEnum('type').notNull(),
+  subject: text('subject').notNull(),
+  message: text('message').notNull(),
+  priority: feedbackPriorityEnum('priority').default('medium').notNull(),
+  status: feedbackStatusEnum('status').default('pending').notNull(),
+  adminResponse: text('admin_response'),
+  respondedBy: integer('responded_by').references(() => users.id, { onDelete: 'set null' }),
+  respondedAt: timestamp('responded_at'),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+  updatedAt: timestamp('updated_at').defaultNow().notNull()
+});
+
+// ===== FEEDBACK SCHEMA EXPORTS =====
+
+export const insertFeedbackSchema = createInsertSchema(feedback, {
+  subject: (schema) => schema.min(5, "Subject must be at least 5 characters").max(200, "Subject must be less than 200 characters"),
+  message: (schema) => schema.min(10, "Message must be at least 10 characters").max(2000, "Message must be less than 2000 characters"),
+  type: (schema) => schema.refine(
+    (val) => ['bug_report', 'feature_request', 'general_feedback', 'complaint', 'suggestion', 'praise'].includes(val),
+    "Invalid feedback type"
+  ),
+  priority: (schema) => schema.refine(
+    (val) => ['low', 'medium', 'high', 'urgent'].includes(val),
+    "Invalid priority level"
+  )
+}).omit({ id: true, status: true, adminResponse: true, respondedBy: true, respondedAt: true, createdAt: true, updatedAt: true });
+
 // ===== TOURNAMENT TYPE EXPORTS =====
 
 export type Tournament = typeof tournaments.$inferSelect;
@@ -3730,4 +3766,9 @@ export type Language = typeof languages.$inferSelect;
 export type InsertLanguage = z.infer<typeof insertLanguageSchema>;
 export type Translation = typeof translations.$inferSelect;
 export type InsertTranslation = z.infer<typeof insertTranslationSchema>;
+
+// ===== FEEDBACK TYPE EXPORTS =====
+
+export type Feedback = typeof feedback.$inferSelect;
+export type InsertFeedback = z.infer<typeof insertFeedbackSchema>;
 
