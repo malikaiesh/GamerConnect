@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import { db } from '../db';
+import { db } from "@db";
 import { paymentTransactions, paymentGateways, users } from '@shared/schema';
 import { eq, desc, and } from 'drizzle-orm';
 import { z } from 'zod';

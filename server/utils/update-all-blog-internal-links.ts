@@ -1,4 +1,4 @@
-import { db } from "../../db";
+import { db } from "@db";
 import { blogPosts } from "@shared/schema";
 import { eq } from "drizzle-orm";
 import { processInternalLinks } from "./internal-linking";

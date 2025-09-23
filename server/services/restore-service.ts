@@ -1,4 +1,4 @@
-import { db } from '../db';
+import { db } from "@db";
 import { backups, backupLogs, restores } from '@shared/schema';
 import { eq } from 'drizzle-orm';
 import fs from 'fs/promises';

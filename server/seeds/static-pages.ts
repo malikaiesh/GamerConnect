@@ -1,4 +1,4 @@
-import { db } from '../db';
+import { db } from "@db";
 import { staticPages } from '@shared/schema';
 import { count } from 'drizzle-orm';
 

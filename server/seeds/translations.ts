@@ -1,4 +1,4 @@
-import { db } from '../db';
+import { db } from "@db";
 import { languages, translations, siteSettings } from '@shared/schema';
 import { eq, and, sql } from 'drizzle-orm';
 

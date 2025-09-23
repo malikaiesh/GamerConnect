@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import { db } from '../db';
+import { db } from "@db";
 import { paymentTransactions } from '@shared/schema';
 import { z } from 'zod';
 

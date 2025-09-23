@@ -1,4 +1,4 @@
-import { db } from "../../db";
+import { db } from "@db";
 import { automatedMessageTemplates, automatedMessageHistory, users } from "@shared/schema";
 import { eq, and } from "drizzle-orm";
 

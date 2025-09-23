@@ -1,6 +1,6 @@
 import express from "express";
 import { isAuthenticated } from "../middleware/auth";
-import { db } from "../../db";
+import { db } from "@db";
 import { users, rooms, roomUsers, roomMessages } from "@shared/schema";
 import { eq, count, sql } from "drizzle-orm";
 import multer from "multer";

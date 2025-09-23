@@ -1,5 +1,5 @@
 import express, { type Express } from 'express';
-import { db } from '../db';
+import { db } from "@db";
 import { teamMembers, insertTeamMemberSchema, type TeamMember, type InsertTeamMember } from '@shared/schema';
 import { eq, asc } from 'drizzle-orm';
 import { isAuthenticated, isAdmin } from '../middleware/auth';

@@ -2,7 +2,7 @@ import { Express, Request, Response } from 'express';
 import { z } from 'zod';
 import { isAuthenticated, isAdmin } from '../middleware/auth';
 import { GoogleIndexingService } from '../services/google-indexing-service';
-import { db } from '../../db';
+import { db } from "@db";
 import { 
   indexingRequests, 
   indexingSettings,

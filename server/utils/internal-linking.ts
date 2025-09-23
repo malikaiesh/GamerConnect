@@ -1,5 +1,5 @@
 import { BlogPost } from "@shared/schema";
-import { db } from "../../db";
+import { db } from "@db";
 import { blogPosts } from "@shared/schema";
 import { eq, and, not, like, desc, or } from "drizzle-orm";
 

@@ -1,4 +1,4 @@
-import { db } from '../db';
+import { db } from "@db";
 import { blogPosts, blogCategories } from '@shared/schema';
 import { count, eq } from 'drizzle-orm';
 

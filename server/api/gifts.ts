@@ -1,7 +1,7 @@
 import { Router, Request, Response } from "express";
 import { eq, desc, and, ilike, count, sql } from "drizzle-orm";
 import { z } from "zod";
-import { db } from "../db";
+import { db } from "@db";
 import { gifts, insertGiftSchema, type InsertGift, type Gift } from "@shared/schema";
 import { isAuthenticated, isAdmin } from "../middleware/auth";
 import { ObjectStorageService } from "../objectStorage";

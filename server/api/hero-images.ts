@@ -2,7 +2,7 @@ import { Router, type Request, type Response } from 'express';
 import { z } from 'zod';
 import { eq, asc, desc } from 'drizzle-orm';
 import { heroImages, insertHeroImageSchema, type HeroImage, type InsertHeroImage } from '@shared/schema';
-import { db } from '../../db';
+import { db } from "@db";
 import { isAuthenticated, isAdmin } from '../middleware/auth';
 
 const router = Router();

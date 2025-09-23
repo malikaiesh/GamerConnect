@@ -1,5 +1,5 @@
 import type { Express } from "express";
-import { db } from "../db";
+import { db } from "@db";
 import { shortLinks } from "@shared/schema";
 import { eq, and, isNull, desc } from "drizzle-orm";
 import { isAuthenticated, isAdmin } from "../middleware/auth";

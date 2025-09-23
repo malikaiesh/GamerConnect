@@ -1,5 +1,5 @@
 import { GoogleIndexingService } from './google-indexing-service';
-import { db } from '../../db';
+import { db } from "@db";
 import { indexingSettings, games, blogPosts, staticPages, gameCategories } from '@shared/schema';
 import { eq } from 'drizzle-orm';
 

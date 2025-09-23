@@ -1,6 +1,6 @@
 import { Router, type Express } from "express";
 import { z } from "zod";
-import { db } from "../db";
+import { db } from "@db";
 import { languages, translations, siteSettings, insertLanguageSchema, insertTranslationSchema } from "@shared/schema";
 import { eq, and, sql } from "drizzle-orm";
 import { isAdmin } from "../middleware/auth";

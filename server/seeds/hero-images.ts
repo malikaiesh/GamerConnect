@@ -1,4 +1,4 @@
-import { db } from '../db';
+import { db } from "@db";
 import { heroImages } from '@shared/schema';
 import { count } from 'drizzle-orm';
 // Use a direct path since this is a server-side file

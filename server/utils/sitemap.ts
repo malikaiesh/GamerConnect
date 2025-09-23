@@ -1,5 +1,5 @@
 import { parseString, Builder } from 'xml2js';
-import { db } from '../../db';
+import { db } from "@db";
 import { games, blogPosts, staticPages } from '@shared/schema';
 import { eq } from 'drizzle-orm';
 

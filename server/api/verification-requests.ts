@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import { db } from '../db';
+import { db } from "@db";
 import { verificationRequests, pricingPlans, users, rooms, insertVerificationRequestSchema } from '@shared/schema';
 import { eq, desc, and, sql } from 'drizzle-orm';
 import { z } from 'zod';

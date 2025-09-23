@@ -111,7 +111,7 @@ import {
 } from "./api/pricing-plans-public";
 
 import { storage } from "./storage";
-import { db } from "../db";
+import { db } from "@db";
 import { ObjectStorageService, ObjectNotFoundError } from "./objectStorage";
 import { ObjectPermission } from "./objectAcl";
 import { users, events, eventRegistrations, eventCategories } from "@shared/schema";
@@ -669,7 +669,7 @@ Sitemap: ${req.protocol}://${req.get('host')}/sitemap.xml`);
       };
 
       // Use the rooms creation logic
-      const { db } = await import("../db");
+      const { db } = await import("@db");
       const { rooms, roomUsers, roomAnalytics, insertRoomSchema } = await import("@shared/schema");
       
       // Generate unique room ID

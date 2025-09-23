@@ -1,6 +1,6 @@
 import { Request, Response, Router, Express } from 'express';
 import { isAdmin, isAuthenticated } from '../middleware';
-import { db } from '../../db';
+import { db } from "@db";
 import { gameCategories, insertGameCategorySchema } from '@shared/schema';
 import { eq, desc, asc } from 'drizzle-orm';
 import { createSeoSchemaGenerator } from '../services/seoSchemaGenerator';

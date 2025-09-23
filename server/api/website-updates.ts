@@ -1,7 +1,7 @@
 import { Express, Request, Response } from "express";
 import { isAdmin } from "../middleware/auth";
 import { z } from "zod";
-import { db } from "../../db";
+import { db } from "@db";
 import { websiteUpdates, adminNotifications, adminActivityLogs, websiteUpdateHistory } from "@shared/schema";
 import { eq, desc, and, count } from "drizzle-orm";
 

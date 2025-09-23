@@ -1,4 +1,4 @@
-import { db } from '../db';
+import { db } from "@db";
 import { signupOptions } from '@shared/schema';
 import { eq, count } from 'drizzle-orm';
 

@@ -1,5 +1,5 @@
 import express from "express";
-import { db } from "../../db";
+import { db } from "@db";
 import { users, rooms, userWallets, gifts, roomGifts } from "@shared/schema";
 import { eq, sql } from "drizzle-orm";
 import { z } from "zod";

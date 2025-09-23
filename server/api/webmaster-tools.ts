@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import { db } from '../db';
+import { db } from "@db";
 import { webmasterTools, insertWebmasterToolSchema } from '@shared/schema';
 import { eq, and, desc } from 'drizzle-orm';
 import { isAdmin } from '../middleware/auth';

@@ -1,4 +1,4 @@
-import { db } from '../db';
+import { db } from "@db";
 import { gameCategories } from '@shared/schema';
 import { count } from 'drizzle-orm';
 

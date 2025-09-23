@@ -5,7 +5,7 @@ import { scrypt, randomBytes } from 'crypto';
 import { promisify } from 'util';
 import { z } from 'zod';
 import { eq } from 'drizzle-orm';
-import { db, pool } from '../../db'; // Importing from our existing db config
+import { db, pool } from "@db"; // Importing from our existing db config
 import { siteSettings, users } from '@shared/schema';
 
 const scryptAsync = promisify(scrypt);

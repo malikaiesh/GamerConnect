@@ -1,4 +1,4 @@
-import { db } from '../db';
+import { db } from "@db";
 import { siteSettings } from '@shared/schema';
 
 export async function seedSiteSettings() {
