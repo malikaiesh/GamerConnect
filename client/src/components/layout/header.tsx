@@ -88,6 +88,9 @@ export function Header() {
             <Link href="/top-games" className="font-medium text-foreground hover:text-primary transition-colors">
               {t('nav.top_games', 'Top Games')}
             </Link>
+            <Link href="/tournaments" className="font-medium text-foreground hover:text-primary transition-colors">
+              {t('nav.tournaments', 'Tournaments')}
+            </Link>
             <Link href="/random" className="font-medium text-foreground hover:text-primary transition-colors">
               {t('nav.random_game', 'Random Game')}
             </Link>
@@ -199,6 +202,9 @@ export function Header() {
               </Link>
               <Link href="/top-games" className="font-medium text-foreground hover:text-primary transition-colors">
                 Top Games
+              </Link>
+              <Link href="/tournaments" className="font-medium text-foreground hover:text-primary transition-colors">
+                Tournaments
               </Link>
               <Link href="/random" className="font-medium text-foreground hover:text-primary transition-colors">
                 Random Game

@@ -57,6 +57,10 @@ const AdminContentWritingPage = lazy(() => import("@/pages/admin/content-writing
 const AdminTeam = lazy(() => import("@/pages/admin/team"));
 const AdminTournaments = lazy(() => import("@/pages/admin/tournaments-page"));
 const AdminEvents = lazy(() => import("@/pages/admin/events-page"));
+
+// Public tournament pages
+const TournamentsPage = lazy(() => import("@/pages/tournaments-page"));
+const TournamentDetailPage = lazy(() => import("@/pages/tournament-detail-page"));
 const AdminEventRegistrations = lazy(() => import("@/pages/admin/event-registrations"));
 const AdminRoomsPage = lazy(() => import("@/pages/admin/rooms-page"));
 const AdminGiftsPage = lazy(() => import("@/pages/admin/gifts-page"));
@@ -342,6 +346,12 @@ function Router() {
       </Route>
       <Route path="/events/:slug">
         <Suspense fallback={<LoadingFallback />}><EventDetailPage /></Suspense>
+      </Route>
+      <Route path="/tournaments">
+        <Suspense fallback={<LoadingFallback />}><TournamentsPage /></Suspense>
+      </Route>
+      <Route path="/tournaments/:id">
+        <Suspense fallback={<LoadingFallback />}><TournamentDetailPage /></Suspense>
       </Route>
 
       {/* Admin Routes - using path + component pattern for route-based protected routes */}
