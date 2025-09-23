@@ -1,12 +1,28 @@
 import { useState } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
-import { PlusCircle, Pencil, Trash2, Filter, Search, ChevronLeft, ChevronRight, Trophy, Users, Gift, BarChart3, Eye, Settings } from "lucide-react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
+import { PlusCircle, Pencil, Trash2, Filter, Search, ChevronLeft, ChevronRight, Trophy, Users, Gift, BarChart3, Eye, Settings, CalendarDays, Clock } from "lucide-react";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { AdminLayout } from "@/components/admin/layout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Switch } from "@/components/ui/switch";
+import {
+  Form,
+  FormControl,
+  FormDescription,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
 import {
   Select,
   SelectContent,
@@ -53,6 +69,31 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { format } from "date-fns";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+
+// Form validation schema
+const createTournamentSchema = z.object({
+  name: z.string().min(1, "Tournament name is required").max(100, "Name must be less than 100 characters"),
+  description: z.string().optional(),
+  type: z.enum(["gift_sender", "gift_receiver", "room_gifts", "combined"]),
+  startDate: z.string().refine(date => !isNaN(Date.parse(date)), "Invalid start date"),
+  endDate: z.string().refine(date => !isNaN(Date.parse(date)), "Invalid end date"),
+  registrationDeadline: z.string().refine(date => !isNaN(Date.parse(date)), "Invalid registration deadline"),
+  maxParticipants: z.number().min(1).max(10000).default(100),
+  entryFee: z.number().min(0).default(0),
+  minimumGiftValue: z.number().min(1).default(100),
+  isPublic: z.boolean().default(true),
+  allowRoomGifts: z.boolean().default(true),
+  allowDirectGifts: z.boolean().default(false),
+  featuredImageUrl: z.string().url().optional().or(z.literal("")),
+}).refine(data => new Date(data.endDate) > new Date(data.startDate), {
+  message: "End date must be after start date",
+  path: ["endDate"]
+}).refine(data => new Date(data.registrationDeadline) <= new Date(data.startDate), {
+  message: "Registration deadline must be before or equal to start date",
+  path: ["registrationDeadline"]
+});
+
+type CreateTournamentForm = z.infer<typeof createTournamentSchema>;
 
 interface Tournament {
   id: number;
@@ -124,6 +165,24 @@ export default function TournamentsAdminPage() {
   const [participantsDialogOpen, setParticipantsDialogOpen] = useState(false);
   const [statsDialogOpen, setStatsDialogOpen] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [createDialogOpen, setCreateDialogOpen] = useState(false);
+
+  // Create tournament form
+  const form = useForm<CreateTournamentForm>({
+    resolver: zodResolver(createTournamentSchema),
+    defaultValues: {
+      name: "",
+      description: "",
+      type: "gift_receiver",
+      maxParticipants: 100,
+      entryFee: 0,
+      minimumGiftValue: 100,
+      isPublic: true,
+      allowRoomGifts: true,
+      allowDirectGifts: false,
+      featuredImageUrl: "",
+    },
+  });
 
   // Query for tournaments list
   const { data: tournamentsData, isLoading, refetch } = useQuery({
@@ -202,6 +261,29 @@ export default function TournamentsAdminPage() {
     },
   });
 
+  // Create tournament mutation
+  const createMutation = useMutation({
+    mutationFn: async (data: CreateTournamentForm) => {
+      return await apiRequest("POST", "/api/admin/tournaments", data);
+    },
+    onSuccess: () => {
+      toast({
+        title: "Tournament created",
+        description: "The tournament has been created successfully.",
+      });
+      setCreateDialogOpen(false);
+      form.reset();
+      refetch();
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to create tournament",
+        variant: "destructive",
+      });
+    },
+  });
+
   const handleDelete = (tournament: Tournament) => {
     setSelectedTournament(tournament);
     setDeleteDialogOpen(true);
@@ -227,6 +309,20 @@ export default function TournamentsAdminPage() {
 
   const handleStatusChange = (tournamentId: number, newStatus: string) => {
     updateStatusMutation.mutate({ tournamentId, newStatus });
+  };
+
+  const onSubmit = (data: CreateTournamentForm) => {
+    createMutation.mutate(data);
+  };
+
+  const getTypeDisplayName = (type: string) => {
+    const names: Record<string, string> = {
+      gift_sender: "Gift Sender Competition",
+      gift_receiver: "Gift Receiver Competition", 
+      room_gifts: "Room Gift Battle",
+      combined: "Combined Tournament"
+    };
+    return names[type] || type;
   };
 
   const getStatusBadge = (status: string) => {
@@ -261,7 +357,7 @@ export default function TournamentsAdminPage() {
             <h1 className="text-3xl font-bold tracking-tight">Tournament Management</h1>
             <p className="text-muted-foreground">Manage tournaments, participants, and view competition statistics</p>
           </div>
-          <Button>
+          <Button onClick={() => setCreateDialogOpen(true)}>
             <PlusCircle className="mr-2 h-4 w-4" />
             Create Tournament
           </Button>
@@ -610,6 +706,314 @@ export default function TournamentsAdminPage() {
                 </TabsContent>
               </Tabs>
             )}
+          </DialogContent>
+        </Dialog>
+
+        {/* Create Tournament Dialog */}
+        <Dialog open={createDialogOpen} onOpenChange={setCreateDialogOpen}>
+          <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle>Create New Tournament</DialogTitle>
+              <DialogDescription>
+                Set up a new tournament with custom rules and settings
+              </DialogDescription>
+            </DialogHeader>
+            
+            <Form {...form}>
+              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="md:col-span-2">
+                    <FormField
+                      control={form.control}
+                      name="name"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Tournament Name *</FormLabel>
+                          <FormControl>
+                            <Input placeholder="e.g., Summer Gift Battle 2024" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+                  
+                  <div className="md:col-span-2">
+                    <FormField
+                      control={form.control}
+                      name="description"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Description</FormLabel>
+                          <FormControl>
+                            <Textarea 
+                              placeholder="Describe the tournament rules and objectives..."
+                              className="min-h-[80px]"
+                              {...field} 
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+
+                  <FormField
+                    control={form.control}
+                    name="type"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Tournament Type *</FormLabel>
+                        <FormControl>
+                          <Select value={field.value} onValueChange={field.onChange}>
+                            <SelectTrigger>
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="gift_receiver">Gift Receiver Competition</SelectItem>
+                              <SelectItem value="gift_sender">Gift Sender Competition</SelectItem>
+                              <SelectItem value="room_gifts">Room Gift Battle</SelectItem>
+                              <SelectItem value="combined">Combined Tournament</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </FormControl>
+                        <FormDescription>
+                          Choose how participants compete in this tournament
+                        </FormDescription>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="maxParticipants"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Max Participants *</FormLabel>
+                        <FormControl>
+                          <Input 
+                            type="number" 
+                            min="1" 
+                            max="10000"
+                            {...field}
+                            onChange={e => field.onChange(parseInt(e.target.value) || 0)}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="startDate"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Start Date & Time *</FormLabel>
+                        <FormControl>
+                          <Input 
+                            type="datetime-local" 
+                            {...field}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="endDate"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>End Date & Time *</FormLabel>
+                        <FormControl>
+                          <Input 
+                            type="datetime-local" 
+                            {...field}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="registrationDeadline"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Registration Deadline *</FormLabel>
+                        <FormControl>
+                          <Input 
+                            type="datetime-local" 
+                            {...field}
+                          />
+                        </FormControl>
+                        <FormDescription>
+                          Must be before or equal to start date
+                        </FormDescription>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="entryFee"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Entry Fee ($)</FormLabel>
+                        <FormControl>
+                          <Input 
+                            type="number" 
+                            min="0"
+                            {...field}
+                            onChange={e => field.onChange(parseInt(e.target.value) || 0)}
+                          />
+                        </FormControl>
+                        <FormDescription>
+                          Set to 0 for free tournaments
+                        </FormDescription>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="minimumGiftValue"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Minimum Gift Value ($) *</FormLabel>
+                        <FormControl>
+                          <Input 
+                            type="number" 
+                            min="1"
+                            {...field}
+                            onChange={e => field.onChange(parseInt(e.target.value) || 0)}
+                          />
+                        </FormControl>
+                        <FormDescription>
+                          Minimum dollar value for gifts to count
+                        </FormDescription>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <div className="md:col-span-2">
+                    <FormField
+                      control={form.control}
+                      name="featuredImageUrl"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Featured Image URL</FormLabel>
+                          <FormControl>
+                            <Input 
+                              type="url" 
+                              placeholder="https://example.com/tournament-banner.jpg"
+                              {...field} 
+                            />
+                          </FormControl>
+                          <FormDescription>
+                            Optional banner image for the tournament
+                          </FormDescription>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+                </div>
+
+                {/* Settings */}
+                <div className="space-y-4">
+                  <h3 className="text-lg font-medium">Tournament Settings</h3>
+                  
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <FormField
+                      control={form.control}
+                      name="isPublic"
+                      render={({ field }) => (
+                        <FormItem className="flex items-center space-x-2">
+                          <FormControl>
+                            <Switch
+                              checked={field.value}
+                              onCheckedChange={field.onChange}
+                            />
+                          </FormControl>
+                          <div>
+                            <FormLabel>Public Tournament</FormLabel>
+                            <FormDescription className="text-xs">
+                              Visible to all users
+                            </FormDescription>
+                          </div>
+                        </FormItem>
+                      )}
+                    />
+
+                    <FormField
+                      control={form.control}
+                      name="allowRoomGifts"
+                      render={({ field }) => (
+                        <FormItem className="flex items-center space-x-2">
+                          <FormControl>
+                            <Switch
+                              checked={field.value}
+                              onCheckedChange={field.onChange}
+                            />
+                          </FormControl>
+                          <div>
+                            <FormLabel>Allow Room Gifts</FormLabel>
+                            <FormDescription className="text-xs">
+                              Enable gifting in rooms
+                            </FormDescription>
+                          </div>
+                        </FormItem>
+                      )}
+                    />
+
+                    <FormField
+                      control={form.control}
+                      name="allowDirectGifts"
+                      render={({ field }) => (
+                        <FormItem className="flex items-center space-x-2">
+                          <FormControl>
+                            <Switch
+                              checked={field.value}
+                              onCheckedChange={field.onChange}
+                            />
+                          </FormControl>
+                          <div>
+                            <FormLabel>Allow Direct Gifts</FormLabel>
+                            <FormDescription className="text-xs">
+                              Enable direct user-to-user gifts
+                            </FormDescription>
+                          </div>
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+                </div>
+
+                <div className="flex justify-end gap-2 pt-4">
+                  <Button 
+                    type="button" 
+                    variant="outline" 
+                    onClick={() => setCreateDialogOpen(false)}
+                  >
+                    Cancel
+                  </Button>
+                  <Button 
+                    type="submit" 
+                    disabled={createMutation.isPending}
+                  >
+                    {createMutation.isPending ? "Creating..." : "Create Tournament"}
+                  </Button>
+                </div>
+              </form>
+            </Form>
           </DialogContent>
         </Dialog>
 
