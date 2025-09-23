@@ -83,6 +83,7 @@ const AdminGamesIntegrationPage = lazy(() => import("@/pages/admin/games-integra
 const AdminPushNotificationsPage = lazy(() => import("@/pages/admin/push-notifications"));
 const VerificationTool = lazy(() => import("@/pages/admin/verification-tool"));
 const AdminPushNotificationsCampaignsPage = lazy(() => import("@/pages/admin/push-notifications/campaigns-page"));
+const AdminPushNotificationsCampaignFormPage = lazy(() => import("@/pages/admin/push-notifications/campaign-form-page"));
 const AdminPushNotificationsAnalyticsPage = lazy(() => import("@/pages/admin/push-notifications/analytics-page"));
 const AdminPushNotificationsSubscribersPage = lazy(() => import("@/pages/admin/push-notifications/subscribers-page"));
 // Admin settings pages
@@ -739,6 +740,16 @@ function Router() {
       <Route path="/admin/push-notifications/campaigns">
         <AdminRoute>
           <Suspense fallback={<LoadingFallback />}><AdminPushNotificationsCampaignsPage /></Suspense>
+        </AdminRoute>
+      </Route>
+      <Route path="/admin/push-notifications/campaigns/:id">
+        <AdminRoute>
+          <Suspense fallback={<LoadingFallback />}><AdminPushNotificationsCampaignFormPage /></Suspense>
+        </AdminRoute>
+      </Route>
+      <Route path="/admin/push-notifications/:id">
+        <AdminRoute>
+          <Suspense fallback={<LoadingFallback />}><AdminPushNotificationsCampaignFormPage /></Suspense>
         </AdminRoute>
       </Route>
       <Route path="/admin/push-notifications/analytics">
