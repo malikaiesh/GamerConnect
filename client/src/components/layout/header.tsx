@@ -134,15 +134,26 @@ export function Header() {
                   <i className="ri-user-line text-xl"></i>
                 </button>
                 <div className="absolute right-0 mt-2 w-48 bg-card rounded-md shadow-lg py-1 z-10 dropdown-menu">
+                  <Link href="/user-dashboard" className="block px-4 py-2 text-sm text-foreground hover:bg-muted">
+                    <i className="ri-dashboard-line mr-2"></i>
+                    Dashboard
+                  </Link>
+                  <Link href="/profile" className="block px-4 py-2 text-sm text-foreground hover:bg-muted">
+                    <i className="ri-user-settings-line mr-2"></i>
+                    Profile Settings
+                  </Link>
                   {user.isAdmin && (
                     <Link href="/admin/dashboard" className="block px-4 py-2 text-sm text-foreground hover:bg-muted">
+                      <i className="ri-admin-line mr-2"></i>
                       Admin Dashboard
                     </Link>
                   )}
+                  <div className="border-t border-border my-1"></div>
                   <button 
                     onClick={handleLogout}
                     className="block w-full text-left px-4 py-2 text-sm text-foreground hover:bg-muted"
                   >
+                    <i className="ri-logout-circle-line mr-2"></i>
                     Logout
                   </button>
                 </div>
