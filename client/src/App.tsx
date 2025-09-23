@@ -132,6 +132,7 @@ const AdminSecurityLogsPage = lazy(() => import("@/pages/admin/security/logs"));
 const AdminSecuritySettingsPage = lazy(() => import("@/pages/admin/security/settings"));
 
 // User Dashboard pages
+const UserDashboard = lazy(() => import("@/pages/user-dashboard"));
 const MyRoomsPage = lazy(() => import("@/pages/user-dashboard/my-rooms"));
 const UserProfilePage = lazy(() => import("@/pages/user-profile"));
 
@@ -279,7 +280,7 @@ function Router() {
       <Route path="/user-dashboard">
         <Suspense fallback={<LoadingFallback />}>
           <ProtectedRoute>
-            <MyRoomsPage />
+            <UserDashboard />
           </ProtectedRoute>
         </Suspense>
       </Route>
