@@ -59,6 +59,16 @@ interface FeedbackWithUser extends Feedback {
   };
 }
 
+interface FeedbackResponse {
+  feedback: FeedbackWithUser[];
+  pagination: {
+    currentPage: number;
+    totalPages: number;
+    totalItems: number;
+    itemsPerPage: number;
+  };
+}
+
 export default function AdminFeedbackPage() {
   const { user } = useAuth();
   const { toast } = useToast();
@@ -72,9 +82,11 @@ export default function AdminFeedbackPage() {
   const [isRespondDialogOpen, setIsRespondDialogOpen] = useState(false);
 
   // Fetch all feedback
-  const { data: allFeedback = [], isLoading, refetch } = useQuery<FeedbackWithUser[]>({
+  const { data: feedbackResponse, isLoading, refetch } = useQuery<FeedbackResponse>({
     queryKey: ["/api/admin/feedback"],
   });
+
+  const allFeedback = feedbackResponse?.feedback || [];
 
   // Filter feedback based on filters
   const filteredFeedback = allFeedback.filter(feedback => {

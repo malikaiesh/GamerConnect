@@ -103,33 +103,30 @@ export function registerFeedbackRoutes(app: Express) {
 
       const whereClause = conditions.length > 0 ? and(...conditions) : undefined;
 
-      // Get feedback with user information
+      // Get feedback with basic query first, then join user data manually
       const feedbackList = await db
-        .select({
-          id: feedback.id,
-          subject: feedback.subject,
-          message: feedback.message,
-          type: feedback.type,
-          priority: feedback.priority,
-          status: feedback.status,
-          createdAt: feedback.createdAt,
-          updatedAt: feedback.updatedAt,
-          adminResponse: feedback.adminResponse,
-          respondedAt: feedback.respondedAt,
-          respondedById: feedback.respondedById,
-          user: {
-            id: users.id,
-            username: users.username,
-            displayName: users.displayName,
-            email: users.email
-          }
-        })
+        .select()
         .from(feedback)
-        .leftJoin(users, eq(feedback.userId, users.id))
         .where(whereClause)
         .orderBy(desc(feedback.createdAt))
         .limit(limit)
         .offset((page - 1) * limit);
+
+      // Manually add user information
+      const enrichedFeedbackList = await Promise.all(
+        feedbackList.map(async (item) => {
+          const user = await db.query.users.findFirst({
+            where: eq(users.id, item.userId),
+            columns: {
+              id: true,
+              username: true,
+              displayName: true,
+              email: true
+            }
+          });
+          return { ...item, user };
+        })
+      );
 
       // Get total count for pagination
       const totalResult = await db
@@ -140,11 +137,11 @@ export function registerFeedbackRoutes(app: Express) {
       const total = totalResult[0].count;
 
       // Add responded by user information if available
-      const enrichedFeedback = await Promise.all(
-        feedbackList.map(async (item) => {
-          if (item.respondedById) {
+      const finalEnrichedFeedback = await Promise.all(
+        enrichedFeedbackList.map(async (item) => {
+          if (item.respondedBy) {
             const respondedByUser = await db.query.users.findFirst({
-              where: eq(users.id, item.respondedById),
+              where: eq(users.id, item.respondedBy),
               columns: {
                 id: true,
                 username: true,
@@ -160,7 +157,15 @@ export function registerFeedbackRoutes(app: Express) {
         })
       );
 
-      res.json(enrichedFeedback);
+      res.json({
+        feedback: finalEnrichedFeedback,
+        pagination: {
+          currentPage: page,
+          totalPages: Math.ceil(total / limit),
+          totalItems: total,
+          itemsPerPage: limit
+        }
+      });
     } catch (error) {
       console.error('Error fetching admin feedback:', error);
       res.status(500).json({ error: "Failed to fetch feedback" });
