@@ -86,6 +86,15 @@ export default function UserDashboard() {
       countLabel: "Active"
     },
     {
+      title: "Refer & Earn",
+      description: "Generate referral link and earn rewards",
+      icon: Gift,
+      href: "/refer-earn",
+      color: "bg-emerald-500",
+      count: referralData?.totalReferrals || 0,
+      countLabel: "Referrals"
+    },
+    {
       title: "Profile Settings",
       description: "Manage your account preferences",
       icon: Settings,
