@@ -13,7 +13,10 @@ import {
   PlusCircle,
   Settings,
   Palette,
-  Trophy
+  Trophy,
+  Shield,
+  CreditCard,
+  Calendar
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -183,6 +186,45 @@ export function Sidebar() {
               >
                 <MessageCircle className="w-4 h-4 mr-2" />
                 Messages
+              </Button>
+            </Link>
+          </div>
+        </div>
+
+        {/* Services Section */}
+        <div className="pt-4">
+          <h3 className="text-sm font-medium text-muted-foreground mb-2">Services</h3>
+          <div className="space-y-1">
+            <Link href="/verification">
+              <Button 
+                variant={isActive("/verification") ? "default" : "ghost"} 
+                className="w-full justify-start"
+                data-testid="nav-get-verified"
+              >
+                <Shield className="w-4 h-4 mr-2 text-blue-500" />
+                Get Verified
+              </Button>
+            </Link>
+            
+            <Link href="/pricing-plans">
+              <Button 
+                variant={isActive("/pricing-plans") ? "default" : "ghost"} 
+                className="w-full justify-start"
+                data-testid="nav-pricing-plans"
+              >
+                <CreditCard className="w-4 h-4 mr-2 text-green-500" />
+                Pricing Plans
+              </Button>
+            </Link>
+            
+            <Link href="/events">
+              <Button 
+                variant={isActive("/events") ? "default" : "ghost"} 
+                className="w-full justify-start"
+                data-testid="nav-gaming-events"
+              >
+                <Calendar className="w-4 h-4 mr-2 text-purple-500" />
+                Gaming Events
               </Button>
             </Link>
           </div>
