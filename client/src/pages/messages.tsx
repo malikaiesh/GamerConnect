@@ -19,7 +19,8 @@ import {
   Reply,
   Clock,
   Check,
-  CheckCheck
+  CheckCheck,
+  MessageCircle
 } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { Sidebar } from "@/components/layout/sidebar";
@@ -113,7 +114,10 @@ export default function MessagesPage() {
   // Send message mutation
   const sendMessageMutation = useMutation({
     mutationFn: async (data: { content: string; type?: string }) => {
-      return await apiRequest('POST', `/api/messages/conversations/${selectedConversation}/messages`, data);
+      return await apiRequest(`/api/messages/conversations/${selectedConversation}/messages`, {
+        method: 'POST',
+        body: JSON.stringify(data),
+      });
     },
     onSuccess: () => {
       setNewMessage("");
@@ -132,7 +136,10 @@ export default function MessagesPage() {
   // Edit message mutation
   const editMessageMutation = useMutation({
     mutationFn: async (data: { messageId: number; content: string }) => {
-      return await apiRequest('PUT', `/api/messages/messages/${data.messageId}`, { content: data.content });
+      return await apiRequest(`/api/messages/messages/${data.messageId}`, {
+        method: 'PUT',
+        body: JSON.stringify({ content: data.content }),
+      });
     },
     onSuccess: () => {
       setEditingMessageId(null);
@@ -155,7 +162,9 @@ export default function MessagesPage() {
   // Delete message mutation
   const deleteMessageMutation = useMutation({
     mutationFn: async (messageId: number) => {
-      return await apiRequest('DELETE', `/api/messages/messages/${messageId}`, {});
+      return await apiRequest(`/api/messages/messages/${messageId}`, {
+        method: 'DELETE',
+      });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/messages/conversations', selectedConversation, 'messages'] });
@@ -176,7 +185,10 @@ export default function MessagesPage() {
   // Mark messages as read mutation
   const markAsReadMutation = useMutation({
     mutationFn: async (conversationId: number) => {
-      return await apiRequest('POST', `/api/messages/conversations/${conversationId}/read`, {});
+      return await apiRequest(`/api/messages/conversations/${conversationId}/read`, {
+        method: 'POST',
+        body: JSON.stringify({}),
+      });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/messages/conversations'] });
