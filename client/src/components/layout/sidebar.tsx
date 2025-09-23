@@ -16,7 +16,9 @@ import {
   Trophy,
   Shield,
   CreditCard,
-  Calendar
+  Calendar,
+  Gift,
+  MessageSquare
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -225,6 +227,28 @@ export function Sidebar() {
               >
                 <Calendar className="w-4 h-4 mr-2 text-purple-500" />
                 Gaming Events
+              </Button>
+            </Link>
+            
+            <Link href="/refer-earn">
+              <Button 
+                variant={isActive("/refer-earn") ? "default" : "ghost"} 
+                className="w-full justify-start"
+                data-testid="nav-refer-earn"
+              >
+                <Gift className="w-4 h-4 mr-2 text-emerald-500" />
+                Refer & Earn
+              </Button>
+            </Link>
+            
+            <Link href="/feedback">
+              <Button 
+                variant={isActive("/feedback") ? "default" : "ghost"} 
+                className="w-full justify-start"
+                data-testid="nav-feedback"
+              >
+                <MessageSquare className="w-4 h-4 mr-2 text-orange-500" />
+                Feedback
               </Button>
             </Link>
           </div>
