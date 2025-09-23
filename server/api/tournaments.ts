@@ -3,9 +3,10 @@ import { storage } from "../storage";
 import { z } from "zod";
 import { db } from "@db";
 import { tournaments, tournamentParticipants, tournamentGifts, tournamentLeaderboards, giftTransactions, verificationBadgeRewards, users, gifts } from "@shared/schema";
-import { eq, desc, and, sql, count, sum, isNull } from "drizzle-orm";
+import { eq, desc, and, or, sql, count, sum, isNull } from "drizzle-orm";
 import { alias } from "drizzle-orm/pg-core";
 import { isAuthenticated, isAdmin } from "../middleware/auth";
+import { verificationBadgeService } from "../services/verification-badge-service";
 
 // Validation schemas
 const createTournamentSchema = z.object({
@@ -508,6 +509,187 @@ export function registerTournamentRoutes(app: Express) {
     } catch (error) {
       console.error('Error fetching tournament gifts:', error);
       res.status(500).json({ message: 'Failed to fetch tournament gifts' });
+    }
+  });
+
+  // Send gift during tournament (authenticated users)
+  app.post('/api/tournaments/:id/gifts', isAuthenticated, async (req: Request, res: Response) => {
+    try {
+      const tournamentId = parseInt(req.params.id);
+      const { giftId, recipientId, quantity = 1, message } = req.body;
+      const senderId = (req as any).user?.id;
+
+      if (isNaN(tournamentId)) {
+        return res.status(400).json({ message: 'Invalid tournament ID' });
+      }
+
+      if (!senderId) {
+        return res.status(401).json({ message: 'User not authenticated' });
+      }
+
+      // Validate input
+      if (!giftId || !recipientId) {
+        return res.status(400).json({ message: 'Gift ID and recipient ID are required' });
+      }
+
+      if (quantity < 1 || quantity > 100) {
+        return res.status(400).json({ message: 'Quantity must be between 1 and 100' });
+      }
+
+      // Check if tournament exists and is active
+      const tournament = await db.select()
+        .from(tournaments)
+        .where(eq(tournaments.id, tournamentId))
+        .limit(1);
+
+      if (!tournament.length) {
+        return res.status(404).json({ message: 'Tournament not found' });
+      }
+
+      if (tournament[0].status !== 'active') {
+        return res.status(400).json({ message: 'Tournament is not active' });
+      }
+
+      // Check if both sender and recipient are participants
+      const participants = await db.select()
+        .from(tournamentParticipants)
+        .where(
+          and(
+            eq(tournamentParticipants.tournamentId, tournamentId),
+            or(
+              eq(tournamentParticipants.userId, senderId),
+              eq(tournamentParticipants.userId, recipientId)
+            )
+          )
+        );
+
+      const senderParticipant = participants.find(p => p.userId === senderId);
+      const recipientParticipant = participants.find(p => p.userId === recipientId);
+
+      if (!senderParticipant) {
+        return res.status(403).json({ message: 'Sender must be a tournament participant' });
+      }
+
+      if (!recipientParticipant) {
+        return res.status(400).json({ message: 'Recipient must be a tournament participant' });
+      }
+
+      // Get gift details
+      const gift = await db.select()
+        .from(gifts)
+        .where(eq(gifts.id, giftId))
+        .limit(1);
+
+      if (!gift.length) {
+        return res.status(404).json({ message: 'Gift not found' });
+      }
+
+      if (!gift[0].isActive) {
+        return res.status(400).json({ message: 'Gift is not available' });
+      }
+
+      const totalCoins = gift[0].price * quantity;
+      const totalDollars = (totalCoins / 100); // Assuming 100 coins = $1
+
+      // Check if gift meets minimum value requirement
+      if (totalDollars < tournament[0].minimumGiftValue) {
+        return res.status(400).json({ 
+          message: `Gift value must be at least $${tournament[0].minimumGiftValue}` 
+        });
+      }
+
+      // TODO: Check if sender has enough coins/diamonds
+      // This would integrate with the wallet system
+
+      // Record the tournament gift
+      await db.insert(tournamentGifts).values({
+        tournamentId,
+        senderId,
+        recipientId,
+        giftId,
+        quantity,
+        unitPrice: gift[0].price,
+        totalCoins,
+        totalDollars: totalDollars.toString(),
+        message: message || null,
+        leaderboardPointsAwarded: totalDollars // Points equal to dollar value
+      });
+
+      // Update tournament statistics
+      await db.update(tournaments)
+        .set({
+          totalGiftsCount: sql`${tournaments.totalGiftsCount} + 1`,
+          totalGiftsValue: sql`${tournaments.totalGiftsValue} + ${totalDollars}`,
+          updatedAt: new Date()
+        })
+        .where(eq(tournaments.id, tournamentId));
+
+      // Update participant statistics
+      await db.update(tournamentParticipants)
+        .set({
+          giftsSent: sql`${tournamentParticipants.giftsSent} + 1`,
+          totalGiftValueSent: sql`${tournamentParticipants.totalGiftValueSent} + ${totalDollars}`
+        })
+        .where(
+          and(
+            eq(tournamentParticipants.tournamentId, tournamentId),
+            eq(tournamentParticipants.userId, senderId)
+          )
+        );
+
+      await db.update(tournamentParticipants)
+        .set({
+          giftsReceived: sql`${tournamentParticipants.giftsReceived} + 1`,
+          totalGiftValueReceived: sql`${tournamentParticipants.totalGiftValueReceived} + ${totalDollars}`
+        })
+        .where(
+          and(
+            eq(tournamentParticipants.tournamentId, tournamentId),
+            eq(tournamentParticipants.userId, recipientId)
+          )
+        );
+
+      // Check for verification badge eligibility (for both sender and recipient)
+      await Promise.all([
+        verificationBadgeService.checkAndAwardTournamentBadges(senderId, tournamentId),
+        verificationBadgeService.checkAndAwardTournamentBadges(recipientId, tournamentId)
+      ]);
+
+      res.json({ 
+        message: 'Gift sent successfully',
+        gift: {
+          name: gift[0].name,
+          quantity,
+          totalValue: totalDollars,
+          recipient: recipientId
+        }
+      });
+
+    } catch (error) {
+      console.error('Error sending tournament gift:', error);
+      res.status(500).json({ message: 'Failed to send gift' });
+    }
+  });
+
+  // Get verification badge statistics (admin)
+  app.get('/api/admin/tournaments/badge-stats', isAuthenticated, isAdmin, async (req: Request, res: Response) => {
+    try {
+      const stats = await verificationBadgeService.getBadgeStatistics();
+      res.json(stats);
+    } catch (error) {
+      console.error('Error fetching badge statistics:', error);
+      res.status(500).json({ message: 'Failed to fetch badge statistics' });
+    }
+  });
+
+  // Manually trigger badge check for all tournaments (admin)
+  app.post('/api/admin/tournaments/check-badges', isAuthenticated, isAdmin, async (req: Request, res: Response) => {
+    try {
+      await verificationBadgeService.checkAllTournamentBadges();
+      res.json({ message: 'Badge check completed for all tournaments' });
+    } catch (error) {
+      console.error('Error checking tournament badges:', error);
+      res.status(500).json({ message: 'Failed to check tournament badges' });
     }
   });
 
