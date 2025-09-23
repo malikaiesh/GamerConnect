@@ -50,6 +50,11 @@ export function BlogCard({ post, size = 'md' }: BlogCardProps) {
             alt={post.title} 
             className={sizeClasses[size].image}
             loading="lazy"
+            onError={(e) => {
+              // Fallback to a default SVG placeholder if image fails to load
+              const img = e.target as HTMLImageElement;
+              img.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAwIiBoZWlnaHQ9IjQwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjNkI3Mjg2Ii8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIyOCIgZmlsbD0iI0ZGRkZGRiIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPk5vIEltYWdlPC90ZXh0Pjwvc3ZnPg==';
+            }}
           />
           <div className="absolute bottom-0 left-0 bg-gradient-to-t from-black/70 to-transparent w-full h-24">
             <div className="absolute bottom-3 left-3">
@@ -77,6 +82,11 @@ export function BlogCard({ post, size = 'md' }: BlogCardProps) {
                 src={post.authorAvatar || 'https://ui-avatars.com/api/?name=' + post.author} 
                 alt={`${post.author}'s avatar`} 
                 className="w-full h-full object-cover"
+                onError={(e) => {
+                  // Fallback to a default avatar if image fails to load
+                  const img = e.target as HTMLImageElement;
+                  img.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjNkI3Mjg2IiByeD0iNTAiLz48dGV4dCB4PSI1MCUiIHk9IjUwJSIgZm9udC1mYW1pbHk9IkFyaWFsIiBmb250LXNpemU9IjE4IiBmaWxsPSIjRkZGRkZGIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkeT0iLjNlbSI+VXNlcjwvdGV4dD48L3N2Zz4=';
+                }}
               />
             </div>
             <span className="text-sm text-muted-foreground">{post.author}</span>
