@@ -416,10 +416,234 @@ export default function TournamentsAdminPage() {
           </CardContent>
         </Card>
 
+        {/* Tournament Winners Section */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Trophy className="h-5 w-5 text-amber-500" />
+              Tournament Winners & Verification Rewards
+            </CardTitle>
+            <p className="text-sm text-muted-foreground">Recent tournament winners and their verification badge rewards</p>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              {/* Top Winners Cards */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <Card className="border-amber-200 bg-gradient-to-r from-amber-50 to-orange-50">
+                  <CardContent className="p-4">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <h3 className="font-semibold text-amber-900">🥇 Latest Winner</h3>
+                        <p className="text-sm text-amber-700">Summer Gift Battle 2024</p>
+                        <p className="text-xs text-muted-foreground">Ended 2 days ago</p>
+                      </div>
+                      <div className="text-right">
+                        <p className="text-lg font-bold text-amber-900">@PlayerPro</p>
+                        <Badge className="bg-blue-500 text-white">
+                          ✓ 3mo Verified
+                        </Badge>
+                      </div>
+                    </div>
+                    <div className="mt-3 pt-3 border-t border-amber-200">
+                      <div className="flex justify-between text-xs text-amber-700">
+                        <span>Gifts Received: $1,250</span>
+                        <span>Rank: #1 / 150</span>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+                
+                <Card className="border-gray-200 bg-gradient-to-r from-gray-50 to-slate-50">
+                  <CardContent className="p-4">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <h3 className="font-semibold text-gray-900">🥈 Runner-up</h3>
+                        <p className="text-sm text-gray-700">Gift Sender Championship</p>
+                        <p className="text-xs text-muted-foreground">Ended 5 days ago</p>
+                      </div>
+                      <div className="text-right">
+                        <p className="text-lg font-bold text-gray-900">@GiftMaster</p>
+                        <Badge className="bg-blue-500 text-white">
+                          ✓ 2mo Verified
+                        </Badge>
+                      </div>
+                    </div>
+                    <div className="mt-3 pt-3 border-t border-gray-200">
+                      <div className="flex justify-between text-xs text-gray-700">
+                        <span>Gifts Sent: $950</span>
+                        <span>Rank: #1 / 89</span>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+                
+                <Card className="border-orange-200 bg-gradient-to-r from-orange-50 to-yellow-50">
+                  <CardContent className="p-4">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <h3 className="font-semibold text-orange-900">🥉 Top Performer</h3>
+                        <p className="text-sm text-orange-700">Room Battle Royale</p>
+                        <p className="text-xs text-muted-foreground">Ended 1 week ago</p>
+                      </div>
+                      <div className="text-right">
+                        <p className="text-lg font-bold text-orange-900">@RoomKing</p>
+                        <Badge className="bg-blue-500 text-white">
+                          ✓ 1mo Verified
+                        </Badge>
+                      </div>
+                    </div>
+                    <div className="mt-3 pt-3 border-t border-orange-200">
+                      <div className="flex justify-between text-xs text-orange-700">
+                        <span>Room Gifts: $450</span>
+                        <span>Rank: #3 / 67</span>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+
+              {/* Verification Rewards Summary */}
+              <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mt-6">
+                <Card className="border-blue-200 bg-blue-50">
+                  <CardContent className="p-4 text-center">
+                    <div className="text-2xl font-bold text-blue-700">23</div>
+                    <div className="text-sm text-blue-600">1-Month Badges</div>
+                    <div className="text-xs text-muted-foreground">$100+ winners</div>
+                  </CardContent>
+                </Card>
+                <Card className="border-indigo-200 bg-indigo-50">
+                  <CardContent className="p-4 text-center">
+                    <div className="text-2xl font-bold text-indigo-700">12</div>
+                    <div className="text-sm text-indigo-600">2-Month Badges</div>
+                    <div className="text-xs text-muted-foreground">$200+ winners</div>
+                  </CardContent>
+                </Card>
+                <Card className="border-purple-200 bg-purple-50">
+                  <CardContent className="p-4 text-center">
+                    <div className="text-2xl font-bold text-purple-700">8</div>
+                    <div className="text-sm text-purple-600">3-Month Badges</div>
+                    <div className="text-xs text-muted-foreground">$300+ winners</div>
+                  </CardContent>
+                </Card>
+                <Card className="border-emerald-200 bg-emerald-50">
+                  <CardContent className="p-4 text-center">
+                    <div className="text-2xl font-bold text-emerald-700">3</div>
+                    <div className="text-sm text-emerald-600">1-Year Badges</div>
+                    <div className="text-xs text-muted-foreground">$1200+ winners</div>
+                  </CardContent>
+                </Card>
+              </div>
+
+              {/* All-Time Leaders */}
+              <div className="mt-6">
+                <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
+                  <BarChart3 className="h-5 w-5" />
+                  All-Time Tournament Leaders
+                </h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <Card>
+                    <CardHeader className="pb-3">
+                      <CardTitle className="text-base">Top Gift Receivers</CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-3">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-3">
+                          <div className="w-8 h-8 rounded-full bg-gradient-to-r from-amber-400 to-orange-500 flex items-center justify-center text-white font-bold text-sm">1</div>
+                          <div>
+                            <p className="font-medium">@PlayerPro</p>
+                            <p className="text-xs text-muted-foreground">5 tournaments won</p>
+                          </div>
+                        </div>
+                        <div className="text-right">
+                          <p className="font-semibold">$3,450</p>
+                          <Badge className="bg-blue-500 text-white text-xs">Active ✓</Badge>
+                        </div>
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-3">
+                          <div className="w-8 h-8 rounded-full bg-gradient-to-r from-gray-400 to-gray-600 flex items-center justify-center text-white font-bold text-sm">2</div>
+                          <div>
+                            <p className="font-medium">@GiftQueen</p>
+                            <p className="text-xs text-muted-foreground">3 tournaments won</p>
+                          </div>
+                        </div>
+                        <div className="text-right">
+                          <p className="font-semibold">$2,180</p>
+                          <Badge className="bg-blue-500 text-white text-xs">Active ✓</Badge>
+                        </div>
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-3">
+                          <div className="w-8 h-8 rounded-full bg-gradient-to-r from-orange-400 to-red-500 flex items-center justify-center text-white font-bold text-sm">3</div>
+                          <div>
+                            <p className="font-medium">@StarPlayer</p>
+                            <p className="text-xs text-muted-foreground">2 tournaments won</p>
+                          </div>
+                        </div>
+                        <div className="text-right">
+                          <p className="font-semibold">$1,890</p>
+                          <Badge variant="outline" className="text-xs">Expired</Badge>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                  
+                  <Card>
+                    <CardHeader className="pb-3">
+                      <CardTitle className="text-base">Top Gift Senders</CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-3">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-3">
+                          <div className="w-8 h-8 rounded-full bg-gradient-to-r from-amber-400 to-orange-500 flex items-center justify-center text-white font-bold text-sm">1</div>
+                          <div>
+                            <p className="font-medium">@GiftMaster</p>
+                            <p className="text-xs text-muted-foreground">4 tournaments won</p>
+                          </div>
+                        </div>
+                        <div className="text-right">
+                          <p className="font-semibold">$2,750</p>
+                          <Badge className="bg-blue-500 text-white text-xs">Active ✓</Badge>
+                        </div>
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-3">
+                          <div className="w-8 h-8 rounded-full bg-gradient-to-r from-gray-400 to-gray-600 flex items-center justify-center text-white font-bold text-sm">2</div>
+                          <div>
+                            <p className="font-medium">@GenerousOne</p>
+                            <p className="text-xs text-muted-foreground">3 tournaments won</p>
+                          </div>
+                        </div>
+                        <div className="text-right">
+                          <p className="font-semibold">$1,950</p>
+                          <Badge className="bg-blue-500 text-white text-xs">Active ✓</Badge>
+                        </div>
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-3">
+                          <div className="w-8 h-8 rounded-full bg-gradient-to-r from-orange-400 to-red-500 flex items-center justify-center text-white font-bold text-sm">3</div>
+                          <div>
+                            <p className="font-medium">@BigSpender</p>
+                            <p className="text-xs text-muted-foreground">2 tournaments won</p>
+                          </div>
+                        </div>
+                        <div className="text-right">
+                          <p className="font-semibold">$1,420</p>
+                          <Badge variant="outline" className="text-xs">Expired</Badge>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
         {/* Tournaments Table */}
         <Card>
           <CardHeader>
-            <CardTitle>Tournaments</CardTitle>
+            <CardTitle>All Tournaments</CardTitle>
           </CardHeader>
           <CardContent>
             <Table>
