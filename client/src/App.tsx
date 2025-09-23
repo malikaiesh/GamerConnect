@@ -138,6 +138,7 @@ const UserProfilePage = lazy(() => import("@/pages/user-profile"));
 // Room pages
 const RoomLobbyPage = lazy(() => import("@/pages/room-lobby"));
 const RoomInterfacePage = lazy(() => import("@/pages/room-interface"));
+const RoomSettingsPage = lazy(() => import("@/pages/room-settings"));
 const HotRoomsPage = lazy(() => import("@/pages/rooms/hot-rooms"));
 const ExploreRoomsPage = lazy(() => import("@/pages/rooms/explore-rooms"));
 const TrendingRoomsPage = lazy(() => import("@/pages/rooms/trending-rooms"));
@@ -255,6 +256,13 @@ function Router() {
       </Route>
       <Route path="/rooms/new">
         <Suspense fallback={<LoadingFallback />}><NewRoomsPage /></Suspense>
+      </Route>
+      <Route path="/room/:roomId/settings">
+        <Suspense fallback={<LoadingFallback />}>
+          <ProtectedRoute>
+            <RoomSettingsPage />
+          </ProtectedRoute>
+        </Suspense>
       </Route>
       <Route path="/room/:roomId">
         <Suspense fallback={<LoadingFallback />}><RoomInterfacePage /></Suspense>

@@ -781,13 +781,14 @@ export default function RoomInterfacePage() {
                             variant="ghost"
                             size="lg"
                             className="relative rounded-full w-14 h-14 sm:w-16 sm:h-16 p-0 border-2 bg-gradient-to-r from-purple-400 to-violet-500 border-purple-300 text-white shadow-purple-200 hover:shadow-purple-300 transition-all duration-200 shadow-lg hover:scale-105"
-                            onClick={() => navigate(`/my-rooms`)}
+                            onClick={() => navigate(`/room/${roomId}/settings`)}
+                            data-testid="button-room-settings"
                           >
                             <Settings className="w-5 h-5 sm:w-6 sm:h-6" />
                           </Button>
                           <div className="absolute -bottom-2 left-1/2 transform -translate-x-1/2">
                             <span className="text-xs font-medium px-2 py-1 bg-black/80 text-white rounded-full">
-                              ADMIN
+                              SETTINGS
                             </span>
                           </div>
                         </div>
