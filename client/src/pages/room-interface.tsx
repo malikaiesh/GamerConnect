@@ -252,11 +252,11 @@ export default function RoomInterfacePage() {
         method: 'POST'
       }).then(res => res.json()),
     onSuccess: () => {
-      // Redirect to admin dashboard if user is admin, otherwise to rooms
+      // Redirect to admin dashboard if user is admin, otherwise to user dashboard
       if (user?.isAdmin) {
         navigate('/admin/dashboard');
       } else {
-        navigate('/rooms');
+        navigate('/user-dashboard');
       }
     }
   });
