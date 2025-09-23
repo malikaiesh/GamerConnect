@@ -95,7 +95,7 @@ function FriendRequestCard({ request, type }: { request: FriendRequest; type: 'i
   };
 
   return (
-    <Card className="hover:shadow-lg transition-shadow duration-200 bg-[hsl(260,35%,12%)] border-[hsl(260,20%,18%)]" data-testid={`friend-request-${request.id}`}>
+    <Card className="hover:shadow-lg transition-shadow duration-200" data-testid={`friend-request-${request.id}`}>
       <CardHeader className="pb-3">
         <div className="flex items-start justify-between">
           <div className="flex items-center gap-3">
@@ -108,11 +108,11 @@ function FriendRequestCard({ request, type }: { request: FriendRequest; type: 'i
               <div className={`absolute -bottom-1 -right-1 w-4 h-4 ${getStatusColor(request.sender.status)} rounded-full border-2 border-white`}></div>
             </div>
             <div>
-              <CardTitle className="text-lg text-[hsl(0,0%,98%)]">{request.sender.displayName || request.sender.username}</CardTitle>
-              <p className="text-sm text-[hsl(210,10%,70%)]">
+              <CardTitle className="text-lg text-foreground">{request.sender.displayName || request.sender.username}</CardTitle>
+              <p className="text-sm text-muted-foreground">
                 {getStatusText(request.sender.status)}
               </p>
-              <p className="text-xs text-[hsl(210,10%,70%)] mt-1">
+              <p className="text-xs text-muted-foreground mt-1">
                 {type === 'incoming' ? 'Wants to be friends' : 'Friend request sent'}
               </p>
             </div>
@@ -172,30 +172,30 @@ export default function FriendRequestsPage() {
   const outgoingRequests = requests?.filter((req: FriendRequest) => req.status !== 'pending') || [];
 
   return (
-    <div className="min-h-screen bg-[hsl(260,40%,8%)] flex">
+    <div className="min-h-screen bg-background flex">
       <Sidebar />
       
       {/* Main Content */}
       <div className="flex-1 ml-64">
         {/* Header */}
-        <div className="bg-[hsl(260,35%,12%)] border-b border-[hsl(260,20%,18%)] p-6">
+        <div className="bg-card border-b border-border p-6">
           <div className="flex items-center gap-3">
             <div className="p-2 bg-gradient-to-r from-purple-600 via-indigo-600 to-purple-800 rounded-lg">
               <UserPlus className="w-6 h-6 text-white" />
             </div>
             <div>
-              <h1 className="text-2xl font-bold text-[hsl(0,0%,98%)]">👥 Friend Requests</h1>
-              <p className="text-[hsl(210,10%,70%)]">Manage your incoming and outgoing friend requests</p>
+              <h1 className="text-2xl font-bold text-foreground">👥 Friend Requests</h1>
+              <p className="text-muted-foreground">Manage your incoming and outgoing friend requests</p>
             </div>
           </div>
         </div>
 
         {/* Content */}
-        <div className="p-6 space-y-8 bg-[hsl(260,40%,8%)]">
+        <div className="p-6 space-y-8 bg-background">
           {/* Incoming Requests */}
           <div>
             <div className="flex items-center gap-2 mb-4">
-              <h2 className="text-xl font-semibold text-[hsl(0,0%,98%)]">
+              <h2 className="text-xl font-semibold text-foreground">
                 Incoming Requests
               </h2>
               {incomingRequests.length > 0 && (
@@ -208,13 +208,13 @@ export default function FriendRequestsPage() {
             {isLoading ? (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 {Array.from({ length: 3 }).map((_, i) => (
-                  <Card key={i} className="animate-pulse bg-[hsl(260,35%,12%)] border-[hsl(260,20%,18%)]">
+                  <Card key={i} className="animate-pulse">
                     <CardHeader>
                       <div className="flex items-center gap-3">
-                        <div className="w-12 h-12 bg-[hsl(260,20%,15%)] rounded-full"></div>
+                        <div className="w-12 h-12 bg-muted rounded-full"></div>
                         <div className="space-y-2">
-                          <div className="h-4 bg-[hsl(260,20%,15%)] rounded w-24"></div>
-                          <div className="h-3 bg-[hsl(260,20%,18%)] rounded w-16"></div>
+                          <div className="h-4 bg-muted rounded w-24"></div>
+                          <div className="h-3 bg-muted rounded w-16"></div>
                         </div>
                       </div>
                     </CardHeader>
@@ -222,10 +222,10 @@ export default function FriendRequestsPage() {
                 ))}
               </div>
             ) : incomingRequests.length === 0 ? (
-              <div className="text-center py-12 bg-[hsl(260,35%,12%)] rounded-lg border border-[hsl(260,20%,18%)]">
-                <UserPlus className="w-12 h-12 text-[hsl(210,10%,70%)] mx-auto mb-4" />
-                <p className="text-[hsl(0,0%,98%)] text-lg mb-2">No pending friend requests</p>
-                <p className="text-sm text-[hsl(210,10%,70%)]">
+              <div className="text-center py-12 bg-card rounded-lg border border-border">
+                <UserPlus className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
+                <p className="text-foreground text-lg mb-2">No pending friend requests</p>
+                <p className="text-sm text-muted-foreground">
                   When someone sends you a friend request, it will appear here.
                 </p>
               </div>
@@ -240,15 +240,15 @@ export default function FriendRequestsPage() {
 
           {/* Outgoing/History */}
           <div>
-            <h2 className="text-xl font-semibold text-[hsl(0,0%,98%)] mb-4">
+            <h2 className="text-xl font-semibold text-foreground mb-4">
               Recent Activity
             </h2>
             
             {outgoingRequests.length === 0 ? (
-              <div className="text-center py-8 bg-[hsl(260,35%,12%)] rounded-lg border border-[hsl(260,20%,18%)]">
-                <Clock className="w-10 h-10 text-[hsl(210,10%,70%)] mx-auto mb-3" />
-                <p className="text-[hsl(0,0%,98%)]">No recent activity</p>
-                <p className="text-sm text-[hsl(210,10%,70%)] mt-1">
+              <div className="text-center py-8 bg-card rounded-lg border border-border">
+                <Clock className="w-10 h-10 text-muted-foreground mx-auto mb-3" />
+                <p className="text-foreground">No recent activity</p>
+                <p className="text-sm text-muted-foreground mt-1">
                   Your sent requests and responses will appear here.
                 </p>
               </div>

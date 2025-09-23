@@ -255,32 +255,32 @@ export default function MessagesPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[hsl(260,40%,8%)] flex">
+    <div className="min-h-screen bg-background flex">
       <Sidebar />
       
       {/* Main Content */}
       <div className="flex-1 ml-64">
         {/* Header */}
-        <div className="bg-[hsl(260,35%,12%)] border-b border-[hsl(260,20%,18%)] p-6">
+        <div className="bg-card border-b border-border p-6">
           <div className="flex items-center gap-3">
             <div className="p-2 bg-gradient-to-r from-purple-600 via-indigo-600 to-purple-800 rounded-lg">
               <Send className="w-6 h-6 text-white" />
             </div>
             <div>
-              <h1 className="text-2xl font-bold text-[hsl(0,0%,98%)]">💬 Messages</h1>
-              <p className="text-[hsl(210,10%,70%)]">Chat with your friends and contacts</p>
+              <h1 className="text-2xl font-bold text-foreground">💬 Messages</h1>
+              <p className="text-muted-foreground">Chat with your friends and contacts</p>
             </div>
           </div>
         </div>
 
         {/* Content */}
-        <div className="p-6 h-[calc(100vh-120px)] bg-[hsl(260,40%,8%)]">
+        <div className="p-6 h-[calc(100vh-120px)] bg-background">
           <div className="flex h-full gap-6">
           {/* Conversations List */}
-          <Card className="w-1/3 flex flex-col bg-[hsl(260,35%,12%)] border-[hsl(260,20%,18%)]">
+          <Card className="w-1/3 flex flex-col">
             <CardHeader className="pb-3">
               <div className="flex items-center justify-between">
-                <h2 className="text-lg font-semibold text-[hsl(0,0%,98%)]">Messages</h2>
+                <h2 className="text-lg font-semibold text-foreground">Messages</h2>
               </div>
               <div className="relative">
                 <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
@@ -300,12 +300,12 @@ export default function MessagesPage() {
                     <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary"></div>
                   </div>
                 ) : conversationsError ? (
-                  <div className="text-center text-red-400 p-6">
+                  <div className="text-center text-destructive p-6">
                     <p className="mb-2">Failed to load conversations</p>
-                    <p className="text-sm text-[hsl(210,10%,70%)]">Please refresh the page or try again later</p>
+                    <p className="text-sm text-muted-foreground">Please refresh the page or try again later</p>
                   </div>
                 ) : filteredConversations.length === 0 ? (
-                  <div className="text-center text-[hsl(210,10%,70%)] p-6">
+                  <div className="text-center text-muted-foreground p-6">
                     {searchQuery ? "No conversations found" : "No conversations yet"}
                   </div>
                 ) : (
@@ -313,9 +313,9 @@ export default function MessagesPage() {
                     {filteredConversations.map((conversation) => (
                       <div
                         key={conversation.conversation.id}
-                        className={`p-4 cursor-pointer hover:bg-[hsl(260,20%,18%)] border-b border-[hsl(260,20%,18%)] ${
+                        className={`p-4 cursor-pointer hover:bg-muted/50 border-b border-border ${
                           selectedConversation === conversation.conversation.id
-                            ? "bg-[hsl(262,83%,15%)] border-r-4 border-r-[hsl(262,83%,58%)]"
+                            ? "bg-muted border-r-4 border-r-primary"
                             : ""
                         }`}
                         onClick={() => setSelectedConversation(conversation.conversation.id)}
@@ -341,12 +341,12 @@ export default function MessagesPage() {
                           </div>
                           <div className="flex-1 min-w-0">
                             <div className="flex items-center justify-between">
-                              <h3 className="font-medium truncate text-[hsl(0,0%,98%)]">
+                              <h3 className="font-medium truncate text-foreground">
                                 {conversation.otherUser.username}
                               </h3>
                               <div className="flex items-center gap-1">
                                 {conversation.lastMessage && (
-                                  <span className="text-xs text-[hsl(210,10%,70%)]">
+                                  <span className="text-xs text-muted-foreground">
                                     {formatDistanceToNow(new Date(conversation.lastMessage.createdAt), { addSuffix: true })}
                                   </span>
                                 )}
@@ -358,7 +358,7 @@ export default function MessagesPage() {
                               </div>
                             </div>
                             {conversation.lastMessage && (
-                              <p className="text-sm text-[hsl(210,10%,70%)] truncate">
+                              <p className="text-sm text-muted-foreground truncate">
                                 {conversation.lastMessage.content}
                               </p>
                             )}
@@ -373,7 +373,7 @@ export default function MessagesPage() {
           </Card>
 
           {/* Chat Interface */}
-          <Card className="flex-1 flex flex-col bg-[hsl(260,35%,12%)] border-[hsl(260,20%,18%)]">
+          <Card className="flex-1 flex flex-col">
             {selectedConversation ? (
               <>
                 {/* Chat Header */}
@@ -401,8 +401,8 @@ export default function MessagesPage() {
                           )}
                         </div>
                         <div>
-                          <h3 className="font-semibold text-[hsl(0,0%,98%)]">{conversation.otherUser.username}</h3>
-                          <p className="text-sm text-[hsl(210,10%,70%)]">Online</p>
+                          <h3 className="font-semibold text-foreground">{conversation.otherUser.username}</h3>
+                          <p className="text-sm text-muted-foreground">Online</p>
                         </div>
                       </div>
                     );
@@ -419,7 +419,7 @@ export default function MessagesPage() {
                         <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary"></div>
                       </div>
                     ) : messagesData?.messages.length === 0 ? (
-                      <div className="text-center text-[hsl(210,10%,70%)] p-6">
+                      <div className="text-center text-muted-foreground p-6">
                         No messages yet. Start the conversation!
                       </div>
                     ) : (
@@ -438,8 +438,8 @@ export default function MessagesPage() {
                                 <div
                                   className={`rounded-lg p-3 ${
                                     isOwn
-                                      ? "bg-[hsl(262,83%,58%)] text-white"
-                                      : "bg-[hsl(260,20%,20%)] text-[hsl(0,0%,98%)]"
+                                      ? "bg-primary text-primary-foreground"
+                                      : "bg-muted text-muted-foreground"
                                   }`}
                                 >
                                   {isEditing ? (
@@ -454,7 +454,7 @@ export default function MessagesPage() {
                                             setEditingContent("");
                                           }
                                         }}
-                                        className="text-sm bg-[hsl(260,20%,25%)] border-[hsl(260,20%,18%)] text-[hsl(0,0%,98%)]"
+                                        className="text-sm"
                                       />
                                       <div className="flex gap-2">
                                         <Button
@@ -531,7 +531,7 @@ export default function MessagesPage() {
                                     </div>
                                   )}
                                 </div>
-                                <div className={`flex items-center gap-1 mt-1 text-xs text-[hsl(210,10%,70%)] ${isOwn ? "justify-end" : "justify-start"}`}>
+                                <div className={`flex items-center gap-1 mt-1 text-xs text-muted-foreground ${isOwn ? "justify-end" : "justify-start"}`}>
                                   <span>
                                     {formatDistanceToNow(new Date(msg.message.createdAt), { addSuffix: true })}
                                   </span>
@@ -547,13 +547,12 @@ export default function MessagesPage() {
                   </ScrollArea>
 
                   {/* Message Input */}
-                  <div className="p-4 border-t border-[hsl(260,20%,18%)]">
+                  <div className="p-4 border-t border-border">
                     <div className="flex gap-2">
                       <Input
                         value={newMessage}
                         onChange={(e) => setNewMessage(e.target.value)}
                         placeholder="Type your message..."
-                        className="bg-[hsl(260,20%,20%)] border-[hsl(260,20%,18%)] text-[hsl(0,0%,98%)] placeholder:text-[hsl(210,10%,70%)]"
                         onKeyDown={(e) => {
                           if (e.key === 'Enter' && !e.shiftKey) {
                             e.preventDefault();
@@ -576,9 +575,9 @@ export default function MessagesPage() {
               </>
             ) : (
               <CardContent className="flex-1 flex items-center justify-center">
-                <div className="text-center text-[hsl(210,10%,70%)]">
-                  <MessageCircle className="w-16 h-16 mx-auto mb-4 opacity-50 text-[hsl(262,83%,58%)]" />
-                  <h3 className="text-lg font-medium mb-2 text-[hsl(0,0%,98%)]">Select a conversation</h3>
+                <div className="text-center text-muted-foreground">
+                  <MessageCircle className="w-16 h-16 mx-auto mb-4 opacity-50 text-primary" />
+                  <h3 className="text-lg font-medium mb-2 text-foreground">Select a conversation</h3>
                   <p>Choose a conversation from the left to start messaging</p>
                 </div>
               </CardContent>

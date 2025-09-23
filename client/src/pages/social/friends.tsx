@@ -47,7 +47,7 @@ function FriendCard({ friend }: { friend: Friend }) {
   };
 
   return (
-    <Card className="hover:shadow-lg transition-shadow duration-200 bg-[hsl(260,35%,12%)] border-[hsl(260,20%,18%)]" data-testid={`friend-card-${friend.username}`}>
+    <Card className="hover:shadow-lg transition-shadow duration-200" data-testid={`friend-card-${friend.username}`}>
       <CardHeader className="pb-3">
         <div className="flex items-start justify-between">
           <div className="flex items-center gap-3">
@@ -60,8 +60,8 @@ function FriendCard({ friend }: { friend: Friend }) {
               <div className={`absolute -bottom-1 -right-1 w-4 h-4 ${getStatusColor(friend.status)} rounded-full border-2 border-white`}></div>
             </div>
             <div>
-              <CardTitle className="text-lg text-[hsl(0,0%,98%)]">{friend.displayName || friend.username}</CardTitle>
-              <p className="text-sm text-[hsl(210,10%,70%)]">
+              <CardTitle className="text-lg text-foreground">{friend.displayName || friend.username}</CardTitle>
+              <p className="text-sm text-muted-foreground">
                 {getStatusText(friend.status)}
               </p>
             </div>
@@ -74,7 +74,7 @@ function FriendCard({ friend }: { friend: Friend }) {
 
       <CardContent>
         <div className="space-y-3">
-          <div className="text-xs text-[hsl(210,10%,70%)]">
+          <div className="text-xs text-muted-foreground">
             Friends since {new Date(friend.friendsSince).toLocaleDateString()}
           </div>
 
@@ -115,32 +115,32 @@ export default function FriendsPage() {
   ) || [];
 
   return (
-    <div className="min-h-screen bg-[hsl(260,40%,8%)] flex">
+    <div className="min-h-screen bg-background flex">
       <Sidebar />
       
       {/* Main Content */}
       <div className="flex-1 ml-64">
         {/* Header */}
-        <div className="bg-[hsl(260,35%,12%)] border-b border-[hsl(260,20%,18%)] p-6">
+        <div className="bg-card border-b border-border p-6">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               <div className="p-2 bg-gradient-to-r from-purple-600 via-indigo-600 to-purple-800 rounded-lg">
                 <Users className="w-6 h-6 text-white" />
               </div>
               <div>
-                <h1 className="text-2xl font-bold text-[hsl(0,0%,98%)]">👥 Friends</h1>
-                <p className="text-[hsl(210,10%,70%)]">Connect and chat with your friends</p>
+                <h1 className="text-2xl font-bold text-foreground">👥 Friends</h1>
+                <p className="text-muted-foreground">Connect and chat with your friends</p>
               </div>
             </div>
             
             <div className="flex items-center gap-3">
               <div className="relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-[hsl(210,10%,70%)] w-4 h-4" />
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
                 <Input
                   placeholder="Search friends..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="pl-10 w-64 bg-[hsl(260,20%,20%)] border-[hsl(260,20%,18%)] text-[hsl(0,0%,98%)] placeholder:text-[hsl(210,10%,70%)]"
+                  className="pl-10 w-64"
                   data-testid="input-search-friends"
                 />
               </div>
@@ -156,13 +156,13 @@ export default function FriendsPage() {
             {suggestionsLoading ? (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 {Array.from({ length: 3 }).map((_, i) => (
-                  <Card key={i} className="animate-pulse bg-[hsl(260,35%,12%)] border-[hsl(260,20%,18%)]">
+                  <Card key={i} className="animate-pulse">
                     <CardHeader>
                       <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 bg-[hsl(260,20%,15%)] rounded-full"></div>
+                        <div className="w-10 h-10 bg-muted rounded-full"></div>
                         <div className="space-y-2">
-                          <div className="h-4 bg-[hsl(260,20%,15%)] rounded w-20"></div>
-                          <div className="h-3 bg-[hsl(260,20%,18%)] rounded w-16"></div>
+                          <div className="h-4 bg-muted rounded w-20"></div>
+                          <div className="h-3 bg-muted rounded w-16"></div>
                         </div>
                       </div>
                     </CardHeader>
@@ -172,7 +172,7 @@ export default function FriendsPage() {
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 {suggestions?.slice(0, 3).map((suggestion: any) => (
-                  <Card key={suggestion.id} className="hover:shadow-lg transition-shadow bg-[hsl(260,35%,12%)] border-[hsl(260,20%,18%)]">
+                  <Card key={suggestion.id} className="hover:shadow-lg transition-shadow">
                     <CardHeader className="pb-3">
                       <div className="flex items-center gap-3">
                         <div className="w-10 h-10 bg-gradient-to-r from-purple-600 via-indigo-600 to-purple-800 rounded-full flex items-center justify-center">
@@ -181,8 +181,8 @@ export default function FriendsPage() {
                           </span>
                         </div>
                         <div>
-                          <CardTitle className="text-base text-[hsl(0,0%,98%)]">{suggestion.displayName || suggestion.username}</CardTitle>
-                          <p className="text-sm text-[hsl(210,10%,70%)]">2 mutual friends</p>
+                          <CardTitle className="text-base text-foreground">{suggestion.displayName || suggestion.username}</CardTitle>
+                          <p className="text-sm text-muted-foreground">2 mutual friends</p>
                         </div>
                       </div>
                     </CardHeader>
@@ -195,8 +195,8 @@ export default function FriendsPage() {
                   </Card>
                 )) || (
                   <div className="col-span-full text-center py-8">
-                    <UserPlus className="w-8 h-8 text-[hsl(210,10%,70%)] mx-auto mb-2" />
-                    <p className="text-[hsl(210,10%,70%)]">No friend suggestions available</p>
+                    <UserPlus className="w-8 h-8 text-muted-foreground mx-auto mb-2" />
+                    <p className="text-muted-foreground">No friend suggestions available</p>
                   </div>
                 )}
               </div>
@@ -206,7 +206,7 @@ export default function FriendsPage() {
           {/* Friends List */}
           <div>
             <div className="flex items-center justify-between mb-4">
-              <h2 className="text-lg font-semibold text-[hsl(0,0%,98%)]">
+              <h2 className="text-lg font-semibold text-foreground">
                 Your Friends ({filteredFriends.length})
               </h2>
             </div>
@@ -214,13 +214,13 @@ export default function FriendsPage() {
             {isLoading ? (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 {Array.from({ length: 6 }).map((_, i) => (
-                  <Card key={i} className="animate-pulse bg-[hsl(260,35%,12%)] border-[hsl(260,20%,18%)]">
+                  <Card key={i} className="animate-pulse">
                     <CardHeader>
                       <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 bg-[hsl(260,20%,15%)] rounded-full"></div>
+                        <div className="w-10 h-10 bg-muted rounded-full"></div>
                         <div className="space-y-2">
-                          <div className="h-4 bg-[hsl(260,20%,15%)] rounded w-24"></div>
-                          <div className="h-3 bg-[hsl(260,20%,18%)] rounded w-16"></div>
+                          <div className="h-4 bg-muted rounded w-24"></div>
+                          <div className="h-3 bg-muted rounded w-16"></div>
                         </div>
                       </div>
                     </CardHeader>
@@ -233,12 +233,12 @@ export default function FriendsPage() {
               </div>
             ) : filteredFriends.length === 0 ? (
               <div className="text-center py-12">
-                <div className="p-4 bg-[hsl(262,83%,15%)] rounded-lg inline-block">
-                  <Users className="w-8 h-8 text-[hsl(262,83%,58%)] mx-auto mb-2" />
-                  <p className="text-[hsl(0,0%,98%)]">
+                <div className="p-4 bg-muted rounded-lg inline-block">
+                  <Users className="w-8 h-8 text-primary mx-auto mb-2" />
+                  <p className="text-foreground">
                     {searchQuery ? 'No friends found matching your search.' : 'No friends yet.'}
                   </p>
-                  <p className="text-sm text-[hsl(210,10%,70%)] mt-1">
+                  <p className="text-sm text-muted-foreground mt-1">
                     {searchQuery ? 'Try a different search term.' : 'Start by adding some friends!'}
                   </p>
                 </div>
