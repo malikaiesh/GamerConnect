@@ -130,6 +130,7 @@ const AdminImagesGalleryPage = lazy(() => import("@/pages/admin/images-gallery")
 const AdminTwoFactorPage = lazy(() => import("@/pages/admin/security/two-factor"));
 const AdminSecurityLogsPage = lazy(() => import("@/pages/admin/security/logs"));
 const AdminSecuritySettingsPage = lazy(() => import("@/pages/admin/security/settings"));
+const AdminFeedbackPage = lazy(() => import("@/pages/admin/feedback"));
 
 // User Dashboard pages
 const UserDashboard = lazy(() => import("@/pages/user-dashboard"));
@@ -157,6 +158,7 @@ const CheckoutPage = lazy(() => import("@/pages/checkout"));
 const CheckoutRoomPage = lazy(() => import("@/pages/checkout-room"));
 const VerificationPage = lazy(() => import("@/pages/verification"));
 const ReferEarnPage = lazy(() => import("@/pages/refer-earn"));
+const FeedbackPage = lazy(() => import("@/pages/feedback"));
 
 
 // Admin Helper Navigation
@@ -357,6 +359,9 @@ function Router() {
       <Route path="/refer-earn">
         <Suspense fallback={<LoadingFallback />}><ReferEarnPage /></Suspense>
       </Route>
+      <Route path="/feedback">
+        <Suspense fallback={<LoadingFallback />}><FeedbackPage /></Suspense>
+      </Route>
       <Route path="/events">
         <Suspense fallback={<LoadingFallback />}><EventsPage /></Suspense>
       </Route>
@@ -409,6 +414,11 @@ function Router() {
       <Route path="/admin/tournaments">
         <AdminRoute>
           <Suspense fallback={<LoadingFallback />}><AdminTournaments /></Suspense>
+        </AdminRoute>
+      </Route>
+      <Route path="/admin/feedback">
+        <AdminRoute>
+          <Suspense fallback={<LoadingFallback />}><AdminFeedbackPage /></Suspense>
         </AdminRoute>
       </Route>
       <Route path="/admin/events">
