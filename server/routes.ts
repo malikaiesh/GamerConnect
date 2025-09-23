@@ -76,6 +76,7 @@ import { registerImagesGalleryRoutes } from "./api/images-gallery";
 import { registerShortLinksRoutes } from "./api/short-links";
 import { registerTranslationRoutes } from "./api/translations";
 import giftsRouter from "./api/gifts";
+import { registerTournamentRoutes } from "./api/tournaments";
 import { 
   generateAIContent, 
   getAvailableAIModels, 
@@ -350,6 +351,7 @@ Sitemap: ${req.protocol}://${req.get('host')}/sitemap.xml`);
   registerGameRoutes(app);
   registerBlogRoutes(app);
   registerSettingsRoutes(app);
+  registerTournamentRoutes(app);
   registerAnalyticsRoutes(app);
   registerNotificationsRoutes(app);
   registerHomePageContentRoutes(app);
