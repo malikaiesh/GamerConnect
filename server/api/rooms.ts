@@ -318,7 +318,7 @@ router.get("/deleted", isAuthenticated, async (req: Request, res: Response) => {
   }
 });
 
-// Get user's rooms (for user dashboard)
+// Get user's rooms (for user dashboard) - Optimized with JOIN
 router.get("/my-rooms", isAuthenticated, async (req: Request, res: Response) => {
   try {
     const userId = (req as any).user?.id;
@@ -329,10 +329,15 @@ router.get("/my-rooms", isAuthenticated, async (req: Request, res: Response) => 
     const userRooms = await db
       .select({
         room: rooms,
-        userCount: sql<number>`(SELECT COUNT(*) FROM ${roomUsers} WHERE ${roomUsers.roomId} = ${rooms.id} AND ${roomUsers.status} = 'active')`
+        userCount: sql<number>`COALESCE(COUNT(${roomUsers.id}), 0)`
       })
       .from(rooms)
+      .leftJoin(roomUsers, and(
+        eq(roomUsers.roomId, rooms.id),
+        eq(roomUsers.status, 'active')
+      ))
       .where(and(eq(rooms.ownerId, userId), sql`${rooms.deletedAt} IS NULL`))
+      .groupBy(rooms.id)
       .orderBy(desc(rooms.lastActivity));
 
     res.json(userRooms);
