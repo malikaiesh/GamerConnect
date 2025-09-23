@@ -100,7 +100,7 @@ function FriendRequestCard({ request, type }: { request: FriendRequest; type: 'i
         <div className="flex items-start justify-between">
           <div className="flex items-center gap-3">
             <div className="relative">
-              <div className="w-12 h-12 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full flex items-center justify-center">
+              <div className="w-12 h-12 bg-gradient-to-r from-purple-600 via-indigo-600 to-purple-800 rounded-full flex items-center justify-center">
                 <span className="text-white font-medium text-lg">
                   {request.sender.displayName?.charAt(0)?.toUpperCase() || request.sender.username?.charAt(0)?.toUpperCase()}
                 </span>
@@ -180,7 +180,7 @@ export default function FriendRequestsPage() {
         {/* Header */}
         <div className="bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 p-6">
           <div className="flex items-center gap-3">
-            <div className="p-2 bg-gradient-to-r from-purple-500 to-pink-500 rounded-lg">
+            <div className="p-2 bg-gradient-to-r from-purple-600 via-indigo-600 to-purple-800 rounded-lg">
               <UserPlus className="w-6 h-6 text-white" />
             </div>
             <div>

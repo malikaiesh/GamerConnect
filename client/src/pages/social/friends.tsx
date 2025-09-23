@@ -52,7 +52,7 @@ function FriendCard({ friend }: { friend: Friend }) {
         <div className="flex items-start justify-between">
           <div className="flex items-center gap-3">
             <div className="relative">
-              <div className="w-10 h-10 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full flex items-center justify-center">
+              <div className="w-10 h-10 bg-gradient-to-r from-purple-600 via-indigo-600 to-purple-800 rounded-full flex items-center justify-center">
                 <span className="text-white font-medium">
                   {friend.displayName?.charAt(0)?.toUpperCase() || friend.username?.charAt(0)?.toUpperCase()}
                 </span>
@@ -124,7 +124,7 @@ export default function FriendsPage() {
         <div className="bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 p-6">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <div className="p-2 bg-gradient-to-r from-green-500 to-blue-500 rounded-lg">
+              <div className="p-2 bg-gradient-to-r from-purple-600 via-indigo-600 to-purple-800 rounded-lg">
                 <Users className="w-6 h-6 text-white" />
               </div>
               <div>
@@ -175,7 +175,7 @@ export default function FriendsPage() {
                   <Card key={suggestion.id} className="hover:shadow-lg transition-shadow">
                     <CardHeader className="pb-3">
                       <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 bg-gradient-to-r from-blue-500 to-green-500 rounded-full flex items-center justify-center">
+                        <div className="w-10 h-10 bg-gradient-to-r from-purple-600 via-indigo-600 to-purple-800 rounded-full flex items-center justify-center">
                           <span className="text-white font-medium">
                             {suggestion.displayName?.charAt(0)?.toUpperCase() || suggestion.username?.charAt(0)?.toUpperCase()}
                           </span>

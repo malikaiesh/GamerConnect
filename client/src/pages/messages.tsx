@@ -22,6 +22,7 @@ import {
   CheckCheck
 } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
+import { Sidebar } from "@/components/layout/sidebar";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -242,9 +243,27 @@ export default function MessagesPage() {
   };
 
   return (
-    <div className="min-h-screen bg-background">
-      <div className="container mx-auto p-6 h-screen">
-        <div className="flex h-full gap-6">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-950 flex">
+      <Sidebar />
+      
+      {/* Main Content */}
+      <div className="flex-1 ml-64">
+        {/* Header */}
+        <div className="bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 p-6">
+          <div className="flex items-center gap-3">
+            <div className="p-2 bg-gradient-to-r from-purple-600 via-indigo-600 to-purple-800 rounded-lg">
+              <Send className="w-6 h-6 text-white" />
+            </div>
+            <div>
+              <h1 className="text-2xl font-bold text-gray-900 dark:text-white">💬 Messages</h1>
+              <p className="text-gray-500 dark:text-gray-400">Chat with your friends and contacts</p>
+            </div>
+          </div>
+        </div>
+
+        {/* Content */}
+        <div className="p-6 h-[calc(100vh-120px)]">
+          <div className="flex h-full gap-6">
           {/* Conversations List */}
           <Card className="w-1/3 flex flex-col">
             <CardHeader className="pb-3">
@@ -547,6 +566,7 @@ export default function MessagesPage() {
               </CardContent>
             )}
           </Card>
+          </div>
         </div>
       </div>
     </div>
