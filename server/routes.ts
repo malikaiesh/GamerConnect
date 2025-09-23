@@ -29,6 +29,7 @@ import { registerWebsiteUpdatesRoutes } from "./api/website-updates";
 import { registerAdminNotificationsRoutes } from "./api/admin-notifications";
 import { registerSeoSchemaRoutes } from "./api/seo-schemas";
 import { registerTeamRoutes } from "./api/team";
+import { registerFeedbackRoutes } from "./api/feedback";
 import { 
   getWebmasterTools, 
   getWebmasterToolById, 
@@ -613,6 +614,7 @@ Sitemap: ${req.protocol}://${req.get('host')}/sitemap.xml`);
   registerAdminNotificationsRoutes(app);
   registerSeoSchemaRoutes(app);
   registerTeamRoutes(app);
+  registerFeedbackRoutes(app);
   registerSignupOptionsRoutes(app);
   registerHeroImageRoutes(app);
   registerGoogleIndexingRoutes(app);
