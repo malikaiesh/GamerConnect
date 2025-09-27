@@ -138,6 +138,7 @@ const UserDashboard = lazy(() => import("@/pages/user-dashboard"));
 const MyRoomsPage = lazy(() => import("@/pages/user-dashboard/my-rooms"));
 const UserProfilePage = lazy(() => import("@/pages/user-profile"));
 const MobileDashboardTest = lazy(() => import("@/components/mobile-dashboard").then(module => ({ default: module.MobileDashboard })));
+const MobileSocialTest = lazy(() => import("@/components/mobile-social").then(module => ({ default: module.MobileSocial })));
 
 // Room pages
 const RoomLobbyPage = lazy(() => import("@/pages/room-lobby"));
@@ -321,6 +322,13 @@ function Router() {
         <Suspense fallback={<LoadingFallback />}>
           <ProtectedRoute>
             <MobileDashboardTest />
+          </ProtectedRoute>
+        </Suspense>
+      </Route>
+      <Route path="/mobile-social">
+        <Suspense fallback={<LoadingFallback />}>
+          <ProtectedRoute>
+            <MobileSocialTest />
           </ProtectedRoute>
         </Suspense>
       </Route>

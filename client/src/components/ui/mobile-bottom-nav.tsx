@@ -43,7 +43,7 @@ const navItems: BottomNavItem[] = [
     id: "social",
     label: "Social",
     icon: Users,
-    href: "/friends",
+    href: "/mobile-social",
     color: "text-purple-500"
   }
 ];
