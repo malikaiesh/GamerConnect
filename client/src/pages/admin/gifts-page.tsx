@@ -15,7 +15,6 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import AdminNavigation from "@/components/admin/navigation";
-import { ObjectUploader } from "@/components/ObjectUploader";
 import { apiRequest } from "@/lib/queryClient";
 import { formatDistance } from "date-fns";
 import {
@@ -245,23 +244,33 @@ export default function GiftsPage() {
   });
 
   // Handle image upload
-  const handleGetUploadParameters = async () => {
-    const response = await apiRequest('POST', '/api/gifts/upload-image');
-    return {
-      method: 'PUT' as const,
-      url: response.uploadURL,
-    };
-  };
+  const handleImageUpload = async (file: File) => {
+    try {
+      const formData = new FormData();
+      formData.append('image', file);
 
-  const handleUploadComplete = async (result: { successful: Array<{ uploadURL: string }> }) => {
-    if (result.successful.length > 0) {
-      const uploadURL = result.successful[0].uploadURL;
-      const response = await apiRequest('POST', '/api/gifts/process-image', { imageURL: uploadURL });
-      setUploadedImageUrl(response.imagePath);
-      form.setValue('image', response.imagePath);
+      const response = await fetch('/api/gifts/upload-image', {
+        method: 'POST',
+        body: formData,
+      });
+
+      if (!response.ok) {
+        throw new Error(`Upload failed: ${response.statusText}`);
+      }
+
+      const result = await response.json();
+      setUploadedImageUrl(result.imagePath);
+      form.setValue('image', result.imagePath);
       toast({
         title: "Success",
         description: "Image uploaded successfully!",
+      });
+    } catch (error) {
+      console.error('Upload error:', error);
+      toast({
+        title: "Error",
+        description: error instanceof Error ? error.message : "Failed to upload image",
+        variant: "destructive",
       });
     }
   };
@@ -804,19 +813,37 @@ export default function GiftsPage() {
                           </Button>
                         </div>
                       ) : (
-                        <ObjectUploader
-                          maxNumberOfFiles={1}
-                          maxFileSize={5 * 1024 * 1024} // 5MB
-                          onGetUploadParameters={handleGetUploadParameters}
-                          onComplete={handleUploadComplete}
-                          buttonClassName="w-full"
-                        >
-                          <div className="flex flex-col items-center space-y-2">
+                        <div className="border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg p-6">
+                          <input
+                            type="file"
+                            accept="image/*"
+                            onChange={(e) => {
+                              const file = e.target.files?.[0];
+                              if (file) {
+                                if (file.size > 5 * 1024 * 1024) {
+                                  toast({
+                                    title: "Error",
+                                    description: "File size must be less than 5MB",
+                                    variant: "destructive",
+                                  });
+                                  return;
+                                }
+                                handleImageUpload(file);
+                              }
+                            }}
+                            className="hidden"
+                            id="gift-image-upload"
+                            data-testid="input-gift-image"
+                          />
+                          <label
+                            htmlFor="gift-image-upload"
+                            className="flex flex-col items-center space-y-2 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800 rounded p-4 transition-colors"
+                          >
                             <Upload className="h-8 w-8 text-gray-400" />
                             <span className="text-sm">Upload Gift Image</span>
                             <span className="text-xs text-muted-foreground">PNG, JPG up to 5MB</span>
-                          </div>
-                        </ObjectUploader>
+                          </label>
+                        </div>
                       )}
                     </div>
                     {form.formState.errors.image && (
