@@ -20,17 +20,15 @@ router.get("/", isAuthenticated, async (req: Request, res: Response) => {
 
     const friends = await db
       .select({
-        id: userRelationships.id,
-        friend: {
-          id: users.id,
-          username: users.username,
-          displayName: users.displayName,
-          profilePicture: users.profilePicture,
-          isVerified: users.isVerified,
-          bio: users.bio,
-          country: users.country,
-          lastLogin: users.lastLogin
-        },
+        relationshipId: userRelationships.id,
+        friendId: users.id,
+        friendUsername: users.username,
+        friendDisplayName: users.displayName,
+        friendProfilePicture: users.profilePicture,
+        friendIsVerified: users.isVerified,
+        friendBio: users.bio,
+        friendCountry: users.country,
+        friendLastLogin: users.lastLogin,
         friendsSince: userRelationships.createdAt
       })
       .from(userRelationships)
@@ -44,15 +42,15 @@ router.get("/", isAuthenticated, async (req: Request, res: Response) => {
 
     // Transform to expected format
     const formattedFriends = friends.map(f => ({
-      id: f.friend.id,
-      username: f.friend.username,
-      displayName: f.friend.displayName,
-      profilePicture: f.friend.profilePicture,
-      isVerified: f.friend.isVerified,
-      bio: f.friend.bio,
-      country: f.friend.country,
-      status: f.friend.lastLogin && new Date(f.friend.lastLogin) > new Date(Date.now() - 15 * 60 * 1000) ? 'online' : 'offline',
-      lastSeen: f.friend.lastLogin || f.friendsSince,
+      id: f.friendId,
+      username: f.friendUsername,
+      displayName: f.friendDisplayName,
+      profilePicture: f.friendProfilePicture,
+      isVerified: f.friendIsVerified,
+      bio: f.friendBio,
+      country: f.friendCountry,
+      status: f.friendLastLogin && new Date(f.friendLastLogin) > new Date(Date.now() - 15 * 60 * 1000) ? 'online' : 'offline',
+      lastSeen: f.friendLastLogin || f.friendsSince,
       friendsSince: f.friendsSince,
       currentRoom: null // TODO: Add room status integration
     }));
@@ -232,17 +230,16 @@ router.get("/requests/incoming", isAuthenticated, async (req: Request, res: Resp
     const incomingRequests = await db
       .select({
         id: userRelationships.id,
-        userId: userRelationships.userId,
+        senderId: userRelationships.userId,
+        receiverId: userRelationships.targetUserId,
         relationshipType: userRelationships.relationshipType,
         status: userRelationships.status,
         createdAt: userRelationships.createdAt,
-        sender: {
-          id: users.id,
-          username: users.username,
-          displayName: users.displayName,
-          profilePicture: users.profilePicture,
-          isVerified: users.isVerified
-        }
+        senderUsername: users.username,
+        senderDisplayName: users.displayName,
+        senderProfilePicture: users.profilePicture,
+        senderIsVerified: users.isVerified,
+        senderLastLogin: users.lastLogin
       })
       .from(userRelationships)
       .innerJoin(users, eq(userRelationships.userId, users.id))
