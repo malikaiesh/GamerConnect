@@ -869,7 +869,11 @@ export const insertStaticPageSchema = createInsertSchema(staticPages, {
 export const insertTeamMemberSchema = createInsertSchema(teamMembers, {
   name: (schema) => schema.min(2, "Name must be at least 2 characters"),
   designation: (schema) => schema.min(2, "Designation must be at least 2 characters"),
-  profilePicture: (schema) => schema.optional().nullable().refine((val) => !val || val === "" || z.string().url().safeParse(val).success, "Profile picture must be a valid URL or empty"),
+  profilePicture: (schema) => schema.optional().nullable().refine((val) => {
+    if (!val || val === "") return true;
+    // Allow URLs (http/https) or local file paths starting with /uploads/
+    return z.string().url().safeParse(val).success || val.startsWith('/uploads/');
+  }, "Profile picture must be a valid URL or uploaded file path"),
   bio: (schema) => schema.max(500, "Bio must not exceed 500 characters").optional().nullable(),
   socialLinkedin: (schema) => schema.optional().nullable().refine((val) => !val || val === "" || z.string().url().safeParse(val).success, "LinkedIn must be a valid URL or empty"),
   socialTwitter: (schema) => schema.optional().nullable().refine((val) => !val || val === "" || z.string().url().safeParse(val).success, "Twitter must be a valid URL or empty"),
