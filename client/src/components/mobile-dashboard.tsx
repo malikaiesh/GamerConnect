@@ -162,16 +162,6 @@ export function MobileDashboard() {
     setShowThemeSelector(false);
   };
 
-  const getThemeColors = (themeId: string) => {
-    switch (themeId) {
-      case 'sports': return 'from-blue-500 to-orange-500';
-      case 'girls': return 'from-pink-400 to-purple-500';
-      case 'retro': return 'from-yellow-400 to-red-500';
-      case 'futuristic': return 'from-blue-600 to-purple-600';
-      case 'lunexa': return 'from-gray-800 to-purple-900';
-      default: return 'from-blue-600 to-purple-600'; // modern
-    }
-  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-purple-50 dark:from-gray-900 dark:to-gray-800 pb-20">
@@ -212,50 +202,41 @@ export function MobileDashboard() {
               </button>
               
               {showThemeSelector && (
-                <div className="absolute right-0 top-12 w-64 bg-white dark:bg-gray-800 rounded-2xl shadow-2xl p-4 z-50 border border-gray-200 dark:border-gray-700">
-                  <div className="mb-3">
-                    <h3 className="text-sm font-semibold text-gray-800 dark:text-white mb-2">Choose Theme</h3>
-                    <div className="grid grid-cols-2 gap-2">
-                      {themes.map((theme) => (
-                        <button
-                          key={theme.id}
-                          onClick={() => handleThemeChange(theme.id)}
-                          className={cn(
-                            "p-2 rounded-lg text-xs font-medium transition-all",
-                            currentTheme === theme.id
-                              ? "bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 ring-2 ring-blue-500"
-                              : "bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600"
-                          )}
-                          data-testid={`theme-option-${theme.id}`}
-                        >
-                          <div className={cn("w-full h-6 rounded mb-1 bg-gradient-to-r", getThemeColors(theme.id))}></div>
-                          {theme.name}
-                        </button>
-                      ))}
-                    </div>
+                <div className="absolute right-0 top-12 w-48 bg-white dark:bg-gray-800 rounded-xl shadow-xl p-3 z-50 border border-gray-200 dark:border-gray-700">
+                  <h3 className="text-sm font-medium text-gray-800 dark:text-white mb-2">Select Theme</h3>
+                  <div className="space-y-1">
+                    {themes.map((theme) => (
+                      <button
+                        key={theme.id}
+                        onClick={() => handleThemeChange(theme.id)}
+                        className={cn(
+                          "w-full text-left px-3 py-2 rounded-lg text-sm transition-colors",
+                          currentTheme === theme.id
+                            ? "bg-blue-500 text-white"
+                            : "text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
+                        )}
+                        data-testid={`theme-option-${theme.id}`}
+                      >
+                        {theme.name}
+                      </button>
+                    ))}
                   </div>
                   
-                  <div className="border-t border-gray-200 dark:border-gray-600 pt-3">
+                  <div className="border-t border-gray-200 dark:border-gray-600 mt-3 pt-3">
                     <div className="flex items-center justify-between">
-                      <span className="text-xs font-medium text-gray-700 dark:text-gray-300">Dark Mode</span>
+                      <span className="text-sm text-gray-700 dark:text-gray-300">Dark Mode</span>
                       <button
                         onClick={handleThemeToggle}
                         className={cn(
-                          "relative inline-flex h-6 w-11 items-center rounded-full transition-colors",
-                          darkMode ? "bg-blue-600" : "bg-gray-200 dark:bg-gray-600"
+                          "w-10 h-5 rounded-full transition-colors relative",
+                          darkMode ? "bg-blue-500" : "bg-gray-300 dark:bg-gray-600"
                         )}
                         data-testid="dark-mode-toggle"
                       >
-                        <span className={cn(
-                          "inline-block h-4 w-4 transform rounded-full bg-white transition-transform",
-                          darkMode ? "translate-x-6" : "translate-x-1"
-                        )}>
-                          {darkMode ? (
-                            <Moon className="w-3 h-3 text-gray-600 m-0.5" />
-                          ) : (
-                            <Sun className="w-3 h-3 text-yellow-500 m-0.5" />
-                          )}
-                        </span>
+                        <div className={cn(
+                          "w-4 h-4 bg-white rounded-full absolute top-0.5 transition-transform",
+                          darkMode ? "translate-x-5" : "translate-x-0.5"
+                        )} />
                       </button>
                     </div>
                   </div>
