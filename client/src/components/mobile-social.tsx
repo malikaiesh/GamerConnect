@@ -20,6 +20,7 @@ import { MobileBottomNav } from "@/components/ui/mobile-bottom-nav";
 import { cn } from "@/lib/utils";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
+import { usePresence } from "@/hooks/use-presence";
 
 type ActiveSection = "find-friends" | "friend-requests" | "messages" | "friends" | "calls";
 
@@ -33,6 +34,14 @@ interface TabItem {
 export function MobileSocial() {
   const [activeSection, setActiveSection] = useState<ActiveSection>("find-friends");
   const queryClient = useQueryClient();
+
+  // Get current user for presence tracking
+  const { data: currentUser } = useQuery({
+    queryKey: ["/api/user"],
+  });
+
+  // Initialize real-time presence tracking
+  const { isConnected, updatePresence, friendsPresence } = usePresence(currentUser?.id?.toString() || null);
 
   // Fetch real data from APIs - ALL HOOKS MUST BE AT COMPONENT BODY LEVEL
   const { data: friendsData } = useQuery({
@@ -378,12 +387,36 @@ export function MobileSocial() {
       }
     };
 
+    // Merge real-time presence data with friends list
+    const friendsWithRealTimePresence = acceptedFriends?.map((friend: any) => {
+      const realtimePresence = friendsPresence.get(friend.id.toString());
+      if (realtimePresence) {
+        return {
+          ...friend,
+          status: realtimePresence.status,
+          currentRoom: realtimePresence.currentRoomId ? {
+            id: realtimePresence.currentRoomId,
+            canJoin: true
+          } : null
+        };
+      }
+      return friend;
+    }) || [];
+
     return (
       <div className="space-y-4">
-        <h3 className="text-lg font-semibold text-gray-800 dark:text-white">My Friends</h3>
+        <div className="flex items-center justify-between">
+          <h3 className="text-lg font-semibold text-gray-800 dark:text-white">My Friends</h3>
+          {isConnected && (
+            <div className="flex items-center text-xs text-green-500">
+              <Circle className="w-2 h-2 mr-1 fill-current" />
+              Live updates
+            </div>
+          )}
+        </div>
         
-        {acceptedFriends && acceptedFriends.length > 0 ? (
-          acceptedFriends.map((friend: any) => (
+        {friendsWithRealTimePresence.length > 0 ? (
+          friendsWithRealTimePresence.map((friend: any) => (
             <div key={friend.id} className="bg-white dark:bg-gray-800 rounded-2xl p-4 shadow-md">
               <div className="flex items-center justify-between">
                 <div className="flex items-center space-x-3">
@@ -589,6 +622,41 @@ export function MobileSocial() {
           <p className="text-white/90 text-sm">
             Connect with friends and grow your gaming community
           </p>
+          <div className="flex items-center justify-center mt-2">
+            <div className={cn(
+              "w-2 h-2 rounded-full mr-2",
+              isConnected ? "bg-green-400" : "bg-red-400"
+            )}></div>
+            <span className="text-xs text-white/70">
+              {isConnected ? "Real-time updates active" : "Connecting..."}
+            </span>
+            {/* Quick status test buttons - only show when connected */}
+            {isConnected && currentUser && (
+              <div className="ml-4 flex space-x-1">
+                <button 
+                  onClick={() => updatePresence('online')}
+                  className="px-2 py-1 bg-green-500/20 text-green-300 text-xs rounded"
+                  data-testid="button-status-online"
+                >
+                  Online
+                </button>
+                <button 
+                  onClick={() => updatePresence('away')}
+                  className="px-2 py-1 bg-yellow-500/20 text-yellow-300 text-xs rounded"
+                  data-testid="button-status-away"
+                >
+                  Away
+                </button>
+                <button 
+                  onClick={() => updatePresence('busy')}
+                  className="px-2 py-1 bg-red-500/20 text-red-300 text-xs rounded"
+                  data-testid="button-status-busy"
+                >
+                  Busy
+                </button>
+              </div>
+            )}
+          </div>
         </div>
 
         {/* Quick Stats */}

@@ -332,6 +332,13 @@ function Router() {
           </ProtectedRoute>
         </Suspense>
       </Route>
+      <Route path="/social">
+        <Suspense fallback={<LoadingFallback />}>
+          <ProtectedRoute>
+            <MobileSocialTest />
+          </ProtectedRoute>
+        </Suspense>
+      </Route>
       <Route path="/reset-password">
         <Suspense fallback={<LoadingFallback />}><ResetPasswordPage /></Suspense>
       </Route>

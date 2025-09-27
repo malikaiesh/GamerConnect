@@ -1461,12 +1461,37 @@ Sitemap: ${req.protocol}://${req.get('host')}/sitemap.xml`);
 
   // Store active connections by room and user
   const roomConnections = new Map<string, Map<string, WebSocket>>();
+  
+  // Store global user connections for presence tracking
+  const userConnections = new Map<string, WebSocket>();
 
   wss.on('connection', (ws: WebSocket, req) => {
     console.log('WebSocket: New connection established');
     
     let currentRoom: string | null = null;
     let currentUserId: string | null = null;
+    let authenticatedUserId: number | null = null;
+
+    // Extract session from request to authenticate user
+    const getAuthenticatedUserId = () => {
+      try {
+        // Parse session cookie from WebSocket request
+        const cookies = req.headers.cookie;
+        if (!cookies) return null;
+
+        // Extract session ID from cookie string
+        const sessionMatch = cookies.match(/connect\.sid=([^;]+)/);
+        if (!sessionMatch) return null;
+
+        // For WebSocket auth, we'll implement a simpler approach
+        // In a production system, you'd properly decode the session
+        // For now, we'll require explicit authentication via message
+        return null;
+      } catch (error) {
+        console.error('Error extracting session:', error);
+        return null;
+      }
+    };
 
     ws.on('message', (data: Buffer) => {
       try {
@@ -1474,23 +1499,199 @@ Sitemap: ${req.protocol}://${req.get('host')}/sitemap.xml`);
         console.log('WebSocket: Received message:', message);
         
         switch (message.type) {
-          case 'join-room':
-            currentRoom = message.roomId;
-            currentUserId = message.userId;
+          case 'authenticate':
+            // Authenticate WebSocket connection using session token
+            try {
+              const { sessionToken } = message;
+              if (!sessionToken) {
+                ws.send(JSON.stringify({ type: 'auth-error', message: 'Session token required' }));
+                return;
+              }
+
+              // Validate session token against database
+              const session = await db
+                .select({
+                  userId: userSessions.userId
+                })
+                .from(userSessions)
+                .where(and(
+                  eq(userSessions.sessionToken, sessionToken),
+                  gte(userSessions.expiresAt, new Date())
+                ))
+                .limit(1);
+
+              if (session.length === 0) {
+                ws.send(JSON.stringify({ type: 'auth-error', message: 'Invalid or expired session' }));
+                return;
+              }
+
+              authenticatedUserId = session[0].userId;
+              currentUserId = authenticatedUserId.toString();
+              userConnections.set(currentUserId, ws);
+              
+              console.log(`WebSocket: User ${authenticatedUserId} authenticated successfully`);
+              
+              // Send auth success and register for presence tracking
+              ws.send(JSON.stringify({ type: 'auth-success', userId: authenticatedUserId }));
+              
+              // Update user presence to online in database
+              await db
+                .insert(userFriendPresence)
+                .values({
+                  userId: authenticatedUserId,
+                  status: 'online',
+                  lastSeen: new Date(),
+                  presenceUpdatedAt: new Date()
+                })
+                .onConflictDoUpdate({
+                  target: userFriendPresence.userId,
+                  set: {
+                    status: 'online',
+                    lastSeen: new Date(),
+                    presenceUpdatedAt: new Date(),
+                    updatedAt: new Date()
+                  }
+                });
+              
+              // Broadcast presence update to friends
+              await broadcastPresenceToFriends(authenticatedUserId, {
+                type: 'presence-update',
+                userId: currentUserId,
+                status: 'online',
+                timestamp: new Date().toISOString()
+              });
+            } catch (error) {
+              console.error('Error authenticating WebSocket:', error);
+              ws.send(JSON.stringify({ type: 'auth-error', message: 'Authentication failed' }));
+            }
+            break;
+
+          case 'register-presence':
+            // Deprecated - use authenticate instead
+            ws.send(JSON.stringify({ 
+              type: 'error', 
+              message: 'Use authenticate message type instead' 
+            }));
+            break;
+
+          case 'update-presence':
+            // Update user presence status - only for authenticated users
+            if (!authenticatedUserId) {
+              ws.send(JSON.stringify({ 
+                type: 'error', 
+                message: 'Authentication required for presence updates' 
+              }));
+              return;
+            }
+
+            // Validate status values
+            const validStatuses = ['online', 'offline', 'away', 'busy', 'in_room'];
+            if (!validStatuses.includes(message.status)) {
+              ws.send(JSON.stringify({ 
+                type: 'error', 
+                message: 'Invalid status value' 
+              }));
+              return;
+            }
+
+            console.log(`WebSocket: User ${authenticatedUserId} updating presence to ${message.status}`);
             
-            // Add user to room connections
+            try {
+              await db
+                .update(userFriendPresence)
+                .set({
+                  status: message.status,
+                  currentRoomId: message.currentRoomId || null,
+                  lastSeen: new Date(),
+                  presenceUpdatedAt: new Date(),
+                  updatedAt: new Date()
+                })
+                .where(eq(userFriendPresence.userId, authenticatedUserId));
+              
+              // Broadcast presence update to friends using authenticated user ID
+              await broadcastPresenceToFriends(authenticatedUserId, {
+                type: 'presence-update',
+                userId: authenticatedUserId.toString(),
+                status: message.status,
+                currentRoomId: message.currentRoomId || null,
+                timestamp: new Date().toISOString()
+              });
+
+              // Send confirmation to client
+              ws.send(JSON.stringify({
+                type: 'presence-updated',
+                status: message.status,
+                currentRoomId: message.currentRoomId || null
+              }));
+            } catch (error) {
+              console.error('Error updating presence:', error);
+              ws.send(JSON.stringify({ 
+                type: 'error', 
+                message: 'Failed to update presence' 
+              }));
+            }
+            break;
+
+          case 'join-room':
+            // Secure join-room - only for authenticated users
+            if (!authenticatedUserId) {
+              ws.send(JSON.stringify({ 
+                type: 'error', 
+                message: 'Authentication required to join rooms' 
+              }));
+              return;
+            }
+
+            currentRoom = message.roomId;
+            currentUserId = authenticatedUserId.toString();
+            
+            // Validate room ID
+            if (!currentRoom || typeof currentRoom !== 'string') {
+              ws.send(JSON.stringify({ 
+                type: 'error', 
+                message: 'Valid room ID required' 
+              }));
+              return;
+            }
+            
+            // Add user to room connections using authenticated ID
             if (!roomConnections.has(currentRoom)) {
               roomConnections.set(currentRoom, new Map());
             }
             roomConnections.get(currentRoom)!.set(currentUserId, ws);
             
-            console.log(`WebSocket: User ${currentUserId} joined voice chat in room ${currentRoom}`);
+            console.log(`WebSocket: User ${authenticatedUserId} joined voice chat in room ${currentRoom}`);
             console.log(`WebSocket: Room ${currentRoom} now has ${roomConnections.get(currentRoom)!.size} users`);
+            
+            // Update presence to show user is in room
+            try {
+              await db
+                .update(userFriendPresence)
+                .set({
+                  status: 'in_room',
+                  currentRoomId: currentRoom,
+                  lastSeen: new Date(),
+                  presenceUpdatedAt: new Date(),
+                  updatedAt: new Date()
+                })
+                .where(eq(userFriendPresence.userId, authenticatedUserId));
+              
+              // Broadcast presence update to friends using authenticated ID
+              await broadcastPresenceToFriends(authenticatedUserId, {
+                type: 'presence-update',
+                userId: authenticatedUserId.toString(),
+                status: 'in_room',
+                currentRoomId: currentRoom,
+                timestamp: new Date().toISOString()
+              });
+            } catch (error) {
+              console.error('Error updating room presence:', error);
+            }
             
             // Notify other users in the room
             broadcastToRoom(currentRoom, {
               type: 'user-joined',
-              userId: currentUserId
+              userId: authenticatedUserId.toString()
             }, currentUserId);
             break;
 
@@ -1526,8 +1727,40 @@ Sitemap: ${req.protocol}://${req.get('host')}/sitemap.xml`);
       }
     });
 
-    ws.on('close', () => {
+    ws.on('close', async () => {
       console.log('WebSocket connection closed');
+      
+      if (authenticatedUserId) {
+        const userIdString = authenticatedUserId.toString();
+        
+        // Remove user from global connections
+        userConnections.delete(userIdString);
+        
+        // Update user presence to offline in database
+        try {
+          await db
+            .update(userFriendPresence)
+            .set({
+              status: 'offline',
+              currentRoomId: null,
+              lastSeen: new Date(),
+              presenceUpdatedAt: new Date(),
+              updatedAt: new Date()
+            })
+            .where(eq(userFriendPresence.userId, authenticatedUserId));
+          
+          // Broadcast offline status to friends using authenticated ID
+          await broadcastPresenceToFriends(authenticatedUserId, {
+            type: 'presence-update',
+            userId: userIdString,
+            status: 'offline',
+            currentRoomId: null,
+            timestamp: new Date().toISOString()
+          });
+        } catch (error) {
+          console.error('Error updating offline presence:', error);
+        }
+      }
       
       if (currentRoom && currentUserId) {
         // Remove user from room connections
@@ -1561,6 +1794,56 @@ Sitemap: ${req.protocol}://${req.get('host')}/sitemap.xml`);
           userWs.send(JSON.stringify(message));
         }
       });
+    }
+  }
+
+  // Helper function to broadcast presence updates to user's friends
+  async function broadcastPresenceToFriends(userId: number, message: any) {
+    try {
+      // Get user's accepted friends
+      const friends = await db
+        .select({
+          friendId: userRelationships.targetUserId
+        })
+        .from(userRelationships)
+        .where(and(
+          eq(userRelationships.userId, userId),
+          eq(userRelationships.relationshipType, 'friend'),
+          eq(userRelationships.status, 'accepted')
+        ));
+
+      // Also get friends who have this user as their friend (bidirectional)
+      const reverseFriends = await db
+        .select({
+          friendId: userRelationships.userId
+        })
+        .from(userRelationships)
+        .where(and(
+          eq(userRelationships.targetUserId, userId),
+          eq(userRelationships.relationshipType, 'friend'),
+          eq(userRelationships.status, 'accepted')
+        ));
+
+      // Combine both friend lists
+      const allFriendIds = [
+        ...friends.map(f => f.friendId.toString()),
+        ...reverseFriends.map(f => f.friendId.toString())
+      ];
+
+      // Remove duplicates
+      const uniqueFriendIds = [...new Set(allFriendIds)];
+
+      // Send presence update to all connected friends
+      uniqueFriendIds.forEach(friendId => {
+        const friendWs = userConnections.get(friendId);
+        if (friendWs && friendWs.readyState === WebSocket.OPEN) {
+          friendWs.send(JSON.stringify(message));
+        }
+      });
+
+      console.log(`WebSocket: Broadcasted presence update for user ${userId} to ${uniqueFriendIds.length} friends`);
+    } catch (error) {
+      console.error('Error broadcasting presence to friends:', error);
     }
   }
 
