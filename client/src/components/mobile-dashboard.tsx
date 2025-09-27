@@ -1,6 +1,7 @@
 import { useAuth } from "@/hooks/use-auth";
 import { useQuery } from "@tanstack/react-query";
 import { Link, useLocation } from "wouter";
+import { useMobile } from "@/hooks/use-mobile";
 import { 
   Crown,
   Gift,
@@ -128,6 +129,7 @@ export function MobileDashboard() {
   const [currentTheme, setCurrentThemeState] = useState(getCurrentTheme());
   const [showThemeSelector, setShowThemeSelector] = useState(false);
   const [, navigate] = useLocation();
+  const isMobile = useMobile();
   
   const { data: userStats } = useQuery({
     queryKey: ["/api/user/stats"],
@@ -167,7 +169,7 @@ export function MobileDashboard() {
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center space-x-4">
             <button 
-              onClick={() => navigate('/profile')}
+              onClick={() => navigate(isMobile ? '/mobile-settings' : '/profile')}
               className="transition-transform hover:scale-105 active:scale-95"
               data-testid="button-profile-avatar"
             >
