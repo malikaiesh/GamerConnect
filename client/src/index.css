@@ -118,12 +118,24 @@
 
   /* Sports Theme */
   .sports-theme {
+    --background: 210 15% 95%;
+    --foreground: 240 10% 3.9%;
+    --card: 0 0% 100%;
+    --card-foreground: 240 10% 3.9%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 240 10% 3.9%;
     --primary: 210 100% 40%;
     --primary-foreground: 0 0% 98%;
     --secondary: 36 100% 50%;
     --secondary-foreground: 0 0% 98%;
     --accent: 122 50% 49%;
     --accent-foreground: 0 0% 98%;
+    --muted: 210 40% 98%;
+    --muted-foreground: 240 3.8% 46.1%;
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 240 5.9% 90%;
+    --input: 240 5.9% 90%;
     --ring: 210 100% 40%;
     
     /* Admin variables for Sports theme */
@@ -140,12 +152,24 @@
 
   /* Girls Theme */
   .girls-theme {
+    --background: 340 15% 95%;
+    --foreground: 240 10% 3.9%;
+    --card: 0 0% 100%;
+    --card-foreground: 240 10% 3.9%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 240 10% 3.9%;
     --primary: 340 83% 52%;
     --primary-foreground: 0 0% 98%;
     --secondary: 291 65% 42%;
     --secondary-foreground: 0 0% 98%;
     --accent: 187 100% 42%;
     --accent-foreground: 0 0% 98%;
+    --muted: 340 40% 98%;
+    --muted-foreground: 240 3.8% 46.1%;
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 240 5.9% 90%;
+    --input: 240 5.9% 90%;
     --ring: 340 83% 52%;
     
     /* Admin variables for Girls theme */
@@ -162,12 +186,24 @@
 
   /* Retro Theme */
   .retro-theme {
+    --background: 88 20% 95%;
+    --foreground: 240 10% 3.9%;
+    --card: 0 0% 100%;
+    --card-foreground: 240 10% 3.9%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 240 10% 3.9%;
     --primary: 88 60% 55%;
     --primary-foreground: 0 0% 98%;
     --secondary: 328 100% 44%;
     --secondary-foreground: 0 0% 98%;
     --accent: 45 100% 47%;
     --accent-foreground: 0 0% 98%;
+    --muted: 88 40% 98%;
+    --muted-foreground: 240 3.8% 46.1%;
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 240 5.9% 90%;
+    --input: 240 5.9% 90%;
     --ring: 88 60% 55%;
     
     /* Admin variables for Retro theme */
@@ -184,12 +220,24 @@
 
   /* Futuristic Theme */
   .futuristic-theme {
+    --background: 210 15% 95%;
+    --foreground: 240 10% 3.9%;
+    --card: 0 0% 100%;
+    --card-foreground: 240 10% 3.9%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 240 10% 3.9%;
     --primary: 210 83% 53%;
     --primary-foreground: 0 0% 98%;
     --secondary: 187 100% 42%;
     --secondary-foreground: 0 0% 98%;
     --accent: 270 76% 58%;
     --accent-foreground: 0 0% 98%;
+    --muted: 210 40% 98%;
+    --muted-foreground: 240 3.8% 46.1%;
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 240 5.9% 90%;
+    --input: 240 5.9% 90%;
     --ring: 210 83% 53%;
     
     /* Admin variables for Futuristic theme */
