@@ -18,10 +18,16 @@ import {
   TrendingUp,
   Sparkles,
   Award,
-  Flame
+  Flame,
+  CheckCircle,
+  MessageSquare,
+  Moon,
+  Sun
 } from "lucide-react";
 import { MobileBottomNav } from "@/components/ui/mobile-bottom-nav";
 import { cn } from "@/lib/utils";
+import { toggleDarkMode, isDarkMode } from "@/lib/themes";
+import { useState, useEffect } from "react";
 
 interface FeatureCard {
   id: string;
@@ -105,11 +111,30 @@ const featureCards: FeatureCard[] = [
     href: "/games",
     gradient: "bg-gradient-to-r from-orange-400 to-red-500",
     iconColor: "text-white"
+  },
+  {
+    id: "get-verified",
+    title: "Get Verified",
+    subtitle: "Verify Account",
+    icon: CheckCircle,
+    href: "/verification",
+    gradient: "bg-gradient-to-r from-teal-400 to-blue-600",
+    iconColor: "text-white"
+  },
+  {
+    id: "feedback",
+    title: "Feedback",
+    subtitle: "Share Your Thoughts",
+    icon: MessageSquare,
+    href: "/feedback",
+    gradient: "bg-gradient-to-r from-violet-500 to-purple-600",
+    iconColor: "text-white"
   }
 ];
 
 export function MobileDashboard() {
   const { user } = useAuth();
+  const [darkMode, setDarkMode] = useState(isDarkMode());
   
   const { data: userStats } = useQuery({
     queryKey: ["/api/user/stats"],
@@ -122,6 +147,12 @@ export function MobileDashboard() {
   // Calculate user level based on games played (simple logic)
   const userLevel = Math.floor((userStats?.gamesPlayed || 0) / 10) + 1;
   const coins = (referralData?.totalEarnings || 0) / 100;
+
+  const handleThemeToggle = () => {
+    const newDarkMode = !darkMode;
+    setDarkMode(newDarkMode);
+    toggleDarkMode(newDarkMode);
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-purple-50 dark:from-gray-900 dark:to-gray-800 pb-20">
@@ -152,6 +183,17 @@ export function MobileDashboard() {
             </div>
           </div>
           <div className="flex flex-col items-end space-y-1">
+            <button
+              onClick={handleThemeToggle}
+              className="p-2 bg-white/20 rounded-full hover:bg-white/30 transition-colors"
+              data-testid="button-theme-toggle"
+            >
+              {darkMode ? (
+                <Sun className="w-5 h-5 text-yellow-300" />
+              ) : (
+                <Moon className="w-5 h-5 text-white" />
+              )}
+            </button>
             <div className="flex items-center space-x-1">
               <Heart className="w-4 h-4 text-red-300" />
               <span className="text-sm">100</span>
