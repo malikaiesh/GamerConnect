@@ -26,7 +26,7 @@ import {
 } from "lucide-react";
 import { MobileBottomNav } from "@/components/ui/mobile-bottom-nav";
 import { cn } from "@/lib/utils";
-import { toggleDarkMode, isDarkMode } from "@/lib/themes";
+import { toggleDarkMode, isDarkMode, themes, setTheme, getCurrentTheme } from "@/lib/themes";
 import { useState, useEffect } from "react";
 
 interface FeatureCard {
@@ -135,6 +135,8 @@ const featureCards: FeatureCard[] = [
 export function MobileDashboard() {
   const { user } = useAuth();
   const [darkMode, setDarkMode] = useState(isDarkMode());
+  const [currentTheme, setCurrentThemeState] = useState(getCurrentTheme());
+  const [showThemeSelector, setShowThemeSelector] = useState(false);
   
   const { data: userStats } = useQuery({
     queryKey: ["/api/user/stats"],
@@ -152,6 +154,23 @@ export function MobileDashboard() {
     const newDarkMode = !darkMode;
     setDarkMode(newDarkMode);
     toggleDarkMode(newDarkMode);
+  };
+
+  const handleThemeChange = (themeId: string) => {
+    setTheme(themeId);
+    setCurrentThemeState(themeId);
+    setShowThemeSelector(false);
+  };
+
+  const getThemeColors = (themeId: string) => {
+    switch (themeId) {
+      case 'sports': return 'from-blue-500 to-orange-500';
+      case 'girls': return 'from-pink-400 to-purple-500';
+      case 'retro': return 'from-yellow-400 to-red-500';
+      case 'futuristic': return 'from-blue-600 to-purple-600';
+      case 'lunexa': return 'from-gray-800 to-purple-900';
+      default: return 'from-blue-600 to-purple-600'; // modern
+    }
   };
 
   return (
@@ -183,17 +202,66 @@ export function MobileDashboard() {
             </div>
           </div>
           <div className="flex flex-col items-end space-y-1">
-            <button
-              onClick={handleThemeToggle}
-              className="p-2 bg-white/20 rounded-full hover:bg-white/30 transition-colors"
-              data-testid="button-theme-toggle"
-            >
-              {darkMode ? (
-                <Sun className="w-5 h-5 text-yellow-300" />
-              ) : (
-                <Moon className="w-5 h-5 text-white" />
+            <div className="relative">
+              <button
+                onClick={() => setShowThemeSelector(!showThemeSelector)}
+                className="p-2 bg-white/20 rounded-full hover:bg-white/30 transition-colors"
+                data-testid="button-theme-selector"
+              >
+                <Sparkles className="w-5 h-5 text-white" />
+              </button>
+              
+              {showThemeSelector && (
+                <div className="absolute right-0 top-12 w-64 bg-white dark:bg-gray-800 rounded-2xl shadow-2xl p-4 z-50 border border-gray-200 dark:border-gray-700">
+                  <div className="mb-3">
+                    <h3 className="text-sm font-semibold text-gray-800 dark:text-white mb-2">Choose Theme</h3>
+                    <div className="grid grid-cols-2 gap-2">
+                      {themes.map((theme) => (
+                        <button
+                          key={theme.id}
+                          onClick={() => handleThemeChange(theme.id)}
+                          className={cn(
+                            "p-2 rounded-lg text-xs font-medium transition-all",
+                            currentTheme === theme.id
+                              ? "bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 ring-2 ring-blue-500"
+                              : "bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600"
+                          )}
+                          data-testid={`theme-option-${theme.id}`}
+                        >
+                          <div className={cn("w-full h-6 rounded mb-1 bg-gradient-to-r", getThemeColors(theme.id))}></div>
+                          {theme.name}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                  
+                  <div className="border-t border-gray-200 dark:border-gray-600 pt-3">
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs font-medium text-gray-700 dark:text-gray-300">Dark Mode</span>
+                      <button
+                        onClick={handleThemeToggle}
+                        className={cn(
+                          "relative inline-flex h-6 w-11 items-center rounded-full transition-colors",
+                          darkMode ? "bg-blue-600" : "bg-gray-200 dark:bg-gray-600"
+                        )}
+                        data-testid="dark-mode-toggle"
+                      >
+                        <span className={cn(
+                          "inline-block h-4 w-4 transform rounded-full bg-white transition-transform",
+                          darkMode ? "translate-x-6" : "translate-x-1"
+                        )}>
+                          {darkMode ? (
+                            <Moon className="w-3 h-3 text-gray-600 m-0.5" />
+                          ) : (
+                            <Sun className="w-3 h-3 text-yellow-500 m-0.5" />
+                          )}
+                        </span>
+                      </button>
+                    </div>
+                  </div>
+                </div>
               )}
-            </button>
+            </div>
             <div className="flex items-center space-x-1">
               <Heart className="w-4 h-4 text-red-300" />
               <span className="text-sm">100</span>
