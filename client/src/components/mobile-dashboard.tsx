@@ -1,6 +1,6 @@
 import { useAuth } from "@/hooks/use-auth";
 import { useQuery } from "@tanstack/react-query";
-import { Link } from "wouter";
+import { Link, useLocation } from "wouter";
 import { 
   Crown,
   Gift,
@@ -127,6 +127,7 @@ export function MobileDashboard() {
   const [darkMode, setDarkMode] = useState(isDarkMode());
   const [currentTheme, setCurrentThemeState] = useState(getCurrentTheme());
   const [showThemeSelector, setShowThemeSelector] = useState(false);
+  const [, navigate] = useLocation();
   
   const { data: userStats } = useQuery({
     queryKey: ["/api/user/stats"],
@@ -165,12 +166,18 @@ export function MobileDashboard() {
       }}>
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center space-x-4">
-            <Avatar className="w-16 h-16 border-2 border-white/30">
-              <AvatarImage src={user?.profilePicture || undefined} alt={user?.username || 'Player'} />
-              <AvatarFallback className="bg-white/20 text-white text-2xl font-bold">
-                {(user?.displayName || user?.username || 'Player').charAt(0).toUpperCase()}
-              </AvatarFallback>
-            </Avatar>
+            <button 
+              onClick={() => navigate('/profile')}
+              className="transition-transform hover:scale-105 active:scale-95"
+              data-testid="button-profile-avatar"
+            >
+              <Avatar className="w-16 h-16 border-2 border-white/30">
+                <AvatarImage src={user?.profilePicture || undefined} alt={user?.username || 'Player'} />
+                <AvatarFallback className="bg-white/20 text-white text-2xl font-bold">
+                  {(user?.displayName || user?.username || 'Player').charAt(0).toUpperCase()}
+                </AvatarFallback>
+              </Avatar>
+            </button>
             <div>
               <h2 className="text-2xl font-bold">
                 {user?.displayName || user?.username || 'Player'}
@@ -201,45 +208,79 @@ export function MobileDashboard() {
               </button>
               
               {showThemeSelector && (
-                <div className="absolute right-0 top-12 w-48 bg-white dark:bg-gray-800 rounded-xl shadow-xl p-3 z-50 border border-gray-200 dark:border-gray-700">
-                  <h3 className="text-sm font-medium text-gray-800 dark:text-white mb-2">Select Theme</h3>
-                  <div className="space-y-1">
-                    {themes.map((theme) => (
-                      <button
-                        key={theme.id}
-                        onClick={() => handleThemeChange(theme.id)}
-                        className={cn(
-                          "w-full text-left px-3 py-2 rounded-lg text-sm transition-colors",
-                          currentTheme === theme.id
-                            ? "bg-blue-500 text-white"
-                            : "text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
-                        )}
-                        data-testid={`theme-option-${theme.id}`}
-                      >
-                        {theme.name}
-                      </button>
-                    ))}
-                  </div>
+                <>
+                  {/* Backdrop */}
+                  <div 
+                    className="fixed inset-0 bg-black/50 z-40"
+                    onClick={() => setShowThemeSelector(false)}
+                  />
                   
-                  <div className="border-t border-gray-200 dark:border-gray-600 mt-3 pt-3">
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm text-gray-700 dark:text-gray-300">Dark Mode</span>
-                      <button
-                        onClick={handleThemeToggle}
-                        className={cn(
-                          "w-10 h-5 rounded-full transition-colors relative",
-                          darkMode ? "bg-blue-500" : "bg-gray-300 dark:bg-gray-600"
-                        )}
-                        data-testid="dark-mode-toggle"
-                      >
-                        <div className={cn(
-                          "w-4 h-4 bg-white rounded-full absolute top-0.5 transition-transform",
-                          darkMode ? "translate-x-5" : "translate-x-0.5"
-                        )} />
-                      </button>
+                  {/* Theme Selector Modal */}
+                  <div className="fixed inset-x-4 top-1/2 -translate-y-1/2 z-50">
+                    <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl border border-gray-200 dark:border-gray-700 overflow-hidden">
+                      {/* Header */}
+                      <div className="p-6 pb-4 border-b border-gray-200 dark:border-gray-700">
+                        <h3 className="text-xl font-bold text-gray-900 dark:text-white text-center">Select Theme</h3>
+                        <p className="text-sm text-gray-600 dark:text-gray-400 text-center mt-1">Choose your preferred theme</p>
+                      </div>
+                      
+                      {/* Theme Grid */}
+                      <div className="p-6 max-h-80 overflow-y-auto">
+                        <div className="grid grid-cols-2 gap-3 mb-4">
+                          {themes.map((theme) => (
+                            <button
+                              key={theme.id}
+                              onClick={() => handleThemeChange(theme.id)}
+                              className={cn(
+                                "p-4 rounded-xl text-left transition-all duration-200 border-2",
+                                currentTheme === theme.id
+                                  ? "bg-blue-500 text-white border-blue-500 shadow-lg scale-105"
+                                  : "bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-100 border-gray-200 dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-600"
+                              )}
+                              data-testid={`theme-option-${theme.id}`}
+                            >
+                              <div className="font-medium">{theme.name}</div>
+                              {currentTheme === theme.id && (
+                                <div className="text-xs mt-1 opacity-90">✓ Active</div>
+                              )}
+                            </button>
+                          ))}
+                        </div>
+                        
+                        {/* Dark Mode Toggle */}
+                        <div className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-700 rounded-xl">
+                          <div>
+                            <span className="font-medium text-gray-900 dark:text-gray-100">Dark Mode</span>
+                            <p className="text-xs text-gray-600 dark:text-gray-400">Toggle dark theme</p>
+                          </div>
+                          <button
+                            onClick={handleThemeToggle}
+                            className={cn(
+                              "w-12 h-6 rounded-full transition-colors relative",
+                              darkMode ? "bg-blue-500" : "bg-gray-300 dark:bg-gray-600"
+                            )}
+                            data-testid="dark-mode-toggle"
+                          >
+                            <div className={cn(
+                              "w-5 h-5 bg-white rounded-full absolute top-0.5 transition-transform shadow-sm",
+                              darkMode ? "translate-x-6" : "translate-x-0.5"
+                            )} />
+                          </button>
+                        </div>
+                      </div>
+                      
+                      {/* Close Button */}
+                      <div className="p-4 border-t border-gray-200 dark:border-gray-700">
+                        <button
+                          onClick={() => setShowThemeSelector(false)}
+                          className="w-full py-3 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-900 dark:text-gray-100 rounded-xl font-medium transition-colors"
+                        >
+                          Close
+                        </button>
+                      </div>
                     </div>
                   </div>
-                </div>
+                </>
               )}
             </div>
             <div className="flex items-center space-x-1">
