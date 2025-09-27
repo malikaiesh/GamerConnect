@@ -152,6 +152,7 @@ const NewRoomsPage = lazy(() => import("@/pages/rooms/new-rooms"));
 // Social pages
 const FriendsPage = lazy(() => import("@/pages/social/friends"));
 const FriendRequestsPage = lazy(() => import("@/pages/social/friend-requests"));
+const CallsPage = lazy(() => import("@/pages/social/calls"));
 const FindFriendsPage = lazy(() => import("@/pages/find-friends"));
 const MessagesPage = lazy(() => import("@/pages/messages"));
 
@@ -288,6 +289,9 @@ function Router() {
       </Route>
       <Route path="/friends/requests">
         <Suspense fallback={<LoadingFallback />}><FriendRequestsPage /></Suspense>
+      </Route>
+      <Route path="/friends/calls">
+        <Suspense fallback={<LoadingFallback />}><CallsPage /></Suspense>
       </Route>
       <Route path="/find-friends">
         <Suspense fallback={<LoadingFallback />}><FindFriendsPage /></Suspense>
