@@ -35,7 +35,6 @@ interface FeatureCard {
   subtitle: string;
   icon: React.ComponentType<{ className?: string }>;
   href: string;
-  gradient: string;
   iconColor: string;
 }
 
@@ -46,7 +45,6 @@ const featureCards: FeatureCard[] = [
     subtitle: "Challenge",
     icon: Target,
     href: "/tournaments",
-    gradient: "bg-gradient-to-r from-purple-500 to-pink-500",
     iconColor: "text-white"
   },
   {
@@ -55,7 +53,6 @@ const featureCards: FeatureCard[] = [
     subtitle: "Daily Bonus",
     icon: Gift,
     href: "/refer-earn",
-    gradient: "bg-gradient-to-r from-green-400 to-blue-500",
     iconColor: "text-white"
   },
   {
@@ -64,7 +61,6 @@ const featureCards: FeatureCard[] = [
     subtitle: "Giveaway",
     icon: Coins,
     href: "/pricing-plans",
-    gradient: "bg-gradient-to-r from-yellow-400 to-orange-500",
     iconColor: "text-white"
   },
   {
@@ -73,7 +69,6 @@ const featureCards: FeatureCard[] = [
     subtitle: "Premium Access",
     icon: Crown,
     href: "/pricing-plans",
-    gradient: "bg-gradient-to-r from-indigo-500 to-purple-600",
     iconColor: "text-white"
   },
   {
@@ -82,7 +77,6 @@ const featureCards: FeatureCard[] = [
     subtitle: "Complete & Earn",
     icon: Calendar,
     href: "/user-dashboard",
-    gradient: "bg-gradient-to-r from-emerald-400 to-cyan-500",
     iconColor: "text-white"
   },
   {
@@ -91,7 +85,6 @@ const featureCards: FeatureCard[] = [
     subtitle: "Join Tournaments",
     icon: Trophy,
     href: "/tournaments",
-    gradient: "bg-gradient-to-r from-red-500 to-pink-500",
     iconColor: "text-white"
   },
   {
@@ -100,7 +93,6 @@ const featureCards: FeatureCard[] = [
     subtitle: "Unlock Badges",
     icon: Award,
     href: "/verification",
-    gradient: "bg-gradient-to-r from-blue-500 to-teal-500",
     iconColor: "text-white"
   },
   {
@@ -109,7 +101,6 @@ const featureCards: FeatureCard[] = [
     subtitle: "Boost Your Game",
     icon: Zap,
     href: "/games",
-    gradient: "bg-gradient-to-r from-orange-400 to-red-500",
     iconColor: "text-white"
   },
   {
@@ -118,7 +109,6 @@ const featureCards: FeatureCard[] = [
     subtitle: "Verify Account",
     icon: CheckCircle,
     href: "/verification",
-    gradient: "bg-gradient-to-r from-teal-400 to-blue-600",
     iconColor: "text-white"
   },
   {
@@ -127,7 +117,6 @@ const featureCards: FeatureCard[] = [
     subtitle: "Share Your Thoughts",
     icon: MessageSquare,
     href: "/feedback",
-    gradient: "bg-gradient-to-r from-violet-500 to-purple-600",
     iconColor: "text-white"
   }
 ];
@@ -164,9 +153,15 @@ export function MobileDashboard() {
 
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-purple-50 dark:from-gray-900 dark:to-gray-800 pb-20">
+    <div className="min-h-screen pb-20" style={{
+      background: darkMode 
+        ? 'linear-gradient(to bottom right, hsl(var(--background)), hsl(var(--muted)))'
+        : `linear-gradient(to bottom right, hsl(var(--primary) / 0.1), hsl(var(--accent) / 0.1))`
+    }}>
       {/* Header Section with User Profile */}
-      <div className="bg-gradient-to-r from-blue-600 to-purple-600 text-white p-6 rounded-b-3xl shadow-lg">
+      <div className="bg-gradient-to-r from-primary to-accent text-white p-6 rounded-b-3xl shadow-lg" style={{
+        background: `linear-gradient(to right, hsl(var(--primary)), hsl(var(--accent)))`
+      }}>
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center space-x-4">
             <div className="w-16 h-16 bg-white/20 rounded-full flex items-center justify-center">
@@ -298,10 +293,20 @@ export function MobileDashboard() {
           return (
             <Link key={card.id} href={card.href}>
               <div 
-                className={cn(
-                  "relative overflow-hidden rounded-2xl shadow-lg transform transition-all duration-200 active:scale-95 hover:shadow-xl",
-                  card.gradient
-                )}
+                className="relative overflow-hidden rounded-2xl shadow-lg transform transition-all duration-200 active:scale-95 hover:shadow-xl"
+                style={{
+                  background: card.id === 'lucky-challenge' ? `linear-gradient(to right, hsl(var(--primary)), hsl(var(--secondary)))` :
+                             card.id === 'free-rewards' ? `linear-gradient(to right, hsl(var(--accent)), hsl(var(--primary)))` :
+                             card.id === 'coins-chest' ? `linear-gradient(to right, hsl(var(--secondary)), hsl(var(--accent)))` :
+                             card.id === 'vip-subscription' ? `linear-gradient(to right, hsl(var(--accent)), hsl(var(--primary)))` :
+                             card.id === 'daily-tasks' ? `linear-gradient(to right, hsl(var(--primary)), hsl(var(--secondary)))` :
+                             card.id === 'tournaments' ? `linear-gradient(to right, hsl(var(--secondary)), hsl(var(--accent)))` :
+                             card.id === 'achievements' ? `linear-gradient(to right, hsl(var(--primary)), hsl(var(--accent)))` :
+                             card.id === 'power-ups' ? `linear-gradient(to right, hsl(var(--accent)), hsl(var(--secondary)))` :
+                             card.id === 'get-verified' ? `linear-gradient(to right, hsl(var(--primary)), hsl(var(--accent)))` :
+                             card.id === 'feedback' ? `linear-gradient(to right, hsl(var(--accent)), hsl(var(--primary)))` :
+                             `linear-gradient(to right, hsl(var(--primary)), hsl(var(--accent)))`
+                }}
                 data-testid={`feature-card-${card.id}`}
               >
                 <div className="p-6 flex items-center justify-between">
