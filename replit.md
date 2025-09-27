@@ -2,7 +2,16 @@
 
 This is a comprehensive gaming portal platform that provides an online gaming experience with content management capabilities. The system consists of a React frontend with a Node.js/Express backend, using PostgreSQL with Drizzle ORM for data management. It features game hosting, blog management, user authentication, admin dashboard, SEO optimization, and various content management tools.
 
-## Recent Updates (September 9, 2025)
+## Recent Updates (September 27, 2025)
+
+- **Image Upload System Fixed**: Resolved critical image upload issues affecting gifts and team images
+  - Replaced failing object storage system with traditional Multer-based file uploads
+  - Added proper environment variable loading with dotenv configuration
+  - Configured dedicated upload directories for different content types (gifts, ads, general uploads)
+  - Fixed authentication and file filtering for secure image uploads
+  - All image upload functionality now working correctly for admin features
+
+## Previous Updates (September 9, 2025)
 
 - **Security Hardening**: Completed comprehensive security audit and vulnerability fixes
   - Replaced vulnerable xlsx package with secure ExcelJS alternative for analytics exports

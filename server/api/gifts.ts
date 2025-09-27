@@ -5,8 +5,57 @@ import { db } from "@db";
 import { gifts, insertGiftSchema, type InsertGift, type Gift } from "@shared/schema";
 import { isAuthenticated, isAdmin } from "../middleware/auth";
 import { ObjectStorageService } from "../objectStorage";
+import multer from "multer";
+import path from "path";
+import fs from "fs";
+import { nanoid } from "nanoid";
 
 const router = Router();
+
+// Configure multer for gift image uploads
+const storage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    const uploadDir = path.join(process.cwd(), "uploads", "gifts");
+    
+    // Create the gifts uploads directory if it doesn't exist
+    if (!fs.existsSync(uploadDir)) {
+      fs.mkdirSync(uploadDir, { recursive: true });
+    }
+    
+    cb(null, uploadDir);
+  },
+  filename: function (req, file, cb) {
+    // Create a unique filename with original extension
+    const uniqueId = nanoid(10);
+    const fileExt = path.extname(file.originalname).toLowerCase();
+    const safeName = file.originalname
+      .replace(/[^a-zA-Z0-9-_.]/g, '-')
+      .toLowerCase()
+      .substring(0, 20);
+    
+    cb(null, `gift-${safeName}-${uniqueId}${fileExt}`);
+  }
+});
+
+// Define allowed file types for gift images
+const imageFilter = (req: Request, file: Express.Multer.File, cb: multer.FileFilterCallback) => {
+  const allowedMimeTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+  
+  if (allowedMimeTypes.includes(file.mimetype)) {
+    cb(null, true);
+  } else {
+    cb(new Error('Only images are allowed (JPEG, PNG, GIF, WEBP)'));
+  }
+};
+
+// Setup upload middleware for gift images
+const upload = multer({
+  storage,
+  fileFilter: imageFilter,
+  limits: {
+    fileSize: 5 * 1024 * 1024, // 5MB max file size
+  }
+});
 
 // Get all gifts (public endpoint for room interfaces)
 router.get("/", async (req: Request, res: Response) => {
@@ -247,36 +296,23 @@ router.delete("/:id", isAuthenticated, isAdmin, async (req: Request, res: Respon
 });
 
 // Upload gift image (admin only)
-router.post("/upload-image", isAuthenticated, isAdmin, async (req: Request, res: Response) => {
+router.post("/upload-image", isAuthenticated, isAdmin, upload.single('image'), async (req: Request, res: Response) => {
   try {
-    const objectStorageService = new ObjectStorageService();
-    const uploadURL = await objectStorageService.getObjectEntityUploadURL();
-    res.json({ uploadURL });
-  } catch (error) {
-    console.error("Error getting upload URL:", error);
-    res.status(500).json({ error: "Failed to get upload URL" });
-  }
-});
-
-// Process uploaded image (admin only)
-router.post("/process-image", isAuthenticated, isAdmin, async (req: Request, res: Response) => {
-  try {
-    const { imageURL } = req.body;
-    
-    if (!imageURL) {
-      return res.status(400).json({ error: "Image URL is required" });
+    if (!req.file) {
+      return res.status(400).json({ error: "No image file provided" });
     }
 
-    const objectStorageService = new ObjectStorageService();
-    const objectPath = objectStorageService.normalizeObjectEntityPath(imageURL);
-
+    // Return the path to the uploaded file
+    const imagePath = `/uploads/gifts/${req.file.filename}`;
+    
     res.json({
-      message: "Image processed successfully",
-      imagePath: objectPath
+      message: "Image uploaded successfully",
+      imagePath: imagePath,
+      filename: req.file.filename
     });
   } catch (error) {
-    console.error("Error processing uploaded image:", error);
-    res.status(500).json({ error: "Failed to process uploaded image" });
+    console.error("Error uploading image:", error);
+    res.status(500).json({ error: "Failed to upload image" });
   }
 });
 
