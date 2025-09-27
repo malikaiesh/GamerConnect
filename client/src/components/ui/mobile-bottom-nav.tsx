@@ -5,7 +5,8 @@ import {
   GamepadIcon, 
   Users,
   MessageCircle,
-  Swords
+  Swords,
+  Home
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -19,11 +20,11 @@ interface BottomNavItem {
 
 const navItems: BottomNavItem[] = [
   {
-    id: "events",
-    label: "Events",
-    icon: Calendar,
-    href: "/events",
-    color: "text-blue-500"
+    id: "games",
+    label: "Games",
+    icon: GamepadIcon,
+    href: "/games",
+    color: "text-green-500"
   },
   {
     id: "battles",
@@ -33,11 +34,18 @@ const navItems: BottomNavItem[] = [
     color: "text-red-500"
   },
   {
-    id: "games",
-    label: "Games",
-    icon: GamepadIcon,
-    href: "/games",
-    color: "text-green-500"
+    id: "rooms",
+    label: "Rooms",
+    icon: Home,
+    href: "/rooms",
+    color: "text-orange-500"
+  },
+  {
+    id: "events",
+    label: "Events",
+    icon: Calendar,
+    href: "/events",
+    color: "text-blue-500"
   },
   {
     id: "social",
