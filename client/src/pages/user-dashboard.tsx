@@ -5,6 +5,8 @@ import { Sidebar } from "@/components/layout/sidebar";
 import { useAuth } from "@/hooks/use-auth";
 import { useQuery } from "@tanstack/react-query";
 import { Link } from "wouter";
+import { useMobile } from "@/hooks/use-mobile";
+import { MobileDashboard } from "@/components/mobile-dashboard";
 import { 
   Home, 
   GamepadIcon, 
@@ -30,6 +32,7 @@ import {
 
 export default function UserDashboard() {
   const { user } = useAuth();
+  const isMobile = useMobile();
 
   const { data: userStats } = useQuery({
     queryKey: ["/api/user/stats"],
@@ -38,6 +41,11 @@ export default function UserDashboard() {
   const { data: referralData } = useQuery({
     queryKey: ["/api/user/referrals"],
   });
+
+  // Show mobile dashboard on mobile devices
+  if (isMobile) {
+    return <MobileDashboard />;
+  }
 
   const services = [
     {
