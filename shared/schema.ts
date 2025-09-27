@@ -39,10 +39,10 @@ export const sessionStatusEnum = pgEnum('session_status', ['active', 'expired', 
 export const tokenTypeEnum = pgEnum('token_type', ['password_reset', 'email_verification', 'admin_reset']);
 
 // SEO Schema Type Enum
-export const schemaTypeEnum = pgEnum('schema_type', ['VideoGame', 'Article', 'BlogPosting', 'Organization', 'WebPage', 'AboutPage', 'ContactPage', 'FAQPage', 'CollectionPage', 'BreadcrumbList', 'Review', 'Rating', 'Product', 'Person']);
+export const schemaTypeEnum = pgEnum('schema_type', ['VideoGame', 'Article', 'BlogPosting', 'Organization', 'WebPage', 'AboutPage', 'ContactPage', 'FAQPage', 'CollectionPage', 'BreadcrumbList', 'Review', 'Rating', 'Product', 'Person', 'Offer', 'PriceSpecification', 'Room', 'Accommodation']);
 
 // SEO Schema Content Type Enum
-export const schemaContentTypeEnum = pgEnum('schema_content_type', ['game', 'blog_post', 'page', 'category', 'organization', 'global']);
+export const schemaContentTypeEnum = pgEnum('schema_content_type', ['game', 'blog_post', 'page', 'category', 'organization', 'global', 'pricing', 'rooms']);
 
 // Event Status Enum
 export const eventStatusEnum = pgEnum('event_status', ['draft', 'published', 'ongoing', 'completed', 'cancelled']);
