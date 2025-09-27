@@ -3,6 +3,9 @@ import { db } from "@db";
 import { 
   userRelationships,
   users,
+  userFriendPresence,
+  callLogs,
+  rooms
 } from "@shared/schema";
 import { eq, desc, and, sql, count, gte, sum, asc, or, ne } from "drizzle-orm";
 import { isAuthenticated } from "../middleware/auth";
@@ -421,6 +424,156 @@ router.delete("/remove/:friendId", isAuthenticated, async (req: Request, res: Re
   } catch (error) {
     console.error("Error removing friend:", error);
     res.status(500).json({ error: "Failed to remove friend" });
+  }
+});
+
+// Get accepted friends with presence and room information
+router.get("/accepted", isAuthenticated, async (req: Request, res: Response) => {
+  try {
+    const userId = (req as any).user?.id;
+    if (!userId) {
+      return res.status(401).json({ error: "User not authenticated" });
+    }
+
+    // Get accepted friends with their presence information
+    const acceptedFriends = await db
+      .select({
+        relationshipId: userRelationships.id,
+        friendId: users.id,
+        friendUsername: users.username,
+        friendDisplayName: users.displayName,
+        friendProfilePicture: users.profilePicture,
+        friendIsVerified: users.isVerified,
+        friendBio: users.bio,
+        friendCountry: users.country,
+        friendsSince: userRelationships.createdAt,
+        // Presence information
+        presenceStatus: userFriendPresence.status,
+        currentRoomId: userFriendPresence.currentRoomId,
+        lastSeen: userFriendPresence.lastSeen
+      })
+      .from(userRelationships)
+      .innerJoin(users, eq(userRelationships.targetUserId, users.id))
+      .leftJoin(userFriendPresence, eq(users.id, userFriendPresence.userId))
+      .where(and(
+        eq(userRelationships.userId, userId),
+        eq(userRelationships.relationshipType, 'friend'),
+        eq(userRelationships.status, 'accepted')
+      ))
+      .orderBy(desc(userRelationships.createdAt));
+
+    // Format the response
+    const formattedFriends = acceptedFriends.map(f => ({
+      id: f.friendId,
+      username: f.friendUsername,
+      displayName: f.friendDisplayName,
+      profilePicture: f.friendProfilePicture,
+      isVerified: f.friendIsVerified,
+      bio: f.friendBio,
+      country: f.friendCountry,
+      status: f.presenceStatus || 'offline',
+      lastSeen: f.lastSeen || f.friendsSince,
+      friendsSince: f.friendsSince,
+      currentRoom: f.currentRoomId ? {
+        id: f.currentRoomId,
+        canJoin: true // TODO: Add room permissions check
+      } : null
+    }));
+
+    res.json(formattedFriends);
+  } catch (error) {
+    console.error("Error fetching accepted friends:", error);
+    res.status(500).json({ error: "Failed to fetch accepted friends" });
+  }
+});
+
+// Update user presence status
+router.post("/presence", isAuthenticated, async (req: Request, res: Response) => {
+  try {
+    const userId = (req as any).user?.id;
+    if (!userId) {
+      return res.status(401).json({ error: "User not authenticated" });
+    }
+
+    const { status, currentRoomId } = req.body;
+    
+    if (!status || !['online', 'offline', 'away', 'busy', 'invisible'].includes(status)) {
+      return res.status(400).json({ error: "Valid status is required" });
+    }
+
+    // Update or insert presence information
+    const existingPresence = await db
+      .select()
+      .from(userFriendPresence)
+      .where(eq(userFriendPresence.userId, userId))
+      .limit(1);
+
+    if (existingPresence.length > 0) {
+      // Update existing presence
+      await db
+        .update(userFriendPresence)
+        .set({
+          status,
+          currentRoomId: currentRoomId || null,
+          lastSeen: new Date(),
+          presenceUpdatedAt: new Date(),
+          updatedAt: new Date()
+        })
+        .where(eq(userFriendPresence.userId, userId));
+    } else {
+      // Insert new presence record
+      await db
+        .insert(userFriendPresence)
+        .values({
+          userId,
+          status,
+          currentRoomId: currentRoomId || null,
+          lastSeen: new Date(),
+          presenceUpdatedAt: new Date()
+        });
+    }
+
+    res.json({ 
+      message: "Presence updated successfully",
+      status,
+      currentRoomId: currentRoomId || null
+    });
+  } catch (error) {
+    console.error("Error updating presence:", error);
+    res.status(500).json({ error: "Failed to update presence" });
+  }
+});
+
+// Get user's own presence status
+router.get("/presence", isAuthenticated, async (req: Request, res: Response) => {
+  try {
+    const userId = (req as any).user?.id;
+    if (!userId) {
+      return res.status(401).json({ error: "User not authenticated" });
+    }
+
+    const presence = await db
+      .select()
+      .from(userFriendPresence)
+      .where(eq(userFriendPresence.userId, userId))
+      .limit(1);
+
+    if (presence.length === 0) {
+      return res.json({
+        status: 'offline',
+        currentRoomId: null,
+        lastSeen: null
+      });
+    }
+
+    res.json({
+      status: presence[0].status,
+      currentRoomId: presence[0].currentRoomId,
+      lastSeen: presence[0].lastSeen
+    });
+  } catch (error) {
+    console.error("Error fetching presence:", error);
+    res.status(500).json({ error: "Failed to fetch presence" });
   }
 });
 
