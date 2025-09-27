@@ -147,6 +147,13 @@ export const revenueCategoryEnum = pgEnum('revenue_category', [
 export const revenueStatusEnum = pgEnum('revenue_status', ['pending', 'completed', 'failed', 'refunded', 'disputed']);
 export const revenueFrequencyEnum = pgEnum('revenue_frequency', ['one_time', 'daily', 'weekly', 'monthly', 'quarterly', 'yearly']);
 
+// Friend presence tracking enums
+export const presenceStatusEnum = pgEnum('presence_status', ['online', 'offline', 'away', 'busy', 'invisible']);
+
+// Call system enums
+export const callTypeEnum = pgEnum('call_type', ['voice', 'video', 'conference']);
+export const callStatusEnum = pgEnum('call_status', ['completed', 'missed', 'declined', 'failed', 'cancelled']);
+
 // Roles table
 export const roles = pgTable('roles', {
   id: serial('id').primaryKey(),
@@ -1926,6 +1933,46 @@ export const userRelationships = pgTable('user_relationships', {
   updatedAt: timestamp('updated_at').defaultNow().notNull()
 });
 
+// User Friend Presence table (track friend online status and current room)
+export const userFriendPresence = pgTable('user_friend_presence', {
+  id: serial('id').primaryKey(),
+  userId: integer('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
+  status: presenceStatusEnum('status').default('offline').notNull(),
+  currentRoomId: text('current_room_id'), // Room ID they're currently in
+  lastSeen: timestamp('last_seen').defaultNow().notNull(),
+  presenceUpdatedAt: timestamp('presence_updated_at').defaultNow().notNull(),
+  
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+  updatedAt: timestamp('updated_at').defaultNow().notNull()
+}, (table) => {
+  return {
+    userIdIdx: uniqueIndex('user_presence_idx').on(table.userId)
+  };
+});
+
+// Call Logs table (track call history between users)
+export const callLogs = pgTable('call_logs', {
+  id: serial('id').primaryKey(),
+  callerId: integer('caller_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
+  calleeId: integer('callee_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
+  callType: callTypeEnum('call_type').default('voice').notNull(),
+  status: callStatusEnum('status').notNull(),
+  roomId: text('room_id'), // Optional: if call happened in a room context
+  
+  startedAt: timestamp('started_at').defaultNow().notNull(),
+  endedAt: timestamp('ended_at'),
+  durationSeconds: integer('duration_seconds').default(0),
+  
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+  updatedAt: timestamp('updated_at').defaultNow().notNull()
+}, (table) => {
+  return {
+    callerIdIdx: index('call_logs_caller_idx').on(table.callerId),
+    calleeIdIdx: index('call_logs_callee_idx').on(table.calleeId),
+    startedAtIdx: index('call_logs_started_at_idx').on(table.startedAt)
+  };
+});
+
 // Conversations table for organizing message threads between users
 export const conversations = pgTable('conversations', {
   id: serial('id').primaryKey(),
@@ -2200,6 +2247,28 @@ export const userRelationshipsRelations = relations(userRelationships, ({ one })
   })
 }));
 
+// User Friend Presence Relations
+export const userFriendPresenceRelations = relations(userFriendPresence, ({ one }) => ({
+  user: one(users, {
+    fields: [userFriendPresence.userId],
+    references: [users.id]
+  })
+}));
+
+// Call Logs Relations
+export const callLogsRelations = relations(callLogs, ({ one }) => ({
+  caller: one(users, {
+    fields: [callLogs.callerId],
+    references: [users.id],
+    relationName: 'callerUser'
+  }),
+  callee: one(users, {
+    fields: [callLogs.calleeId],
+    references: [users.id],
+    relationName: 'calleeUser'
+  })
+}));
+
 // Messaging System Relations
 export const conversationsRelations = relations(conversations, ({ one, many }) => ({
   user1: one(users, {
@@ -2343,6 +2412,18 @@ export const insertUserWalletSchema = createInsertSchema(userWallets);
 export const insertUserRelationshipSchema = createInsertSchema(userRelationships);
 export const insertRoomAnalyticsSchema = createInsertSchema(roomAnalytics);
 
+// Friend presence and call system schemas
+export const insertUserFriendPresenceSchema = createInsertSchema(userFriendPresence).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true
+});
+export const insertCallLogSchema = createInsertSchema(callLogs).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true
+});
+
 // Messaging System Schemas
 export const insertConversationSchema = createInsertSchema(conversations).omit({
   id: true,
@@ -2437,6 +2518,12 @@ export type UserRelationship = typeof userRelationships.$inferSelect;
 export type InsertUserRelationship = z.infer<typeof insertUserRelationshipSchema>;
 export type RoomAnalytics = typeof roomAnalytics.$inferSelect;
 export type InsertRoomAnalytics = z.infer<typeof insertRoomAnalyticsSchema>;
+
+// Friend presence and call system type exports
+export type UserFriendPresence = typeof userFriendPresence.$inferSelect;
+export type InsertUserFriendPresence = z.infer<typeof insertUserFriendPresenceSchema>;
+export type CallLog = typeof callLogs.$inferSelect;
+export type InsertCallLog = z.infer<typeof insertCallLogSchema>;
 
 // Messaging System Type Exports
 export type Conversation = typeof conversations.$inferSelect;
