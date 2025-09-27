@@ -25,6 +25,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useTheme } from "@/hooks/use-theme";
 
 export function Sidebar() {
@@ -321,11 +322,12 @@ export function Sidebar() {
             data-testid="nav-profile"
           >
             <div className="flex items-center space-x-2 w-full">
-              <div className="w-8 h-8 bg-gradient-to-r from-primary to-primary/80 rounded-full flex items-center justify-center">
-                <span className="text-primary-foreground text-sm font-medium">
+              <Avatar className="w-8 h-8">
+                <AvatarImage src={user?.profilePicture || undefined} alt={user?.username || 'User'} />
+                <AvatarFallback className="bg-gradient-to-r from-primary to-primary/80 text-primary-foreground text-sm font-medium">
                   {user?.username?.charAt(0)?.toUpperCase() || 'U'}
-                </span>
-              </div>
+                </AvatarFallback>
+              </Avatar>
               <div className="flex-1 min-w-0 text-left">
                 <p className="text-sm font-medium text-foreground truncate">
                   {user?.displayName || user?.username || 'User'}

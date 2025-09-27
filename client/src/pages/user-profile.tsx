@@ -227,9 +227,11 @@ export default function UserProfile() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gray-50 dark:bg-gray-950 flex">
+      <div className="min-h-screen bg-background flex">
         <Sidebar />
-        <div className="flex-1 ml-64 p-6">
+        <div className="flex-1 ml-64 p-6" style={{
+          background: `linear-gradient(135deg, hsl(var(--background)) 0%, hsl(var(--muted) / 0.3) 100%)`
+        }}>
           <div className="flex items-center justify-center h-full">
             <div className="text-muted-foreground">Loading profile...</div>
           </div>
@@ -239,11 +241,13 @@ export default function UserProfile() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-950 flex">
+    <div className="min-h-screen bg-background flex">
       <Sidebar />
       
       {/* Main Content */}
-      <div className="flex-1 ml-0 lg:ml-64 p-4 lg:p-6">
+      <div className="flex-1 ml-0 lg:ml-64 p-4 lg:p-6" style={{
+        background: `linear-gradient(135deg, hsl(var(--background)) 0%, hsl(var(--muted) / 0.3) 100%)`
+      }}>
         <div className="max-w-4xl mx-auto space-y-6">
           {/* Header */}
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
@@ -256,18 +260,21 @@ export default function UserProfile() {
           </div>
 
           <Tabs defaultValue="profile" className="space-y-6">
-            <TabsList className="grid w-full grid-cols-3">
-              <TabsTrigger value="profile">Profile</TabsTrigger>
-              <TabsTrigger value="avatar">Avatar</TabsTrigger>
-              <TabsTrigger value="security">Security</TabsTrigger>
+            <TabsList className="grid w-full grid-cols-3 bg-card/50 border border-border/50 rounded-lg p-1">
+              <TabsTrigger value="profile" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">Profile</TabsTrigger>
+              <TabsTrigger value="avatar" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">Avatar</TabsTrigger>
+              <TabsTrigger value="security" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">Security</TabsTrigger>
             </TabsList>
 
             {/* Profile Tab */}
             <TabsContent value="profile" className="space-y-6">
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <User className="h-5 w-5" />
+              <Card className="shadow-lg border-0" style={{
+                background: `linear-gradient(135deg, hsl(var(--card)) 0%, hsl(var(--muted) / 0.5) 100%)`,
+                border: `1px solid hsl(var(--border) / 0.5)`
+              }}>
+                <CardHeader className="pb-4">
+                  <CardTitle className="flex items-center gap-2 text-xl font-bold">
+                    <User className="h-6 w-6 text-primary" />
                     Profile Information
                     {profile?.isVerified && (
                       <div className="flex items-center gap-1 ml-auto">
@@ -279,7 +286,10 @@ export default function UserProfile() {
                 </CardHeader>
                 <CardContent className="space-y-6">
                   {/* Profile Stats */}
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4 p-4 bg-muted/50 rounded-lg">
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4 p-6 rounded-xl shadow-lg" style={{
+                    background: `linear-gradient(135deg, hsl(var(--primary) / 0.1) 0%, hsl(var(--accent) / 0.1) 100%)`,
+                    border: `1px solid hsl(var(--border))`
+                  }}>
                     <div className="text-center">
                       <div className="text-2xl font-bold text-primary">{profile?.totalRooms || 0}</div>
                       <div className="text-sm text-muted-foreground">Rooms Created</div>
@@ -381,10 +391,13 @@ export default function UserProfile() {
 
             {/* Avatar Tab */}
             <TabsContent value="avatar" className="space-y-6">
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Camera className="h-5 w-5" />
+              <Card className="shadow-lg border-0" style={{
+                background: `linear-gradient(135deg, hsl(var(--card)) 0%, hsl(var(--muted) / 0.5) 100%)`,
+                border: `1px solid hsl(var(--border) / 0.5)`
+              }}>
+                <CardHeader className="pb-4">
+                  <CardTitle className="flex items-center gap-2 text-xl font-bold">
+                    <Camera className="h-6 w-6 text-primary" />
                     Profile Picture
                   </CardTitle>
                 </CardHeader>
@@ -430,10 +443,13 @@ export default function UserProfile() {
 
             {/* Security Tab */}
             <TabsContent value="security" className="space-y-6">
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Lock className="h-5 w-5" />
+              <Card className="shadow-lg border-0" style={{
+                background: `linear-gradient(135deg, hsl(var(--card)) 0%, hsl(var(--muted) / 0.5) 100%)`,
+                border: `1px solid hsl(var(--border) / 0.5)`
+              }}>
+                <CardHeader className="pb-4">
+                  <CardTitle className="flex items-center gap-2 text-xl font-bold">
+                    <Lock className="h-6 w-6 text-primary" />
                     Change Password
                   </CardTitle>
                 </CardHeader>
