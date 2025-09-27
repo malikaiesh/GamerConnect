@@ -82,6 +82,15 @@ export const roomUserStatusEnum = pgEnum('room_user_status', ['active', 'muted',
 export const giftTypeEnum = pgEnum('gift_type', ['basic', 'premium', 'exclusive', 'special', 'animated']);
 export const giftCategoryEnum = pgEnum('gift_category', ['general', 'love', 'celebration', 'friendship', 'appreciation', 'seasonal', 'luxury']);
 
+// Room Moderation Enums
+export const roomModerationActionEnum = pgEnum('room_moderation_action', [
+  'invite_to_mic', 'remove_from_mic', 'lock_mic', 'unlock_mic', 'mute_mic', 'unmute_mic',
+  'kick_user', 'ban_user', 'unban_user', 'change_mic', 'mute_user', 'unmute_user',
+  'promote_moderator', 'demote_moderator'
+]);
+export const roomBanDurationEnum = pgEnum('room_ban_duration', ['1_day', '7_days', '30_days', '1_year', 'permanent']);
+export const roomMicStatusEnum = pgEnum('room_mic_status', ['available', 'occupied', 'locked', 'invited_only']);
+
 // Messaging System Enums
 export const messageTypeEnum = pgEnum('message_type', ['text', 'image', 'file', 'system', 'emoji']);
 export const conversationTypeEnum = pgEnum('conversation_type', ['direct', 'group']);
@@ -1833,6 +1842,8 @@ export const roomUsers = pgTable('room_users', {
   isMuted: boolean('is_muted').default(false).notNull(),
   isMicOn: boolean('is_mic_on').default(false).notNull(),
   isActive: boolean('is_active').default(true).notNull(),
+  isInvitedToMic: boolean('is_invited_to_mic').default(false).notNull(),
+  canUseMic: boolean('can_use_mic').default(true).notNull(),
   
   // Statistics
   giftsReceived: integer('gifts_received').default(0).notNull(),
@@ -1900,6 +1911,109 @@ export const roomGifts = pgTable('room_gifts', {
   message: text('message'), // Optional message with gift
   
   createdAt: timestamp('created_at').defaultNow().notNull()
+});
+
+// Room Moderation Events table (track all moderation actions)
+export const roomModerationEvents = pgTable('room_moderation_events', {
+  id: serial('id').primaryKey(),
+  roomId: integer('room_id').notNull().references(() => rooms.id, { onDelete: 'cascade' }),
+  moderatorId: integer('moderator_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
+  targetUserId: integer('target_user_id').references(() => users.id, { onDelete: 'cascade' }), // User being moderated (null for room-wide actions)
+  
+  action: roomModerationActionEnum('action').notNull(),
+  reason: text('reason'), // Optional reason for the action
+  metadata: json('metadata'), // Additional data (mic seat number, ban duration, etc.)
+  
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+  expiresAt: timestamp('expires_at'), // For temporary actions like bans
+  isActive: boolean('is_active').default(true).notNull()
+}, (table) => {
+  return {
+    roomIdx: index('room_moderation_events_room_idx').on(table.roomId),
+    moderatorIdx: index('room_moderation_events_moderator_idx').on(table.moderatorId),
+    targetUserIdx: index('room_moderation_events_target_user_idx').on(table.targetUserId),
+    actionIdx: index('room_moderation_events_action_idx').on(table.action),
+    createdAtIdx: index('room_moderation_events_created_at_idx').on(table.createdAt)
+  };
+});
+
+// Room Bans table (track user bans from rooms)
+export const roomBans = pgTable('room_bans', {
+  id: serial('id').primaryKey(),
+  roomId: integer('room_id').notNull().references(() => rooms.id, { onDelete: 'cascade' }),
+  userId: integer('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
+  bannedBy: integer('banned_by').notNull().references(() => users.id, { onDelete: 'cascade' }),
+  
+  duration: roomBanDurationEnum('duration').notNull(),
+  reason: text('reason'),
+  
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+  expiresAt: timestamp('expires_at'), // Null for permanent bans
+  isActive: boolean('is_active').default(true).notNull(),
+  liftedAt: timestamp('lifted_at'),
+  liftedBy: integer('lifted_by').references(() => users.id)
+}, (table) => {
+  return {
+    roomUserIdx: uniqueIndex('room_bans_room_user_idx').on(table.roomId, table.userId),
+    roomIdx: index('room_bans_room_idx').on(table.roomId),
+    userIdx: index('room_bans_user_idx').on(table.userId),
+    activeIdx: index('room_bans_active_idx').on(table.isActive),
+    expiresAtIdx: index('room_bans_expires_at_idx').on(table.expiresAt)
+  };
+});
+
+// Room Mic Control table (manage mic permissions and status)
+export const roomMicControl = pgTable('room_mic_control', {
+  id: serial('id').primaryKey(),
+  roomId: integer('room_id').notNull().references(() => rooms.id, { onDelete: 'cascade' }),
+  seatNumber: integer('seat_number').notNull(), // Which mic seat (1-8)
+  
+  status: roomMicStatusEnum('status').default('available').notNull(),
+  occupiedBy: integer('occupied_by').references(() => users.id, { onDelete: 'cascade' }), // Who is currently using this mic
+  lockedBy: integer('locked_by').references(() => users.id, { onDelete: 'cascade' }), // Who locked this mic
+  invitedUsers: integer('invited_users').array().default([]), // Array of user IDs invited to this mic
+  
+  isMuted: boolean('is_muted').default(false).notNull(),
+  mutedBy: integer('muted_by').references(() => users.id),
+  
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+  updatedAt: timestamp('updated_at').defaultNow().notNull()
+}, (table) => {
+  return {
+    roomSeatIdx: uniqueIndex('room_mic_control_room_seat_idx').on(table.roomId, table.seatNumber),
+    roomIdx: index('room_mic_control_room_idx').on(table.roomId),
+    occupiedByIdx: index('room_mic_control_occupied_by_idx').on(table.occupiedBy),
+    statusIdx: index('room_mic_control_status_idx').on(table.status)
+  };
+});
+
+// Room Moderator Permissions table (specific permissions for room moderators)
+export const roomModeratorPermissions = pgTable('room_moderator_permissions', {
+  id: serial('id').primaryKey(),
+  roomId: integer('room_id').notNull().references(() => rooms.id, { onDelete: 'cascade' }),
+  userId: integer('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
+  grantedBy: integer('granted_by').notNull().references(() => users.id, { onDelete: 'cascade' }),
+  
+  // Specific moderation permissions
+  canInviteToMic: boolean('can_invite_to_mic').default(true).notNull(),
+  canRemoveFromMic: boolean('can_remove_from_mic').default(true).notNull(),
+  canLockMic: boolean('can_lock_mic').default(true).notNull(),
+  canMuteMic: boolean('can_mute_mic').default(true).notNull(),
+  canKickUsers: boolean('can_kick_users').default(true).notNull(),
+  canBanUsers: boolean('can_ban_users').default(false).notNull(),
+  canMuteUsers: boolean('can_mute_users').default(true).notNull(),
+  canManageModerators: boolean('can_manage_moderators').default(false).notNull(),
+  
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+  updatedAt: timestamp('updated_at').defaultNow().notNull(),
+  isActive: boolean('is_active').default(true).notNull()
+}, (table) => {
+  return {
+    roomUserIdx: uniqueIndex('room_moderator_permissions_room_user_idx').on(table.roomId, table.userId),
+    roomIdx: index('room_moderator_permissions_room_idx').on(table.roomId),
+    userIdx: index('room_moderator_permissions_user_idx').on(table.userId),
+    activeIdx: index('room_moderator_permissions_active_idx').on(table.isActive)
+  };
 });
 
 // User Wallets table (for virtual currency)
@@ -3858,4 +3972,48 @@ export type InsertTranslation = z.infer<typeof insertTranslationSchema>;
 
 export type Feedback = typeof feedback.$inferSelect;
 export type InsertFeedback = z.infer<typeof insertFeedbackSchema>;
+
+// ===== ROOM MODERATION VALIDATION SCHEMAS =====
+
+export const insertRoomModerationEventSchema = createInsertSchema(roomModerationEvents, {
+  roomId: (schema) => schema.positive("Room ID must be positive"),
+  moderatorId: (schema) => schema.positive("Moderator ID must be positive"),
+  targetUserId: (schema) => schema.positive("Target user ID must be positive").optional(),
+  reason: (schema) => schema.max(500, "Reason must be less than 500 characters").optional()
+}).omit({ id: true, createdAt: true, isActive: true });
+
+export const insertRoomBanSchema = createInsertSchema(roomBans, {
+  roomId: (schema) => schema.positive("Room ID must be positive"),
+  userId: (schema) => schema.positive("User ID must be positive"),
+  bannedBy: (schema) => schema.positive("Banned by user ID must be positive"),
+  reason: (schema) => schema.max(500, "Reason must be less than 500 characters").optional()
+}).omit({ id: true, createdAt: true, isActive: true, liftedAt: true, liftedBy: true });
+
+export const insertRoomMicControlSchema = createInsertSchema(roomMicControl, {
+  roomId: (schema) => schema.positive("Room ID must be positive"),
+  seatNumber: (schema) => schema.min(1, "Seat number must be at least 1").max(8, "Seat number cannot exceed 8"),
+  occupiedBy: (schema) => schema.positive("Occupied by user ID must be positive").optional(),
+  lockedBy: (schema) => schema.positive("Locked by user ID must be positive").optional(),
+  mutedBy: (schema) => schema.positive("Muted by user ID must be positive").optional()
+}).omit({ id: true, createdAt: true, updatedAt: true });
+
+export const insertRoomModeratorPermissionsSchema = createInsertSchema(roomModeratorPermissions, {
+  roomId: (schema) => schema.positive("Room ID must be positive"),
+  userId: (schema) => schema.positive("User ID must be positive"),
+  grantedBy: (schema) => schema.positive("Granted by user ID must be positive")
+}).omit({ id: true, createdAt: true, updatedAt: true, isActive: true });
+
+// ===== ROOM MODERATION TYPE EXPORTS =====
+
+export type RoomModerationEvent = typeof roomModerationEvents.$inferSelect;
+export type InsertRoomModerationEvent = z.infer<typeof insertRoomModerationEventSchema>;
+
+export type RoomBan = typeof roomBans.$inferSelect;
+export type InsertRoomBan = z.infer<typeof insertRoomBanSchema>;
+
+export type RoomMicControl = typeof roomMicControl.$inferSelect;
+export type InsertRoomMicControl = z.infer<typeof insertRoomMicControlSchema>;
+
+export type RoomModeratorPermissions = typeof roomModeratorPermissions.$inferSelect;
+export type InsertRoomModeratorPermissions = z.infer<typeof insertRoomModeratorPermissionsSchema>;
 

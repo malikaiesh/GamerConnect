@@ -10,7 +10,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { 
   Mic, MicOff, Volume2, VolumeX, Gift, MessageCircle, Settings, 
   Users, Crown, LogOut, Send, Smile, Heart, Star, Diamond,
-  Phone, PhoneOff, Video, VideoOff, MoreVertical, UserPlus, ShieldCheck
+  Phone, PhoneOff, Video, VideoOff, MoreVertical, UserPlus, ShieldCheck, Shield
 } from "lucide-react";
 import EmojiPicker from 'emoji-picker-react';
 import { VerificationIcon } from "@/components/ui/verification-icon";
@@ -18,6 +18,7 @@ import { useAuth } from "@/hooks/use-auth";
 import { voiceChatService } from "@/services/voiceChat";
 import { formatDistanceToNow } from "date-fns";
 import { isVerificationValid } from "@/lib/verification-utils";
+import { RoomModerationButton } from "@/components/room-moderation-button";
 
 interface RoomUser {
   id: number;
@@ -415,6 +416,14 @@ export default function RoomInterfacePage() {
   // Get current user's room status
   const currentUserInRoom = roomData?.users.find(ru => ru.user.id === user?.id);
   const isOwner = roomData?.room.ownerId === user?.id;
+  
+  // Determine user role for moderation
+  const getUserRole = () => {
+    if (isOwner) return 'owner';
+    if (currentUserInRoom?.role === 'manager') return 'manager';
+    if (currentUserInRoom?.role === 'moderator') return 'moderator';
+    return 'member';
+  };
 
   // Create seat grid with circular mic design
   const renderSeats = () => {
@@ -778,6 +787,22 @@ export default function RoomInterfacePage() {
                         </div>
                       )}
                       
+                      {/* Moderation Button for Moderators/Owners */}
+                      {(isOwner || ['manager', 'moderator'].includes(currentUserInRoom?.role || '')) && (
+                        <div className="relative">
+                          <RoomModerationButton
+                            roomId={roomId!}
+                            userRole={getUserRole()}
+                            className="relative rounded-full w-14 h-14 sm:w-16 sm:h-16 p-0 border-2 bg-gradient-to-r from-blue-400 to-cyan-500 border-blue-300 text-white shadow-blue-200 hover:shadow-blue-300 transition-all duration-200 shadow-lg hover:scale-105"
+                          />
+                          <div className="absolute -bottom-2 left-1/2 transform -translate-x-1/2">
+                            <span className="text-xs font-medium px-2 py-1 bg-black/80 text-white rounded-full">
+                              MOD
+                            </span>
+                          </div>
+                        </div>
+                      )}
+
                       {/* Settings Button for Owner */}
                       {isOwner && (
                         <div className="relative">

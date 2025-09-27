@@ -46,6 +46,7 @@ import { registerGoogleIndexingRoutes } from "./api/google-indexing";
 import backupRestoreRoutes from "./api/backup-restore";
 import objectsRoutes from "./api/objects";
 import { roomsRouter } from "./api/rooms";
+import roomModerationRouter from "./api/room-moderation";
 import friendsRouter from "./api/friends";
 import userProfileRouter from "./api/user-profile";
 import messageRoutes from "./api/messages";
@@ -634,6 +635,7 @@ Sitemap: ${req.protocol}://${req.get('host')}/sitemap.xml`);
   
   // Room system routes
   app.use('/api/rooms', roomsRouter);
+  app.use('/api/room-moderation', roomModerationRouter);
   
   // Admin room routes (to work with the admin middleware in auth.ts)
   app.post('/api/admin/rooms/create', isAuthenticated, isAdmin, async (req, res) => {
