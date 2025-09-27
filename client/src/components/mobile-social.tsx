@@ -162,13 +162,13 @@ export function MobileSocial() {
   const renderFindFriends = () => {
     return (
       <div className="space-y-4">
-        <div className="bg-white dark:bg-gray-800 rounded-2xl p-4 shadow-md">
-          <div className="flex items-center space-x-3 mb-4">
-            <Search className="w-5 h-5 text-gray-400" />
+        <div className="bg-white dark:bg-gray-800 rounded-xl p-3 shadow-sm">
+          <div className="flex items-center space-x-2">
+            <Search className="w-4 h-4 text-gray-400" />
             <input 
               type="text" 
               placeholder="Search for players..."
-              className="flex-1 bg-transparent border-none outline-none text-gray-800 dark:text-white"
+              className="flex-1 bg-transparent border-none outline-none text-gray-800 dark:text-white text-sm"
               data-testid="input-search-friends"
             />
           </div>
