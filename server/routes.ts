@@ -43,6 +43,7 @@ import {
 import { registerSignupOptionsRoutes } from "./api/signup-options";
 import { registerHeroImageRoutes } from "./api/hero-images";
 import { registerGoogleIndexingRoutes } from "./api/google-indexing";
+import { webSocketBroadcaster } from "./services/websocket-broadcaster";
 import backupRestoreRoutes from "./api/backup-restore";
 import objectsRoutes from "./api/objects";
 import { roomsRouter } from "./api/rooms";
@@ -1461,11 +1462,7 @@ Sitemap: ${req.protocol}://${req.get('host')}/sitemap.xml`);
     perMessageDeflate: false
   });
 
-  // Store active connections by room and user
-  const roomConnections = new Map<string, Map<string, WebSocket>>();
-  
-  // Store global user connections for presence tracking
-  const userConnections = new Map<string, WebSocket>();
+  // Use global WebSocket broadcaster service for connection management
 
   wss.on('connection', (ws: WebSocket, req) => {
     console.log('WebSocket: New connection established');
@@ -1529,7 +1526,7 @@ Sitemap: ${req.protocol}://${req.get('host')}/sitemap.xml`);
 
               authenticatedUserId = session[0].userId;
               currentUserId = authenticatedUserId.toString();
-              userConnections.set(currentUserId, ws);
+              webSocketBroadcaster.addUserConnection(currentUserId, ws);
               
               console.log(`WebSocket: User ${authenticatedUserId} authenticated successfully`);
               
@@ -1657,13 +1654,10 @@ Sitemap: ${req.protocol}://${req.get('host')}/sitemap.xml`);
             }
             
             // Add user to room connections using authenticated ID
-            if (!roomConnections.has(currentRoom)) {
-              roomConnections.set(currentRoom, new Map());
-            }
-            roomConnections.get(currentRoom)!.set(currentUserId, ws);
+            webSocketBroadcaster.addUserToRoom(currentRoom, currentUserId, ws);
             
             console.log(`WebSocket: User ${authenticatedUserId} joined voice chat in room ${currentRoom}`);
-            console.log(`WebSocket: Room ${currentRoom} now has ${roomConnections.get(currentRoom)!.size} users`);
+            console.log(`WebSocket: Room ${currentRoom} now has ${webSocketBroadcaster.getRoomUserCount(currentRoom)} users`);
             
             // Update presence to show user is in room
             try {
@@ -1691,7 +1685,7 @@ Sitemap: ${req.protocol}://${req.get('host')}/sitemap.xml`);
             }
             
             // Notify other users in the room
-            broadcastToRoom(currentRoom, {
+            webSocketBroadcaster.broadcastToRoom(currentRoom, {
               type: 'user-joined',
               userId: authenticatedUserId.toString()
             }, currentUserId);
@@ -1702,13 +1696,10 @@ Sitemap: ${req.protocol}://${req.get('host')}/sitemap.xml`);
           case 'webrtc-ice-candidate':
             // Forward WebRTC signaling messages to the target user
             if (currentRoom && message.targetUserId) {
-              const targetWs = roomConnections.get(currentRoom)?.get(message.targetUserId);
-              if (targetWs && targetWs.readyState === WebSocket.OPEN) {
-                targetWs.send(JSON.stringify({
-                  ...message,
-                  fromUserId: currentUserId
-                }));
-              }
+              webSocketBroadcaster.sendToUser(message.targetUserId, {
+                ...message,
+                fromUserId: currentUserId
+              });
             }
             break;
 
@@ -1716,11 +1707,131 @@ Sitemap: ${req.protocol}://${req.get('host')}/sitemap.xml`);
             // Broadcast mic status to other users in the room
             if (currentRoom) {
               console.log(`WebSocket: User ${currentUserId} toggled mic to ${message.isMicOn} in room ${currentRoom}`);
-              broadcastToRoom(currentRoom, {
+              webSocketBroadcaster.broadcastToRoom(currentRoom, {
                 type: 'user-mic-toggle',
                 userId: currentUserId,
                 isMicOn: message.isMicOn
               }, currentUserId);
+            }
+            break;
+
+          // Room Moderation Events
+          case 'user-invited-to-mic':
+            // Broadcast when a user is invited to speak on mic
+            if (currentRoom && authenticatedUserId) {
+              console.log(`WebSocket: User ${message.targetUserId} invited to mic in room ${currentRoom} by ${authenticatedUserId}`);
+              webSocketBroadcaster.broadcastToRoom(currentRoom, {
+                type: 'user-invited-to-mic',
+                targetUserId: message.targetUserId,
+                moderatorId: authenticatedUserId.toString(),
+                micPosition: message.micPosition
+              });
+            }
+            break;
+
+          case 'user-removed-from-mic':
+            // Broadcast when a user is removed from mic
+            if (currentRoom && authenticatedUserId) {
+              console.log(`WebSocket: User ${message.targetUserId} removed from mic in room ${currentRoom} by ${authenticatedUserId}`);
+              webSocketBroadcaster.broadcastToRoom(currentRoom, {
+                type: 'user-removed-from-mic',
+                targetUserId: message.targetUserId,
+                moderatorId: authenticatedUserId.toString(),
+                reason: message.reason
+              });
+            }
+            break;
+
+          case 'mic-locked':
+            // Broadcast when mic is locked by moderator
+            if (currentRoom && authenticatedUserId) {
+              console.log(`WebSocket: Mic ${message.micPosition} locked in room ${currentRoom} by ${authenticatedUserId}`);
+              webSocketBroadcaster.broadcastToRoom(currentRoom, {
+                type: 'mic-locked',
+                micPosition: message.micPosition,
+                moderatorId: authenticatedUserId.toString()
+              });
+            }
+            break;
+
+          case 'mic-unlocked':
+            // Broadcast when mic is unlocked by moderator
+            if (currentRoom && authenticatedUserId) {
+              console.log(`WebSocket: Mic ${message.micPosition} unlocked in room ${currentRoom} by ${authenticatedUserId}`);
+              webSocketBroadcaster.broadcastToRoom(currentRoom, {
+                type: 'mic-unlocked',
+                micPosition: message.micPosition,
+                moderatorId: authenticatedUserId.toString()
+              });
+            }
+            break;
+
+          case 'user-kicked':
+            // Broadcast when a user is kicked from room
+            if (currentRoom && authenticatedUserId) {
+              console.log(`WebSocket: User ${message.targetUserId} kicked from room ${currentRoom} by ${authenticatedUserId}`);
+              
+              // First notify all users in the room about the kick
+              webSocketBroadcaster.broadcastToRoom(currentRoom, {
+                type: 'user-kicked',
+                targetUserId: message.targetUserId,
+                moderatorId: authenticatedUserId.toString(),
+                reason: message.reason,
+                duration: message.duration
+              });
+
+              // Then send kick notification to the target user and disconnect them
+              webSocketBroadcaster.sendToUser(message.targetUserId, {
+                type: 'kicked-from-room',
+                reason: message.reason,
+                duration: message.duration,
+                moderatorId: authenticatedUserId.toString()
+              });
+              
+              // Remove kicked user from room connections
+              webSocketBroadcaster.removeUserFromRoom(currentRoom, message.targetUserId);
+            }
+            break;
+
+          case 'user-banned':
+            // Broadcast when a user is banned from room
+            if (currentRoom && authenticatedUserId) {
+              console.log(`WebSocket: User ${message.targetUserId} banned from room ${currentRoom} by ${authenticatedUserId}`);
+              
+              // Notify all users in the room about the ban
+              webSocketBroadcaster.broadcastToRoom(currentRoom, {
+                type: 'user-banned',
+                targetUserId: message.targetUserId,
+                moderatorId: authenticatedUserId.toString(),
+                reason: message.reason,
+                duration: message.duration
+              });
+
+              // Send ban notification to the target user and disconnect them
+              webSocketBroadcaster.sendToUser(message.targetUserId, {
+                type: 'banned-from-room',
+                reason: message.reason,
+                duration: message.duration,
+                moderatorId: authenticatedUserId.toString()
+              });
+              
+              // Remove banned user from room connections
+              webSocketBroadcaster.removeUserFromRoom(currentRoom, message.targetUserId);
+            }
+            break;
+
+          case 'moderation-action':
+            // General moderation event broadcast
+            if (currentRoom && authenticatedUserId) {
+              console.log(`WebSocket: Moderation action in room ${currentRoom}: ${message.action} by ${authenticatedUserId}`);
+              webSocketBroadcaster.broadcastToRoom(currentRoom, {
+                type: 'moderation-action',
+                action: message.action,
+                targetUserId: message.targetUserId,
+                moderatorId: authenticatedUserId.toString(),
+                details: message.details,
+                timestamp: new Date().toISOString()
+              });
             }
             break;
         }
@@ -1736,7 +1847,7 @@ Sitemap: ${req.protocol}://${req.get('host')}/sitemap.xml`);
         const userIdString = authenticatedUserId.toString();
         
         // Remove user from global connections
-        userConnections.delete(userIdString);
+        webSocketBroadcaster.removeUserConnection(userIdString);
         
         // Update user presence to offline in database
         try {
@@ -1766,16 +1877,10 @@ Sitemap: ${req.protocol}://${req.get('host')}/sitemap.xml`);
       
       if (currentRoom && currentUserId) {
         // Remove user from room connections
-        const roomUsers = roomConnections.get(currentRoom);
-        if (roomUsers) {
-          roomUsers.delete(currentUserId);
-          if (roomUsers.size === 0) {
-            roomConnections.delete(currentRoom);
-          }
-        }
+        webSocketBroadcaster.removeUserFromRoom(currentRoom, currentUserId);
         
         // Notify other users that this user left
-        broadcastToRoom(currentRoom, {
+        webSocketBroadcaster.broadcastToRoom(currentRoom, {
           type: 'user-left',
           userId: currentUserId
         }, currentUserId);
@@ -1787,17 +1892,7 @@ Sitemap: ${req.protocol}://${req.get('host')}/sitemap.xml`);
     });
   });
 
-  // Helper function to broadcast messages to all users in a room except sender
-  function broadcastToRoom(roomId: string, message: any, excludeUserId?: string) {
-    const roomUsers = roomConnections.get(roomId);
-    if (roomUsers) {
-      roomUsers.forEach((userWs, userId) => {
-        if (userId !== excludeUserId && userWs.readyState === WebSocket.OPEN) {
-          userWs.send(JSON.stringify(message));
-        }
-      });
-    }
-  }
+  // Note: broadcastToRoom is now handled by webSocketBroadcaster service
 
   // Helper function to broadcast presence updates to user's friends
   async function broadcastPresenceToFriends(userId: number, message: any) {
@@ -1837,10 +1932,7 @@ Sitemap: ${req.protocol}://${req.get('host')}/sitemap.xml`);
 
       // Send presence update to all connected friends
       uniqueFriendIds.forEach(friendId => {
-        const friendWs = userConnections.get(friendId);
-        if (friendWs && friendWs.readyState === WebSocket.OPEN) {
-          friendWs.send(JSON.stringify(message));
-        }
+        webSocketBroadcaster.sendToUser(friendId, message);
       });
 
       console.log(`WebSocket: Broadcasted presence update for user ${userId} to ${uniqueFriendIds.length} friends`);

@@ -16,6 +16,7 @@ import {
 } from '@shared/schema';
 import { and, eq, desc, gte, lt, sql } from 'drizzle-orm';
 import { isAuthenticated } from '../middleware/auth';
+import { webSocketBroadcaster } from '../services/websocket-broadcaster';
 
 const router = express.Router();
 
@@ -109,8 +110,12 @@ async function checkModerationPermissions(
 
 // Helper function to broadcast real-time updates via WebSocket
 function broadcastRoomUpdate(roomId: number, event: any) {
-  // This will be implemented with the WebSocket integration
-  // For now, we'll create a placeholder
+  // Convert roomId to string for WebSocket broadcaster
+  const roomIdString = roomId.toString();
+  
+  // Use the WebSocket broadcaster service to send real-time updates
+  webSocketBroadcaster.broadcastModerationEvent(roomIdString, event);
+  
   console.log(`Broadcasting room update for room ${roomId}:`, event);
 }
 
