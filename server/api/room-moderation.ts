@@ -95,6 +95,10 @@ async function checkModerationPermissions(
       case 'manage_moderators':
         canPerformAction = perms.canManageModerators;
         break;
+      case 'view_events':
+        // Allow all moderators to view events regardless of specific permissions
+        canPerformAction = true;
+        break;
       default:
         canPerformAction = false;
     }
