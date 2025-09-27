@@ -192,7 +192,7 @@ export default function TeamAdminPage() {
   // Update member mutation
   const updateMutation = useMutation({
     mutationFn: ({ id, data }: { id: number; data: any }) =>
-      apiRequest("PUT", `/api/team/${id}`, { body: data }),
+      apiRequest("PUT", `/api/team/${id}`, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/team/all"] });
       queryClient.invalidateQueries({ queryKey: ["/api/team"] });
