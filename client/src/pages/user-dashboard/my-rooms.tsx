@@ -34,7 +34,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { Plus, Settings, Users, Lock, Globe, Edit, Trash2, Eye, Crown, Play, Clock, MapPin, MessageCircle, Mic, Gift } from "lucide-react";
+import { Plus, Settings, Users, Lock, Globe, Edit, Trash2, Eye, Crown, Play, Clock, MapPin, MessageCircle, Mic, Gift, Upload, ImageIcon, X } from "lucide-react";
 import { Sidebar } from "@/components/layout/sidebar";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useLocation } from "wouter";
@@ -73,6 +73,7 @@ interface Room {
     textChatEnabled: boolean;
     giftsEnabled: boolean;
     backgroundTheme: string;
+    bannerImage: string | null;
     tags: string[];
     totalVisits: number;
     totalGiftsReceived: number;
@@ -96,6 +97,7 @@ const roomFormSchema = z.object({
   textChatEnabled: z.boolean().default(true),
   giftsEnabled: z.boolean().default(true),
   backgroundTheme: z.string().default("lunexa"),
+  bannerImage: z.string().optional(),
   tags: z.array(z.string()).default([]),
 });
 
@@ -125,6 +127,7 @@ export default function MyRoomsPage() {
       textChatEnabled: true,
       giftsEnabled: true,
       backgroundTheme: "lunexa",
+      bannerImage: "",
       tags: [],
     },
   });
@@ -253,6 +256,7 @@ export default function MyRoomsPage() {
       textChatEnabled: room.room.textChatEnabled,
       giftsEnabled: room.room.giftsEnabled,
       backgroundTheme: room.room.backgroundTheme,
+      bannerImage: room.room.bannerImage || "",
       tags: room.room.tags || [],
     });
     setIsEditModalOpen(true);
@@ -320,6 +324,167 @@ export default function MyRoomsPage() {
     }
   };
 
+  // Image Upload Component
+  const ImageUploadField = ({ value, onChange, ...props }: { 
+    value: string; 
+    onChange: (value: string) => void;
+    [key: string]: any;
+  }) => {
+    const [isUploading, setIsUploading] = useState(false);
+    const [dragActive, setDragActive] = useState(false);
+
+    const handleFileUpload = async (file: File) => {
+      if (!file.type.startsWith('image/')) {
+        toast({
+          title: "Error",
+          description: "Please select an image file",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      if (file.size > 10 * 1024 * 1024) { // 10MB limit
+        toast({
+          title: "Error", 
+          description: "Image size must be less than 10MB",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      setIsUploading(true);
+      
+      try {
+        const formData = new FormData();
+        formData.append('image', file);
+        
+        const response = await fetch('/api/upload-image', {
+          method: 'POST',
+          body: formData,
+        });
+        
+        if (!response.ok) {
+          throw new Error('Upload failed');
+        }
+        
+        const result = await response.json();
+        onChange(result.location);
+        
+        toast({
+          title: "Success",
+          description: "Image uploaded successfully",
+        });
+      } catch (error) {
+        console.error('Upload error:', error);
+        toast({
+          title: "Error",
+          description: "Failed to upload image. Please try again.",
+          variant: "destructive",
+        });
+      } finally {
+        setIsUploading(false);
+      }
+    };
+
+    const handleDrop = (e: React.DragEvent) => {
+      e.preventDefault();
+      setDragActive(false);
+      
+      const files = e.dataTransfer.files;
+      if (files.length > 0) {
+        handleFileUpload(files[0]);
+      }
+    };
+
+    const handleDragOver = (e: React.DragEvent) => {
+      e.preventDefault();
+      setDragActive(true);
+    };
+
+    const handleDragLeave = () => {
+      setDragActive(false);
+    };
+
+    const handleFileInput = (e: React.ChangeEvent<HTMLInputElement>) => {
+      const files = e.target.files;
+      if (files && files.length > 0) {
+        handleFileUpload(files[0]);
+      }
+    };
+
+    const removeImage = () => {
+      onChange("");
+    };
+
+    return (
+      <div className="space-y-4">
+        {value ? (
+          <div className="relative">
+            <img
+              src={value}
+              alt="Room banner"
+              className="w-full h-48 object-cover rounded-lg border"
+            />
+            <Button
+              type="button"
+              variant="destructive"
+              size="sm"
+              className="absolute top-2 right-2"
+              onClick={removeImage}
+              data-testid="remove-image"
+            >
+              <X className="w-4 h-4" />
+            </Button>
+          </div>
+        ) : (
+          <div
+            className={`border-2 border-dashed rounded-lg p-8 text-center transition-colors ${
+              dragActive
+                ? 'border-primary bg-primary/5'
+                : 'border-muted-foreground/25 hover:border-primary/50'
+            }`}
+            onDrop={handleDrop}
+            onDragOver={handleDragOver}
+            onDragLeave={handleDragLeave}
+          >
+            <div className="space-y-4">
+              <div className="flex justify-center">
+                <ImageIcon className="w-12 h-12 text-muted-foreground" />
+              </div>
+              <div>
+                <p className="text-sm font-medium">
+                  {isUploading ? "Uploading..." : "Drop an image here or"}
+                </p>
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="mt-2"
+                  disabled={isUploading}
+                  onClick={() => document.getElementById('image-upload')?.click()}
+                  data-testid="upload-image-button"
+                >
+                  <Upload className="w-4 h-4 mr-2" />
+                  Choose File
+                </Button>
+              </div>
+              <p className="text-xs text-muted-foreground">
+                PNG, JPG, GIF up to 10MB. Recommended: 1920x1080
+              </p>
+            </div>
+            <input
+              id="image-upload"
+              type="file"
+              accept="image/*"
+              onChange={handleFileInput}
+              className="hidden"
+              disabled={isUploading}
+            />
+          </div>
+        )}
+      </div>
+    );
+  };
+
   const RoomForm = ({ onSubmit, isPending }: { onSubmit: (data: RoomFormData) => void; isPending: boolean }) => (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6" style={{ position: 'relative' }}>
@@ -373,6 +538,28 @@ export default function MyRoomsPage() {
               <FormLabel>Description</FormLabel>
               <FormControl>
                 <Textarea placeholder="Describe your room..." {...field} data-testid="textarea-description" />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        {/* Room Banner Image Upload */}
+        <FormField
+          control={form.control}
+          name="bannerImage"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Room Featured Image</FormLabel>
+              <FormDescription>
+                Upload an image to represent your room (recommended: 1920x1080 or 16:9 ratio)
+              </FormDescription>
+              <FormControl>
+                <ImageUploadField
+                  value={field.value || ""}
+                  onChange={field.onChange}
+                  data-testid="upload-banner-image"
+                />
               </FormControl>
               <FormMessage />
             </FormItem>

@@ -291,18 +291,39 @@ export default function RoomLobbyPage() {
                   <div className="grid gap-4 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
                     {roomsData.rooms.map((roomListing) => (
                       <Card key={roomListing.room.id} className="overflow-hidden group hover:shadow-lg transition-all duration-200" data-testid={`card-room-${roomListing.room.id}`}>
-                        {/* Room Header with theme background */}
+                        {/* Room Header with image or theme background */}
                         <div className="relative">
-                          <div className={`h-20 bg-gradient-to-br ${getThemeGradient(roomListing.room.backgroundTheme)} flex items-center justify-center`}>
-                            <div className="w-12 h-12 bg-white/20 rounded-lg flex items-center justify-center backdrop-blur-sm">
-                              <Crown className="w-6 h-6 text-white" />
+                          {roomListing.room.bannerImage ? (
+                            <div className="h-20 relative overflow-hidden">
+                              <img 
+                                src={roomListing.room.bannerImage} 
+                                alt={`${roomListing.room.name} room`}
+                                className="w-full h-full object-cover"
+                              />
+                              <div className="absolute inset-0 bg-black/20" />
+                              <div className="absolute inset-0 flex items-center justify-center">
+                                <div className="w-12 h-12 bg-white/20 rounded-lg flex items-center justify-center backdrop-blur-sm">
+                                  <Crown className="w-6 h-6 text-white" />
+                                </div>
+                              </div>
+                              {roomListing.room.isFeatured && (
+                                <Badge className="absolute top-2 left-2 bg-accent text-accent-foreground">
+                                  Featured
+                                </Badge>
+                              )}
                             </div>
-                            {roomListing.room.isFeatured && (
-                              <Badge className="absolute top-2 left-2 bg-accent text-accent-foreground">
-                                Featured
-                              </Badge>
-                            )}
-                          </div>
+                          ) : (
+                            <div className={`h-20 bg-gradient-to-br ${getThemeGradient(roomListing.room.backgroundTheme)} flex items-center justify-center`}>
+                              <div className="w-12 h-12 bg-white/20 rounded-lg flex items-center justify-center backdrop-blur-sm">
+                                <Crown className="w-6 h-6 text-white" />
+                              </div>
+                              {roomListing.room.isFeatured && (
+                                <Badge className="absolute top-2 left-2 bg-accent text-accent-foreground">
+                                  Featured
+                                </Badge>
+                              )}
+                            </div>
+                          )}
                           <Badge className={`absolute top-2 right-2 ${getStatusColor(roomListing.room.status)}`}>
                             {roomListing.room.status.charAt(0).toUpperCase() + roomListing.room.status.slice(1)}
                           </Badge>

@@ -31,6 +31,7 @@ interface Room {
     textChatEnabled: boolean;
     giftsEnabled: boolean;
     backgroundTheme: string;
+    bannerImage: string | null;
     tags: string[];
     totalVisits: number;
     totalGiftsReceived: number;
@@ -293,18 +294,39 @@ export function PublicRoomsSection() {
             <div className="grid gap-4 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
           {rooms.map((room) => (
             <Card key={room.room.id} className="overflow-hidden group hover:shadow-lg transition-all duration-200">
-              {/* Room Header with theme background */}
+              {/* Room Header with image or theme background */}
               <div className="relative">
-                <div className={`h-20 bg-gradient-to-br ${getThemeGradient(room.room.backgroundTheme)} flex items-center justify-center`}>
-                  <div className="w-12 h-12 bg-white/20 rounded-lg flex items-center justify-center backdrop-blur-sm">
-                    <Crown className="w-6 h-6 text-white" />
+                {room.room.bannerImage ? (
+                  <div className="h-20 relative overflow-hidden">
+                    <img 
+                      src={room.room.bannerImage} 
+                      alt={`${room.room.name} room`}
+                      className="w-full h-full object-cover"
+                    />
+                    <div className="absolute inset-0 bg-black/20" />
+                    <div className="absolute inset-0 flex items-center justify-center">
+                      <div className="w-12 h-12 bg-white/20 rounded-lg flex items-center justify-center backdrop-blur-sm">
+                        <Crown className="w-6 h-6 text-white" />
+                      </div>
+                    </div>
+                    {room.room.isFeatured && (
+                      <Badge className="absolute top-2 left-2 bg-accent text-accent-foreground">
+                        Featured
+                      </Badge>
+                    )}
                   </div>
-                  {room.room.isFeatured && (
-                    <Badge className="absolute top-2 left-2 bg-accent text-accent-foreground">
-                      Featured
-                    </Badge>
-                  )}
-                </div>
+                ) : (
+                  <div className={`h-20 bg-gradient-to-br ${getThemeGradient(room.room.backgroundTheme)} flex items-center justify-center`}>
+                    <div className="w-12 h-12 bg-white/20 rounded-lg flex items-center justify-center backdrop-blur-sm">
+                      <Crown className="w-6 h-6 text-white" />
+                    </div>
+                    {room.room.isFeatured && (
+                      <Badge className="absolute top-2 left-2 bg-accent text-accent-foreground">
+                        Featured
+                      </Badge>
+                    )}
+                  </div>
+                )}
                 <Badge className={`absolute top-2 right-2 ${getStatusColor(room.room.status)}`}>
                   {room.room.status.charAt(0).toUpperCase() + room.room.status.slice(1)}
                 </Badge>
