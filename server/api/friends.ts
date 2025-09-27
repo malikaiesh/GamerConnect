@@ -275,14 +275,11 @@ router.get("/requests", isAuthenticated, async (req: Request, res: Response) => 
         receiverId: userRelationships.targetUserId,
         status: userRelationships.status,
         createdAt: userRelationships.createdAt,
-        sender: {
-          id: users.id,
-          username: users.username,
-          displayName: users.displayName,
-          profilePicture: users.profilePicture,
-          isVerified: users.isVerified,
-          status: users.lastLogin && new Date(users.lastLogin) > new Date(Date.now() - 15 * 60 * 1000) ? 'online' : 'offline'
-        }
+        senderUsername: users.username,
+        senderDisplayName: users.displayName,
+        senderProfilePicture: users.profilePicture,
+        senderIsVerified: users.isVerified,
+        senderLastLogin: users.lastLogin
       })
       .from(userRelationships)
       .innerJoin(users, eq(userRelationships.userId, users.id))
