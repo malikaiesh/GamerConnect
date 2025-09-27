@@ -213,12 +213,21 @@ export default function UserDashboard() {
               </p>
             </div>
             
-            {user?.isVerified && (
-              <Badge variant="default" className="flex items-center gap-1">
-                <Shield className="w-4 h-4" />
-                Verified Player
-              </Badge>
-            )}
+            <div className="flex items-center gap-3">
+              <Link href="/rooms/my-rooms">
+                <Button className="bg-blue-500 hover:bg-blue-600 text-white" data-testid="button-my-rooms">
+                  <Home className="w-4 h-4 mr-2" />
+                  My Rooms
+                </Button>
+              </Link>
+              
+              {user?.isVerified && (
+                <Badge variant="default" className="flex items-center gap-1">
+                  <Shield className="w-4 h-4" />
+                  Verified Player
+                </Badge>
+              )}
+            </div>
           </div>
         </div>
 
