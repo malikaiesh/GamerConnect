@@ -93,16 +93,16 @@ export function MobileSocial() {
       count: acceptedFriends?.length || 0
     },
     {
-      id: "calls",
-      label: "Calls", 
-      icon: Phone,
-      count: callHistory?.calls?.length || 0
-    },
-    {
       id: "messages",
       label: "Messages", 
       icon: MessageCircle,
       count: messages?.length || 0
+    },
+    {
+      id: "calls",
+      label: "Calls", 
+      icon: Phone,
+      count: callHistory?.calls?.length || 0
     }
   ];
 
