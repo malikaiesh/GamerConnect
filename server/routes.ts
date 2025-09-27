@@ -1493,7 +1493,7 @@ Sitemap: ${req.protocol}://${req.get('host')}/sitemap.xml`);
       }
     };
 
-    ws.on('message', (data: Buffer) => {
+    ws.on('message', async (data: Buffer) => {
       try {
         const message = JSON.parse(data.toString());
         console.log('WebSocket: Received message:', message);

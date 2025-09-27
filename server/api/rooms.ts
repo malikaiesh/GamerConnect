@@ -700,6 +700,7 @@ router.get("/", async (req: Request, res: Response) => {
           textChatEnabled: rooms.textChatEnabled,
           giftsEnabled: rooms.giftsEnabled,
           backgroundTheme: rooms.backgroundTheme,
+          bannerImage: rooms.bannerImage,
           tags: rooms.tags,
           totalVisits: rooms.totalVisits,
           totalGiftsReceived: rooms.totalGiftsReceived,
