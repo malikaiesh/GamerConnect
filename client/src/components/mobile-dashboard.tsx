@@ -24,6 +24,7 @@ import {
   Moon,
   Sun
 } from "lucide-react";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { MobileBottomNav } from "@/components/ui/mobile-bottom-nav";
 import { cn } from "@/lib/utils";
 import { toggleDarkMode, isDarkMode, themes, setTheme, getCurrentTheme } from "@/lib/themes";
@@ -164,9 +165,12 @@ export function MobileDashboard() {
       }}>
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center space-x-4">
-            <div className="w-16 h-16 bg-white/20 rounded-full flex items-center justify-center">
-              <Users className="w-8 h-8 text-white" />
-            </div>
+            <Avatar className="w-16 h-16 border-2 border-white/30">
+              <AvatarImage src={user?.profilePicture || undefined} alt={user?.username || 'Player'} />
+              <AvatarFallback className="bg-white/20 text-white text-2xl font-bold">
+                {(user?.displayName || user?.username || 'Player').charAt(0).toUpperCase()}
+              </AvatarFallback>
+            </Avatar>
             <div>
               <h2 className="text-2xl font-bold">
                 {user?.displayName || user?.username || 'Player'}
