@@ -2,8 +2,10 @@ import express from "express";
 import { isAuthenticated, isAdmin } from "../middleware/auth";
 import { storage } from "../storage";
 import { createSeoSchemaGenerator } from "../services/seoSchemaGenerator";
-import { insertSeoSchemaSchema, insertSeoSchemaTemplateSchema } from "@shared/schema";
+import { insertSeoSchemaSchema, insertSeoSchemaTemplateSchema, pricingPlans, rooms } from "@shared/schema";
 import { z } from "zod";
+import { db } from "@db";
+import { eq } from "drizzle-orm";
 
 export function registerSeoSchemaRoutes(app: express.Express) {
   // Test endpoint without any middleware
@@ -110,181 +112,6 @@ export function registerSeoSchemaRoutes(app: express.Express) {
     }
   });
 
-  // Bulk generate schemas - PUBLIC ENDPOINT
-  app.post("/api/public/seo-schemas/bulk-generate", async (req, res) => {
-    try {
-      const { contentType } = req.body;
-      
-      // Template schemas based on content type
-      const templates = {
-        game: [
-          {
-            name: `🎮 ${contentType.charAt(0).toUpperCase() + contentType.slice(1)} VideoGame Schema`,
-            schemaType: "VideoGame",
-            schemaData: {
-              "@context": "https://schema.org",
-              "@type": "VideoGame",
-              "name": "{{game_title}}",
-              "description": "{{game_description}}",
-              "url": "{{game_url}}",
-              "genre": "{{game_genre}}",
-              "operatingSystem": "Web Browser",
-              "applicationCategory": "Game"
-            }
-          },
-          {
-            name: `⭐ ${contentType.charAt(0).toUpperCase() + contentType.slice(1)} Rating Schema`,
-            schemaType: "AggregateRating",
-            schemaData: {
-              "@context": "https://schema.org",
-              "@type": "AggregateRating",
-              "itemReviewed": {
-                "@type": "VideoGame",
-                "name": "{{game_title}}"
-              },
-              "ratingValue": "{{average_rating}}",
-              "ratingCount": "{{total_ratings}}",
-              "bestRating": "5",
-              "worstRating": "1"
-            }
-          }
-        ],
-        blog_post: [
-          {
-            name: `📝 ${contentType.charAt(0).toUpperCase() + contentType.slice(1)} Article Schema`,
-            schemaType: "Article",
-            schemaData: {
-              "@context": "https://schema.org",
-              "@type": "BlogPosting",
-              "headline": "{{article_title}}",
-              "description": "{{article_description}}",
-              "url": "{{article_url}}",
-              "datePublished": "{{publish_date}}",
-              "author": {
-                "@type": "Person",
-                "name": "{{author_name}}"
-              }
-            }
-          }
-        ],
-        page: [
-          {
-            name: `📄 ${contentType.charAt(0).toUpperCase() + contentType.slice(1)} WebPage Schema`,
-            schemaType: "WebPage",
-            schemaData: {
-              "@context": "https://schema.org",
-              "@type": "WebPage",
-              "name": "{{page_title}}",
-              "description": "{{page_description}}",
-              "url": "{{page_url}}"
-            }
-          }
-        ],
-        category: [
-          {
-            name: `📚 ${contentType.charAt(0).toUpperCase() + contentType.slice(1)} Collection Schema`,
-            schemaType: "CollectionPage",
-            schemaData: {
-              "@context": "https://schema.org",
-              "@type": "ItemList",
-              "name": "{{category_name}} Collection",
-              "description": "{{category_description}}",
-              "url": "{{category_url}}"
-            }
-          }
-        ],
-        pricing: [
-          {
-            name: `💰 ${contentType.charAt(0).toUpperCase() + contentType.slice(1)} Offer Schema`,
-            schemaType: "Offer",
-            schemaData: {
-              "@context": "https://schema.org",
-              "@type": "Offer",
-              "name": "{{pricing_plan_name}}",
-              "description": "{{pricing_plan_description}}",
-              "url": "{{pricing_plan_url}}",
-              "price": "{{plan_price}}",
-              "priceCurrency": "{{plan_currency}}",
-              "availability": "https://schema.org/InStock",
-              "seller": {
-                "@type": "Organization",
-                "name": "{{organization_name}}"
-              },
-              "priceSpecification": {
-                "@type": "PriceSpecification",
-                "price": "{{plan_price}}",
-                "priceCurrency": "{{plan_currency}}"
-              }
-            }
-          }
-        ],
-        rooms: [
-          {
-            name: `🏠 ${contentType.charAt(0).toUpperCase() + contentType.slice(1)} Accommodation Schema`,
-            schemaType: "Accommodation",
-            schemaData: {
-              "@context": "https://schema.org",
-              "@type": "Accommodation",
-              "name": "{{room_name}}",
-              "description": "{{room_description}}",
-              "url": "{{room_url}}",
-              "identifier": "{{room_id}}",
-              "occupancy": {
-                "@type": "QuantitativeValue",
-                "maxValue": "{{max_seats}}",
-                "value": "{{current_users}}"
-              },
-              "amenityFeature": [
-                {
-                  "@type": "LocationFeatureSpecification",
-                  "name": "Voice Chat",
-                  "value": "{{voice_chat_enabled}}"
-                },
-                {
-                  "@type": "LocationFeatureSpecification",
-                  "name": "Text Chat", 
-                  "value": "{{text_chat_enabled}}"
-                }
-              ],
-              "isAccessibleForFree": true
-            }
-          }
-        ]
-      };
-
-      const schemasToCreate = templates[contentType] || [];
-      let createdCount = 0;
-
-      // Create each schema in the database
-      for (const template of schemasToCreate) {
-        try {
-          await storage.createSeoSchema({
-            ...template,
-            contentType,
-            contentId: null,
-            isActive: true,
-            isAutoGenerated: true,
-            priority: 0,
-            createdBy: 1,
-            updatedBy: 1
-          });
-          createdCount++;
-        } catch (error) {
-          console.error(`Error creating schema: ${template.name}`, error);
-        }
-      }
-      
-      res.json({ 
-        count: createdCount, 
-        message: `Generated ${createdCount} schemas for ${contentType} content type`,
-        contentType,
-        success: true
-      });
-    } catch (error) {
-      console.error("Error bulk generating schemas:", error);
-      res.status(500).json({ error: "Failed to bulk generate schemas" });
-    }
-  });
 
   // Update SEO schema - PUBLIC ENDPOINT  
   app.put("/api/public/seo-schemas/:id", async (req, res) => {
@@ -535,26 +362,37 @@ export function registerSeoSchemaRoutes(app: express.Express) {
           }
         }
       } else if (contentType === 'pricing') {
-        // Get active pricing plans
-        const pricingPlans = await storage.getPricingPlans();
-        const activePlans = pricingPlans.filter(plan => plan.status === 'active').slice(0, 10); // Limit to 10 for demo
+        // Get active pricing plans using direct database query
+        const activePlans = await db.select()
+          .from(pricingPlans)
+          .where(eq(pricingPlans.status, 'active'))
+          .limit(10); // Limit to 10 for demo
+        
+        console.log(`🔍 Found ${activePlans.length} active pricing plans for schema generation`);
         
         for (const plan of activePlans) {
           try {
+            console.log(`📝 Generating schema for pricing plan ${plan.id}: ${plan.name}`);
             const result = await generator.autoGenerateAndSave('pricing', plan.id, 1);
             if (result) {
+              console.log(`✅ Schema generated successfully for plan ${plan.id}`);
               results.push(result);
+            } else {
+              console.log(`⚠️ No schema result returned for plan ${plan.id}`);
             }
           } catch (error) {
-            console.error(`Error generating schema for pricing plan ${plan.id}:`, error);
+            console.error(`❌ Error generating schema for pricing plan ${plan.id}:`, error);
           }
         }
       } else if (contentType === 'rooms') {
-        // Get existing rooms (limit to 10 for demo)
-        const roomsResult = await storage.getRooms({ page: 1, limit: 10, activeOnly: false });
-        const rooms = roomsResult.rooms || [];
+        // Get existing rooms using direct database query
+        const { rooms } = await import('@shared/schema');
         
-        for (const room of rooms.slice(0, 10)) {
+        const roomsList = await db.select()
+          .from(rooms)
+          .limit(10); // Limit to 10 for demo
+        
+        for (const room of roomsList) {
           try {
             const result = await generator.autoGenerateAndSave('rooms', room.id, 1);
             if (result) {
