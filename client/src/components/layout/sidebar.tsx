@@ -18,7 +18,9 @@ import {
   CreditCard,
   Calendar,
   Gift,
-  MessageSquare
+  MessageSquare,
+  Phone,
+  ChevronDown
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -190,6 +192,17 @@ export function Sidebar() {
                 Messages
               </Button>
             </Link>
+            
+            <Link href="/friends/calls">
+              <Button 
+                variant={isActive("/friends/calls") ? "default" : "ghost"} 
+                className="w-full justify-start"
+                data-testid="nav-calls"
+              >
+                <Phone className="w-4 h-4 mr-2" />
+                Calls
+              </Button>
+            </Link>
           </div>
         </div>
 
@@ -255,25 +268,38 @@ export function Sidebar() {
         </div>
       </nav>
 
-      {/* Theme Section */}
+      {/* Theme Section - Icon Only */}
       <div className="p-4 border-t border-border">
-        <h3 className="text-sm font-medium text-muted-foreground mb-3">Theme</h3>
-        <ScrollArea className="h-32">
-          <div className="space-y-1">
-            {themes.map((theme) => (
-              <Button
-                key={theme.id}
-                variant={currentTheme === theme.id ? "default" : "ghost"}
-                size="sm"
-                className="w-full justify-start text-xs"
-                onClick={() => changeTheme(theme.id)}
-                data-testid={`theme-${theme.id}`}
-              >
-                {theme.name}
-              </Button>
-            ))}
+        <div className="flex items-center justify-between">
+          <span className="text-sm font-medium text-muted-foreground">Theme</span>
+          <div className="relative group">
+            <Button
+              variant="ghost"
+              size="sm"
+              className="w-8 h-8 p-0"
+              data-testid="theme-selector"
+            >
+              <Palette className="w-4 h-4" />
+            </Button>
+            {/* Theme Dropdown on Hover */}
+            <div className="absolute bottom-full mb-2 right-0 bg-popover border border-border rounded-lg shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50 min-w-[120px]">
+              <div className="p-2 space-y-1">
+                {themes.map((theme) => (
+                  <Button
+                    key={theme.id}
+                    variant={currentTheme === theme.id ? "default" : "ghost"}
+                    size="sm"
+                    className="w-full justify-start text-xs h-7"
+                    onClick={() => changeTheme(theme.id)}
+                    data-testid={`theme-${theme.id}`}
+                  >
+                    {theme.name}
+                  </Button>
+                ))}
+              </div>
+            </div>
           </div>
-        </ScrollArea>
+        </div>
       </div>
 
       {/* Create Room Button */}
