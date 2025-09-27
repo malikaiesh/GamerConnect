@@ -534,6 +534,36 @@ export function registerSeoSchemaRoutes(app: express.Express) {
             console.error(`Error generating schema for game ${game.id}:`, error);
           }
         }
+      } else if (contentType === 'pricing') {
+        // Get active pricing plans
+        const pricingPlans = await storage.getPricingPlans();
+        const activePlans = pricingPlans.filter(plan => plan.status === 'active').slice(0, 10); // Limit to 10 for demo
+        
+        for (const plan of activePlans) {
+          try {
+            const result = await generator.autoGenerateAndSave('pricing', plan.id, 1);
+            if (result) {
+              results.push(result);
+            }
+          } catch (error) {
+            console.error(`Error generating schema for pricing plan ${plan.id}:`, error);
+          }
+        }
+      } else if (contentType === 'rooms') {
+        // Get existing rooms (limit to 10 for demo)
+        const roomsResult = await storage.getRooms({ page: 1, limit: 10, activeOnly: false });
+        const rooms = roomsResult.rooms || [];
+        
+        for (const room of rooms.slice(0, 10)) {
+          try {
+            const result = await generator.autoGenerateAndSave('rooms', room.id, 1);
+            if (result) {
+              results.push(result);
+            }
+          } catch (error) {
+            console.error(`Error generating schema for room ${room.id}:`, error);
+          }
+        }
       }
 
       res.json({ 

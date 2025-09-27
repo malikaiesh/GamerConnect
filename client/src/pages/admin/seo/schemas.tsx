@@ -243,7 +243,7 @@ function SeoSchemasContent() {
         <div>
           <h1 className="text-3xl font-bold" data-testid="page-title">SEO Schema Management</h1>
           <p className="text-muted-foreground" data-testid="page-description">
-            Manage automatic SEO schema generation for games, blog posts, pages, and categories
+            Manage automatic SEO schema generation for games, blog posts, pages, categories, pricing plans, and rooms
           </p>
         </div>
         <div className="flex gap-2">
@@ -340,6 +340,8 @@ function SeoSchemasContent() {
             <SelectItem value="blog_post">Blog Posts</SelectItem>
             <SelectItem value="page">Pages</SelectItem>
             <SelectItem value="category">Categories</SelectItem>
+            <SelectItem value="pricing">Pricing</SelectItem>
+            <SelectItem value="rooms">Rooms</SelectItem>
             <SelectItem value="organization">Organization</SelectItem>
           </SelectContent>
         </Select>
@@ -583,6 +585,8 @@ function SeoSchemasContent() {
                 <option value="blog_post">Blog Post</option>
                 <option value="page">Page</option>
                 <option value="category">Category</option>
+                <option value="pricing">Pricing</option>
+                <option value="rooms">Rooms</option>
                 <option value="global">Global</option>
               </select>
             </div>
