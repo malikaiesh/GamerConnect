@@ -23,7 +23,8 @@ import {
   CheckCircle,
   MessageSquare,
   Moon,
-  Sun
+  Sun,
+  Home
 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { MobileBottomNav } from "@/components/ui/mobile-bottom-nav";
@@ -41,6 +42,14 @@ interface FeatureCard {
 }
 
 const featureCards: FeatureCard[] = [
+  {
+    id: "my-rooms",
+    title: "My Rooms",
+    subtitle: "Manage Your Rooms",
+    icon: Home,
+    href: "/rooms/my-rooms",
+    iconColor: "text-white"
+  },
   {
     id: "lucky-challenge",
     title: "Lucky Number",
@@ -342,7 +351,8 @@ export function MobileDashboard() {
               <div 
                 className="relative overflow-hidden rounded-2xl shadow-lg transform transition-all duration-200 active:scale-95 hover:shadow-xl"
                 style={{
-                  background: card.id === 'lucky-challenge' ? `linear-gradient(to right, hsl(var(--primary)), hsl(var(--secondary)))` :
+                  background: card.id === 'my-rooms' ? `linear-gradient(to right, #3B82F6, #1D4ED8)` :
+                             card.id === 'lucky-challenge' ? `linear-gradient(to right, hsl(var(--primary)), hsl(var(--secondary)))` :
                              card.id === 'free-rewards' ? `linear-gradient(to right, hsl(var(--accent)), hsl(var(--primary)))` :
                              card.id === 'coins-chest' ? `linear-gradient(to right, hsl(var(--secondary)), hsl(var(--accent)))` :
                              card.id === 'vip-subscription' ? `linear-gradient(to right, hsl(var(--accent)), hsl(var(--primary)))` :
