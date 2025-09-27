@@ -3,8 +3,57 @@ import { db } from "@db";
 import { teamMembers, insertTeamMemberSchema, type TeamMember, type InsertTeamMember } from '@shared/schema';
 import { eq, asc } from 'drizzle-orm';
 import { isAuthenticated, isAdmin } from '../middleware/auth';
+import multer from "multer";
+import path from "path";
+import fs from "fs";
+import { nanoid } from "nanoid";
 
 const router = express.Router();
+
+// Configure multer for team member image uploads
+const storage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    const uploadDir = path.join(process.cwd(), "uploads", "team");
+    
+    // Create the team uploads directory if it doesn't exist
+    if (!fs.existsSync(uploadDir)) {
+      fs.mkdirSync(uploadDir, { recursive: true });
+    }
+    
+    cb(null, uploadDir);
+  },
+  filename: function (req, file, cb) {
+    // Create a unique filename with original extension
+    const uniqueId = nanoid(10);
+    const fileExt = path.extname(file.originalname).toLowerCase();
+    const safeName = file.originalname
+      .replace(/[^a-zA-Z0-9-_.]/g, '-')
+      .toLowerCase()
+      .substring(0, 20);
+    
+    cb(null, `team-${safeName}-${uniqueId}${fileExt}`);
+  }
+});
+
+// Define allowed file types for team member images
+const imageFilter = (req: express.Request, file: Express.Multer.File, cb: multer.FileFilterCallback) => {
+  const allowedMimeTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+  
+  if (allowedMimeTypes.includes(file.mimetype)) {
+    cb(null, true);
+  } else {
+    cb(new Error('Only images are allowed (JPEG, PNG, GIF, WEBP)'));
+  }
+};
+
+// Setup upload middleware for team member images
+const upload = multer({
+  storage,
+  fileFilter: imageFilter,
+  limits: {
+    fileSize: 5 * 1024 * 1024, // 5MB max file size
+  }
+});
 
 export function registerTeamRoutes(app: Express) {
   app.use('/api/team', router);
@@ -171,6 +220,27 @@ router.delete('/:id', isAuthenticated, isAdmin, async (req, res) => {
   } catch (error) {
     console.error('Error deleting team member:', error);
     res.status(500).json({ error: 'Failed to delete team member' });
+  }
+});
+
+// Upload team member image (admin only)
+router.post("/upload-image", isAuthenticated, isAdmin, upload.single('image'), async (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({ error: "No image file provided" });
+    }
+
+    // Return the path to the uploaded file
+    const imagePath = `/uploads/team/${req.file.filename}`;
+    
+    res.json({
+      message: "Image uploaded successfully",
+      imagePath: imagePath,
+      filename: req.file.filename
+    });
+  } catch (error) {
+    console.error("Error uploading team member image:", error);
+    res.status(500).json({ error: "Failed to upload image" });
   }
 });
 

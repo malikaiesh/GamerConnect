@@ -8,7 +8,6 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { SiTiktok } from "react-icons/si";
-import { ObjectUploader } from "@/components/ObjectUploader";
 
 import AdminNavigation from "@/components/admin/navigation";
 import { Button } from "@/components/ui/button";
@@ -130,33 +129,41 @@ export default function TeamAdminPage() {
     }
   });
 
-  // Profile picture upload functions
-  const getUploadParameters = async () => {
+  // Profile picture upload function using traditional file upload
+  const handleFileUpload = async (file: File) => {
     try {
-      const response = await apiRequest("POST", "/api/objects/upload");
-      return {
-        method: 'PUT' as const,
-        url: response.uploadURL
-      };
-    } catch (error) {
-      console.error('Error getting upload parameters:', error);
-      toast({
-        title: "Error",
-        description: "Failed to get upload URL",
-        variant: "destructive"
-      });
-      throw error;
-    }
-  };
+      const formData = new FormData();
+      formData.append('image', file);
 
-  const handleUploadComplete = (result: any) => {
-    if (result.successful && result.successful[0] && result.successful[0].uploadURL) {
-      // Set the uploaded image URL to the form
-      form.setValue('profilePicture', result.successful[0].uploadURL);
+      const response = await fetch('/api/team/upload-image', {
+        method: 'POST',
+        body: formData,
+        credentials: 'include'
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Upload failed');
+      }
+
+      const data = await response.json();
+      
+      // Set the uploaded image path to the form
+      form.setValue('profilePicture', data.imagePath);
       toast({
         title: "Success",
         description: "Profile picture uploaded successfully"
       });
+      
+      return data.imagePath;
+    } catch (error) {
+      console.error('Error uploading file:', error);
+      toast({
+        title: "Error",
+        description: error instanceof Error ? error.message : "Failed to upload image",
+        variant: "destructive"
+      });
+      throw error;
     }
   };
 
@@ -445,18 +452,33 @@ export default function TeamAdminPage() {
                             <FormControl>
                               <div className="space-y-3">
                                 {/* Upload Button */}
-                                <ObjectUploader
-                                  maxNumberOfFiles={1}
-                                  maxFileSize={5485760} // 5MB
-                                  onGetUploadParameters={getUploadParameters}
-                                  onComplete={handleUploadComplete}
-                                  buttonClassName="w-full"
-                                >
-                                  <div className="flex items-center gap-2">
-                                    <Upload className="h-4 w-4" />
-                                    <span>Upload Profile Picture</span>
-                                  </div>
-                                </ObjectUploader>
+                                <div className="space-y-2">
+                                  <input
+                                    type="file"
+                                    accept="image/*"
+                                    onChange={async (e) => {
+                                      const file = e.target.files?.[0];
+                                      if (file) {
+                                        try {
+                                          await handleFileUpload(file);
+                                        } catch (error) {
+                                          // Error already handled in handleFileUpload
+                                        }
+                                      }
+                                    }}
+                                    className="hidden"
+                                    id="profile-upload-create"
+                                  />
+                                  <Button
+                                    type="button"
+                                    variant="outline"
+                                    className="w-full"
+                                    onClick={() => document.getElementById('profile-upload-create')?.click()}
+                                  >
+                                    <Upload className="h-4 w-4 mr-2" />
+                                    Upload Profile Picture
+                                  </Button>
+                                </div>
                                 
                                 {/* Current Image Preview */}
                                 {field.value && (
@@ -905,18 +927,33 @@ export default function TeamAdminPage() {
                           <FormControl>
                             <div className="space-y-3">
                               {/* Upload Button */}
-                              <ObjectUploader
-                                maxNumberOfFiles={1}
-                                maxFileSize={5485760} // 5MB
-                                onGetUploadParameters={getUploadParameters}
-                                onComplete={handleUploadComplete}
-                                buttonClassName="w-full"
-                              >
-                                <div className="flex items-center gap-2">
-                                  <Upload className="h-4 w-4" />
-                                  <span>Upload Profile Picture</span>
-                                </div>
-                              </ObjectUploader>
+                              <div className="space-y-2">
+                                <input
+                                  type="file"
+                                  accept="image/*"
+                                  onChange={async (e) => {
+                                    const file = e.target.files?.[0];
+                                    if (file) {
+                                      try {
+                                        await handleFileUpload(file);
+                                      } catch (error) {
+                                        // Error already handled in handleFileUpload
+                                      }
+                                    }
+                                  }}
+                                  className="hidden"
+                                  id="profile-upload-edit"
+                                />
+                                <Button
+                                  type="button"
+                                  variant="outline"
+                                  className="w-full"
+                                  onClick={() => document.getElementById('profile-upload-edit')?.click()}
+                                >
+                                  <Upload className="h-4 w-4 mr-2" />
+                                  Upload Profile Picture
+                                </Button>
+                              </div>
                               
                               {/* Current Image Preview */}
                               {field.value && (
