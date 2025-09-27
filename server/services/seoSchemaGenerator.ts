@@ -1,5 +1,5 @@
 import { storage } from "../storage";
-import type { SeoSchema, InsertSeoSchema, Game, BlogPost, StaticPage, GameCategory } from "@shared/schema";
+import type { SeoSchema, InsertSeoSchema, Game, BlogPost, StaticPage, GameCategory, PricingPlan, Room } from "@shared/schema";
 
 interface SeoConfig {
   baseUrl: string;
@@ -206,9 +206,125 @@ export class SeoSchemaGenerator {
     };
   }
 
+  // Generate Pricing schema for pricing plans
+  async generatePricingSchema(pricingPlan: PricingPlan): Promise<Record<string, any>> {
+    const planUrl = `${this.config.baseUrl}/pricing#${pricingPlan.name.toLowerCase().replace(/\s+/g, '-')}`;
+    
+    return {
+      "@context": "https://schema.org",
+      "@type": "Offer",
+      "name": pricingPlan.displayName || pricingPlan.name,
+      "description": pricingPlan.description || pricingPlan.shortDescription,
+      "url": planUrl,
+      "price": (pricingPlan.price / 100).toString(), // Convert cents to dollars
+      "priceCurrency": pricingPlan.currency || "USD",
+      "originalPrice": pricingPlan.originalPrice ? (pricingPlan.originalPrice / 100).toString() : undefined,
+      "availability": pricingPlan.status === 'active' ? "https://schema.org/InStock" : "https://schema.org/OutOfStock",
+      "validFrom": pricingPlan.createdAt,
+      "category": pricingPlan.planType,
+      "seller": {
+        "@type": "Organization",
+        "name": this.config.organizationName,
+        "url": this.config.baseUrl
+      },
+      "priceSpecification": {
+        "@type": "PriceSpecification",
+        "price": (pricingPlan.price / 100).toString(),
+        "priceCurrency": pricingPlan.currency || "USD",
+        "validFrom": pricingPlan.createdAt,
+        "eligibleQuantity": {
+          "@type": "QuantitativeValue",
+          "value": 1
+        }
+      },
+      "itemOffered": {
+        "@type": "Service",
+        "name": pricingPlan.displayName || pricingPlan.name,
+        "description": pricingPlan.description || `${pricingPlan.planType} plan with ${pricingPlan.duration} access`,
+        "provider": {
+          "@type": "Organization",
+          "name": this.config.organizationName
+        }
+      }
+    };
+  }
+
+  // Generate Room schema for individual rooms
+  async generateRoomSchema(room: Room): Promise<Record<string, any>> {
+    const roomUrl = `${this.config.baseUrl}/rooms/${room.roomId}`;
+    
+    return {
+      "@context": "https://schema.org",
+      "@type": "Accommodation",
+      "name": room.name,
+      "description": room.description || `${room.type} room for ${room.maxSeats} people`,
+      "url": roomUrl,
+      "identifier": room.roomId,
+      "occupancy": {
+        "@type": "QuantitativeValue",
+        "maxValue": room.maxSeats,
+        "value": room.currentUsers
+      },
+      "amenityFeature": [
+        ...(room.voiceChatEnabled ? [{
+          "@type": "LocationFeatureSpecification",
+          "name": "Voice Chat",
+          "value": true
+        }] : []),
+        ...(room.textChatEnabled ? [{
+          "@type": "LocationFeatureSpecification", 
+          "name": "Text Chat",
+          "value": true
+        }] : []),
+        ...(room.giftsEnabled ? [{
+          "@type": "LocationFeatureSpecification",
+          "name": "Gift System",
+          "value": true
+        }] : []),
+        ...(room.musicEnabled ? [{
+          "@type": "LocationFeatureSpecification",
+          "name": "Background Music",
+          "value": true
+        }] : [])
+      ],
+      "additionalProperty": [
+        {
+          "@type": "PropertyValue",
+          "name": "Room Type",
+          "value": room.type
+        },
+        {
+          "@type": "PropertyValue", 
+          "name": "Category",
+          "value": room.category
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "Language",
+          "value": room.language
+        },
+        ...(room.country ? [{
+          "@type": "PropertyValue",
+          "name": "Country",
+          "value": room.country
+        }] : [])
+      ],
+      "image": room.bannerImage || undefined,
+      "keywords": room.tags?.join(", ") || room.category,
+      "interactionStatistic": {
+        "@type": "InteractionCounter",
+        "interactionType": "https://schema.org/JoinAction",
+        "userInteractionCount": room.totalVisits
+      },
+      "isAccessibleForFree": true,
+      "dateCreated": room.createdAt,
+      "dateModified": room.updatedAt
+    };
+  }
+
   // Generate comprehensive schema for a content item
   async generateSchema(
-    contentType: 'game' | 'blog_post' | 'page' | 'category' | 'organization',
+    contentType: 'game' | 'blog_post' | 'page' | 'category' | 'organization' | 'pricing' | 'rooms',
     contentId?: number,
     customData?: any
   ): Promise<Record<string, any>> {
@@ -240,6 +356,18 @@ export class SeoSchemaGenerator {
       case 'organization':
         return this.generateOrganizationSchema();
 
+      case 'pricing':
+        if (!contentId) throw new Error('Content ID required for pricing schema');
+        const pricingPlan = await storage.getPricingPlanById(contentId);
+        if (!pricingPlan) throw new Error('Pricing plan not found');
+        return this.generatePricingSchema(pricingPlan);
+
+      case 'rooms':
+        if (!contentId) throw new Error('Content ID required for room schema');
+        const room = await storage.getRoomById(contentId);
+        if (!room) throw new Error('Room not found');
+        return this.generateRoomSchema(room);
+
       default:
         throw new Error(`Unsupported content type: ${contentType}`);
     }
@@ -248,7 +376,7 @@ export class SeoSchemaGenerator {
   // Save generated schema to database
   async saveSchema(
     schemaType: string,
-    contentType: 'game' | 'blog_post' | 'page' | 'category' | 'organization' | 'global',
+    contentType: 'game' | 'blog_post' | 'page' | 'category' | 'organization' | 'global' | 'pricing' | 'rooms',
     contentId: number | null,
     schemaData: Record<string, any>,
     name: string,
@@ -272,7 +400,7 @@ export class SeoSchemaGenerator {
 
   // Auto-generate and save schema for content
   async autoGenerateAndSave(
-    contentType: 'game' | 'blog_post' | 'page' | 'category',
+    contentType: 'game' | 'blog_post' | 'page' | 'category' | 'pricing' | 'rooms',
     contentId: number,
     userId: number
   ): Promise<SeoSchema> {
@@ -301,6 +429,16 @@ export class SeoSchemaGenerator {
         schemaType = 'WebPage';
         const page = await storage.getStaticPageById(contentId);
         name = `${page?.title} - Page Schema`;
+        break;
+      case 'pricing':
+        schemaType = 'Offer';
+        const pricingPlan = await storage.getPricingPlanById(contentId);
+        name = `${pricingPlan?.displayName || pricingPlan?.name} - Pricing Schema`;
+        break;
+      case 'rooms':
+        schemaType = 'Accommodation';
+        const room = await storage.getRoomById(contentId);
+        name = `${room?.name} - Room Schema`;
         break;
       default:
         throw new Error(`Unsupported content type: ${contentType}`);

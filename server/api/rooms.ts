@@ -25,6 +25,7 @@ import { eq, desc, and, sql, count, gte, sum, asc } from "drizzle-orm";
 import { isAuthenticated, isAdmin } from "../middleware/auth";
 import { z } from "zod";
 import { Request, Response } from "express";
+import { createSeoSchemaGenerator } from '../services/seoSchemaGenerator';
 
 const router = Router();
 
@@ -123,6 +124,16 @@ router.post("/purchase", isAuthenticated, async (req: Request, res: Response) =>
       roomId: newRoom.id,
       date: new Date()
     });
+
+    // Auto-generate SEO schema for newly purchased room
+    try {
+      const schemaGenerator = await createSeoSchemaGenerator();
+      await schemaGenerator.autoGenerateAndSave('rooms', newRoom.id, userId);
+      console.log(`✅ SEO schema generated for purchased room: ${newRoom.name}`);
+    } catch (schemaError) {
+      console.error('Error generating SEO schema for purchased room:', schemaError);
+      // Don't fail the purchase if schema generation fails
+    }
 
     res.json({ 
       success: true, 
@@ -587,6 +598,16 @@ router.post("/", isAuthenticated, async (req: Request, res: Response) => {
       date: new Date()
     });
 
+    // Auto-generate SEO schema for newly created room
+    try {
+      const schemaGenerator = await createSeoSchemaGenerator();
+      await schemaGenerator.autoGenerateAndSave('rooms', newRoom.id, userId);
+      console.log(`✅ SEO schema generated for new room: ${newRoom.name}`);
+    } catch (schemaError) {
+      console.error('Error generating SEO schema for new room:', schemaError);
+      // Don't fail the room creation if schema generation fails
+    }
+
     res.status(201).json(newRoom);
   } catch (error) {
     console.error("Error creating room:", error);
@@ -624,6 +645,16 @@ router.patch("/:roomId", isAuthenticated, async (req: Request, res: Response) =>
       .set({ ...updateData, updatedAt: new Date() })
       .where(eq(rooms.id, room[0].id))
       .returning();
+
+    // Auto-generate SEO schema for updated room
+    try {
+      const schemaGenerator = await createSeoSchemaGenerator();
+      await schemaGenerator.autoGenerateAndSave('rooms', room[0].id, userId);
+      console.log(`✅ SEO schema generated for updated room: ${updatedRoom.name}`);
+    } catch (schemaError) {
+      console.error('Error generating SEO schema for updated room:', schemaError);
+      // Don't fail the room update if schema generation fails
+    }
 
     res.json(updatedRoom);
   } catch (error) {

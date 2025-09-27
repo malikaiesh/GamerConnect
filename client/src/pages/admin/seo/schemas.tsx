@@ -630,7 +630,7 @@ function SeoSchemasContent() {
           </DialogHeader>
           <div className="space-y-4">
             <div className="grid grid-cols-2 gap-2">
-              {["game", "blog_post", "page", "category"].map((type) => (
+              {["game", "blog_post", "page", "category", "pricing", "rooms"].map((type) => (
                 <Button
                   key={type}
                   variant="outline"
@@ -666,7 +666,7 @@ export default function SeoSchemasPage() {
           <div className="flex items-center justify-between">
             <div>
               <h1 className="text-2xl font-bold text-foreground">SEO Schema Management</h1>
-              <p className="text-muted-foreground">Manage automatic SEO schema generation for games, blog posts, pages, and categories</p>
+              <p className="text-muted-foreground">Manage automatic SEO schema generation for games, blog posts, pages, categories, pricing plans, and rooms</p>
             </div>
             <div className="flex items-center gap-3">
               <NotificationBell />

@@ -3,7 +3,7 @@ import { useQuery } from '@tanstack/react-query';
 import { SeoSchema } from '@shared/schema';
 
 interface SeoSchemaConfig {
-  contentType?: 'game' | 'blog_post' | 'page' | 'category';
+  contentType?: 'game' | 'blog_post' | 'page' | 'category' | 'pricing' | 'rooms';
   contentId?: number;
   enabled?: boolean;
 }

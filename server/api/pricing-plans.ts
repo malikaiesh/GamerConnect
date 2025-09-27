@@ -3,6 +3,7 @@ import { db } from "@db";
 import { pricingPlans, insertPricingPlanSchema, type InsertPricingPlan } from '@shared/schema';
 import { eq, desc, and, sql } from 'drizzle-orm';
 import { z } from 'zod';
+import { createSeoSchemaGenerator } from '../services/seoSchemaGenerator';
 
 // Get all pricing plans
 export const getPricingPlans = async (req: Request, res: Response) => {
@@ -71,6 +72,18 @@ export const createPricingPlan = async (req: Request, res: Response) => {
       .values(validatedData)
       .returning();
 
+    // Auto-generate SEO schema only for active pricing plans
+    if (validatedData.status === 'active') {
+      try {
+        const schemaGenerator = await createSeoSchemaGenerator();
+        await schemaGenerator.autoGenerateAndSave('pricing', newPlan.id, user.id);
+        console.log(`✅ SEO schema generated for active pricing plan: ${newPlan.name}`);
+      } catch (schemaError) {
+        console.error('Error generating SEO schema for pricing plan:', schemaError);
+        // Don't fail the plan creation if schema generation fails
+      }
+    }
+
     res.status(201).json(newPlan);
   } catch (error) {
     console.error('Error creating pricing plan:', error);
@@ -96,6 +109,16 @@ export const updatePricingPlan = async (req: Request, res: Response) => {
     }
 
     const { id } = req.params;
+    
+    // Get the existing plan to check status change
+    const [existingPlan] = await db.select()
+      .from(pricingPlans)
+      .where(eq(pricingPlans.id, parseInt(id)));
+    
+    if (!existingPlan) {
+      return res.status(404).json({ error: 'Pricing plan not found' });
+    }
+    
     const validatedData = insertPricingPlanSchema.partial().parse({
       ...req.body,
       updatedBy: user.id,
@@ -111,6 +134,22 @@ export const updatePricingPlan = async (req: Request, res: Response) => {
 
     if (!updatedPlan) {
       return res.status(404).json({ error: 'Pricing plan not found' });
+    }
+
+    // Auto-generate SEO schema for active plans (new activation OR updates to already active plans)
+    const shouldGenerateSchema = 
+      (validatedData.status === 'active' && existingPlan.status !== 'active') || // New activation
+      (updatedPlan.status === 'active'); // Any update to active plan
+    
+    if (shouldGenerateSchema) {
+      try {
+        const schemaGenerator = await createSeoSchemaGenerator();
+        await schemaGenerator.autoGenerateAndSave('pricing', parseInt(id), user.id);
+        console.log(`✅ SEO schema generated for pricing plan: ${updatedPlan.name}`);
+      } catch (schemaError) {
+        console.error('Error generating SEO schema for updated pricing plan:', schemaError);
+        // Don't fail the plan update if schema generation fails
+      }
     }
 
     res.json(updatedPlan);
@@ -172,6 +211,15 @@ export const updatePlanStatus = async (req: Request, res: Response) => {
       return res.status(400).json({ error: 'Invalid status' });
     }
 
+    // Get the existing plan to check status change
+    const [existingPlan] = await db.select()
+      .from(pricingPlans)
+      .where(eq(pricingPlans.id, parseInt(id)));
+    
+    if (!existingPlan) {
+      return res.status(404).json({ error: 'Pricing plan not found' });
+    }
+
     const [updatedPlan] = await db.update(pricingPlans)
       .set({ 
         status: status as any,
@@ -183,6 +231,18 @@ export const updatePlanStatus = async (req: Request, res: Response) => {
 
     if (!updatedPlan) {
       return res.status(404).json({ error: 'Pricing plan not found' });
+    }
+
+    // Auto-generate SEO schema whenever status is set to active (regardless of previous status)
+    if (status === 'active') {
+      try {
+        const schemaGenerator = await createSeoSchemaGenerator();
+        await schemaGenerator.autoGenerateAndSave('pricing', parseInt(id), user.id);
+        console.log(`✅ SEO schema generated for pricing plan status update: ${updatedPlan.name}`);
+      } catch (schemaError) {
+        console.error('Error generating SEO schema for pricing plan status change:', schemaError);
+        // Don't fail the status update if schema generation fails
+      }
     }
 
     res.json(updatedPlan);
@@ -218,6 +278,25 @@ export const bulkUpdatePricing = async (req: Request, res: Response) => {
       })
       .where(whereCondition)
       .returning();
+
+    // Auto-generate SEO schemas for all active plans that were updated
+    const activePlansToUpdate = updatedPlans.filter(plan => plan.status === 'active');
+    if (activePlansToUpdate.length > 0) {
+      try {
+        const schemaGenerator = await createSeoSchemaGenerator();
+        for (const plan of activePlansToUpdate) {
+          try {
+            await schemaGenerator.autoGenerateAndSave('pricing', plan.id, user.id);
+            console.log(`✅ SEO schema regenerated for bulk-updated pricing plan: ${plan.name}`);
+          } catch (schemaError) {
+            console.error(`Error regenerating SEO schema for plan ${plan.id}:`, schemaError);
+            // Continue with other plans even if one fails
+          }
+        }
+      } catch (error) {
+        console.error('Error initializing schema generator for bulk update:', error);
+      }
+    }
 
     res.json({
       message: `Updated ${updatedPlans.length} pricing plans`,

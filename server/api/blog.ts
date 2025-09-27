@@ -141,14 +141,16 @@ export function registerBlogRoutes(app: Express) {
       const postData = insertBlogPostSchema.parse(req.body);
       const post = await storage.createBlogPost(postData);
       
-      // Auto-generate SEO schema for the new blog post
-      try {
-        const schemaGenerator = await createSeoSchemaGenerator();
-        await schemaGenerator.autoGenerateAndSave('blog_post', post.id, 1); // Default user ID 1
-        console.log(`SEO schema generated for blog post: ${post.title}`);
-      } catch (schemaError) {
-        console.error('Error generating SEO schema for blog post:', schemaError);
-        // Don't fail the post creation if schema generation fails
+      // Auto-generate SEO schema only for published blog posts
+      if (postData.status === 'published') {
+        try {
+          const schemaGenerator = await createSeoSchemaGenerator();
+          await schemaGenerator.autoGenerateAndSave('blog_post', post.id, 1); // Default user ID 1
+          console.log(`✅ SEO schema generated for published blog post: ${post.title}`);
+        } catch (schemaError) {
+          console.error('Error generating SEO schema for blog post:', schemaError);
+          // Don't fail the post creation if schema generation fails
+        }
       }
       
       res.status(201).json(post);
@@ -169,11 +171,33 @@ export function registerBlogRoutes(app: Express) {
         return res.status(400).json({ message: 'Invalid post ID' });
       }
       
+      // Get the existing post to check status change
+      const existingPost = await storage.getBlogPostById(id);
+      if (!existingPost) {
+        return res.status(404).json({ message: 'Blog post not found' });
+      }
+      
       const postData = insertBlogPostSchema.partial().parse(req.body);
       const updatedPost = await storage.updateBlogPost(id, postData);
       
       if (!updatedPost) {
         return res.status(404).json({ message: 'Blog post not found' });
+      }
+      
+      // Auto-generate SEO schema for published posts (new publication OR updates to already published content)
+      const shouldGenerateSchema = 
+        (postData.status === 'published' && existingPost.status !== 'published') || // New publication
+        (updatedPost.status === 'published'); // Any update to published post
+      
+      if (shouldGenerateSchema) {
+        try {
+          const schemaGenerator = await createSeoSchemaGenerator();
+          await schemaGenerator.autoGenerateAndSave('blog_post', id, 1); // Default user ID 1
+          console.log(`✅ SEO schema generated for blog post: ${updatedPost.title}`);
+        } catch (schemaError) {
+          console.error('Error generating SEO schema for updated blog post:', schemaError);
+          // Don't fail the post update if schema generation fails
+        }
       }
       
       res.json(updatedPost);

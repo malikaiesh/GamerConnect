@@ -192,6 +192,63 @@ export function registerSeoSchemaRoutes(app: express.Express) {
               "url": "{{category_url}}"
             }
           }
+        ],
+        pricing: [
+          {
+            name: `💰 ${contentType.charAt(0).toUpperCase() + contentType.slice(1)} Offer Schema`,
+            schemaType: "Offer",
+            schemaData: {
+              "@context": "https://schema.org",
+              "@type": "Offer",
+              "name": "{{pricing_plan_name}}",
+              "description": "{{pricing_plan_description}}",
+              "url": "{{pricing_plan_url}}",
+              "price": "{{plan_price}}",
+              "priceCurrency": "{{plan_currency}}",
+              "availability": "https://schema.org/InStock",
+              "seller": {
+                "@type": "Organization",
+                "name": "{{organization_name}}"
+              },
+              "priceSpecification": {
+                "@type": "PriceSpecification",
+                "price": "{{plan_price}}",
+                "priceCurrency": "{{plan_currency}}"
+              }
+            }
+          }
+        ],
+        rooms: [
+          {
+            name: `🏠 ${contentType.charAt(0).toUpperCase() + contentType.slice(1)} Accommodation Schema`,
+            schemaType: "Accommodation",
+            schemaData: {
+              "@context": "https://schema.org",
+              "@type": "Accommodation",
+              "name": "{{room_name}}",
+              "description": "{{room_description}}",
+              "url": "{{room_url}}",
+              "identifier": "{{room_id}}",
+              "occupancy": {
+                "@type": "QuantitativeValue",
+                "maxValue": "{{max_seats}}",
+                "value": "{{current_users}}"
+              },
+              "amenityFeature": [
+                {
+                  "@type": "LocationFeatureSpecification",
+                  "name": "Voice Chat",
+                  "value": "{{voice_chat_enabled}}"
+                },
+                {
+                  "@type": "LocationFeatureSpecification",
+                  "name": "Text Chat", 
+                  "value": "{{text_chat_enabled}}"
+                }
+              ],
+              "isAccessibleForFree": true
+            }
+          }
         ]
       };
 
