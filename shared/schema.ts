@@ -228,6 +228,21 @@ export const users = pgTable('users', {
   verifiedBy: integer('verified_by').references(() => users.id),
   verificationExpiresAt: timestamp('verification_expires_at'), // When verification expires
   
+  // Level System
+  idLevel: integer('id_level').default(1).notNull(),
+  roomsLevel: integer('rooms_level').default(1).notNull(),
+  totalXp: integer('total_xp').default(0).notNull(),
+  roomsXp: integer('rooms_xp').default(0).notNull(),
+  
+  // Activity Tracking for Level System
+  gamesPlayed: integer('games_played').default(0).notNull(),
+  roomsCreated: integer('rooms_created').default(0).notNull(),
+  roomsJoined: integer('rooms_joined').default(0).notNull(),
+  messagesSent: integer('messages_sent').default(0).notNull(),
+  friendsCount: integer('friends_count').default(0).notNull(),
+  dailyLoginStreak: integer('daily_login_streak').default(0).notNull(),
+  lastActivityDate: date('last_activity_date'),
+  
   createdAt: timestamp('created_at').defaultNow().notNull(),
   updatedAt: timestamp('updated_at').defaultNow().notNull()
 });

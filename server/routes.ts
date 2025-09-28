@@ -80,6 +80,7 @@ import { registerShortLinksRoutes } from "./api/short-links";
 import { registerTranslationRoutes } from "./api/translations";
 import giftsRouter from "./api/gifts";
 import { registerTournamentRoutes } from "./api/tournaments";
+import userLevelRouter from "./routes/user-level";
 import { 
   generateAIContent, 
   getAvailableAIModels, 
@@ -501,6 +502,9 @@ Sitemap: ${req.protocol}://${req.get('host')}/sitemap.xml`);
   
   // Register gifts API routes
   app.use('/api/gifts', giftsRouter);
+  
+  // Register user level system routes
+  app.use('/api/user', userLevelRouter);
   
   // Register additional push notifications analytics endpoint
   app.get('/api/push-notifications-analytics', isAuthenticated, isAdmin, async (req, res) => {

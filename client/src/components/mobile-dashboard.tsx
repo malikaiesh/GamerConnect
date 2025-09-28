@@ -196,7 +196,11 @@ export function MobileDashboard() {
               <div className="flex items-center space-x-4 mt-1">
                 <div className="flex items-center space-x-1">
                   <Star className="w-4 h-4 text-yellow-300" />
-                  <span className="text-sm font-medium">Level {userLevel}</span>
+                  <span className="text-sm font-medium">ID: Level {user?.idLevel || 1}</span>
+                </div>
+                <div className="flex items-center space-x-1">
+                  <Crown className="w-4 h-4 text-purple-300" />
+                  <span className="text-sm font-medium">Rooms: Level {user?.roomsLevel || 1}</span>
                 </div>
                 <div className="flex items-center space-x-1">
                   <Coins className="w-4 h-4 text-yellow-300" />
@@ -226,68 +230,54 @@ export function MobileDashboard() {
                     onClick={() => setShowThemeSelector(false)}
                   />
                   
-                  {/* Theme Selector Modal */}
-                  <div className="fixed inset-x-4 top-1/2 -translate-y-1/2 z-50">
-                    <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl border border-gray-200 dark:border-gray-700 overflow-hidden">
+                  {/* Theme Selector Modal - Compact Style */}
+                  <div className="absolute right-0 top-12 z-50">
+                    <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl border border-gray-200 dark:border-gray-700 min-w-[200px] overflow-hidden">
                       {/* Header */}
-                      <div className="p-6 pb-4 border-b border-gray-200 dark:border-gray-700">
-                        <h3 className="text-xl font-bold text-gray-900 dark:text-white text-center">Select Theme</h3>
-                        <p className="text-sm text-gray-600 dark:text-gray-400 text-center mt-1">Choose your preferred theme</p>
+                      <div className="px-4 py-3 border-b border-gray-200 dark:border-gray-700">
+                        <h3 className="text-sm font-semibold text-gray-900 dark:text-white">Select Theme</h3>
                       </div>
                       
-                      {/* Theme Grid */}
-                      <div className="p-6 max-h-80 overflow-y-auto">
-                        <div className="grid grid-cols-2 gap-3 mb-4">
-                          {themes.map((theme) => (
-                            <button
-                              key={theme.id}
-                              onClick={() => handleThemeChange(theme.id)}
-                              className={cn(
-                                "p-4 rounded-xl text-left transition-all duration-200 border-2",
-                                currentTheme === theme.id
-                                  ? "bg-blue-500 text-white border-blue-500 shadow-lg scale-105"
-                                  : "bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-100 border-gray-200 dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-600"
-                              )}
-                              data-testid={`theme-option-${theme.id}`}
-                            >
-                              <div className="font-medium">{theme.name}</div>
-                              {currentTheme === theme.id && (
-                                <div className="text-xs mt-1 opacity-90">✓ Active</div>
-                              )}
-                            </button>
-                          ))}
-                        </div>
+                      {/* Theme Options */}
+                      <div className="py-1 max-h-80 overflow-y-auto">
+                        {themes.map((theme) => (
+                          <button
+                            key={theme.id}
+                            onClick={() => handleThemeChange(theme.id)}
+                            className={cn(
+                              "w-full px-4 py-2 text-left text-sm transition-colors duration-150 flex items-center justify-between",
+                              currentTheme === theme.id
+                                ? "bg-blue-500 text-white"
+                                : "text-gray-900 dark:text-gray-100 hover:bg-gray-100 dark:hover:bg-gray-700"
+                            )}
+                            data-testid={`theme-option-${theme.id}`}
+                          >
+                            <span>{theme.name}</span>
+                            {currentTheme === theme.id && (
+                              <div className="w-2 h-2 bg-white rounded-full"></div>
+                            )}
+                          </button>
+                        ))}
                         
                         {/* Dark Mode Toggle */}
-                        <div className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-700 rounded-xl">
-                          <div>
-                            <span className="font-medium text-gray-900 dark:text-gray-100">Dark Mode</span>
-                            <p className="text-xs text-gray-600 dark:text-gray-400">Toggle dark theme</p>
-                          </div>
+                        <div className="border-t border-gray-200 dark:border-gray-700 mt-1">
                           <button
                             onClick={handleThemeToggle}
-                            className={cn(
-                              "w-12 h-6 rounded-full transition-colors relative",
-                              darkMode ? "bg-blue-500" : "bg-gray-300 dark:bg-gray-600"
-                            )}
+                            className="w-full px-4 py-2 text-left text-sm text-gray-900 dark:text-gray-100 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors duration-150 flex items-center justify-between"
                             data-testid="dark-mode-toggle"
                           >
+                            <span>{darkMode ? 'Light Mode' : 'Dark Mode'}</span>
                             <div className={cn(
-                              "w-5 h-5 bg-white rounded-full absolute top-0.5 transition-transform shadow-sm",
-                              darkMode ? "translate-x-6" : "translate-x-0.5"
-                            )} />
+                              "w-8 h-4 rounded-full transition-colors relative",
+                              darkMode ? "bg-blue-500" : "bg-gray-300"
+                            )}>
+                              <div className={cn(
+                                "w-3 h-3 bg-white rounded-full absolute top-0.5 transition-transform shadow-sm",
+                                darkMode ? "translate-x-4" : "translate-x-0.5"
+                              )} />
+                            </div>
                           </button>
                         </div>
-                      </div>
-                      
-                      {/* Close Button */}
-                      <div className="p-4 border-t border-gray-200 dark:border-gray-700">
-                        <button
-                          onClick={() => setShowThemeSelector(false)}
-                          className="w-full py-3 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-900 dark:text-gray-100 rounded-xl font-medium transition-colors"
-                        >
-                          Close
-                        </button>
                       </div>
                     </div>
                   </div>
