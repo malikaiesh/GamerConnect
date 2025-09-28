@@ -26,7 +26,8 @@ import {
   Sun,
   Home,
   Grid3X3,
-  Settings
+  Settings,
+  Diamond
 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { MobileBottomNav } from "@/components/ui/mobile-bottom-nav";
@@ -237,29 +238,34 @@ export function MobileDashboard() {
       <div className="relative bg-gradient-to-r from-primary to-accent text-white p-6 rounded-b-3xl shadow-lg" style={{
         background: `linear-gradient(to right, hsl(var(--primary)), hsl(var(--accent)))`
       }}>
-        {/* Centered Profile Layout */}
-        <div className="flex flex-col items-center text-center mb-6">
-          {/* Profile Avatar */}
+        {/* Centered Profile Layout - Compact */}
+        <div className="flex flex-col items-center text-center mb-4">
+          {/* Profile Avatar - Smaller */}
           <button 
             onClick={() => navigate(isMobile ? '/mobile-settings' : '/profile')}
-            className="transition-transform hover:scale-105 active:scale-95 mb-3"
+            className="transition-transform hover:scale-105 active:scale-95 mb-2"
             data-testid="button-profile-avatar"
           >
-            <Avatar className="w-20 h-20 border-2 border-white/30">
+            <Avatar className="w-16 h-16 border-2 border-white/30">
               <AvatarImage src={user?.profilePicture || undefined} alt={user?.username || 'Player'} />
-              <AvatarFallback className="bg-white/20 text-white text-3xl font-bold">
+              <AvatarFallback className="bg-white/20 text-white text-xl font-bold">
                 {(user?.displayName || user?.username || 'Player').charAt(0).toUpperCase()}
               </AvatarFallback>
             </Avatar>
           </button>
           
-          {/* User Name */}
-          <h2 className="text-2xl font-bold mb-2">
-            {user?.displayName || user?.username || 'Player'}
-          </h2>
+          {/* User Name with Verification Badge */}
+          <div className="flex items-center justify-center gap-2 mb-2">
+            <h2 className="text-xl font-bold">
+              {user?.displayName || user?.username || 'Player'}
+            </h2>
+            {user?.isVerified && (
+              <CheckCircle className="w-5 h-5 text-blue-400" data-testid="user-verification-badge" />
+            )}
+          </div>
           
           {/* ID & Rooms Level */}
-          <div className="flex items-center justify-center gap-4 mb-3">
+          <div className="flex items-center justify-center gap-3 mb-2">
             <div className="flex items-center space-x-1">
               <Star className="w-4 h-4 text-yellow-300" />
               <span className="text-sm font-medium" data-testid="text-id-level">ID {dashboardData?.user?.idLevel || 1}</span>
@@ -267,16 +273,20 @@ export function MobileDashboard() {
             <div className="flex items-center space-x-1">
               <Crown className="w-4 h-4 text-purple-300" />
               <span className="text-sm font-medium" data-testid="text-rooms-level">Room {dashboardData?.user?.roomsLevel || 1}</span>
+              {/* Add room verification check here when we have room data */}
             </div>
-            {user?.isVerified && (
-              <Shield className="w-4 h-4 text-green-300" />
-            )}
           </div>
           
-          {/* Coins Display */}
-          <div className="flex items-center space-x-1">
-            <Coins className="w-5 h-5 text-yellow-300" />
-            <span className="text-lg font-bold" data-testid="text-coins">{Math.floor(coins).toLocaleString()}</span>
+          {/* Diamonds and Coins Display */}
+          <div className="flex items-center justify-center gap-4">
+            <div className="flex items-center space-x-1">
+              <Diamond className="w-4 h-4 text-blue-300" />
+              <span className="text-sm font-medium" data-testid="text-diamonds">{dashboardData?.userWallet?.diamonds || 0}</span>
+            </div>
+            <div className="flex items-center space-x-1">
+              <Coins className="w-4 h-4 text-yellow-300" />
+              <span className="text-sm font-medium" data-testid="text-coins">{Math.floor(coins).toLocaleString()}</span>
+            </div>
           </div>
         </div>
         
