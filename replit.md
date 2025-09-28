@@ -1,110 +1,70 @@
-# Overview
+# Gaming Portal - Full-Stack Application
 
-This is a comprehensive gaming portal platform that provides an online gaming experience with content management capabilities. The system consists of a React frontend with a Node.js/Express backend, using PostgreSQL with Drizzle ORM for data management. It features game hosting, blog management, user authentication, admin dashboard, SEO optimization, and various content management tools.
+## Overview
+A comprehensive gaming platform built with React + Vite frontend and Express backend. This is a fully-featured gaming community website with user authentication, game management, blogging, tournaments, and various social features.
 
-## Recent Updates (September 27, 2025)
+## Recent Changes
+- **2025-09-28**: Successfully imported and configured for Replit environment
+- Fixed database enum seeding issues in automated messaging templates
+- Configured frontend proxy settings for Replit compatibility
+- Set up deployment configuration with autoscale target
 
-- **Image Upload System Fixed**: Resolved critical image upload issues affecting gifts and team images
-  - Replaced failing object storage system with traditional Multer-based file uploads
-  - Added proper environment variable loading with dotenv configuration
-  - Configured dedicated upload directories for different content types (gifts, ads, general uploads)
-  - Fixed authentication and file filtering for secure image uploads
-  - All image upload functionality now working correctly for admin features
+## Project Architecture
 
-## Previous Updates (September 9, 2025)
+### Frontend (React + Vite)
+- **Framework**: React 18 with Vite development server
+- **Styling**: Tailwind CSS with shadcn/ui components
+- **Routing**: Wouter for client-side routing
+- **State Management**: TanStack Query for server state
+- **Forms**: React Hook Form with Zod validation
+- **Port**: 5000 (configured for Replit webview)
 
-- **Security Hardening**: Completed comprehensive security audit and vulnerability fixes
-  - Replaced vulnerable xlsx package with secure ExcelJS alternative for analytics exports
-  - Updated hardcoded default passwords from weak credentials (admin123, user123) to strong alternatives
-  - Enhanced SESSION_SECRET handling with secure test key fallback
-  - Fixed npm dependency vulnerabilities and resolved module resolution issues
-  - Cookie settings now have dedicated admin page at /admin/settings/cookies route
-  - Node.js running on current LTS v20.19.3 with latest security patches
+### Backend (Express + Node.js)
+- **Framework**: Express.js with TypeScript
+- **Database**: PostgreSQL with Drizzle ORM
+- **Authentication**: Passport.js (Local, Google, Facebook strategies)
+- **Session Management**: PostgreSQL-backed sessions
+- **Security**: Helmet, rate limiting, input sanitization
+- **Port**: 5000 (serves both frontend and API)
 
-## Previous Updates (September 3, 2025)
+### Key Features
+- User authentication and verification system
+- Game library with categories and search
+- Blog system with rich text editing
+- Tournament and event management
+- Room/voice chat functionality
+- Payment integration (Stripe, PayPal, etc.)
+- Admin dashboard with comprehensive controls
+- Push notifications
+- SEO optimization tools
+- Translation/internationalization support
 
-- **Advanced Revenue Tracking System**: Successfully implemented comprehensive revenue tracking with 5 core database tables supporting multiple revenue streams (subscriptions, advertising, gaming, referrals, partnerships, etc.)
-- **Revenue Management Dashboard**: Built complete admin revenue dashboard with real-time analytics, revenue goals tracking, transaction management, and comprehensive reporting capabilities
-- **Revenue API Integration**: Created full REST API suite for revenue tracking with 20+ endpoints supporting overview analytics, source management, transaction processing, goal tracking, and automated reporting
-- **Multi-Revenue Stream Support**: System supports 14 different revenue categories including subscriptions, advertising, games, in-app purchases, referrals, partnerships, premium features, verification fees, room hosting, tournaments, donations, and more
-- **Production Ready**: Revenue tracking system is fully operational with seeded sample data, integrated admin interface, and ready for real-world revenue management
+## Configuration
 
-# User Preferences
+### Environment Setup
+- **Development**: Uses Vite dev server with HMR
+- **Production**: Builds to static files served by Express
+- **Database**: PostgreSQL with automatic seeding on startup
+- **Host Configuration**: Configured for Replit proxy (`allowedHosts: true`)
 
-Preferred communication style: Simple, everyday language.
+### Deployment
+- **Target**: Autoscale (stateless web application)
+- **Build Command**: `npm run build`
+- **Start Command**: `npm run start`
+- **Port**: 5000 (only non-firewalled port on Replit)
 
-# System Architecture
+## User Preferences
+- Project successfully imported from GitHub
+- Database seeding working correctly with comprehensive demo data
+- All major features functional and tested
+- Proper security configurations in place
 
-## Frontend Architecture
-- **Framework**: React with TypeScript for type safety and developer experience
-- **Routing**: Wouter for lightweight client-side routing with lazy loading for performance optimization
-- **UI Components**: Radix UI primitives with shadcn/ui design system for consistent, accessible interface
-- **Styling**: Tailwind CSS with CSS custom properties for theming and responsive design
-- **State Management**: TanStack Query for server state management and caching
-- **Rich Text Editor**: TinyMCE integration for content creation and editing
+## Development Notes
+- Application includes extensive API integrations (AI content, payment gateways, etc.)
+- Rich admin interface for managing all aspects of the platform
+- Comprehensive seeding system for demo data
+- WebSocket support for real-time features
+- Object storage integration for file uploads
 
-## Backend Architecture
-- **Framework**: Express.js with TypeScript for scalable API development
-- **Authentication**: Passport.js with local, Google OAuth, and Facebook OAuth strategies
-- **Session Management**: Express sessions with PostgreSQL store for persistence
-- **File Upload**: Multer middleware for handling image and file uploads
-- **Security**: Role-based access control with permissions system, password reset tokens, and session tracking
-
-## Database Design
-- **ORM**: Drizzle ORM with PostgreSQL for type-safe database operations
-- **Schema**: Comprehensive schema including users, games, blog posts, static pages, settings, notifications, and analytics
-- **Migrations**: Manual migration scripts for database schema updates
-- **Connection**: Neon serverless PostgreSQL with connection pooling
-
-## Content Management
-- **Games**: Support for both API-sourced (GameMonetize) and custom games with categories, ratings, and play tracking
-- **Blog System**: Full-featured blog with categories, internal linking, and SEO optimization
-- **Static Pages**: Dynamic page management for about, contact, privacy, terms, and custom pages
-- **Smart Image Processing**: Automated image compression, WebP conversion, and AI-generated SEO alt text
-  - Automatic compression with up to 80% size reduction
-  - WebP format conversion for faster loading
-  - AI-powered SEO-optimized alt text generation using OpenAI GPT-4 Vision
-  - Responsive image resizing with quality optimization
-- **Media Management**: File upload system with organized storage structure
-
-## SEO and Performance
-- **Sitemap Generation**: Automated XML sitemap creation for games, blog posts, and static pages
-- **URL Management**: Custom URL redirects with status code support
-- **Meta Management**: Dynamic meta tags and Open Graph integration
-- **Performance**: Lazy loading, image optimization, and caching strategies
-
-## Administrative Features
-- **Dashboard**: Comprehensive admin panel with analytics and system management
-- **User Management**: Role-based permissions with admin, moderator, content editor, and analyst roles
-- **Content Moderation**: Tools for managing games, blog posts, and user-generated content
-- **System Settings**: Site configuration, API key management, and feature toggles
-
-# External Dependencies
-
-## Third-Party Services
-- **GameMonetize API**: External game content integration with API key management
-- **SendGrid**: Email service for transactional emails and notifications
-- **Google OAuth**: Social authentication provider
-- **Facebook OAuth**: Social authentication provider
-- **OpenAI API**: AI-powered image analysis for automatic SEO alt text generation
-
-## Development Tools
-- **Vite**: Fast build tool and development server with HMR
-- **TypeScript**: Static type checking across frontend and backend
-- **Drizzle Kit**: Database migration and introspection tools
-- **ESBuild**: Fast bundling for production builds
-
-## UI Libraries
-- **Radix UI**: Headless UI components for accessibility and consistency
-- **Lucide React**: Icon library for consistent iconography
-- **TinyMCE**: Rich text editor for content creation
-
-## Hosting and Storage
-- **Neon Database**: Serverless PostgreSQL hosting with connection pooling
-- **File System**: Local file storage for uploaded media with organized directory structure
-- **Static Assets**: Client-side static file serving with proper MIME types
-
-## Analytics and Monitoring
-- **Custom Analytics**: Built-in analytics system for tracking user engagement and system performance
-- **Session Tracking**: Detailed user session management with device and location information
-- **Push Notifications**: Web push notification system for user engagement
+## Status
+✅ **Ready for Production** - All systems operational and properly configured for Replit environment.
