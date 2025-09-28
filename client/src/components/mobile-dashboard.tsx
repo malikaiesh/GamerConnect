@@ -140,17 +140,16 @@ export function MobileDashboard() {
   const [, navigate] = useLocation();
   const isMobile = useMobile();
   
-  const { data: userStats } = useQuery({
-    queryKey: ["/api/user/stats"],
+  // Single aggregated API call for all dashboard data
+  const { data: dashboardData, isLoading: dashboardLoading } = useQuery({
+    queryKey: ["/api/dashboard/mobile"],
   });
 
-  const { data: referralData } = useQuery({
-    queryKey: ["/api/user/referrals"],
-  });
-
-  // Calculate user level based on games played (simple logic)
-  const userLevel = Math.floor((userStats?.gamesPlayed || 0) / 10) + 1;
-  const coins = (referralData?.totalEarnings || 0) / 100;
+  // Extract data from aggregated response
+  const userStats = dashboardData?.stats;
+  const referralData = dashboardData?.referrals;
+  const userLevel = dashboardData?.computed?.userLevel || 1;
+  const coins = dashboardData?.computed?.coins || 0;
 
   const handleThemeToggle = () => {
     const newDarkMode = !darkMode;
@@ -196,11 +195,11 @@ export function MobileDashboard() {
               <div className="flex items-center space-x-4 mt-1">
                 <div className="flex items-center space-x-1">
                   <Star className="w-4 h-4 text-yellow-300" />
-                  <span className="text-sm font-medium">ID: Level {user?.idLevel || 1}</span>
+                  <span className="text-sm font-medium">ID: Level {dashboardData?.user?.idLevel || 1}</span>
                 </div>
                 <div className="flex items-center space-x-1">
                   <Crown className="w-4 h-4 text-purple-300" />
-                  <span className="text-sm font-medium">Rooms: Level {user?.roomsLevel || 1}</span>
+                  <span className="text-sm font-medium">Rooms: Level {dashboardData?.user?.roomsLevel || 1}</span>
                 </div>
                 <div className="flex items-center space-x-1">
                   <Coins className="w-4 h-4 text-yellow-300" />

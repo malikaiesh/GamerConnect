@@ -506,6 +506,10 @@ Sitemap: ${req.protocol}://${req.get('host')}/sitemap.xml`);
   // Register user level system routes
   app.use('/api/user', userLevelRouter);
   
+  // Register aggregated dashboard routes
+  const dashboardAggregatedRouter = await import('./routes/dashboard-aggregated');
+  app.use('/api/dashboard', dashboardAggregatedRouter.default);
+  
   // Register additional push notifications analytics endpoint
   app.get('/api/push-notifications-analytics', isAuthenticated, isAdmin, async (req, res) => {
     try {

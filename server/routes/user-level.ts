@@ -1,8 +1,10 @@
 import { Router } from 'express';
-import { db } from '../db/index.js';
+import { db } from '@db';
 import { users } from '@shared/schema';
 import { eq, sql } from 'drizzle-orm';
-import { requireAuth } from '../middleware/auth.js';
+import { isAuthenticated } from '../middleware/auth.js';
+
+const requireAuth = isAuthenticated;
 import { calculateIdLevel, calculateRoomsLevel, shouldAwardDailyBonus, XP_REWARDS } from '../../client/src/lib/level-system.js';
 
 const router = Router();
