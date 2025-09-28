@@ -245,6 +245,14 @@ export const users = pgTable('users', {
   
   createdAt: timestamp('created_at').defaultNow().notNull(),
   updatedAt: timestamp('updated_at').defaultNow().notNull()
+}, (table) => {
+  return {
+    // Performance indexes for frequently queried fields
+    statusIdx: index('users_status_idx').on(table.status),
+    socialIdIdx: index('users_social_id_idx').on(table.socialId),
+    roleIdIdx: index('users_role_id_idx').on(table.roleId),
+    createdAtIdx: index('users_created_at_idx').on(table.createdAt)
+  };
 });
 
 // Game Categories table
@@ -298,6 +306,17 @@ export const games = pgTable('games', {
   
   createdAt: timestamp('created_at').defaultNow().notNull(),
   updatedAt: timestamp('updated_at').defaultNow().notNull()
+}, (table) => {
+  return {
+    // Performance indexes for frequently queried fields
+    statusIdx: index('games_status_idx').on(table.status),
+    categoryIdIdx: index('games_category_id_idx').on(table.categoryId),
+    sourceIdx: index('games_source_idx').on(table.source),
+    playsIdx: index('games_plays_idx').on(table.plays),
+    createdAtIdx: index('games_created_at_idx').on(table.createdAt),
+    // Composite index for common query patterns
+    statusCategoryIdx: index('games_status_category_idx').on(table.status, table.categoryId)
+  };
 });
 
 // Blog Categories table
@@ -324,6 +343,16 @@ export const blogPosts = pgTable('blog_posts', {
   publishedAt: timestamp('published_at'),
   createdAt: timestamp('created_at').defaultNow().notNull(),
   updatedAt: timestamp('updated_at').defaultNow().notNull()
+}, (table) => {
+  return {
+    // Performance indexes for frequently queried fields
+    statusIdx: index('blog_posts_status_idx').on(table.status),
+    categoryIdIdx: index('blog_posts_category_id_idx').on(table.categoryId),
+    publishedAtIdx: index('blog_posts_published_at_idx').on(table.publishedAt),
+    createdAtIdx: index('blog_posts_created_at_idx').on(table.createdAt),
+    // Composite index for common query patterns
+    statusCategoryIdx: index('blog_posts_status_category_idx').on(table.status, table.categoryId)
+  };
 });
 
 // Short Links table
@@ -2976,6 +3005,14 @@ export const referralCodes = pgTable('referral_codes', {
   expiresAt: timestamp('expires_at'),
   createdAt: timestamp('created_at').defaultNow().notNull(),
   updatedAt: timestamp('updated_at').defaultNow().notNull()
+}, (table) => {
+  return {
+    // Performance indexes for frequently queried fields
+    userIdIdx: index('referral_codes_user_id_idx').on(table.userId),
+    statusIdx: index('referral_codes_status_idx').on(table.status),
+    isDefaultIdx: index('referral_codes_is_default_idx').on(table.isDefault),
+    createdAtIdx: index('referral_codes_created_at_idx').on(table.createdAt)
+  };
 });
 
 // Referrals table - tracks referral relationships
@@ -3676,6 +3713,20 @@ export const tournaments = pgTable('tournaments', {
   createdBy: integer('created_by').references(() => users.id).notNull(),
   createdAt: timestamp('created_at').defaultNow().notNull(),
   updatedAt: timestamp('updated_at').defaultNow().notNull()
+}, (table) => {
+  return {
+    // Performance indexes for frequently queried fields
+    statusIdx: index('tournaments_status_idx').on(table.status),
+    typeIdx: index('tournaments_type_idx').on(table.type),
+    isPublicIdx: index('tournaments_is_public_idx').on(table.isPublic),
+    startDateIdx: index('tournaments_start_date_idx').on(table.startDate),
+    endDateIdx: index('tournaments_end_date_idx').on(table.endDate),
+    createdByIdx: index('tournaments_created_by_idx').on(table.createdBy),
+    createdAtIdx: index('tournaments_created_at_idx').on(table.createdAt),
+    // Composite indexes for common query patterns
+    statusPublicIdx: index('tournaments_status_public_idx').on(table.status, table.isPublic),
+    statusTypeIdx: index('tournaments_status_type_idx').on(table.status, table.type)
+  };
 });
 
 // Tournament Participants table
