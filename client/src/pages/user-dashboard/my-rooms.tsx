@@ -775,48 +775,35 @@ export default function MyRoomsPage() {
     </Form>
   );
 
-  return (
-    <div className="min-h-screen bg-background">
-      {/* Desktop Sidebar */}
-      {!isMobile && <Sidebar />}
-      
+  // Mobile-specific render function
+  const renderMobileLayout = () => (
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 dark:from-gray-900 dark:via-gray-800 dark:to-purple-900">
       {/* Mobile Header */}
-      {isMobile && (
-        <div className="sticky top-0 z-50 bg-card border-b border-border px-4 py-3">
-          <div className="flex items-center justify-between">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => navigate('/user-dashboard')}
-              className="flex items-center gap-2"
-              data-testid="button-back-to-dashboard"
-            >
-              <ArrowLeft className="h-4 w-4" />
-              Dashboard
-            </Button>
-            <h1 className="font-semibold text-lg">My Rooms</h1>
-            <div className="w-16" /> {/* Spacer for centering */}
-          </div>
-        </div>
-      )}
-      
-      {/* Main Content */}
-      <div className={`flex-1 p-4 md:p-6 ${!isMobile ? 'ml-64' : ''}`}>
-        <div className="max-w-6xl mx-auto space-y-6">
-      {/* Header */}
-      <div className={`flex justify-between items-center ${isMobile ? 'pt-0' : ''}`}>
-        <div>
-          <h1 className={`${isMobile ? 'text-xl' : 'text-3xl'} font-bold ${isMobile ? 'sr-only' : ''}`} data-testid="page-title">
+      <div className="bg-white dark:bg-gray-800 shadow-sm border-b px-4 py-3">
+        <div className="flex items-center justify-between mb-3">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => navigate('/user-dashboard')}
+            className="flex items-center gap-2 text-gray-600 dark:text-gray-300"
+            data-testid="button-back-to-dashboard"
+          >
+            <ArrowLeft className="w-4 h-4" />
+            Dashboard
+          </Button>
+          <h1 className="text-xl font-bold text-gray-800 dark:text-white" data-testid="page-title">
             My Rooms
           </h1>
-          <p className="text-muted-foreground">
-            Create and manage your rooms, customize settings, and monitor activity.
-          </p>
         </div>
+        
+        {/* Create Room Button */}
         <Dialog open={isCreateModalOpen} onOpenChange={setIsCreateModalOpen}>
           <DialogTrigger asChild>
-            <Button data-testid="button-create-room">
-              <Plus className="h-4 w-4 mr-2" />
+            <Button
+              className="w-full bg-gradient-to-r from-blue-500 to-purple-500 text-white font-medium py-3 rounded-xl flex items-center justify-center gap-2"
+              data-testid="button-create-room"
+            >
+              <Plus className="w-5 h-5" />
               Create Room
             </Button>
           </DialogTrigger>
@@ -843,159 +830,155 @@ export default function MyRoomsPage() {
         </Dialog>
       </div>
 
-      {/* Rooms Grid */}
-      {isLoading ? (
-        <div className="flex items-center justify-center py-8">
-          <div className="text-muted-foreground">Loading your rooms...</div>
-        </div>
-      ) : error ? (
-        <Card data-testid="card-error-state">
-          <CardContent className="flex flex-col items-center justify-center py-8">
-            <Lock className="h-16 w-16 text-muted-foreground mb-4" />
-            <h3 className="text-lg font-medium mb-2">Authentication Required</h3>
-            <p className="text-muted-foreground text-center mb-4">
+      {/* Mobile Content */}
+      <div className="p-4 space-y-4">
+        {isLoading ? (
+          <div className="space-y-4">
+            {Array.from({ length: 3 }).map((_, i) => (
+              <div key={i} className="bg-white dark:bg-gray-800 rounded-2xl p-4 shadow-md animate-pulse">
+                <div className="h-20 bg-gray-200 dark:bg-gray-700 rounded-xl mb-3"></div>
+                <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-3/4 mb-2"></div>
+                <div className="h-3 bg-gray-200 dark:bg-gray-700 rounded w-1/2"></div>
+              </div>
+            ))}
+          </div>
+        ) : error ? (
+          <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-md text-center">
+            <Lock className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+            <h3 className="text-lg font-semibold text-gray-800 dark:text-white mb-2">
+              Authentication Required
+            </h3>
+            <p className="text-gray-500 dark:text-gray-400 mb-4">
               Please log in to view and manage your rooms.
             </p>
-            <Button onClick={() => navigate('/auth')} data-testid="button-login">
-              <Users className="h-4 w-4 mr-2" />
+            <Button 
+              onClick={() => navigate('/auth')} 
+              className="bg-gradient-to-r from-blue-500 to-purple-500 text-white"
+              data-testid="button-login"
+            >
+              <Users className="w-4 h-4 mr-2" />
               Log In
             </Button>
-          </CardContent>
-        </Card>
-      ) : !rooms?.length ? (
-        <Card data-testid="card-empty-state">
-          <CardContent className="flex flex-col items-center justify-center py-8">
-            <Users className="h-16 w-16 text-muted-foreground mb-4" />
-            <h3 className="text-lg font-medium mb-2">No rooms created yet</h3>
-            <p className="text-muted-foreground text-center mb-4">
-              Create your first room to start building your community and connecting with others.
+          </div>
+        ) : !rooms?.length ? (
+          <div className="text-center py-12">
+            <div className="w-16 h-16 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full flex items-center justify-center mx-auto mb-4">
+              <Plus className="w-8 h-8 text-white" />
+            </div>
+            <h3 className="text-lg font-semibold text-gray-800 dark:text-white mb-2">
+              No rooms created yet
+            </h3>
+            <p className="text-gray-500 dark:text-gray-400 mb-4">
+              Create your first room to start gaming with friends
             </p>
-            <Button onClick={() => setIsCreateModalOpen(true)} data-testid="button-create-first-room">
-              <Plus className="h-4 w-4 mr-2" />
+            <Button
+              onClick={() => setIsCreateModalOpen(true)}
+              className="bg-gradient-to-r from-blue-500 to-purple-500 text-white"
+              data-testid="button-create-first-room"
+            >
+              <Plus className="w-4 h-4 mr-2" />
               Create Your First Room
             </Button>
-          </CardContent>
-        </Card>
-      ) : (
-        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-          {rooms.map((room) => (
-            <Card key={room.room.id} className="overflow-hidden group hover:shadow-lg transition-all duration-200" data-testid={`card-room-${room.room.id}`}>
-              {/* Room Header with visual elements */}
-              <div className="relative">
-                <div className={`h-20 bg-gradient-to-br ${getThemeGradient(room.room.backgroundTheme)} flex items-center justify-center`}>
-                  <div className="w-12 h-12 bg-white/20 rounded-lg flex items-center justify-center backdrop-blur-sm">
-                    <Crown className="w-6 h-6 text-white" />
-                  </div>
+          </div>
+        ) : (
+          rooms.map((room) => (
+            <div key={room.room.id} className="bg-white dark:bg-gray-800 rounded-2xl shadow-md overflow-hidden">
+              {/* Room Banner */}
+              <div className={`h-20 bg-gradient-to-r ${getThemeGradient(room.room.backgroundTheme)} relative`}>
+                <div className="absolute inset-0 bg-black bg-opacity-20"></div>
+                <div className="absolute top-3 right-3">
+                  <div className={`w-3 h-3 rounded-full ${
+                    room.room.status === 'active' ? 'bg-green-400' :
+                    room.room.status === 'inactive' ? 'bg-gray-400' : 'bg-yellow-400'
+                  }`}></div>
                 </div>
-                <Badge className={`absolute top-2 right-2 ${getStatusColor(room.room.status)}`}>
-                  {room.room.status}
-                </Badge>
+                <div className="absolute bottom-2 left-3">
+                  <Crown className="w-6 h-6 text-white" />
+                </div>
               </div>
-              
-              <CardHeader className="pb-3">
-                <div className="flex items-center justify-between">
-                  <CardTitle className="flex items-center gap-2 text-lg">
-                    {room.room.type === 'public' ? <Globe className="h-4 w-4 text-primary" /> : <Lock className="h-4 w-4 text-muted-foreground" />}
-                    {room.room.name}
-                  </CardTitle>
-                </div>
-                <div className="text-xs text-muted-foreground font-mono">
-                  ID: {room.room.roomId}
-                </div>
-                {room.room.description && (
-                  <p className="text-sm text-muted-foreground line-clamp-2">{room.room.description}</p>
-                )}
-              </CardHeader>
-              
-              <CardContent className="space-y-4">
-                {/* Room Stats */}
-                <div className="grid grid-cols-2 gap-4 text-sm">
-                  <div className="flex items-center gap-2">
-                    <Users className="h-4 w-4 text-primary" />
-                    <div>
-                      <div className="font-medium">{room.userCount}/{room.room.maxSeats}</div>
-                      <div className="text-xs text-muted-foreground">Users</div>
-                    </div>
+
+              {/* Room Content */}
+              <div className="p-4">
+                <div className="flex items-start justify-between mb-3">
+                  <div className="flex-1">
+                    <h3 className="font-semibold text-gray-800 dark:text-white text-lg">
+                      {room.room.name}
+                    </h3>
+                    <p className="text-sm text-gray-500 dark:text-gray-400 flex items-center mt-1">
+                      <Users className="w-3 h-3 mr-1" />
+                      {room.userCount}/{room.room.maxSeats} players
+                    </p>
                   </div>
-                  <div className="flex items-center gap-2">
-                    <Eye className="h-4 w-4 text-primary" />
-                    <div>
-                      <div className="font-medium">{room.room.totalVisits}</div>
-                      <div className="text-xs text-muted-foreground">Visits</div>
-                    </div>
+                  <div className="text-right">
+                    <span className="text-xs text-gray-400 bg-gray-100 dark:bg-gray-700 px-2 py-1 rounded-full">
+                      {room.room.roomId}
+                    </span>
                   </div>
                 </div>
 
-                {/* Features */}
-                <div className="flex gap-2">
+                {/* Room Description */}
+                {room.room.description && (
+                  <p className="text-sm text-gray-600 dark:text-gray-300 mb-3 line-clamp-2">
+                    {room.room.description}
+                  </p>
+                )}
+
+                {/* Room Features */}
+                <div className="flex items-center space-x-3 mb-4">
                   {room.room.voiceChatEnabled && (
-                    <Badge variant="secondary" className="text-xs">
+                    <div className="flex items-center text-xs text-green-600 dark:text-green-400">
                       <Mic className="w-3 h-3 mr-1" />
                       Voice
-                    </Badge>
+                    </div>
                   )}
                   {room.room.textChatEnabled && (
-                    <Badge variant="secondary" className="text-xs">
+                    <div className="flex items-center text-xs text-blue-600 dark:text-blue-400">
                       <MessageCircle className="w-3 h-3 mr-1" />
-                      Text
-                    </Badge>
+                      Chat
+                    </div>
                   )}
                   {room.room.giftsEnabled && (
-                    <Badge variant="secondary" className="text-xs">
+                    <div className="flex items-center text-xs text-purple-600 dark:text-purple-400">
                       <Gift className="w-3 h-3 mr-1" />
                       Gifts
-                    </Badge>
+                    </div>
                   )}
-                </div>
-
-                {/* Tags */}
-                {room.room.tags.length > 0 && (
-                  <div className="flex flex-wrap gap-1">
-                    {room.room.tags.slice(0, 2).map((tag) => (
-                      <Badge key={tag} variant="outline" className="text-xs">
-                        #{tag}
-                      </Badge>
-                    ))}
-                    {room.room.tags.length > 2 && (
-                      <Badge variant="outline" className="text-xs">
-                        +{room.room.tags.length - 2}
-                      </Badge>
-                    )}
+                  <div className="flex items-center text-xs text-gray-500">
+                    {room.room.type === 'private' ? <Lock className="w-3 h-3 mr-1" /> : <Globe className="w-3 h-3 mr-1" />}
+                    {room.room.type}
                   </div>
-                )}
-
-                {/* Activity */}
-                <div className="flex items-center gap-1 text-xs text-muted-foreground">
-                  <Clock className="w-3 h-3" />
-                  Active {formatDistanceToNow(new Date(room.room.lastActivity))} ago
                 </div>
 
-                {/* Action buttons */}
-                <div className="flex gap-2 pt-2">
-                  <Button
-                    className="flex-1"
-                    onClick={() => navigate(`/room/${room.room.roomId}`)}
-                    data-testid={`button-enter-${room.room.id}`}
-                  >
-                    <Play className="h-4 w-4 mr-2" />
-                    Enter Room
-                  </Button>
+                {/* Action Buttons */}
+                <div className="flex space-x-2">
                   <Button
                     variant="outline"
                     size="sm"
+                    className="flex-1 text-xs py-2"
+                    onClick={() => navigate(`/room/${room.room.roomId}`)}
+                    data-testid={`button-enter-${room.room.id}`}
+                  >
+                    <Play className="w-3 h-3 mr-1" />
+                    Enter
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="px-3 py-2"
                     onClick={() => handleEditRoom(room)}
                     data-testid={`button-edit-${room.room.id}`}
                   >
-                    <Settings className="h-4 w-4" />
+                    <Settings className="w-4 h-4" />
                   </Button>
                   <AlertDialog>
                     <AlertDialogTrigger asChild>
                       <Button
-                        variant="outline"
+                        variant="ghost"
                         size="sm"
+                        className="px-3 py-2 text-red-500 hover:text-red-600"
                         data-testid={`button-delete-${room.room.id}`}
                       >
-                        <Trash2 className="h-4 w-4 text-destructive" />
+                        <Trash2 className="w-4 h-4" />
                       </Button>
                     </AlertDialogTrigger>
                     <AlertDialogContent>
@@ -1003,31 +986,39 @@ export default function MyRoomsPage() {
                         <AlertDialogTitle>Delete Room</AlertDialogTitle>
                         <AlertDialogDescription>
                           Are you sure you want to delete "{room.room.name}"? This action cannot be undone.
-                          All room data and messages will be permanently removed.
                         </AlertDialogDescription>
                       </AlertDialogHeader>
                       <AlertDialogFooter>
                         <AlertDialogCancel>Cancel</AlertDialogCancel>
                         <AlertDialogAction
                           onClick={() => handleDeleteRoom(room.room.roomId)}
-                          className="bg-destructive hover:bg-destructive/90"
-                          data-testid={`button-confirm-delete-${room.room.id}`}
+                          className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
                         >
-                          Delete Room
+                          Delete
                         </AlertDialogAction>
                       </AlertDialogFooter>
                     </AlertDialogContent>
                   </AlertDialog>
                 </div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-      )}
+              </div>
+            </div>
+          ))
+        )}
+      </div>
 
-      {/* Edit Room Modal */}
+      {/* Edit Room Dialog */}
       <Dialog open={isEditModalOpen} onOpenChange={setIsEditModalOpen}>
-        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+        <DialogContent 
+          className="max-w-2xl max-h-[90vh] overflow-y-auto"
+          style={{ 
+            scrollBehavior: 'auto',
+            overscrollBehavior: 'contain',
+            overflowAnchor: 'none'
+          }}
+          onScroll={(e) => {
+            e.stopPropagation();
+          }}
+        >
           <DialogHeader>
             <DialogTitle>Edit Room</DialogTitle>
             <DialogDescription>
@@ -1037,8 +1028,255 @@ export default function MyRoomsPage() {
           <RoomForm onSubmit={handleUpdateRoom} isPending={updateRoomMutation.isPending} />
         </DialogContent>
       </Dialog>
+    </div>
+  );
+
+  // Desktop layout 
+  const renderDesktopLayout = () => (
+    <div className="min-h-screen bg-background">
+      <Sidebar />
+      
+      {/* Main Content */}
+      <div className="flex-1 p-6 ml-64">
+        <div className="max-w-6xl mx-auto space-y-6">
+          {/* Header */}
+          <div className="flex justify-between items-center">
+            <div>
+              <h1 className="text-3xl font-bold" data-testid="page-title">
+                My Rooms
+              </h1>
+              <p className="text-muted-foreground">
+                Create and manage your rooms, customize settings, and monitor activity.
+              </p>
+            </div>
+            <Dialog open={isCreateModalOpen} onOpenChange={setIsCreateModalOpen}>
+              <DialogTrigger asChild>
+                <Button data-testid="button-create-room">
+                  <Plus className="h-4 w-4 mr-2" />
+                  Create Room
+                </Button>
+              </DialogTrigger>
+              <DialogContent 
+                className="max-w-2xl max-h-[90vh] overflow-y-auto"
+                style={{ 
+                  scrollBehavior: 'auto',
+                  overscrollBehavior: 'contain',
+                  overflowAnchor: 'none'
+                }}
+                onScroll={(e) => {
+                  // Prevent unwanted scroll events from propagating
+                  e.stopPropagation();
+                }}
+              >
+                <DialogHeader>
+                  <DialogTitle>Create New Room</DialogTitle>
+                  <DialogDescription>
+                    Set up your room with custom settings and features.
+                  </DialogDescription>
+                </DialogHeader>
+                <RoomForm onSubmit={handleCreateRoom} isPending={createRoomMutation.isPending} />
+              </DialogContent>
+            </Dialog>
+          </div>
+
+          {/* Rooms Grid */}
+          {isLoading ? (
+            <div className="flex items-center justify-center py-8">
+              <div className="text-muted-foreground">Loading your rooms...</div>
+            </div>
+          ) : error ? (
+            <Card data-testid="card-error-state">
+              <CardContent className="flex flex-col items-center justify-center py-8">
+                <Lock className="h-16 w-16 text-muted-foreground mb-4" />
+                <h3 className="text-lg font-medium mb-2">Authentication Required</h3>
+                <p className="text-muted-foreground text-center mb-4">
+                  Please log in to view and manage your rooms.
+                </p>
+                <Button onClick={() => navigate('/auth')} data-testid="button-login">
+                  <Users className="h-4 w-4 mr-2" />
+                  Log In
+                </Button>
+              </CardContent>
+            </Card>
+          ) : !rooms?.length ? (
+            <Card data-testid="card-empty-state">
+              <CardContent className="flex flex-col items-center justify-center py-8">
+                <Users className="h-16 w-16 text-muted-foreground mb-4" />
+                <h3 className="text-lg font-medium mb-2">No rooms created yet</h3>
+                <p className="text-muted-foreground text-center mb-4">
+                  Create your first room to start building your community and connecting with others.
+                </p>
+                <Button onClick={() => setIsCreateModalOpen(true)} data-testid="button-create-first-room">
+                  <Plus className="h-4 w-4 mr-2" />
+                  Create Your First Room
+                </Button>
+              </CardContent>
+            </Card>
+          ) : (
+            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+              {rooms.map((room) => (
+                <Card key={room.room.id} className="overflow-hidden group hover:shadow-lg transition-all duration-200" data-testid={`card-room-${room.room.id}`}>
+                  {/* Room Header with visual elements */}
+                  <div className="relative">
+                    <div className={`h-20 bg-gradient-to-br ${getThemeGradient(room.room.backgroundTheme)} flex items-center justify-center`}>
+                      <div className="w-12 h-12 bg-white/20 rounded-lg flex items-center justify-center backdrop-blur-sm">
+                        <Crown className="w-6 h-6 text-white" />
+                      </div>
+                    </div>
+                    <Badge className={`absolute top-2 right-2 ${getStatusColor(room.room.status)}`}>
+                      {room.room.status}
+                    </Badge>
+                  </div>
+                  
+                  <CardHeader className="pb-3">
+                    <div className="flex items-center justify-between">
+                      <CardTitle className="flex items-center gap-2 text-lg">
+                        {room.room.type === 'public' ? <Globe className="h-4 w-4 text-primary" /> : <Lock className="h-4 w-4 text-muted-foreground" />}
+                        {room.room.name}
+                      </CardTitle>
+                    </div>
+                    <div className="text-xs text-muted-foreground font-mono">
+                      ID: {room.room.roomId}
+                    </div>
+                    {room.room.description && (
+                      <p className="text-sm text-muted-foreground line-clamp-2">{room.room.description}</p>
+                    )}
+                  </CardHeader>
+                  
+                  <CardContent className="space-y-4">
+                    {/* Room Stats */}
+                    <div className="grid grid-cols-2 gap-4 text-sm">
+                      <div className="flex items-center gap-2">
+                        <Users className="h-4 w-4 text-primary" />
+                        <div>
+                          <div className="font-medium">{room.userCount}/{room.room.maxSeats}</div>
+                          <div className="text-xs text-muted-foreground">Users</div>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Eye className="h-4 w-4 text-primary" />
+                        <div>
+                          <div className="font-medium">{room.room.totalVisits}</div>
+                          <div className="text-xs text-muted-foreground">Visits</div>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Features */}
+                    <div className="flex gap-2">
+                      {room.room.voiceChatEnabled && (
+                        <Badge variant="secondary" className="text-xs">
+                          <Mic className="w-3 h-3 mr-1" />
+                          Voice
+                        </Badge>
+                      )}
+                      {room.room.textChatEnabled && (
+                        <Badge variant="secondary" className="text-xs">
+                          <MessageCircle className="w-3 h-3 mr-1" />
+                          Text
+                        </Badge>
+                      )}
+                      {room.room.giftsEnabled && (
+                        <Badge variant="secondary" className="text-xs">
+                          <Gift className="w-3 h-3 mr-1" />
+                          Gifts
+                        </Badge>
+                      )}
+                    </div>
+
+                    {/* Tags */}
+                    {room.room.tags.length > 0 && (
+                      <div className="flex flex-wrap gap-1">
+                        {room.room.tags.slice(0, 2).map((tag) => (
+                          <Badge key={tag} variant="outline" className="text-xs">
+                            #{tag}
+                          </Badge>
+                        ))}
+                        {room.room.tags.length > 2 && (
+                          <Badge variant="outline" className="text-xs">
+                            +{room.room.tags.length - 2}
+                          </Badge>
+                        )}
+                      </div>
+                    )}
+
+                    {/* Activity */}
+                    <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                      <Clock className="w-3 h-3" />
+                      Active {formatDistanceToNow(new Date(room.room.lastActivity))} ago
+                    </div>
+
+                    {/* Action buttons */}
+                    <div className="flex gap-2 pt-2">
+                      <Button
+                        className="flex-1"
+                        onClick={() => navigate(`/room/${room.room.roomId}`)}
+                        data-testid={`button-enter-${room.room.id}`}
+                      >
+                        <Play className="h-4 w-4 mr-2" />
+                        Enter Room
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handleEditRoom(room)}
+                        data-testid={`button-edit-${room.room.id}`}
+                      >
+                        <Settings className="h-4 w-4" />
+                      </Button>
+                      <AlertDialog>
+                        <AlertDialogTrigger asChild>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            data-testid={`button-delete-${room.room.id}`}
+                          >
+                            <Trash2 className="h-4 w-4 text-destructive" />
+                          </Button>
+                        </AlertDialogTrigger>
+                        <AlertDialogContent>
+                          <AlertDialogHeader>
+                            <AlertDialogTitle>Delete Room</AlertDialogTitle>
+                            <AlertDialogDescription>
+                              Are you sure you want to delete "{room.room.name}"? This action cannot be undone.
+                              All room data and messages will be permanently removed.
+                            </AlertDialogDescription>
+                          </AlertDialogHeader>
+                          <AlertDialogFooter>
+                            <AlertDialogCancel>Cancel</AlertDialogCancel>
+                            <AlertDialogAction
+                              onClick={() => handleDeleteRoom(room.room.roomId)}
+                              className="bg-destructive hover:bg-destructive/90"
+                              data-testid={`button-confirm-delete-${room.room.id}`}
+                            >
+                              Delete Room
+                            </AlertDialogAction>
+                          </AlertDialogFooter>
+                        </AlertDialogContent>
+                      </AlertDialog>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          )}
+
+          {/* Edit Room Modal */}
+          <Dialog open={isEditModalOpen} onOpenChange={setIsEditModalOpen}>
+            <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+              <DialogHeader>
+                <DialogTitle>Edit Room</DialogTitle>
+                <DialogDescription>
+                  Update your room settings and features.
+                </DialogDescription>
+              </DialogHeader>
+              <RoomForm onSubmit={handleUpdateRoom} isPending={updateRoomMutation.isPending} />
+            </DialogContent>
+          </Dialog>
         </div>
       </div>
     </div>
   );
+
+  return isMobile ? renderMobileLayout() : renderDesktopLayout();
 }
