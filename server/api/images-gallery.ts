@@ -22,19 +22,35 @@ interface ImageInfo {
  */
 export function registerImagesGalleryRoutes(app: Express) {
   
-  // Get all uploaded images from the website
+  // Get uploaded images from the website with pagination
   app.get('/api/admin/images-gallery', isAuthenticated, isAdmin, async (req, res) => {
     try {
       const uploadsDir = path.join(process.cwd(), 'uploads');
-      const images: ImageInfo[] = [];
+      const allImages: ImageInfo[] = [];
+      
+      // Pagination parameters
+      const page = Math.max(1, parseInt(req.query.page as string) || 1);
+      const limit = Math.min(50, Math.max(1, parseInt(req.query.limit as string) || 20)); // Between 1-50 items per page
+      const category = req.query.category as string || '';
 
       // Check if uploads directory exists
       if (!fs.existsSync(uploadsDir)) {
-        return res.json({ images: [] });
+        return res.json({ 
+          images: [], 
+          totalImages: 0,
+          totalPages: 0,
+          currentPage: page,
+          categories: [],
+          hasNextPage: false,
+          hasPrevPage: false
+        });
       }
 
-      // Recursively scan all subdirectories in uploads
-      const scanDirectory = (dirPath: string, category: string = '') => {
+      // Scan all images and collect categories
+      const allCategories = new Set<string>();
+      const filteredImages: ImageInfo[] = [];
+      
+      const scanDirectory = (dirPath: string, currentCategory: string = '') => {
         try {
           const items = fs.readdirSync(dirPath);
           
@@ -44,7 +60,7 @@ export function registerImagesGalleryRoutes(app: Express) {
             
             if (stats.isDirectory()) {
               // Recursively scan subdirectories
-              const subCategory = category ? `${category}/${item}` : item;
+              const subCategory = currentCategory ? `${currentCategory}/${item}` : item;
               scanDirectory(itemPath, subCategory);
             } else if (stats.isFile()) {
               // Check if file is an image
@@ -53,17 +69,29 @@ export function registerImagesGalleryRoutes(app: Express) {
               
               if (imageExtensions.includes(ext)) {
                 const relativePath = path.relative(uploadsDir, itemPath);
-                const urlPath = relativePath.replace(/\\/g, '/'); // Convert backslashes to forward slashes for URLs
+                const urlPath = relativePath.replace(/\\/g, '/');
+                const imageCategory = currentCategory || 'root';
                 
-                images.push({
-                  id: `${category || 'root'}_${item}_${stats.mtime.getTime()}`,
+                // Always add to categories list for UI filter options
+                allCategories.add(imageCategory);
+                
+                const imageInfo: ImageInfo = {
+                  id: `${imageCategory}_${item}_${stats.mtime.getTime()}`,
                   filename: item,
                   path: relativePath,
                   url: `/uploads/${urlPath}`,
                   size: stats.size,
-                  category: category || 'root',
+                  category: imageCategory,
                   uploadedAt: stats.mtime,
-                });
+                };
+                
+                // Add all images first, then filter
+                allImages.push(imageInfo);
+                
+                // Apply category filter for final results
+                if (!category || imageCategory === category) {
+                  filteredImages.push(imageInfo);
+                }
               }
             }
           }
@@ -74,13 +102,25 @@ export function registerImagesGalleryRoutes(app: Express) {
 
       scanDirectory(uploadsDir);
 
-      // Sort images by upload date (newest first)
-      images.sort((a, b) => b.uploadedAt.getTime() - a.uploadedAt.getTime());
+      // Sort filtered images by upload date (newest first)
+      filteredImages.sort((a, b) => b.uploadedAt.getTime() - a.uploadedAt.getTime());
+
+      // Pagination calculations
+      const totalImages = filteredImages.length;
+      const totalPages = Math.ceil(totalImages / limit);
+      const offset = (page - 1) * limit;
+      const paginatedImages = filteredImages.slice(offset, offset + limit);
 
       res.json({ 
-        images,
-        totalImages: images.length,
-        categories: [...new Set(images.map(img => img.category))],
+        images: paginatedImages,
+        totalImages,
+        totalPages,
+        currentPage: page,
+        limit,
+        categories: Array.from(allCategories).sort(), // Always return all categories
+        hasNextPage: page < totalPages,
+        hasPrevPage: page > 1,
+        activeFilter: category || null
       });
 
     } catch (error) {
