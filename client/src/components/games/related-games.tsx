@@ -46,41 +46,44 @@ export function RelatedGames({
   };
   
   return (
-    <div className={`${isModal ? '' : 'mt-8'} relative`}>
-      <div className="flex justify-between items-center mb-4">
-        <h2 className={`${isModal ? 'text-xl' : 'heading-md'} font-bold`}>
+    <div className={`${isModal ? '' : 'mt-6 lg:mt-8'} relative`}>
+      {/* Mobile-Optimized Header */}
+      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-4 space-y-2 sm:space-y-0">
+        <h2 className={`${isModal ? 'text-lg sm:text-xl' : 'text-xl lg:text-2xl'} font-bold`}>
           {isModal ? 'You might also like' : 'Related Games'}
         </h2>
         {isModal && (
-          <div className="text-sm text-muted-foreground">
+          <div className="text-xs sm:text-sm text-muted-foreground">
             Based on your current game
           </div>
         )}
       </div>
       
       {!isModal && (
-        <div className="absolute -top-2 right-0 px-2 py-1 rounded-full bg-primary/10 text-primary text-xs font-medium">
+        <div className="absolute -top-2 right-0 px-2 py-1 rounded-full bg-primary/10 text-primary text-xs font-medium hidden sm:block">
           Similar to what you're playing
         </div>
       )}
       
-      <div className={`${isModal ? 'bg-card/50 p-4 rounded-lg border border-border/50' : ''}`}>
+      {/* Mobile-Optimized Container */}
+      <div className={`${isModal ? 'bg-gradient-to-br from-slate-50/50 to-slate-100/50 dark:from-slate-800/50 dark:to-slate-700/50 p-3 sm:p-4 rounded-xl border border-border/30 backdrop-blur-sm' : ''}`}>
         <GameGrid 
           games={displayedGames} 
           loading={isLoading}
           columns={isModal ? 2 : 4}
           cardSize={isModal ? "md" : "sm"}
           onGameClick={handleGameClick}
-          className={isModal ? 'gap-4' : ''}
+          className={isModal ? 'gap-3 sm:gap-4' : 'gap-4'}
         />
         
         {hasMoreGames && !isModal && (
-          <div className="mt-4 flex justify-center">
+          <div className="mt-6 flex justify-center">
             <button 
               onClick={handleShowMore} 
-              className="btn-outline"
+              className="flex items-center px-6 py-3 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white rounded-lg transition-all duration-300 font-medium text-sm shadow-lg hover:shadow-xl touch-manipulation"
             >
-              <i className="ri-add-line mr-1"></i> Show More Related Games
+              <i className="ri-add-line mr-2 text-lg"></i>
+              <span>Show More Related Games</span>
             </button>
           </div>
         )}

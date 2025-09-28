@@ -191,7 +191,7 @@ export default function GamePage() {
       <Header />
       
       <div className="container mx-auto px-4 py-8 flex-1">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 lg:gap-8">
           {/* Game Info Column */}
           <div className="lg:col-span-1">
             <div className="bg-card rounded-xl shadow-lg overflow-hidden mb-6">
@@ -339,18 +339,18 @@ export default function GamePage() {
             </div>
           </div>
           
-          {/* Game Frame Column */}
+          {/* Mobile-Optimized Game Frame Column */}
           <div className="lg:col-span-2">
             {/* Ad Above Game */}
-            <GameAdDisplay position="above_game" className="mb-6" />
+            <GameAdDisplay position="above_game" className="mb-3 lg:mb-6" />
             
-            <div className="bg-card rounded-xl shadow-lg overflow-hidden mb-6">
-              <div className="aspect-video w-full">
+            <div className="bg-card rounded-xl shadow-lg overflow-hidden mb-4 lg:mb-6">
+              <div className="aspect-video w-full relative">
                 {game.url ? (
                   <iframe 
                     src={game.url}
                     title={game.title}
-                    className="w-full h-full border-0"
+                    className="w-full h-full border-0 rounded-t-xl"
                     allowFullScreen
                     onError={(e) => {
                       // Handle iframe loading error
@@ -360,7 +360,7 @@ export default function GamePage() {
                         const parent = iframe.parentElement;
                         if (parent) {
                           const errorDiv = document.createElement('div');
-                          errorDiv.className = 'w-full h-full flex items-center justify-center bg-muted';
+                          errorDiv.className = 'w-full h-full flex items-center justify-center bg-muted rounded-t-xl';
                           errorDiv.innerHTML = '<p class="text-muted-foreground">Game content unavailable</p>';
                           parent.appendChild(errorDiv);
                         }
@@ -368,31 +368,69 @@ export default function GamePage() {
                     }}
                   ></iframe>
                 ) : (
-                  <div className="w-full h-full flex items-center justify-center bg-muted">
+                  <div className="w-full h-full flex items-center justify-center bg-muted rounded-t-xl">
                     <p className="text-muted-foreground">Game content unavailable</p>
                   </div>
                 )}
               </div>
               
-              <div className="p-4 flex justify-between items-center">
-                <div className="flex space-x-2">
-                  <button className="btn-outline">
-                    <i className="ri-fullscreen-line mr-1"></i> Fullscreen
-                  </button>
+              {/* Mobile-Optimized Game Controls */}
+              <div className="p-3 sm:p-4 bg-gradient-to-r from-slate-50 to-slate-100 dark:from-slate-800 dark:to-slate-700 border-t border-border/50">
+                {/* Mobile Layout - Stacked */}
+                <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center space-y-3 sm:space-y-0">
+                  {/* Primary Action Buttons - Mobile First */}
+                  <div className="flex flex-wrap gap-2 justify-center sm:justify-start">
+                    <button 
+                      className="flex items-center px-4 py-2.5 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white rounded-lg transition-all duration-300 font-medium text-sm shadow-lg hover:shadow-xl touch-manipulation min-h-[44px]"
+                      onClick={() => {
+                        const iframe = document.querySelector('iframe');
+                        if (iframe && iframe.requestFullscreen) {
+                          iframe.requestFullscreen();
+                        }
+                      }}
+                    >
+                      <i className="ri-fullscreen-line text-lg mr-2"></i>
+                      <span className="hidden sm:inline">Fullscreen</span>
+                      <span className="sm:hidden">Full</span>
+                    </button>
+                    
+                    <button 
+                      className="flex items-center px-4 py-2.5 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white rounded-lg transition-all duration-300 font-medium text-sm shadow-lg hover:shadow-xl touch-manipulation min-h-[44px]"
+                      onClick={() => setShowPostGameModal(true)}
+                    >
+                      <i className="ri-restart-line text-lg mr-2"></i>
+                      <span className="hidden sm:inline">Restart</span>
+                      <span className="sm:hidden">Reset</span>
+                    </button>
+                  </div>
                   
-                  <SocialShare
-                    title={game.title}
-                    description={`Play ${game.title} - ${game.description}`}
-                    url={window.location.href}
-                    image={game.thumbnail}
-                  />
+                  {/* Social Share - Enhanced Mobile */}
+                  <div className="flex justify-center sm:justify-end">
+                    <SocialShare
+                      title={game.title}
+                      description={`Play ${game.title} - ${game.description}`}
+                      url={window.location.href}
+                      image={game.thumbnail}
+                    />
+                  </div>
                 </div>
-                <button 
-                  className="btn-primary"
-                  onClick={() => setShowPostGameModal(true)}
-                >
-                  <i className="ri-restart-line mr-1"></i> Restart Game
-                </button>
+                
+                {/* Game Stats Row - Mobile Friendly */}
+                <div className="mt-3 pt-3 border-t border-border/30 flex items-center justify-between text-sm">
+                  <div className="flex items-center space-x-4">
+                    <div className="flex items-center text-muted-foreground">
+                      <i className="ri-eye-line mr-1"></i>
+                      <span className="font-medium">{game.plays.toLocaleString()}</span>
+                    </div>
+                    <div className="flex items-center text-muted-foreground">
+                      <i className="ri-star-line mr-1"></i>
+                      <span className="font-medium">{calculateAverageRating().toFixed(1)}</span>
+                    </div>
+                  </div>
+                  <div className="text-xs text-muted-foreground px-2 py-1 bg-white/50 dark:bg-black/20 rounded-full">
+                    {game.category}
+                  </div>
+                </div>
               </div>
             </div>
             
