@@ -104,7 +104,12 @@ function RoomCard({ room }: { room: NewRoom }) {
             <div className="flex items-center gap-2">
               <CardTitle className="text-lg font-bold">{room.room.name}</CardTitle>
               {room.room.isVerified && (
-                <CheckCircle className="w-5 h-5 text-blue-400" data-testid="room-verification-badge" />
+                <div className="relative inline-flex items-center justify-center">
+                  <div className="absolute inset-0 bg-blue-500 rounded-full opacity-20 blur-sm"></div>
+                  <div className="relative bg-blue-500 rounded-full p-1">
+                    <CheckCircle className="w-4 h-4 text-white fill-current" data-testid="room-verification-badge" />
+                  </div>
+                </div>
               )}
             </div>
             <div className="flex items-center gap-1 mt-1">
@@ -112,7 +117,12 @@ function RoomCard({ room }: { room: NewRoom }) {
                 by {room.owner.displayName || room.owner.username}
               </p>
               {room.owner.isVerified && (
-                <CheckCircle className="w-3 h-3 text-blue-400" data-testid="owner-verification-badge" />
+                <div className="relative inline-flex items-center justify-center">
+                  <div className="absolute inset-0 bg-blue-500 rounded-full opacity-15 blur-sm"></div>
+                  <div className="relative bg-blue-500 rounded-full p-0.5">
+                    <CheckCircle className="w-3 h-3 text-white fill-current" data-testid="owner-verification-badge" />
+                  </div>
+                </div>
               )}
             </div>
           </div>

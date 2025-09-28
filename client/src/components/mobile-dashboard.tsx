@@ -27,13 +27,15 @@ import {
   Home,
   Grid3X3,
   Settings,
-  Diamond
+  Diamond,
+  ShoppingCart
 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { MobileBottomNav } from "@/components/ui/mobile-bottom-nav";
 import { cn } from "@/lib/utils";
 import { toggleDarkMode, isDarkMode, themes, setTheme, getCurrentTheme } from "@/lib/themes";
 import { useState, useEffect } from "react";
+import { useShoppingCart } from "@/context/shopping-cart-context";
 
 interface FeatureCard {
   id: string;
@@ -150,6 +152,7 @@ export function MobileDashboard() {
   const [showThemeSelector, setShowThemeSelector] = useState(false);
   const [, navigate] = useLocation();
   const isMobile = useMobile();
+  const { getTotalItems, addItem } = useShoppingCart();
   
   // Single aggregated API call for all dashboard data
   const { data: dashboardData, isLoading: dashboardLoading, error: dashboardError } = useQuery({
@@ -229,26 +232,26 @@ export function MobileDashboard() {
 
 
   return (
-    <div className="min-h-screen pb-20" style={{
+    <div className="min-h-screen pb-20 w-full overflow-x-hidden" style={{
       background: darkMode 
         ? 'linear-gradient(to bottom right, hsl(var(--background)), hsl(var(--muted)))'
         : `linear-gradient(to bottom right, hsl(var(--primary) / 0.1), hsl(var(--accent) / 0.1))`
     }}>
       {/* Header Section with User Profile */}
-      <div className="relative bg-gradient-to-r from-primary to-accent text-white p-6 rounded-b-3xl shadow-lg" style={{
+      <div className="relative bg-gradient-to-r from-primary to-accent text-white p-4 sm:p-6 rounded-b-3xl shadow-lg" style={{
         background: `linear-gradient(to right, hsl(var(--primary)), hsl(var(--accent)))`
       }}>
-        {/* Centered Profile Layout - Compact */}
-        <div className="flex flex-col items-center text-center mb-4">
+        {/* Centered Profile Layout - Compact & Responsive */}
+        <div className="flex flex-col items-center text-center mb-3 sm:mb-4">
           {/* Profile Avatar - Smaller */}
           <button 
             onClick={() => navigate(isMobile ? '/mobile-settings' : '/profile')}
             className="transition-transform hover:scale-105 active:scale-95 mb-2"
             data-testid="button-profile-avatar"
           >
-            <Avatar className="w-16 h-16 border-2 border-white/30">
+            <Avatar className="w-14 h-14 sm:w-16 sm:h-16 border-2 border-white/30">
               <AvatarImage src={user?.profilePicture || undefined} alt={user?.username || 'Player'} />
-              <AvatarFallback className="bg-white/20 text-white text-xl font-bold">
+              <AvatarFallback className="bg-white/20 text-white text-lg sm:text-xl font-bold">
                 {(user?.displayName || user?.username || 'Player').charAt(0).toUpperCase()}
               </AvatarFallback>
             </Avatar>
@@ -256,16 +259,21 @@ export function MobileDashboard() {
           
           {/* User Name with Verification Badge */}
           <div className="flex items-center justify-center gap-2 mb-2">
-            <h2 className="text-xl font-bold">
+            <h2 className="text-lg sm:text-xl font-bold">
               {user?.displayName || user?.username || 'Player'}
             </h2>
             {user?.isVerified && (
-              <CheckCircle className="w-5 h-5 text-blue-400" data-testid="user-verification-badge" />
+              <div className="relative inline-flex items-center justify-center">
+                <div className="absolute inset-0 bg-blue-500 rounded-full opacity-20 blur-sm"></div>
+                <div className="relative bg-blue-500 rounded-full p-1">
+                  <CheckCircle className="w-4 h-4 text-white fill-current" data-testid="user-verification-badge" />
+                </div>
+              </div>
             )}
           </div>
           
           {/* ID & Rooms Level */}
-          <div className="flex items-center justify-center gap-3 mb-2">
+          <div className="flex items-center justify-center gap-2 sm:gap-3 mb-2">
             <div className="flex items-center space-x-1">
               <Star className="w-4 h-4 text-yellow-300" />
               <span className="text-sm font-medium" data-testid="text-id-level">ID {dashboardData?.user?.idLevel || 1}</span>
@@ -278,7 +286,7 @@ export function MobileDashboard() {
           </div>
           
           {/* Diamonds and Coins Display */}
-          <div className="flex items-center justify-center gap-4">
+          <div className="flex items-center justify-center gap-3 sm:gap-4">
             <div className="flex items-center space-x-1">
               <Diamond className="w-4 h-4 text-blue-300" />
               <span className="text-sm font-medium" data-testid="text-diamonds">{dashboardData?.userWallet?.diamonds?.toLocaleString() || 0}</span>
@@ -290,23 +298,53 @@ export function MobileDashboard() {
           </div>
         </div>
         
-        {/* Theme Controls - Moved to top right corner */}
-        <div className="absolute top-4 right-4">
-          <div className="flex items-center space-x-2">
+        {/* Shopping Cart and Theme Controls - Top right corner */}
+        <div className="absolute top-3 right-3 sm:top-4 sm:right-4">
+          <div className="flex items-center space-x-1 sm:space-x-2">
+            {/* Shopping Cart Icon */}
+            <button
+              onClick={() => {
+                // Add a demo item to cart if empty, then navigate to checkout
+                if (getTotalItems() === 0) {
+                  const sampleItem = {
+                    id: 'demo-diamonds-100',
+                    type: 'diamonds' as const,
+                    name: '100 Diamonds Pack',
+                    description: 'Premium gaming currency for exclusive features',
+                    price: 999, // $9.99 in cents
+                    currency: 'USD'
+                  };
+                  addItem(sampleItem);
+                }
+                navigate('/checkout');
+              }}
+              className="p-1.5 sm:p-2 bg-white/20 rounded-full hover:bg-white/30 transition-colors relative"
+              data-testid="button-shopping-cart"
+            >
+              <div className="relative">
+                <ShoppingCart className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-white" />
+                {/* Cart badge - you can add state for cart items count */}
+                {getTotalItems() > 0 && (
+                  <div className="absolute -top-0.5 -right-0.5 sm:-top-1 sm:-right-1 bg-red-500 text-white rounded-full w-3 h-3 sm:w-4 sm:h-4 flex items-center justify-center text-xs font-bold">
+                    {getTotalItems() > 9 ? '9+' : getTotalItems()}
+                  </div>
+                )}
+              </div>
+            </button>
             <button
               onClick={handleThemeToggle}
-              className="p-2 bg-white/20 rounded-full hover:bg-white/30 transition-colors"
+              className="p-1.5 sm:p-2 bg-white/20 rounded-full hover:bg-white/30 transition-colors"
               data-testid="button-dark-mode-toggle"
             >
-              {darkMode ? <Sun className="w-4 h-4 text-white" /> : <Moon className="w-4 h-4 text-white" />}
+              {darkMode ? <Sun className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-white" /> : <Moon className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-white" />}
             </button>
             <div className="relative">
               <button
                 onClick={() => setShowThemeSelector(!showThemeSelector)}
-                className="p-2 bg-white/20 rounded-full hover:bg-white/30 transition-colors"
+                className="p-1.5 sm:p-2 bg-white/20 rounded-full hover:bg-white/30 transition-colors"
                 data-testid="button-theme-selector"
               >
-                <Sparkles className="w-4 h-4 text-white" />
+                <Sparkles className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-white" />
               </button>
               
               {showThemeSelector && (
@@ -392,7 +430,7 @@ export function MobileDashboard() {
       </div>
 
       {/* Feature Cards Section - Mobile Optimized */}
-      <div className="p-4 space-y-4">
+      <div className="p-3 sm:p-4 space-y-3 sm:space-y-4">
         {featureCards.map((card, index) => {
           const Icon = card.icon;
           return (
@@ -416,14 +454,14 @@ export function MobileDashboard() {
                 }}
                 data-testid={`feature-card-${card.id}`}
               >
-                <div className="p-3 flex items-center justify-between">
-                  <div className="flex items-center space-x-3">
-                    <div className="p-2 bg-white/20 rounded-lg">
-                      <Icon className={cn("w-5 h-5", card.iconColor)} />
+                <div className="p-3 sm:p-4 flex items-center justify-between">
+                  <div className="flex items-center space-x-2 sm:space-x-3">
+                    <div className="p-1.5 sm:p-2 bg-white/20 rounded-lg">
+                      <Icon className={cn("w-4 h-4 sm:w-5 sm:h-5", card.iconColor)} />
                     </div>
                     <div>
-                      <h3 className="text-base font-bold text-white">{card.title}</h3>
-                      <p className="text-white/90 text-xs">{card.subtitle}</p>
+                      <h3 className="text-sm sm:text-base font-bold text-white">{card.title}</h3>
+                      <p className="text-white/90 text-xs sm:text-sm">{card.subtitle}</p>
                     </div>
                   </div>
                   <div className="flex items-center">

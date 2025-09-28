@@ -9,8 +9,11 @@ import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
+import { useShoppingCart } from "@/context/shopping-cart-context";
+import { PurchaseHistory } from "@/components/purchase-history";
 import { 
   ShoppingCart, 
   CreditCard, 
@@ -20,7 +23,11 @@ import {
   DollarSign,
   Globe,
   Smartphone,
-  Lock
+  Lock,
+  Minus,
+  Plus,
+  Trash2,
+  History
 } from "lucide-react";
 import type { PricingPlan, PaymentGateway } from "@shared/schema";
 
@@ -29,8 +36,17 @@ export default function CheckoutPage() {
   const [selectedGateway, setSelectedGateway] = useState<PaymentGateway | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
   const [paymentDialogOpen, setPaymentDialogOpen] = useState(false);
+  const [activeTab, setActiveTab] = useState("cart");
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const { 
+    items: cartItems, 
+    removeItem, 
+    updateQuantity, 
+    clearCart, 
+    getTotalItems, 
+    getTotalPrice 
+  } = useShoppingCart();
 
   // Get plan ID and type from URL params
   const urlParams = new URLSearchParams(window.location.search);
@@ -50,10 +66,11 @@ export default function CheckoutPage() {
 
   const createTransactionMutation = useMutation({
     mutationFn: async (data: {
-      planId: number;
+      planId?: number;
       gatewayId: number;
       amount: number;
       currency: string;
+      items?: any[];
     }) => {
       return apiRequest("POST", "/api/payment-transactions", data);
     },
@@ -62,6 +79,11 @@ export default function CheckoutPage() {
         title: "Transaction Initiated",
         description: `Transaction ${transaction.transactionId} has been created successfully.`,
       });
+      
+      // Clear cart after successful checkout
+      if (cartItems.length > 0) {
+        clearCart();
+      }
       
       // If this is a verification checkout, also create the verification request
       if (checkoutType === 'verification') {
@@ -312,12 +334,89 @@ export default function CheckoutPage() {
             </Button>
             <h1 className="text-3xl font-bold flex items-center gap-2">
               <ShoppingCart className="h-8 w-8" />
-              Checkout
+              Checkout & Purchase History
             </h1>
             <p className="text-muted-foreground mt-2">Complete your purchase securely</p>
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+            <TabsList className="grid w-full grid-cols-2 mb-6">
+              <TabsTrigger value="cart" className="flex items-center gap-2">
+                <ShoppingCart className="h-4 w-4" />
+                Current Checkout {plan ? '(1 item)' : `(${getTotalItems()} items)`}
+              </TabsTrigger>
+              <TabsTrigger value="history" className="flex items-center gap-2">
+                <History className="h-4 w-4" />
+                Purchase History
+              </TabsTrigger>
+            </TabsList>
+
+            <TabsContent value="cart" className="mt-6">
+              {/* Shopping Cart Summary */}
+              {cartItems.length > 0 && (
+                <Card className="mb-6">
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <ShoppingCart className="h-5 w-5" />
+                      Shopping Cart ({cartItems.length} items)
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-4">
+                      {cartItems.map((item) => (
+                        <div key={item.id} className="flex items-center justify-between p-3 border rounded-lg">
+                          <div className="flex-1">
+                            <h4 className="font-medium">{item.name}</h4>
+                            <p className="text-sm text-gray-600 dark:text-gray-400">{item.description}</p>
+                            <p className="text-sm font-medium">${(item.price / 100).toFixed(2)} {item.currency}</p>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => updateQuantity(item.id, item.quantity - 1)}
+                              disabled={item.quantity <= 1}
+                            >
+                              <Minus className="h-4 w-4" />
+                            </Button>
+                            <span className="w-8 text-center">{item.quantity}</span>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => updateQuantity(item.id, item.quantity + 1)}
+                            >
+                              <Plus className="h-4 w-4" />
+                            </Button>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => removeItem(item.id)}
+                              className="ml-2 text-red-600 hover:text-red-700"
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          </div>
+                        </div>
+                      ))}
+                      
+                      <Separator />
+                      
+                      <div className="flex justify-between items-center">
+                        <span className="text-lg font-semibold">Total: ${(getTotalPrice() / 100).toFixed(2)} USD</span>
+                        <Button 
+                          variant="outline" 
+                          onClick={clearCart}
+                          className="text-red-600 hover:text-red-700"
+                        >
+                          Clear Cart
+                        </Button>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
+
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             {/* Order Summary */}
             <div className="lg:col-span-1">
               <Card>
@@ -484,6 +583,12 @@ export default function CheckoutPage() {
               </Card>
             </div>
           </div>
+            </TabsContent>
+
+            <TabsContent value="history" className="mt-6">
+              <PurchaseHistory />
+            </TabsContent>
+          </Tabs>
         </div>
       </div>
 

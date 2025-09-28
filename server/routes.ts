@@ -52,6 +52,7 @@ import { roomsRouter } from "./api/rooms";
 import roomModerationRouter from "./api/room-moderation";
 import friendsRouter from "./api/friends";
 import userProfileRouter from "./api/user-profile";
+import { getUserPurchases } from './api/user-purchases';
 import messageRoutes from "./api/messages";
 import verificationRouter from "./api/verification";
 import verificationExpiryRouter from "./api/verification-expiry";
@@ -772,6 +773,9 @@ Sitemap: ${req.protocol}://${req.get('host')}/sitemap.xml`);
   });
   app.use('/api/friends', friendsRouter);
   app.use('/api/user', userProfileRouter);
+  
+  // User purchases API
+  app.get('/api/user/purchases', isAuthenticated, getUserPurchases);
   app.use('/api/messages', isAuthenticated, messageRoutes);
   app.use('/api/verification', isAdmin, verificationRouter);
   app.use('/api/verification-expiry', isAdmin, verificationExpiryRouter);
