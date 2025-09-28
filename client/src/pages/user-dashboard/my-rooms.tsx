@@ -34,12 +34,13 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { Plus, Settings, Users, Lock, Globe, Edit, Trash2, Eye, Crown, Play, Clock, MapPin, MessageCircle, Mic, Gift, Upload, ImageIcon, X } from "lucide-react";
+import { Plus, Settings, Users, Lock, Globe, Edit, Trash2, Eye, Crown, Play, Clock, MapPin, MessageCircle, Mic, Gift, Upload, ImageIcon, X, Menu, ArrowLeft } from "lucide-react";
 import { Sidebar } from "@/components/layout/sidebar";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useLocation } from "wouter";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
+import { useMobile } from "@/hooks/use-mobile";
 import { formatDistanceToNow } from "date-fns";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
@@ -111,6 +112,7 @@ export default function MyRoomsPage() {
   const [location, navigate] = useLocation();
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const isMobile = useMobile();
 
   const form = useForm<RoomFormData>({
     resolver: zodResolver(roomFormSchema),
@@ -774,16 +776,39 @@ export default function MyRoomsPage() {
   );
 
   return (
-    <div className="min-h-screen bg-background flex">
-      <Sidebar />
+    <div className="min-h-screen bg-background">
+      {/* Desktop Sidebar */}
+      {!isMobile && <Sidebar />}
+      
+      {/* Mobile Header */}
+      {isMobile && (
+        <div className="sticky top-0 z-50 bg-card border-b border-border px-4 py-3">
+          <div className="flex items-center justify-between">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => navigate('/user-dashboard')}
+              className="flex items-center gap-2"
+              data-testid="button-back-to-dashboard"
+            >
+              <ArrowLeft className="h-4 w-4" />
+              Dashboard
+            </Button>
+            <h1 className="font-semibold text-lg">My Rooms</h1>
+            <div className="w-16" /> {/* Spacer for centering */}
+          </div>
+        </div>
+      )}
       
       {/* Main Content */}
-      <div className="flex-1 ml-64 p-6">
+      <div className={`flex-1 p-4 md:p-6 ${!isMobile ? 'ml-64' : ''}`}>
         <div className="max-w-6xl mx-auto space-y-6">
       {/* Header */}
-      <div className="flex justify-between items-center">
+      <div className={`flex justify-between items-center ${isMobile ? 'pt-0' : ''}`}>
         <div>
-          <h1 className="text-3xl font-bold" data-testid="page-title">My Rooms</h1>
+          <h1 className={`${isMobile ? 'text-xl' : 'text-3xl'} font-bold ${isMobile ? 'sr-only' : ''}`} data-testid="page-title">
+            My Rooms
+          </h1>
           <p className="text-muted-foreground">
             Create and manage your rooms, customize settings, and monitor activity.
           </p>
