@@ -38,23 +38,38 @@ export function httpCache(options: CacheOptions = {}) {
       return next();
     }
 
-    // Build cache control header
-    const cacheControl = [];
-    if (isPublic) {
-      cacheControl.push('public');
-    } else {
-      cacheControl.push('private');
-    }
-    cacheControl.push(`max-age=${maxAge}`);
-    if (staleWhileRevalidate > 0) {
-      cacheControl.push(`stale-while-revalidate=${staleWhileRevalidate}`);
-    }
-    if (mustRevalidate) {
-      cacheControl.push('must-revalidate');
-    }
+    // Store original end method to check status code
+    const originalEnd = res.end.bind(res);
+    
+    res.end = function(chunk?: any, encoding?: any) {
+      // Only set cache headers for successful responses
+      if (res.statusCode >= 200 && res.statusCode < 300) {
+        // Build cache control header
+        const cacheControl = [];
+        if (isPublic) {
+          cacheControl.push('public');
+        } else {
+          cacheControl.push('private');
+        }
+        cacheControl.push(`max-age=${maxAge}`);
+        if (staleWhileRevalidate > 0) {
+          cacheControl.push(`stale-while-revalidate=${staleWhileRevalidate}`);
+        }
+        if (mustRevalidate) {
+          cacheControl.push('must-revalidate');
+        }
 
-    res.set('Cache-Control', cacheControl.join(', '));
-    res.set('Vary', 'Accept-Encoding');
+        res.set('Cache-Control', cacheControl.join(', '));
+        res.set('Vary', 'Accept-Encoding');
+      } else {
+        // Prevent caching of error responses
+        res.set('Cache-Control', 'no-cache, no-store, must-revalidate');
+        res.set('Pragma', 'no-cache');
+        res.set('Expires', '0');
+      }
+      
+      return originalEnd(chunk, encoding);
+    };
     
     next();
   };
@@ -84,14 +99,21 @@ export function memoryCache(maxAge: number = 300) {
 
     // Override json method to cache the response
     res.json = function(data: any) {
-      // Cache the response
-      responseCache.set(cacheKey, {
-        data,
-        timestamp: now,
-        maxAge
-      });
+      // Only cache successful responses (2xx status codes)
+      if (res.statusCode >= 200 && res.statusCode < 300) {
+        responseCache.set(cacheKey, {
+          data,
+          timestamp: now,
+          maxAge
+        });
+        res.set('X-Cache', 'MISS');
+      } else {
+        // Clear any existing cache entry for this key on error
+        responseCache.delete(cacheKey);
+        res.set('X-Cache', 'ERROR');
+        res.set('Cache-Control', 'no-cache, no-store, must-revalidate');
+      }
 
-      res.set('X-Cache', 'MISS');
       return originalJson(data);
     };
 
@@ -172,6 +194,29 @@ export function clearCache(pattern?: string) {
     // Clear all cache
     responseCache.clear();
   }
+}
+
+// Content-specific cache invalidation helpers
+export function invalidateBlogCache() {
+  clearCache('/api/blog');
+  console.log('Blog cache invalidated');
+}
+
+export function invalidateGamesCache() {
+  clearCache('/api/games');
+  console.log('Games cache invalidated');
+}
+
+export function invalidateDashboardCache() {
+  clearCache('/api/dashboard');
+  console.log('Dashboard cache invalidated');
+}
+
+export function invalidateUserCache(userId?: number) {
+  if (userId) {
+    clearCache(`/api/dashboard`); // User-specific dashboard data
+  }
+  console.log(`User cache invalidated for user ${userId || 'all'}`);
 }
 
 export function getCacheStats() {
