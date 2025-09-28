@@ -1,5 +1,8 @@
 import { Router } from 'express';
 import { isAuthenticated } from '../middleware/auth.js';
+import { db } from '../db/index.js';
+import { referrals, referralRewards, users, tournaments } from '../db/schema.js';
+import { eq, sum, count, sql, and, desc } from 'drizzle-orm';
 
 const requireAuth = isAuthenticated;
 import { storage } from '../storage.js';
@@ -12,24 +15,51 @@ router.get('/mobile', requireAuth, async (req, res) => {
     const userId = req.user!.id;
     
     // Fetch all dashboard data in parallel
-    const [user] = await Promise.all([
-      storage.getUserById(userId)
+    const [user, referralStats, pendingPayout, activeTournamentsCount] = await Promise.all([
+      storage.getUserById(userId),
+      // Get referral statistics
+      db
+        .select({
+          totalReferrals: count(),
+          totalEarnings: sum(referrals.totalEarnings),
+          tier1Count: count(sql`CASE WHEN ${referrals.tier} = 'tier_1' THEN 1 END`),
+          tier2Count: count(sql`CASE WHEN ${referrals.tier} = 'tier_2' THEN 1 END`),
+          tier3Count: count(sql`CASE WHEN ${referrals.tier} = 'tier_3' THEN 1 END`)
+        })
+        .from(referrals)
+        .where(eq(referrals.referrerId, userId)),
+      // Get pending payout amount
+      db
+        .select({ total: sum(referralRewards.amount) })
+        .from(referralRewards)
+        .where(and(
+          eq(referralRewards.referrerId, userId),
+          eq(referralRewards.status, 'approved')
+        )),
+      // Get count of active tournaments
+      db
+        .select({ count: count() })
+        .from(tournaments)
+        .where(and(
+          eq(tournaments.status, 'active'),
+          eq(tournaments.isPublic, true)
+        ))
     ]);
     
-    // Note: Need to implement getUserStats and getUserReferrals for individual users
     const userStats = {
       gamesPlayed: user?.gamesPlayed || 0,
-      roomsCreated: user?.roomsCreated || 0,
+      totalRooms: user?.roomsCreated || 0,
       roomsJoined: user?.roomsJoined || 0,
       messagesSent: user?.messagesSent || 0,
-      friendsCount: user?.friendsCount || 0,
-      dailyLoginStreak: user?.dailyLoginStreak || 0
+      totalFriends: user?.friendsCount || 0,
+      dailyLoginStreak: user?.dailyLoginStreak || 0,
+      activeTournaments: activeTournamentsCount[0]?.count || 0
     };
     
     const referralData = {
-      totalEarnings: 0, // Placeholder - need to implement referral system
-      referralCount: 0,
-      pendingEarnings: 0
+      totalEarnings: referralStats[0]?.totalEarnings || 0,
+      totalReferrals: referralStats[0]?.totalReferrals || 0,
+      pendingEarnings: pendingPayout[0]?.total || 0
     };
 
     // Aggregate response
@@ -45,15 +75,16 @@ router.get('/mobile', requireAuth, async (req, res) => {
       },
       stats: userStats || {
         gamesPlayed: 0,
-        roomsCreated: 0,
+        totalRooms: 0,
         roomsJoined: 0,
         messagesSent: 0,
-        friendsCount: 0,
-        dailyLoginStreak: 0
+        totalFriends: 0,
+        dailyLoginStreak: 0,
+        activeTournaments: 0
       },
       referrals: {
         totalEarnings: referralData?.totalEarnings || 0,
-        referralCount: referralData?.referralCount || 0,
+        totalReferrals: referralData?.totalReferrals || 0,
         pendingEarnings: referralData?.pendingEarnings || 0
       },
       computed: {
