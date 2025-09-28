@@ -58,82 +58,108 @@ export function Header() {
   };
 
   return (
-    <header className="sticky top-0 z-50 bg-card shadow-md transition-colors duration-300">
-      <div className="container mx-auto px-4">
-        <div className="flex items-center justify-between py-3">
-          {/* Logo */}
-          <div className="flex items-center space-x-2">
-            <Link href="/" className="flex items-center">
+    <header className="sticky top-0 z-50 bg-gradient-to-r from-slate-900/95 via-slate-800/95 to-slate-900/95 backdrop-blur-xl border-b border-slate-700/50 shadow-lg shadow-black/10 transition-all duration-300">
+      {/* Decorative top line */}
+      <div className="h-0.5 bg-gradient-to-r from-transparent via-primary to-transparent"></div>
+      
+      <div className="container mx-auto px-4 lg:px-6">
+        <div className="flex items-center justify-between py-4">
+          {/* Enhanced Logo */}
+          <div className="flex items-center space-x-3">
+            <Link href="/" className="flex items-center group">
               {settings?.siteLogo && !settings?.useTextLogo ? (
-                <img 
-                  src={settings.siteLogo} 
-                  alt={settings.siteTitle || 'Game Zone'} 
-                  className="h-10 w-auto" 
-                />
+                <div className="relative">
+                  <div className="absolute inset-0 bg-primary/20 rounded-full blur-md group-hover:blur-lg transition-all duration-300"></div>
+                  <img 
+                    src={settings.siteLogo} 
+                    alt={settings.siteTitle || 'Gaming Portal'} 
+                    className="relative h-12 w-auto transition-transform duration-300 group-hover:scale-105" 
+                  />
+                </div>
               ) : (
-                <>
-                  <i className="ri-gamepad-line text-primary text-3xl"></i>
-                  <span 
-                    className="text-2xl font-bold font-poppins ml-2 text-foreground"
-                    style={settings?.textLogoColor ? { color: settings.textLogoColor } : {}}
-                  >
-                    {settings?.siteTitle ? settings.siteTitle : 'Game'}
-                  </span>
-                </>
+                <div className="flex items-center space-x-3">
+                  <div className="relative">
+                    <div className="absolute inset-0 bg-gradient-to-r from-blue-600 to-purple-600 rounded-lg blur opacity-75 group-hover:opacity-100 transition-opacity duration-300"></div>
+                    <div className="relative bg-gradient-to-r from-blue-600 to-purple-600 p-2.5 rounded-lg">
+                      <i className="ri-gamepad-line text-white text-2xl"></i>
+                    </div>
+                  </div>
+                  <div className="flex flex-col">
+                    <span 
+                      className="text-2xl font-bold bg-gradient-to-r from-white to-slate-300 bg-clip-text text-transparent font-inter tracking-tight"
+                      style={settings?.textLogoColor ? { color: settings.textLogoColor } : {}}
+                    >
+                      {settings?.siteTitle ? settings.siteTitle : 'Gaming Portal'}
+                    </span>
+                    <span className="text-xs text-slate-400 font-medium tracking-wider">Ultimate Gaming Hub</span>
+                  </div>
+                </div>
               )}
             </Link>
           </div>
           
-          {/* Main Navigation - Desktop */}
-          <nav className="hidden md:flex items-center space-x-8">
-            <Link href="/" className="font-medium text-foreground hover:text-primary transition-colors">
-              {t('nav.home', 'Home')}
-            </Link>
-            <Link href="/categories" className="font-medium text-foreground hover:text-primary transition-colors">
-              {t('nav.categories', 'Categories')}
-            </Link>
-            <Link href="/top-games" className="font-medium text-foreground hover:text-primary transition-colors">
-              {t('nav.top_games', 'Top Games')}
-            </Link>
-            <Link href="/tournaments" className="font-medium text-foreground hover:text-primary transition-colors">
-              {t('nav.tournaments', 'Tournaments')}
-            </Link>
-            <Link href="/random" className="font-medium text-foreground hover:text-primary transition-colors">
-              {t('nav.random_game', 'Random Game')}
-            </Link>
-            <Link href="/blog" className="font-medium text-foreground hover:text-primary transition-colors">
-              {t('nav.blog', 'Blog')}
-            </Link>
+          {/* Enhanced Main Navigation - Desktop */}
+          <nav className="hidden lg:flex items-center space-x-1">
+            {[
+              { href: '/', label: t('nav.home', 'Home'), icon: 'ri-home-5-line' },
+              { href: '/categories', label: t('nav.categories', 'Categories'), icon: 'ri-apps-2-line' },
+              { href: '/top-games', label: t('nav.top_games', 'Top Games'), icon: 'ri-trophy-line' },
+              { href: '/tournaments', label: t('nav.tournaments', 'Tournaments'), icon: 'ri-sword-line' },
+              { href: '/random', label: t('nav.random_game', 'Random'), icon: 'ri-shuffle-line' },
+              { href: '/blog', label: t('nav.blog', 'Blog'), icon: 'ri-article-line' }
+            ].map((item) => (
+              <Link 
+                key={item.href}
+                href={item.href} 
+                className={`relative px-4 py-2.5 mx-1 text-sm font-medium text-slate-300 hover:text-white transition-all duration-300 group rounded-lg hover:bg-white/5 ${location === item.href ? 'text-white bg-white/10' : ''}`}
+              >
+                <div className="flex items-center space-x-2">
+                  <i className={`${item.icon} text-base transition-transform duration-300 group-hover:scale-110`}></i>
+                  <span className="tracking-wide">{item.label}</span>
+                </div>
+                {/* Active indicator */}
+                {location === item.href && (
+                  <div className="absolute bottom-0 left-1/2 transform -translate-x-1/2 w-8 h-0.5 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full"></div>
+                )}
+                {/* Hover effect */}
+                <div className="absolute inset-0 bg-gradient-to-r from-blue-600/0 to-purple-600/0 group-hover:from-blue-600/10 group-hover:to-purple-600/10 rounded-lg transition-all duration-300"></div>
+              </Link>
+            ))}
           </nav>
           
-          {/* Right Side Controls */}
-          <div className="flex items-center space-x-4">
-            {/* Search Toggle */}
-            <button 
-              onClick={toggleSearch}
-              className="p-2 text-muted-foreground hover:text-primary" 
-              aria-label="Search"
-            >
-              <i className="ri-search-line text-xl"></i>
-            </button>
+          {/* Enhanced Right Side Controls */}
+          <div className="flex items-center space-x-2">
+            {/* Enhanced Search Toggle */}
+            <div className="relative">
+              <button 
+                onClick={toggleSearch}
+                className="p-2.5 text-slate-400 hover:text-white bg-white/5 hover:bg-white/10 rounded-lg transition-all duration-300 group" 
+                aria-label="Search"
+              >
+                <i className="ri-search-line text-lg group-hover:scale-110 transition-transform duration-300"></i>
+              </button>
+            </div>
             
-            {/* Dark Mode Toggle */}
-            <button 
-              onClick={toggleMode}
-              className="p-2 text-muted-foreground hover:text-primary" 
-              aria-label="Toggle Dark Mode"
-            >
-              {darkMode ? (
-                <i className="ri-sun-line text-xl"></i>
-              ) : (
-                <i className="ri-moon-line text-xl"></i>
-              )}
-            </button>
+            {/* Enhanced Theme Controls */}
+            <div className="flex items-center space-x-1 bg-white/5 rounded-lg p-1">
+              {/* Dark Mode Toggle */}
+              <button 
+                onClick={toggleMode}
+                className="p-2 text-slate-400 hover:text-white hover:bg-white/10 rounded-md transition-all duration-300 group" 
+                aria-label="Toggle Dark Mode"
+              >
+                {darkMode ? (
+                  <i className="ri-sun-line text-lg group-hover:scale-110 transition-transform duration-300"></i>
+                ) : (
+                  <i className="ri-moon-line text-lg group-hover:scale-110 transition-transform duration-300"></i>
+                )}
+              </button>
+              
+              {/* Theme Selector */}
+              <ThemeSwitcher />
+            </div>
             
-            {/* Theme Selector */}
-            <ThemeSwitcher />
-            
-            {/* Auth Links */}
+            {/* Enhanced Auth Section */}
             {user ? (
               <div 
                 className="relative dropdown-container"
@@ -141,119 +167,135 @@ export function Header() {
                 onMouseLeave={() => setIsDropdownOpen(false)}
               >
                 <button 
-                  className="p-2 text-muted-foreground hover:text-primary flex items-center dropdown-trigger"
+                  className="p-2.5 text-slate-300 hover:text-white bg-gradient-to-r from-blue-600/20 to-purple-600/20 hover:from-blue-600/30 hover:to-purple-600/30 rounded-lg flex items-center dropdown-trigger transition-all duration-300 border border-white/10"
                   onClick={() => setIsDropdownOpen(!isDropdownOpen)}
                 >
-                  <span className="hidden md:inline-block mr-2">{user.username}</span>
-                  <i className="ri-user-line text-xl"></i>
+                  <span className="hidden lg:inline-block mr-2 font-medium text-sm">{user.username}</span>
+                  <div className="relative">
+                    <div className="absolute inset-0 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full opacity-20"></div>
+                    <i className="ri-user-line text-lg relative"></i>
+                  </div>
                 </button>
                 {isDropdownOpen && (
-                  <div className="absolute right-0 mt-2 w-48 bg-card rounded-md shadow-lg py-1 z-50 dropdown-menu border border-border">
+                  <div className="absolute right-0 mt-3 w-56 bg-slate-800/95 backdrop-blur-xl rounded-xl shadow-2xl py-2 z-50 dropdown-menu border border-slate-600/50">
+                    <div className="px-4 py-3 border-b border-slate-600/50">
+                      <p className="text-sm font-medium text-white">{user.username}</p>
+                      <p className="text-xs text-slate-400">Welcome back!</p>
+                    </div>
                     <Link 
                       href="/user-dashboard" 
-                      className="block px-4 py-2 text-sm text-foreground hover:bg-muted transition-colors"
+                      className="flex items-center px-4 py-3 text-sm text-slate-300 hover:text-white hover:bg-white/10 transition-all duration-200"
                       onClick={() => setIsDropdownOpen(false)}
                     >
-                      <i className="ri-dashboard-line mr-2"></i>
+                      <i className="ri-dashboard-line mr-3 text-blue-400"></i>
                       Dashboard
                     </Link>
                     <Link 
                       href="/profile" 
-                      className="block px-4 py-2 text-sm text-foreground hover:bg-muted transition-colors"
+                      className="flex items-center px-4 py-3 text-sm text-slate-300 hover:text-white hover:bg-white/10 transition-all duration-200"
                       onClick={() => setIsDropdownOpen(false)}
                     >
-                      <i className="ri-user-settings-line mr-2"></i>
+                      <i className="ri-user-settings-line mr-3 text-green-400"></i>
                       Profile Settings
                     </Link>
                     {user.isAdmin && (
                       <Link 
                         href="/admin/dashboard" 
-                        className="block px-4 py-2 text-sm text-foreground hover:bg-muted transition-colors"
+                        className="flex items-center px-4 py-3 text-sm text-slate-300 hover:text-white hover:bg-white/10 transition-all duration-200"
                         onClick={() => setIsDropdownOpen(false)}
                       >
-                        <i className="ri-admin-line mr-2"></i>
+                        <i className="ri-admin-line mr-3 text-purple-400"></i>
                         Admin Dashboard
                       </Link>
                     )}
-                    <div className="border-t border-border my-1"></div>
+                    <div className="border-t border-slate-600/50 my-2"></div>
                     <button 
                       onClick={() => {
                         setIsDropdownOpen(false);
                         handleLogout();
                       }}
-                      className="block w-full text-left px-4 py-2 text-sm text-foreground hover:bg-muted transition-colors"
+                      className="flex items-center w-full px-4 py-3 text-sm text-slate-300 hover:text-red-400 hover:bg-red-500/10 transition-all duration-200"
                     >
-                      <i className="ri-logout-circle-line mr-2"></i>
+                      <i className="ri-logout-circle-line mr-3"></i>
                       Logout
                     </button>
                   </div>
                 )}
               </div>
             ) : (
-              <Link href="/auth" className="p-2 text-muted-foreground hover:text-primary">
-                <i className="ri-login-circle-line text-xl"></i>
-                <span className="hidden md:inline-block ml-1">Login</span>
+              <Link 
+                href="/auth" 
+                className="flex items-center px-4 py-2.5 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white rounded-lg transition-all duration-300 font-medium text-sm shadow-lg hover:shadow-xl transform hover:scale-105"
+              >
+                <i className="ri-login-circle-line text-lg mr-2"></i>
+                <span>Login</span>
               </Link>
             )}
             
-            {/* Mobile Menu Toggle */}
+            {/* Enhanced Mobile Menu Toggle */}
             <button 
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-              className="md:hidden p-2 text-muted-foreground hover:text-primary" 
+              className="lg:hidden p-2.5 text-slate-400 hover:text-white bg-white/5 hover:bg-white/10 rounded-lg transition-all duration-300" 
               aria-label="Toggle Menu"
             >
               {isMobileMenuOpen ? (
-                <i className="ri-close-line text-2xl"></i>
+                <i className="ri-close-line text-xl"></i>
               ) : (
-                <i className="ri-menu-line text-2xl"></i>
+                <i className="ri-menu-line text-xl"></i>
               )}
             </button>
           </div>
         </div>
         
-        {/* Search Bar (Expandable) */}
+        {/* Enhanced Search Bar */}
         {isSearchOpen && (
-          <div className="py-3 border-t border-border">
-            <form onSubmit={handleSearch} className="flex">
-              <input 
-                type="text" 
-                placeholder="Search for games..." 
-                className="w-full p-2 rounded-l-md border-0 focus:ring-2 focus:ring-primary bg-muted text-foreground"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-              />
+          <div className="py-4 border-t border-slate-700/50">
+            <form onSubmit={handleSearch} className="flex max-w-md mx-auto">
+              <div className="relative flex-1">
+                <i className="ri-search-line absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400"></i>
+                <input 
+                  type="text" 
+                  placeholder="Search for amazing games..." 
+                  className="w-full pl-10 pr-4 py-3 rounded-l-xl border-0 bg-slate-800/50 backdrop-blur-sm text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500/50 transition-all duration-300"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                />
+              </div>
               <button 
                 type="submit" 
-                className="bg-primary text-primary-foreground px-4 rounded-r-md hover:bg-primary/90 transition-colors"
+                className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white px-6 rounded-r-xl transition-all duration-300 font-medium shadow-lg hover:shadow-xl"
               >
-                <i className="ri-search-line"></i>
+                Search
               </button>
             </form>
           </div>
         )}
         
-        {/* Mobile Menu */}
+        {/* Enhanced Mobile Menu */}
         {isMobileMenuOpen && (
-          <div className="md:hidden py-3 border-t border-border">
-            <nav className="flex flex-col space-y-3">
-              <Link href="/" className="font-medium text-foreground hover:text-primary transition-colors">
-                Home
-              </Link>
-              <Link href="/categories" className="font-medium text-foreground hover:text-primary transition-colors">
-                Categories
-              </Link>
-              <Link href="/top-games" className="font-medium text-foreground hover:text-primary transition-colors">
-                Top Games
-              </Link>
-              <Link href="/tournaments" className="font-medium text-foreground hover:text-primary transition-colors">
-                Tournaments
-              </Link>
-              <Link href="/random" className="font-medium text-foreground hover:text-primary transition-colors">
-                Random Game
-              </Link>
-              <Link href="/blog" className="font-medium text-foreground hover:text-primary transition-colors">
-                Blog
-              </Link>
+          <div className="lg:hidden py-4 border-t border-slate-700/50">
+            <nav className="flex flex-col space-y-1">
+              {[
+                { href: '/', label: 'Home', icon: 'ri-home-5-line' },
+                { href: '/categories', label: 'Categories', icon: 'ri-apps-2-line' },
+                { href: '/top-games', label: 'Top Games', icon: 'ri-trophy-line' },
+                { href: '/tournaments', label: 'Tournaments', icon: 'ri-sword-line' },
+                { href: '/random', label: 'Random Game', icon: 'ri-shuffle-line' },
+                { href: '/blog', label: 'Blog', icon: 'ri-article-line' }
+              ].map((item) => (
+                <Link 
+                  key={item.href}
+                  href={item.href} 
+                  className={`flex items-center space-x-3 px-4 py-3 text-slate-300 hover:text-white hover:bg-white/10 rounded-lg transition-all duration-300 ${location === item.href ? 'text-white bg-white/10 border-l-4 border-blue-500' : ''}`}
+                  onClick={() => setIsMobileMenuOpen(false)}
+                >
+                  <i className={`${item.icon} text-lg`}></i>
+                  <span className="font-medium">{item.label}</span>
+                  {location === item.href && (
+                    <div className="ml-auto w-2 h-2 bg-blue-500 rounded-full"></div>
+                  )}
+                </Link>
+              ))}
             </nav>
           </div>
         )}
