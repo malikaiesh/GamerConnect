@@ -333,6 +333,7 @@ export function MobileDashboard() {
                   </div>
                 </>
               )}
+              </div>
             </div>
             <div className="flex items-center space-x-3">
               <div className="flex items-center space-x-1">
