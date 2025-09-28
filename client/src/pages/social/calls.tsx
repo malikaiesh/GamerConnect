@@ -18,12 +18,15 @@ import {
   Search,
   Filter,
   Calendar
+  ArrowLeft
 } from "lucide-react";
 import { Sidebar } from "@/components/layout/sidebar";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { formatDistanceToNow } from "date-fns";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useMobile } from "@/hooks/use-mobile";
+import { useLocation } from "wouter";
 
 interface CallRecord {
   id: number;
@@ -175,6 +178,8 @@ export default function CallsPage() {
   const [searchTerm, setSearchTerm] = useState("");
   const [activeTab, setActiveTab] = useState("all");
   const queryClient = useQueryClient();
+  const isMobile = useMobile();
+  const [, navigate] = useLocation();
 
   // Fetch call history
   const { data: callHistory = [], isLoading } = useQuery<CallRecord[]>({
@@ -209,8 +214,8 @@ export default function CallsPage() {
   if (isLoading) {
     return (
       <div className="flex">
-        <Sidebar />
-        <div className="flex-1 ml-64 p-6">
+        {!isMobile && <Sidebar />}
+        <div className={`flex-1 ${!isMobile ? 'ml-64' : ''} ${isMobile ? 'p-4' : 'p-6'}`}>
           <div className="flex items-center justify-center min-h-[60vh]">
             <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-primary"></div>
           </div>
@@ -221,9 +226,26 @@ export default function CallsPage() {
 
   return (
     <div className="flex">
-      <Sidebar />
-      <div className="flex-1 ml-64 p-6">
+      {!isMobile && <Sidebar />}
+      <div className={`flex-1 ${!isMobile ? 'ml-64' : ''} ${isMobile ? 'p-4' : 'p-6'}`}>
         <div className="max-w-4xl mx-auto">
+          {/* Mobile Header */}
+          {isMobile && (
+            <div className="flex items-center justify-between mb-4 pb-4 border-b">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => navigate('/user-dashboard')}
+                className="flex items-center gap-2"
+                data-testid="button-back-to-dashboard"
+              >
+                <ArrowLeft className="w-4 h-4" />
+                Dashboard
+              </Button>
+              <h1 className="text-xl font-bold">Calls</h1>
+            </div>
+          )}
+          
           {/* Header */}
           <div className="flex items-center justify-between mb-6">
             <div className="flex items-center space-x-3">
@@ -231,7 +253,9 @@ export default function CallsPage() {
                 <Phone className="w-5 h-5 text-primary-foreground" />
               </div>
               <div>
-                <h1 className="text-2xl font-bold text-foreground">Calls</h1>
+                <h1 className={`${isMobile ? 'text-xl' : 'text-2xl'} font-bold text-foreground ${isMobile ? 'sr-only' : ''}`} data-testid="page-title">
+                  Calls
+                </h1>
                 <p className="text-muted-foreground">Your call history and quick dial contacts</p>
               </div>
             </div>
