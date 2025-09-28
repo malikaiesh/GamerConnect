@@ -6,6 +6,8 @@ import { setupAuth } from "./auth";
 import { isAuthenticated, isAdmin } from "./middleware/auth";
 import { registerGameRoutes } from "./api/games";
 import { registerBlogRoutes } from "./api/blog";
+import { blogAggregatedRoutes } from "./api/blog-aggregated.js";
+import { gamesAggregatedRoutes } from "./api/games-aggregated.js";
 import { registerSettingsRoutes } from "./api/settings";
 import { registerAnalyticsRoutes } from "./api/analytics";
 import { registerNotificationsRoutes } from "./api/notifications";
@@ -354,6 +356,10 @@ Sitemap: ${req.protocol}://${req.get('host')}/sitemap.xml`);
   // Register API routes
   registerGameRoutes(app);
   registerBlogRoutes(app);
+  
+  // Aggregated API endpoints for performance optimization
+  blogAggregatedRoutes(app);
+  gamesAggregatedRoutes(app);
   registerSettingsRoutes(app);
   registerTournamentRoutes(app);
   registerAnalyticsRoutes(app);
