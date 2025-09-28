@@ -117,7 +117,7 @@ The Gaming Portal Team`,
     },
     {
       trigger: 'verification_approved',
-      channel: 'push',
+      channel: 'push_notification',
       title: '🔵 Verification Badge Earned!',
       content: `{{displayName}}, congratulations! Your verification has been approved and you've received the Blue Verification Badge! 🎉`,
       isActive: true,
@@ -168,7 +168,7 @@ The Gaming Portal Verification Team`,
 
     // Welcome/Engagement Templates
     {
-      trigger: 'welcome_new_user',
+      trigger: 'welcome_message',
       channel: 'email',
       title: '🎮 Welcome to Gaming Portal - Let\'s Get Started!',
       content: `Welcome to Gaming Portal, {{username}}! 🎉
