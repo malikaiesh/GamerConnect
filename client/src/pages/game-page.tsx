@@ -192,8 +192,96 @@ export default function GamePage() {
       
       <div className="container mx-auto px-4 py-8 flex-1">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 lg:gap-8">
-          {/* Game Info Column */}
-          <div className="lg:col-span-1">
+          
+          {/* Mobile-Optimized Game Frame Column - Shows First on Mobile */}
+          <div className="lg:col-span-2 order-1 lg:order-2">
+            {/* Ad Above Game */}
+            <GameAdDisplay position="above_game" className="mb-3 lg:mb-6" />
+            
+            <div className="bg-card rounded-xl shadow-lg overflow-hidden mb-4 lg:mb-6">
+              {/* Larger Game View Area */}
+              <div className="w-full h-[60vh] sm:h-[70vh] lg:h-[75vh] relative">
+                {game.url ? (
+                  <iframe 
+                    src={game.url}
+                    title={game.title}
+                    className="w-full h-full border-0 rounded-t-xl"
+                    allowFullScreen
+                    onError={(e) => {
+                      // Handle iframe loading error
+                      const iframe = e.target as HTMLIFrameElement;
+                      if (iframe) {
+                        iframe.style.display = 'none';
+                        const parent = iframe.parentElement;
+                        if (parent) {
+                          const errorDiv = document.createElement('div');
+                          errorDiv.className = 'w-full h-full flex items-center justify-center bg-muted rounded-t-xl';
+                          errorDiv.innerHTML = '<p class="text-muted-foreground">Game content unavailable</p>';
+                          parent.appendChild(errorDiv);
+                        }
+                      }
+                    }}
+                  ></iframe>
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center bg-muted rounded-t-xl">
+                    <p className="text-muted-foreground">Game content unavailable</p>
+                  </div>
+                )}
+              </div>
+              
+              {/* Compact Game Controls - Single Line */}
+              <div className="px-4 py-2 bg-gradient-to-r from-slate-50 to-slate-100 dark:from-slate-800 dark:to-slate-700 border-t border-border/50">
+                <div className="flex items-center justify-center gap-2">
+                  <button 
+                    className="flex items-center px-3 py-1.5 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white rounded-md transition-all duration-300 text-xs font-medium"
+                    onClick={() => {
+                      const iframe = document.querySelector('iframe');
+                      if (iframe && iframe.requestFullscreen) {
+                        iframe.requestFullscreen();
+                      }
+                    }}
+                  >
+                    <i className="ri-fullscreen-line text-sm mr-1"></i>
+                    Full
+                  </button>
+                  
+                  <button 
+                    className="flex items-center px-3 py-1.5 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white rounded-md transition-all duration-300 text-xs font-medium"
+                    onClick={() => setShowPostGameModal(true)}
+                  >
+                    <i className="ri-restart-line text-sm mr-1"></i>
+                    Reset
+                  </button>
+                  
+                  <SocialShare
+                    title={game.title}
+                    description={`Play ${game.title} - ${game.description}`}
+                    url={window.location.href}
+                    image={game.thumbnail}
+                  />
+                </div>
+              </div>
+            </div>
+            
+            {/* Ad Below Game */}
+            <GameAdDisplay position="below_game" className="mb-6" />
+            
+            {/* Ad Before Related Games */}
+            <GameAdDisplay position="before_related_games" className="mb-6" />
+            
+            {/* Related Games Section */}
+            <RelatedGames 
+              gameId={game.id} 
+              category={game.category}
+              tags={game.tags}
+            />
+            
+            {/* Ad After Related Games */}
+            <GameAdDisplay position="after_related_games" className="mt-6" />
+          </div>
+          
+          {/* Game Info Column - Shows After Related Games on Mobile */}
+          <div className="lg:col-span-1 order-2 lg:order-1">
             <div className="bg-card rounded-xl shadow-lg overflow-hidden mb-6">
               <img 
                 src={game.thumbnail} 
@@ -337,93 +425,6 @@ export default function GamePage() {
                 <GameAdDisplay position="sidebar_bottom" className="mt-6" />
               </div>
             </div>
-          </div>
-          
-          {/* Mobile-Optimized Game Frame Column */}
-          <div className="lg:col-span-2">
-            {/* Ad Above Game */}
-            <GameAdDisplay position="above_game" className="mb-3 lg:mb-6" />
-            
-            <div className="bg-card rounded-xl shadow-lg overflow-hidden mb-4 lg:mb-6">
-              {/* Larger Game View Area */}
-              <div className="w-full h-[60vh] sm:h-[70vh] lg:h-[75vh] relative">
-                {game.url ? (
-                  <iframe 
-                    src={game.url}
-                    title={game.title}
-                    className="w-full h-full border-0 rounded-t-xl"
-                    allowFullScreen
-                    onError={(e) => {
-                      // Handle iframe loading error
-                      const iframe = e.target as HTMLIFrameElement;
-                      if (iframe) {
-                        iframe.style.display = 'none';
-                        const parent = iframe.parentElement;
-                        if (parent) {
-                          const errorDiv = document.createElement('div');
-                          errorDiv.className = 'w-full h-full flex items-center justify-center bg-muted rounded-t-xl';
-                          errorDiv.innerHTML = '<p class="text-muted-foreground">Game content unavailable</p>';
-                          parent.appendChild(errorDiv);
-                        }
-                      }
-                    }}
-                  ></iframe>
-                ) : (
-                  <div className="w-full h-full flex items-center justify-center bg-muted rounded-t-xl">
-                    <p className="text-muted-foreground">Game content unavailable</p>
-                  </div>
-                )}
-              </div>
-              
-              {/* Compact Game Controls - Single Line */}
-              <div className="px-4 py-2 bg-gradient-to-r from-slate-50 to-slate-100 dark:from-slate-800 dark:to-slate-700 border-t border-border/50">
-                <div className="flex items-center justify-center gap-2">
-                  <button 
-                    className="flex items-center px-3 py-1.5 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white rounded-md transition-all duration-300 text-xs font-medium"
-                    onClick={() => {
-                      const iframe = document.querySelector('iframe');
-                      if (iframe && iframe.requestFullscreen) {
-                        iframe.requestFullscreen();
-                      }
-                    }}
-                  >
-                    <i className="ri-fullscreen-line text-sm mr-1"></i>
-                    Full
-                  </button>
-                  
-                  <button 
-                    className="flex items-center px-3 py-1.5 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white rounded-md transition-all duration-300 text-xs font-medium"
-                    onClick={() => setShowPostGameModal(true)}
-                  >
-                    <i className="ri-restart-line text-sm mr-1"></i>
-                    Reset
-                  </button>
-                  
-                  <SocialShare
-                    title={game.title}
-                    description={`Play ${game.title} - ${game.description}`}
-                    url={window.location.href}
-                    image={game.thumbnail}
-                  />
-                </div>
-              </div>
-            </div>
-            
-            {/* Ad Below Game */}
-            <GameAdDisplay position="below_game" className="mb-6" />
-            
-            {/* Ad Before Related Games */}
-            <GameAdDisplay position="before_related_games" className="mb-6" />
-            
-            {/* Related Games Section */}
-            <RelatedGames 
-              gameId={game.id} 
-              category={game.category}
-              tags={game.tags}
-            />
-            
-            {/* Ad After Related Games */}
-            <GameAdDisplay position="after_related_games" className="mt-6" />
           </div>
         </div>
       </div>
