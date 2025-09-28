@@ -281,11 +281,11 @@ export function MobileDashboard() {
           <div className="flex items-center justify-center gap-4">
             <div className="flex items-center space-x-1">
               <Diamond className="w-4 h-4 text-blue-300" />
-              <span className="text-sm font-medium" data-testid="text-diamonds">{dashboardData?.userWallet?.diamonds || 0}</span>
+              <span className="text-sm font-medium" data-testid="text-diamonds">{dashboardData?.userWallet?.diamonds?.toLocaleString() || 0}</span>
             </div>
             <div className="flex items-center space-x-1">
               <Coins className="w-4 h-4 text-yellow-300" />
-              <span className="text-sm font-medium" data-testid="text-coins">{Math.floor(coins).toLocaleString()}</span>
+              <span className="text-sm font-medium" data-testid="text-coins">{dashboardData?.userWallet?.coins?.toLocaleString() || Math.floor(coins).toLocaleString()}</span>
             </div>
           </div>
         </div>

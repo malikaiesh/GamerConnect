@@ -8,7 +8,8 @@ import {
   Volume2,
   MessageCircle,
   Gift,
-  Clock
+  Clock,
+  CheckCircle
 } from "lucide-react";
 import { Link } from "wouter";
 import { Header } from "@/components/layout/header";
@@ -100,10 +101,20 @@ function RoomCard({ room }: { room: NewRoom }) {
       <CardHeader className="pb-2">
         <div className="flex items-start justify-between">
           <div>
-            <CardTitle className="text-lg font-bold">{room.room.name}</CardTitle>
-            <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-              by {room.owner.displayName || room.owner.username}
-            </p>
+            <div className="flex items-center gap-2">
+              <CardTitle className="text-lg font-bold">{room.room.name}</CardTitle>
+              {room.room.isVerified && (
+                <CheckCircle className="w-5 h-5 text-blue-400" data-testid="room-verification-badge" />
+              )}
+            </div>
+            <div className="flex items-center gap-1 mt-1">
+              <p className="text-sm text-gray-500 dark:text-gray-400">
+                by {room.owner.displayName || room.owner.username}
+              </p>
+              {room.owner.isVerified && (
+                <CheckCircle className="w-3 h-3 text-blue-400" data-testid="owner-verification-badge" />
+              )}
+            </div>
           </div>
         </div>
       </CardHeader>

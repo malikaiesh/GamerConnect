@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import { isAuthenticated } from '../middleware/auth.js';
 import { db } from '../db.js';
-import { referrals, referralRewards, users, tournaments } from '@shared/schema';
+import { referrals, referralRewards, users, tournaments, userWallets } from '@shared/schema';
 import { eq, sum, count, sql, and, desc } from 'drizzle-orm';
 
 const requireAuth = isAuthenticated;
@@ -15,7 +15,7 @@ router.get('/mobile', requireAuth, async (req, res) => {
     const userId = req.user!.id;
     
     // Fetch all dashboard data in parallel
-    const [user, referralStats, pendingPayout, activeTournamentsCount] = await Promise.all([
+    const [user, referralStats, pendingPayout, activeTournamentsCount, userWallet] = await Promise.all([
       storage.getUserById(userId),
       // Get referral statistics
       db
@@ -43,7 +43,13 @@ router.get('/mobile', requireAuth, async (req, res) => {
         .where(and(
           eq(tournaments.status, 'active'),
           eq(tournaments.isPublic, true)
-        ))
+        )),
+      // Get user wallet data
+      db
+        .select()
+        .from(userWallets)
+        .where(eq(userWallets.userId, userId))
+        .limit(1)
     ]);
     
     const userStats = {
@@ -86,6 +92,12 @@ router.get('/mobile', requireAuth, async (req, res) => {
         totalEarnings: referralData?.totalEarnings || 0,
         totalReferrals: referralData?.totalReferrals || 0,
         pendingEarnings: referralData?.pendingEarnings || 0
+      },
+      userWallet: {
+        coins: userWallet[0]?.coins || 0,
+        diamonds: userWallet[0]?.diamonds || 0,
+        totalCoinsEarned: userWallet[0]?.totalCoinsEarned || 0,
+        totalDiamondsEarned: userWallet[0]?.totalDiamondsEarned || 0
       },
       computed: {
         userLevel: Math.floor((userStats?.gamesPlayed || 0) / 10) + 1,
