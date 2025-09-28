@@ -24,7 +24,9 @@ import {
   MessageSquare,
   Moon,
   Sun,
-  Home
+  Home,
+  Grid3X3,
+  Settings
 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { MobileBottomNav } from "@/components/ui/mobile-bottom-nav";
@@ -43,9 +45,17 @@ interface FeatureCard {
 
 const featureCards: FeatureCard[] = [
   {
+    id: "categories",
+    title: "Categories",
+    subtitle: "Browse Games",
+    icon: Grid3X3,
+    href: "/categories",
+    iconColor: "text-white"
+  },
+  {
     id: "my-rooms",
     title: "My Rooms",
-    subtitle: "Manage Your Rooms",
+    subtitle: "Manage Rooms",
     icon: Home,
     href: "/rooms/my-rooms",
     iconColor: "text-white"
@@ -245,18 +255,18 @@ export function MobileDashboard() {
               <h2 className="text-2xl font-bold">
                 {user?.displayName || user?.username || 'Player'}
               </h2>
-              <div className="flex items-center space-x-4 mt-1">
+              <div className="flex items-center flex-wrap gap-3 mt-1">
                 <div className="flex items-center space-x-1">
                   <Star className="w-4 h-4 text-yellow-300" />
-                  <span className="text-sm font-medium" data-testid="text-id-level">ID: Level {dashboardData?.user?.idLevel || 1}</span>
+                  <span className="text-xs font-medium" data-testid="text-id-level">ID {dashboardData?.user?.idLevel || 1}</span>
                 </div>
                 <div className="flex items-center space-x-1">
                   <Crown className="w-4 h-4 text-purple-300" />
-                  <span className="text-sm font-medium" data-testid="text-rooms-level">Rooms: Level {dashboardData?.user?.roomsLevel || 1}</span>
+                  <span className="text-xs font-medium" data-testid="text-rooms-level">Room {dashboardData?.user?.roomsLevel || 1}</span>
                 </div>
                 <div className="flex items-center space-x-1">
                   <Coins className="w-4 h-4 text-yellow-300" />
-                  <span className="text-sm font-medium" data-testid="text-coins">{Math.floor(coins).toLocaleString()}</span>
+                  <span className="text-xs font-medium" data-testid="text-coins">{Math.floor(coins).toLocaleString()}</span>
                 </div>
                 {user?.isVerified && (
                   <Shield className="w-4 h-4 text-green-300" />
@@ -264,15 +274,23 @@ export function MobileDashboard() {
               </div>
             </div>
           </div>
-          <div className="flex flex-col items-end space-y-1">
-            <div className="relative">
+          <div className="flex flex-col items-end space-y-2">
+            <div className="flex items-center space-x-2">
               <button
-                onClick={() => setShowThemeSelector(!showThemeSelector)}
+                onClick={handleThemeToggle}
                 className="p-2 bg-white/20 rounded-full hover:bg-white/30 transition-colors"
-                data-testid="button-theme-selector"
+                data-testid="button-dark-mode-toggle"
               >
-                <Sparkles className="w-5 h-5 text-white" />
+                {darkMode ? <Sun className="w-4 h-4 text-white" /> : <Moon className="w-4 h-4 text-white" />}
               </button>
+              <div className="relative">
+                <button
+                  onClick={() => setShowThemeSelector(!showThemeSelector)}
+                  className="p-2 bg-white/20 rounded-full hover:bg-white/30 transition-colors"
+                  data-testid="button-theme-selector"
+                >
+                  <Sparkles className="w-4 h-4 text-white" />
+                </button>
               
               {showThemeSelector && (
                 <>
@@ -282,22 +300,22 @@ export function MobileDashboard() {
                     onClick={() => setShowThemeSelector(false)}
                   />
                   
-                  {/* Theme Selector Modal - Compact Style */}
+                  {/* Theme Selector Modal - Mobile Optimized */}
                   <div className="absolute right-0 top-12 z-50">
-                    <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl border border-gray-200 dark:border-gray-700 min-w-[200px] overflow-hidden">
+                    <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl border border-gray-200 dark:border-gray-700 min-w-[180px] overflow-hidden">
                       {/* Header */}
-                      <div className="px-4 py-3 border-b border-gray-200 dark:border-gray-700">
-                        <h3 className="text-sm font-semibold text-gray-900 dark:text-white">Select Theme</h3>
+                      <div className="px-3 py-2 border-b border-gray-200 dark:border-gray-700">
+                        <h3 className="text-xs font-semibold text-gray-900 dark:text-white">Themes</h3>
                       </div>
                       
                       {/* Theme Options */}
-                      <div className="py-1 max-h-80 overflow-y-auto">
+                      <div className="py-1 max-h-60 overflow-y-auto">
                         {themes.map((theme) => (
                           <button
                             key={theme.id}
                             onClick={() => handleThemeChange(theme.id)}
                             className={cn(
-                              "w-full px-4 py-2 text-left text-sm transition-colors duration-150 flex items-center justify-between",
+                              "w-full px-3 py-1.5 text-left text-xs transition-colors duration-150 flex items-center justify-between",
                               currentTheme === theme.id
                                 ? "bg-blue-500 text-white"
                                 : "text-gray-900 dark:text-gray-100 hover:bg-gray-100 dark:hover:bg-gray-700"
@@ -306,43 +324,25 @@ export function MobileDashboard() {
                           >
                             <span>{theme.name}</span>
                             {currentTheme === theme.id && (
-                              <div className="w-2 h-2 bg-white rounded-full"></div>
+                              <div className="w-1.5 h-1.5 bg-white rounded-full"></div>
                             )}
                           </button>
                         ))}
-                        
-                        {/* Dark Mode Toggle */}
-                        <div className="border-t border-gray-200 dark:border-gray-700 mt-1">
-                          <button
-                            onClick={handleThemeToggle}
-                            className="w-full px-4 py-2 text-left text-sm text-gray-900 dark:text-gray-100 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors duration-150 flex items-center justify-between"
-                            data-testid="dark-mode-toggle"
-                          >
-                            <span>{darkMode ? 'Light Mode' : 'Dark Mode'}</span>
-                            <div className={cn(
-                              "w-8 h-4 rounded-full transition-colors relative",
-                              darkMode ? "bg-blue-500" : "bg-gray-300"
-                            )}>
-                              <div className={cn(
-                                "w-3 h-3 bg-white rounded-full absolute top-0.5 transition-transform shadow-sm",
-                                darkMode ? "translate-x-4" : "translate-x-0.5"
-                              )} />
-                            </div>
-                          </button>
-                        </div>
                       </div>
                     </div>
                   </div>
                 </>
               )}
             </div>
-            <div className="flex items-center space-x-1">
-              <Heart className="w-4 h-4 text-red-300" />
-              <span className="text-sm">100</span>
-            </div>
-            <div className="flex items-center space-x-1">
-              <Flame className="w-4 h-4 text-orange-300" />
-              <span className="text-sm">{userStats?.gamesPlayed || 0}</span>
+            <div className="flex items-center space-x-3">
+              <div className="flex items-center space-x-1">
+                <Heart className="w-3 h-3 text-red-300" />
+                <span className="text-xs">100</span>
+              </div>
+              <div className="flex items-center space-x-1">
+                <Flame className="w-3 h-3 text-orange-300" />
+                <span className="text-xs">{userStats?.gamesPlayed || 0}</span>
+              </div>
             </div>
           </div>
         </div>
@@ -384,16 +384,17 @@ export function MobileDashboard() {
         </div>
       </div>
 
-      {/* Feature Cards Section */}
-      <div className="p-4 space-y-4">
+      {/* Feature Cards Section - Mobile Optimized */}
+      <div className="p-3 space-y-2">
         {featureCards.map((card, index) => {
           const Icon = card.icon;
           return (
             <Link key={card.id} href={card.href}>
               <div 
-                className="relative overflow-hidden rounded-2xl shadow-lg transform transition-all duration-200 active:scale-95 hover:shadow-xl"
+                className="relative overflow-hidden rounded-xl shadow-md transform transition-all duration-200 active:scale-95 hover:shadow-lg"
                 style={{
-                  background: card.id === 'my-rooms' ? `linear-gradient(to right, #3B82F6, #1D4ED8)` :
+                  background: card.id === 'categories' ? `linear-gradient(to right, #10B981, #059669)` :
+                             card.id === 'my-rooms' ? `linear-gradient(to right, #3B82F6, #1D4ED8)` :
                              card.id === 'lucky-challenge' ? `linear-gradient(to right, hsl(var(--primary)), hsl(var(--secondary)))` :
                              card.id === 'free-rewards' ? `linear-gradient(to right, hsl(var(--accent)), hsl(var(--primary)))` :
                              card.id === 'coins-chest' ? `linear-gradient(to right, hsl(var(--secondary)), hsl(var(--accent)))` :
@@ -408,24 +409,24 @@ export function MobileDashboard() {
                 }}
                 data-testid={`feature-card-${card.id}`}
               >
-                <div className="p-6 flex items-center justify-between">
-                  <div className="flex items-center space-x-4">
-                    <div className="p-3 bg-white/20 rounded-xl">
-                      <Icon className={cn("w-8 h-8", card.iconColor)} />
+                <div className="p-3 flex items-center justify-between">
+                  <div className="flex items-center space-x-3">
+                    <div className="p-2 bg-white/20 rounded-lg">
+                      <Icon className={cn("w-5 h-5", card.iconColor)} />
                     </div>
                     <div>
-                      <h3 className="text-xl font-bold text-white">{card.title}</h3>
-                      <p className="text-white/90 text-sm">{card.subtitle}</p>
+                      <h3 className="text-base font-bold text-white">{card.title}</h3>
+                      <p className="text-white/90 text-xs">{card.subtitle}</p>
                     </div>
                   </div>
-                  <div className="flex items-center space-x-2">
-                    <Sparkles className="w-6 h-6 text-white/80" />
+                  <div className="flex items-center">
+                    <Sparkles className="w-4 h-4 text-white/80" />
                   </div>
                 </div>
                 
-                {/* Decorative elements */}
-                <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -translate-y-16 translate-x-16" />
-                <div className="absolute bottom-0 left-0 w-24 h-24 bg-white/5 rounded-full translate-y-12 -translate-x-12" />
+                {/* Decorative elements - smaller */}
+                <div className="absolute top-0 right-0 w-16 h-16 bg-white/10 rounded-full -translate-y-8 translate-x-8" />
+                <div className="absolute bottom-0 left-0 w-12 h-12 bg-white/5 rounded-full translate-y-6 -translate-x-6" />
               </div>
             </Link>
           );
