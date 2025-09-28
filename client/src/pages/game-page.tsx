@@ -345,7 +345,8 @@ export default function GamePage() {
             <GameAdDisplay position="above_game" className="mb-3 lg:mb-6" />
             
             <div className="bg-card rounded-xl shadow-lg overflow-hidden mb-4 lg:mb-6">
-              <div className="aspect-video w-full relative">
+              {/* Larger Game View Area */}
+              <div className="w-full h-[60vh] sm:h-[70vh] lg:h-[75vh] relative">
                 {game.url ? (
                   <iframe 
                     src={game.url}
@@ -374,62 +375,36 @@ export default function GamePage() {
                 )}
               </div>
               
-              {/* Mobile-Optimized Game Controls */}
-              <div className="p-3 sm:p-4 bg-gradient-to-r from-slate-50 to-slate-100 dark:from-slate-800 dark:to-slate-700 border-t border-border/50">
-                {/* Mobile Layout - Stacked */}
-                <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center space-y-3 sm:space-y-0">
-                  {/* Primary Action Buttons - Mobile First */}
-                  <div className="flex flex-wrap gap-2 justify-center sm:justify-start">
-                    <button 
-                      className="flex items-center px-4 py-2.5 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white rounded-lg transition-all duration-300 font-medium text-sm shadow-lg hover:shadow-xl touch-manipulation min-h-[44px]"
-                      onClick={() => {
-                        const iframe = document.querySelector('iframe');
-                        if (iframe && iframe.requestFullscreen) {
-                          iframe.requestFullscreen();
-                        }
-                      }}
-                    >
-                      <i className="ri-fullscreen-line text-lg mr-2"></i>
-                      <span className="hidden sm:inline">Fullscreen</span>
-                      <span className="sm:hidden">Full</span>
-                    </button>
-                    
-                    <button 
-                      className="flex items-center px-4 py-2.5 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white rounded-lg transition-all duration-300 font-medium text-sm shadow-lg hover:shadow-xl touch-manipulation min-h-[44px]"
-                      onClick={() => setShowPostGameModal(true)}
-                    >
-                      <i className="ri-restart-line text-lg mr-2"></i>
-                      <span className="hidden sm:inline">Restart</span>
-                      <span className="sm:hidden">Reset</span>
-                    </button>
-                  </div>
+              {/* Compact Game Controls - Single Line */}
+              <div className="px-4 py-2 bg-gradient-to-r from-slate-50 to-slate-100 dark:from-slate-800 dark:to-slate-700 border-t border-border/50">
+                <div className="flex items-center justify-center gap-2">
+                  <button 
+                    className="flex items-center px-3 py-1.5 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white rounded-md transition-all duration-300 text-xs font-medium"
+                    onClick={() => {
+                      const iframe = document.querySelector('iframe');
+                      if (iframe && iframe.requestFullscreen) {
+                        iframe.requestFullscreen();
+                      }
+                    }}
+                  >
+                    <i className="ri-fullscreen-line text-sm mr-1"></i>
+                    Full
+                  </button>
                   
-                  {/* Social Share - Enhanced Mobile */}
-                  <div className="flex justify-center sm:justify-end">
-                    <SocialShare
-                      title={game.title}
-                      description={`Play ${game.title} - ${game.description}`}
-                      url={window.location.href}
-                      image={game.thumbnail}
-                    />
-                  </div>
-                </div>
-                
-                {/* Game Stats Row - Mobile Friendly */}
-                <div className="mt-3 pt-3 border-t border-border/30 flex items-center justify-between text-sm">
-                  <div className="flex items-center space-x-4">
-                    <div className="flex items-center text-muted-foreground">
-                      <i className="ri-eye-line mr-1"></i>
-                      <span className="font-medium">{game.plays.toLocaleString()}</span>
-                    </div>
-                    <div className="flex items-center text-muted-foreground">
-                      <i className="ri-star-line mr-1"></i>
-                      <span className="font-medium">{calculateAverageRating().toFixed(1)}</span>
-                    </div>
-                  </div>
-                  <div className="text-xs text-muted-foreground px-2 py-1 bg-white/50 dark:bg-black/20 rounded-full">
-                    {game.category}
-                  </div>
+                  <button 
+                    className="flex items-center px-3 py-1.5 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white rounded-md transition-all duration-300 text-xs font-medium"
+                    onClick={() => setShowPostGameModal(true)}
+                  >
+                    <i className="ri-restart-line text-sm mr-1"></i>
+                    Reset
+                  </button>
+                  
+                  <SocialShare
+                    title={game.title}
+                    description={`Play ${game.title} - ${game.description}`}
+                    url={window.location.href}
+                    image={game.thumbnail}
+                  />
                 </div>
               </div>
             </div>
