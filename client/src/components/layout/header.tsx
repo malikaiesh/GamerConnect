@@ -62,10 +62,10 @@ export function Header() {
       {/* Decorative top line */}
       <div className="h-0.5 bg-gradient-to-r from-transparent via-primary to-transparent"></div>
       
-      <div className="container mx-auto px-4 lg:px-6">
-        <div className="flex items-center justify-between py-4">
-          {/* Enhanced Logo */}
-          <div className="flex items-center space-x-3">
+      <div className="container mx-auto px-3 sm:px-4 lg:px-6">
+        <div className="flex items-center justify-between py-3 sm:py-4">
+          {/* Mobile-Optimized Logo */}
+          <div className="flex items-center space-x-2 sm:space-x-3">
             <Link href="/" className="flex items-center group">
               {settings?.siteLogo && !settings?.useTextLogo ? (
                 <div className="relative">
@@ -73,25 +73,25 @@ export function Header() {
                   <img 
                     src={settings.siteLogo} 
                     alt={settings.siteTitle || 'Gaming Portal'} 
-                    className="relative h-12 w-auto transition-transform duration-300 group-hover:scale-105" 
+                    className="relative h-8 sm:h-10 lg:h-12 w-auto transition-transform duration-300 group-hover:scale-105" 
                   />
                 </div>
               ) : (
-                <div className="flex items-center space-x-3">
+                <div className="flex items-center space-x-2 sm:space-x-3">
                   <div className="relative">
                     <div className="absolute inset-0 bg-gradient-to-r from-blue-600 to-purple-600 rounded-lg blur opacity-75 group-hover:opacity-100 transition-opacity duration-300"></div>
-                    <div className="relative bg-gradient-to-r from-blue-600 to-purple-600 p-2.5 rounded-lg">
-                      <i className="ri-gamepad-line text-white text-2xl"></i>
+                    <div className="relative bg-gradient-to-r from-blue-600 to-purple-600 p-1.5 sm:p-2 lg:p-2.5 rounded-lg">
+                      <i className="ri-gamepad-line text-white text-lg sm:text-xl lg:text-2xl"></i>
                     </div>
                   </div>
                   <div className="flex flex-col">
                     <span 
-                      className="text-2xl font-bold bg-gradient-to-r from-white to-slate-300 bg-clip-text text-transparent font-inter tracking-tight"
+                      className="text-lg sm:text-xl lg:text-2xl font-bold bg-gradient-to-r from-white to-slate-300 bg-clip-text text-transparent font-inter tracking-tight"
                       style={settings?.textLogoColor ? { color: settings.textLogoColor } : {}}
                     >
                       {settings?.siteTitle ? settings.siteTitle : 'Gaming Portal'}
                     </span>
-                    <span className="text-xs text-slate-400 font-medium tracking-wider">Ultimate Gaming Hub</span>
+                    <span className="text-xs text-slate-400 font-medium tracking-wider hidden sm:block">Ultimate Gaming Hub</span>
                   </div>
                 </div>
               )}
@@ -127,22 +127,19 @@ export function Header() {
             ))}
           </nav>
           
-          {/* Enhanced Right Side Controls */}
-          <div className="flex items-center space-x-2">
-            {/* Enhanced Search Toggle */}
-            <div className="relative">
-              <button 
-                onClick={toggleSearch}
-                className="p-2.5 text-slate-400 hover:text-white bg-white/5 hover:bg-white/10 rounded-lg transition-all duration-300 group" 
-                aria-label="Search"
-              >
-                <i className="ri-search-line text-lg group-hover:scale-110 transition-transform duration-300"></i>
-              </button>
-            </div>
+          {/* Mobile-Optimized Right Side Controls */}
+          <div className="flex items-center space-x-1 sm:space-x-2">
+            {/* Mobile Search Toggle - Always visible */}
+            <button 
+              onClick={toggleSearch}
+              className="p-2 sm:p-2.5 text-slate-400 hover:text-white bg-white/5 hover:bg-white/10 rounded-lg transition-all duration-300 group touch-manipulation" 
+              aria-label="Search"
+            >
+              <i className="ri-search-line text-lg sm:text-xl group-hover:scale-110 transition-transform duration-300"></i>
+            </button>
             
-            {/* Enhanced Theme Controls */}
-            <div className="flex items-center space-x-1 bg-white/5 rounded-lg p-1">
-              {/* Dark Mode Toggle */}
+            {/* Theme Controls - Compact on mobile */}
+            <div className="hidden sm:flex items-center space-x-1 bg-white/5 rounded-lg p-1">
               <button 
                 onClick={toggleMode}
                 className="p-2 text-slate-400 hover:text-white hover:bg-white/10 rounded-md transition-all duration-300 group" 
@@ -154,12 +151,23 @@ export function Header() {
                   <i className="ri-moon-line text-lg group-hover:scale-110 transition-transform duration-300"></i>
                 )}
               </button>
-              
-              {/* Theme Selector */}
               <ThemeSwitcher />
             </div>
             
-            {/* Enhanced Auth Section */}
+            {/* Mobile Theme Toggle - Simple on mobile */}
+            <button 
+              onClick={toggleMode}
+              className="sm:hidden p-2 text-slate-400 hover:text-white bg-white/5 hover:bg-white/10 rounded-lg transition-all duration-300 touch-manipulation" 
+              aria-label="Toggle Dark Mode"
+            >
+              {darkMode ? (
+                <i className="ri-sun-line text-lg"></i>
+              ) : (
+                <i className="ri-moon-line text-lg"></i>
+              )}
+            </button>
+            
+            {/* Enhanced Auth Section - Mobile Optimized */}
             {user ? (
               <div 
                 className="relative dropdown-container"
@@ -167,13 +175,13 @@ export function Header() {
                 onMouseLeave={() => setIsDropdownOpen(false)}
               >
                 <button 
-                  className="p-2.5 text-slate-300 hover:text-white bg-gradient-to-r from-blue-600/20 to-purple-600/20 hover:from-blue-600/30 hover:to-purple-600/30 rounded-lg flex items-center dropdown-trigger transition-all duration-300 border border-white/10"
+                  className="p-2 sm:p-2.5 text-slate-300 hover:text-white bg-gradient-to-r from-blue-600/20 to-purple-600/20 hover:from-blue-600/30 hover:to-purple-600/30 rounded-lg flex items-center dropdown-trigger transition-all duration-300 border border-white/10 touch-manipulation"
                   onClick={() => setIsDropdownOpen(!isDropdownOpen)}
                 >
-                  <span className="hidden lg:inline-block mr-2 font-medium text-sm">{user.username}</span>
+                  <span className="hidden xl:inline-block mr-2 font-medium text-sm">{user.username}</span>
                   <div className="relative">
                     <div className="absolute inset-0 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full opacity-20"></div>
-                    <i className="ri-user-line text-lg relative"></i>
+                    <i className="ri-user-line text-lg sm:text-xl relative"></i>
                   </div>
                 </button>
                 {isDropdownOpen && (
@@ -184,7 +192,7 @@ export function Header() {
                     </div>
                     <Link 
                       href="/user-dashboard" 
-                      className="flex items-center px-4 py-3 text-sm text-slate-300 hover:text-white hover:bg-white/10 transition-all duration-200"
+                      className="flex items-center px-4 py-3 text-sm text-slate-300 hover:text-white hover:bg-white/10 transition-all duration-200 touch-manipulation"
                       onClick={() => setIsDropdownOpen(false)}
                     >
                       <i className="ri-dashboard-line mr-3 text-blue-400"></i>
@@ -192,7 +200,7 @@ export function Header() {
                     </Link>
                     <Link 
                       href="/profile" 
-                      className="flex items-center px-4 py-3 text-sm text-slate-300 hover:text-white hover:bg-white/10 transition-all duration-200"
+                      className="flex items-center px-4 py-3 text-sm text-slate-300 hover:text-white hover:bg-white/10 transition-all duration-200 touch-manipulation"
                       onClick={() => setIsDropdownOpen(false)}
                     >
                       <i className="ri-user-settings-line mr-3 text-green-400"></i>
@@ -201,7 +209,7 @@ export function Header() {
                     {user.isAdmin && (
                       <Link 
                         href="/admin/dashboard" 
-                        className="flex items-center px-4 py-3 text-sm text-slate-300 hover:text-white hover:bg-white/10 transition-all duration-200"
+                        className="flex items-center px-4 py-3 text-sm text-slate-300 hover:text-white hover:bg-white/10 transition-all duration-200 touch-manipulation"
                         onClick={() => setIsDropdownOpen(false)}
                       >
                         <i className="ri-admin-line mr-3 text-purple-400"></i>
@@ -214,7 +222,7 @@ export function Header() {
                         setIsDropdownOpen(false);
                         handleLogout();
                       }}
-                      className="flex items-center w-full px-4 py-3 text-sm text-slate-300 hover:text-red-400 hover:bg-red-500/10 transition-all duration-200"
+                      className="flex items-center w-full px-4 py-3 text-sm text-slate-300 hover:text-red-400 hover:bg-red-500/10 transition-all duration-200 touch-manipulation"
                     >
                       <i className="ri-logout-circle-line mr-3"></i>
                       Logout
@@ -225,17 +233,17 @@ export function Header() {
             ) : (
               <Link 
                 href="/auth" 
-                className="flex items-center px-4 py-2.5 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white rounded-lg transition-all duration-300 font-medium text-sm shadow-lg hover:shadow-xl transform hover:scale-105"
+                className="flex items-center px-3 sm:px-4 py-2 sm:py-2.5 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white rounded-lg transition-all duration-300 font-medium text-sm shadow-lg hover:shadow-xl transform hover:scale-105 touch-manipulation"
               >
-                <i className="ri-login-circle-line text-lg mr-2"></i>
-                <span>Login</span>
+                <i className="ri-login-circle-line text-lg mr-1 sm:mr-2"></i>
+                <span className="hidden sm:inline">Login</span>
               </Link>
             )}
             
-            {/* Enhanced Mobile Menu Toggle */}
+            {/* Enhanced Mobile Menu Toggle - Touch Optimized */}
             <button 
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-              className="lg:hidden p-2.5 text-slate-400 hover:text-white bg-white/5 hover:bg-white/10 rounded-lg transition-all duration-300" 
+              className="lg:hidden p-3 text-slate-400 hover:text-white bg-white/5 hover:bg-white/10 rounded-lg transition-all duration-300 touch-manipulation min-h-[44px] min-w-[44px] flex items-center justify-center" 
               aria-label="Toggle Menu"
             >
               {isMobileMenuOpen ? (
@@ -247,56 +255,97 @@ export function Header() {
           </div>
         </div>
         
-        {/* Enhanced Search Bar */}
+        {/* Mobile-Optimized Search Bar */}
         {isSearchOpen && (
-          <div className="py-4 border-t border-slate-700/50">
-            <form onSubmit={handleSearch} className="flex max-w-md mx-auto">
+          <div className="py-3 sm:py-4 border-t border-slate-700/50">
+            <form onSubmit={handleSearch} className="flex max-w-full sm:max-w-md mx-auto px-2 sm:px-0">
               <div className="relative flex-1">
                 <i className="ri-search-line absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400"></i>
                 <input 
                   type="text" 
-                  placeholder="Search for amazing games..." 
-                  className="w-full pl-10 pr-4 py-3 rounded-l-xl border-0 bg-slate-800/50 backdrop-blur-sm text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500/50 transition-all duration-300"
+                  placeholder="Search for games..." 
+                  className="w-full pl-10 pr-4 py-3 sm:py-3 rounded-l-xl border-0 bg-slate-800/50 backdrop-blur-sm text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500/50 transition-all duration-300 text-base"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                 />
               </div>
               <button 
                 type="submit" 
-                className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white px-6 rounded-r-xl transition-all duration-300 font-medium shadow-lg hover:shadow-xl"
+                className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white px-4 sm:px-6 rounded-r-xl transition-all duration-300 font-medium shadow-lg hover:shadow-xl touch-manipulation text-sm sm:text-base"
               >
-                Search
+                <span className="hidden sm:inline">Search</span>
+                <i className="ri-search-line sm:hidden"></i>
               </button>
             </form>
           </div>
         )}
         
-        {/* Enhanced Mobile Menu */}
+        {/* Mobile-Optimized Menu */}
         {isMobileMenuOpen && (
-          <div className="lg:hidden py-4 border-t border-slate-700/50">
-            <nav className="flex flex-col space-y-1">
+          <div className="lg:hidden border-t border-slate-700/50 bg-slate-900/50 backdrop-blur-lg">
+            {/* Mobile Theme Controls */}
+            <div className="px-4 py-3 border-b border-slate-700/30 sm:hidden">
+              <div className="flex items-center justify-between">
+                <span className="text-sm text-slate-400">Theme</span>
+                <div className="flex items-center space-x-2">
+                  <ThemeSwitcher />
+                </div>
+              </div>
+            </div>
+            
+            {/* Mobile Navigation Links */}
+            <nav className="py-2">
               {[
-                { href: '/', label: 'Home', icon: 'ri-home-5-line' },
-                { href: '/categories', label: 'Categories', icon: 'ri-apps-2-line' },
-                { href: '/top-games', label: 'Top Games', icon: 'ri-trophy-line' },
-                { href: '/tournaments', label: 'Tournaments', icon: 'ri-sword-line' },
-                { href: '/random', label: 'Random Game', icon: 'ri-shuffle-line' },
-                { href: '/blog', label: 'Blog', icon: 'ri-article-line' }
+                { href: '/', label: 'Home', icon: 'ri-home-5-line', color: 'text-blue-400' },
+                { href: '/categories', label: 'Categories', icon: 'ri-apps-2-line', color: 'text-green-400' },
+                { href: '/top-games', label: 'Top Games', icon: 'ri-trophy-line', color: 'text-yellow-400' },
+                { href: '/tournaments', label: 'Tournaments', icon: 'ri-sword-line', color: 'text-red-400' },
+                { href: '/random', label: 'Random Game', icon: 'ri-shuffle-line', color: 'text-purple-400' },
+                { href: '/blog', label: 'Blog', icon: 'ri-article-line', color: 'text-pink-400' }
               ].map((item) => (
                 <Link 
                   key={item.href}
                   href={item.href} 
-                  className={`flex items-center space-x-3 px-4 py-3 text-slate-300 hover:text-white hover:bg-white/10 rounded-lg transition-all duration-300 ${location === item.href ? 'text-white bg-white/10 border-l-4 border-blue-500' : ''}`}
+                  className={`flex items-center space-x-4 px-4 py-4 text-slate-300 hover:text-white hover:bg-white/10 transition-all duration-300 touch-manipulation relative ${
+                    location === item.href ? 'text-white bg-white/10' : ''
+                  }`}
                   onClick={() => setIsMobileMenuOpen(false)}
                 >
-                  <i className={`${item.icon} text-lg`}></i>
-                  <span className="font-medium">{item.label}</span>
+                  <div className={`p-2 rounded-lg bg-white/5 ${location === item.href ? 'bg-white/15' : ''}`}>
+                    <i className={`${item.icon} text-lg ${item.color}`}></i>
+                  </div>
+                  <div className="flex-1">
+                    <span className="font-medium text-base">{item.label}</span>
+                  </div>
                   {location === item.href && (
-                    <div className="ml-auto w-2 h-2 bg-blue-500 rounded-full"></div>
+                    <div className="absolute left-0 top-0 bottom-0 w-1 bg-gradient-to-b from-blue-500 to-purple-500"></div>
                   )}
+                  <i className="ri-arrow-right-s-line text-slate-500"></i>
                 </Link>
               ))}
             </nav>
+            
+            {/* Mobile Quick Actions */}
+            <div className="px-4 py-3 border-t border-slate-700/30">
+              <div className="grid grid-cols-2 gap-3">
+                <Link 
+                  href="/random" 
+                  className="flex items-center justify-center px-4 py-3 bg-gradient-to-r from-blue-600/20 to-purple-600/20 hover:from-blue-600/30 hover:to-purple-600/30 rounded-lg transition-all duration-300 touch-manipulation"
+                  onClick={() => setIsMobileMenuOpen(false)}
+                >
+                  <i className="ri-shuffle-line text-blue-400 mr-2"></i>
+                  <span className="text-sm font-medium text-white">Random Play</span>
+                </Link>
+                <Link 
+                  href="/tournaments" 
+                  className="flex items-center justify-center px-4 py-3 bg-gradient-to-r from-red-600/20 to-orange-600/20 hover:from-red-600/30 hover:to-orange-600/30 rounded-lg transition-all duration-300 touch-manipulation"
+                  onClick={() => setIsMobileMenuOpen(false)}
+                >
+                  <i className="ri-trophy-line text-red-400 mr-2"></i>
+                  <span className="text-sm font-medium text-white">Compete</span>
+                </Link>
+              </div>
+            </div>
           </div>
         )}
       </div>
