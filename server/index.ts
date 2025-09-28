@@ -10,8 +10,15 @@ dotenv.config({ path: '.env.local' });
 dotenv.config();
 
 const app = express();
-app.use(express.json());
-app.use(express.urlencoded({ extended: false }));
+// Configure Express middleware with proper content-type handling
+app.use(express.json({ 
+  type: ['application/json'],
+  limit: '50mb'
+}));
+app.use(express.urlencoded({ 
+  extended: false,
+  type: ['application/x-www-form-urlencoded']
+}));
 
 // Serve uploaded files statically
 app.use('/uploads', express.static(path.join(process.cwd(), 'uploads')));

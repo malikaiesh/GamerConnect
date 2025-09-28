@@ -234,63 +234,70 @@ export function MobileDashboard() {
         : `linear-gradient(to bottom right, hsl(var(--primary) / 0.1), hsl(var(--accent) / 0.1))`
     }}>
       {/* Header Section with User Profile */}
-      <div className="bg-gradient-to-r from-primary to-accent text-white p-6 rounded-b-3xl shadow-lg" style={{
+      <div className="relative bg-gradient-to-r from-primary to-accent text-white p-6 rounded-b-3xl shadow-lg" style={{
         background: `linear-gradient(to right, hsl(var(--primary)), hsl(var(--accent)))`
       }}>
-        <div className="flex items-center justify-between mb-4">
-          <div className="flex items-center space-x-4">
-            <button 
-              onClick={() => navigate(isMobile ? '/mobile-settings' : '/profile')}
-              className="transition-transform hover:scale-105 active:scale-95"
-              data-testid="button-profile-avatar"
-            >
-              <Avatar className="w-16 h-16 border-2 border-white/30">
-                <AvatarImage src={user?.profilePicture || undefined} alt={user?.username || 'Player'} />
-                <AvatarFallback className="bg-white/20 text-white text-2xl font-bold">
-                  {(user?.displayName || user?.username || 'Player').charAt(0).toUpperCase()}
-                </AvatarFallback>
-              </Avatar>
-            </button>
-            <div>
-              <h2 className="text-2xl font-bold">
-                {user?.displayName || user?.username || 'Player'}
-              </h2>
-              <div className="flex items-center flex-wrap gap-3 mt-1">
-                <div className="flex items-center space-x-1">
-                  <Star className="w-4 h-4 text-yellow-300" />
-                  <span className="text-xs font-medium" data-testid="text-id-level">ID {dashboardData?.user?.idLevel || 1}</span>
-                </div>
-                <div className="flex items-center space-x-1">
-                  <Crown className="w-4 h-4 text-purple-300" />
-                  <span className="text-xs font-medium" data-testid="text-rooms-level">Room {dashboardData?.user?.roomsLevel || 1}</span>
-                </div>
-                <div className="flex items-center space-x-1">
-                  <Coins className="w-4 h-4 text-yellow-300" />
-                  <span className="text-xs font-medium" data-testid="text-coins">{Math.floor(coins).toLocaleString()}</span>
-                </div>
-                {user?.isVerified && (
-                  <Shield className="w-4 h-4 text-green-300" />
-                )}
-              </div>
+        {/* Centered Profile Layout */}
+        <div className="flex flex-col items-center text-center mb-6">
+          {/* Profile Avatar */}
+          <button 
+            onClick={() => navigate(isMobile ? '/mobile-settings' : '/profile')}
+            className="transition-transform hover:scale-105 active:scale-95 mb-3"
+            data-testid="button-profile-avatar"
+          >
+            <Avatar className="w-20 h-20 border-2 border-white/30">
+              <AvatarImage src={user?.profilePicture || undefined} alt={user?.username || 'Player'} />
+              <AvatarFallback className="bg-white/20 text-white text-3xl font-bold">
+                {(user?.displayName || user?.username || 'Player').charAt(0).toUpperCase()}
+              </AvatarFallback>
+            </Avatar>
+          </button>
+          
+          {/* User Name */}
+          <h2 className="text-2xl font-bold mb-2">
+            {user?.displayName || user?.username || 'Player'}
+          </h2>
+          
+          {/* ID & Rooms Level */}
+          <div className="flex items-center justify-center gap-4 mb-3">
+            <div className="flex items-center space-x-1">
+              <Star className="w-4 h-4 text-yellow-300" />
+              <span className="text-sm font-medium" data-testid="text-id-level">ID {dashboardData?.user?.idLevel || 1}</span>
             </div>
+            <div className="flex items-center space-x-1">
+              <Crown className="w-4 h-4 text-purple-300" />
+              <span className="text-sm font-medium" data-testid="text-rooms-level">Room {dashboardData?.user?.roomsLevel || 1}</span>
+            </div>
+            {user?.isVerified && (
+              <Shield className="w-4 h-4 text-green-300" />
+            )}
           </div>
-          <div className="flex flex-col items-end space-y-2">
-            <div className="flex items-center space-x-2">
+          
+          {/* Coins Display */}
+          <div className="flex items-center space-x-1">
+            <Coins className="w-5 h-5 text-yellow-300" />
+            <span className="text-lg font-bold" data-testid="text-coins">{Math.floor(coins).toLocaleString()}</span>
+          </div>
+        </div>
+        
+        {/* Theme Controls - Moved to top right corner */}
+        <div className="absolute top-4 right-4">
+          <div className="flex items-center space-x-2">
+            <button
+              onClick={handleThemeToggle}
+              className="p-2 bg-white/20 rounded-full hover:bg-white/30 transition-colors"
+              data-testid="button-dark-mode-toggle"
+            >
+              {darkMode ? <Sun className="w-4 h-4 text-white" /> : <Moon className="w-4 h-4 text-white" />}
+            </button>
+            <div className="relative">
               <button
-                onClick={handleThemeToggle}
+                onClick={() => setShowThemeSelector(!showThemeSelector)}
                 className="p-2 bg-white/20 rounded-full hover:bg-white/30 transition-colors"
-                data-testid="button-dark-mode-toggle"
+                data-testid="button-theme-selector"
               >
-                {darkMode ? <Sun className="w-4 h-4 text-white" /> : <Moon className="w-4 h-4 text-white" />}
+                <Sparkles className="w-4 h-4 text-white" />
               </button>
-              <div className="relative">
-                <button
-                  onClick={() => setShowThemeSelector(!showThemeSelector)}
-                  className="p-2 bg-white/20 rounded-full hover:bg-white/30 transition-colors"
-                  data-testid="button-theme-selector"
-                >
-                  <Sparkles className="w-4 h-4 text-white" />
-                </button>
               
               {showThemeSelector && (
                 <>
@@ -333,17 +340,6 @@ export function MobileDashboard() {
                   </div>
                 </>
               )}
-              </div>
-            </div>
-            <div className="flex items-center space-x-3">
-              <div className="flex items-center space-x-1">
-                <Heart className="w-3 h-3 text-red-300" />
-                <span className="text-xs">100</span>
-              </div>
-              <div className="flex items-center space-x-1">
-                <Flame className="w-3 h-3 text-orange-300" />
-                <span className="text-xs">{userStats?.gamesPlayed || 0}</span>
-              </div>
             </div>
           </div>
         </div>
@@ -386,7 +382,7 @@ export function MobileDashboard() {
       </div>
 
       {/* Feature Cards Section - Mobile Optimized */}
-      <div className="p-3 space-y-2">
+      <div className="p-4 space-y-4">
         {featureCards.map((card, index) => {
           const Icon = card.icon;
           return (
