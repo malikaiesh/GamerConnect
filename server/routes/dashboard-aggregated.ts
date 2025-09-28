@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import { isAuthenticated } from '../middleware/auth.js';
-import { db } from '../db/index.js';
-import { referrals, referralRewards, users, tournaments } from '../db/schema.js';
+import { db } from '../db.js';
+import { referrals, referralRewards, users, tournaments } from '@shared/schema';
 import { eq, sum, count, sql, and, desc } from 'drizzle-orm';
 
 const requireAuth = isAuthenticated;
