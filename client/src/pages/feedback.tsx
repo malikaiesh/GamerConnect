@@ -136,29 +136,31 @@ export default function FeedbackPage() {
   return (
     <div className="flex min-h-screen bg-background">
       <Sidebar />
-      <div className="flex-1 ml-64">
-        <div className="container mx-auto p-6 space-y-6">
-          <div className="flex items-center gap-3">
-            <MessageSquare className="w-8 h-8 text-primary" />
+      <div className="flex-1 md:ml-64">
+        <div className="container mx-auto p-4 md:p-6 space-y-4 md:space-y-6">
+          <div className="flex items-center gap-2 md:gap-3">
+            <MessageSquare className="w-6 h-6 md:w-8 md:h-8 text-primary" />
             <div>
-              <h1 className="text-3xl font-bold">Feedback Center</h1>
-              <p className="text-muted-foreground">Share your thoughts and help us improve</p>
+              <h1 className="text-2xl md:text-3xl font-bold">Feedback Center</h1>
+              <p className="text-sm md:text-base text-muted-foreground">Share your thoughts and help us improve</p>
             </div>
           </div>
 
-      <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-        <TabsList className="grid w-full grid-cols-2">
-          <TabsTrigger value="submit" data-testid="tab-submit-feedback">
-            <Send className="w-4 h-4 mr-2" />
-            Submit Feedback
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4 md:space-y-6">
+        <TabsList className="grid w-full grid-cols-2 h-auto">
+          <TabsTrigger value="submit" data-testid="tab-submit-feedback" className="text-xs md:text-sm py-2.5">
+            <Send className="w-3 h-3 md:w-4 md:h-4 mr-1 md:mr-2" />
+            <span className="hidden sm:inline">Submit Feedback</span>
+            <span className="sm:hidden">Submit</span>
           </TabsTrigger>
-          <TabsTrigger value="history" data-testid="tab-feedback-history">
-            <MessageSquare className="w-4 h-4 mr-2" />
-            My Feedback ({feedbackHistory.length})
+          <TabsTrigger value="history" data-testid="tab-feedback-history" className="text-xs md:text-sm py-2.5">
+            <MessageSquare className="w-3 h-3 md:w-4 md:h-4 mr-1 md:mr-2" />
+            <span className="hidden sm:inline">My Feedback ({feedbackHistory.length})</span>
+            <span className="sm:hidden">History ({feedbackHistory.length})</span>
           </TabsTrigger>
         </TabsList>
 
-        <TabsContent value="submit" className="space-y-6">
+        <TabsContent value="submit" className="space-y-4 md:space-y-6">
           <Card>
             <CardHeader>
               <CardTitle>Submit New Feedback</CardTitle>
@@ -167,8 +169,8 @@ export default function FeedbackPage() {
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 md:space-y-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
                   <div className="space-y-2">
                     <Label htmlFor="type">Feedback Type</Label>
                     <Select 
@@ -294,7 +296,7 @@ export default function FeedbackPage() {
           </Card>
         </TabsContent>
 
-        <TabsContent value="history" className="space-y-6">
+        <TabsContent value="history" className="space-y-4 md:space-y-6">
           <Card>
             <CardHeader>
               <CardTitle>My Feedback History</CardTitle>

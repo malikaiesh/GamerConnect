@@ -20,7 +20,7 @@ import {
   Sparkles,
   Award,
   Flame,
-  CheckCircle,
+  BadgeCheck,
   MessageSquare,
   Moon,
   Sun,
@@ -131,7 +131,7 @@ const featureCards: FeatureCard[] = [
     id: "get-verified",
     title: "Get Verified",
     subtitle: "Verify Account",
-    icon: CheckCircle,
+    icon: BadgeCheck,
     href: "/verification",
     iconColor: "text-white"
   },
@@ -152,7 +152,7 @@ export function MobileDashboard() {
   const [showThemeSelector, setShowThemeSelector] = useState(false);
   const [, navigate] = useLocation();
   const isMobile = useMobile();
-  const { getTotalItems, addItem } = useShoppingCart();
+  const { getTotalItems } = useShoppingCart();
   
   // Single aggregated API call for all dashboard data
   const { data: dashboardData, isLoading: dashboardLoading, error: dashboardError } = useQuery({
@@ -263,12 +263,7 @@ export function MobileDashboard() {
               {user?.displayName || user?.username || 'Player'}
             </h2>
             {user?.isVerified && (
-              <div className="relative inline-flex items-center justify-center">
-                <div className="absolute inset-0 bg-blue-500 rounded-full opacity-20 blur-sm"></div>
-                <div className="relative bg-blue-500 rounded-full p-1">
-                  <CheckCircle className="w-4 h-4 text-white fill-current" data-testid="user-verification-badge" />
-                </div>
-              </div>
+              <BadgeCheck className="w-5 h-5 text-blue-500" data-testid="user-verification-badge" />
             )}
           </div>
           
@@ -298,32 +293,25 @@ export function MobileDashboard() {
           </div>
         </div>
         
-        {/* Shopping Cart and Theme Controls - Top right corner */}
-        <div className="absolute top-3 right-3 sm:top-4 sm:right-4">
+        {/* Settings and Shopping Cart - Top LEFT corner */}
+        <div className="absolute top-3 left-3 sm:top-4 sm:left-4">
           <div className="flex items-center space-x-1 sm:space-x-2">
+            {/* Settings Icon */}
+            <button
+              onClick={() => navigate(isMobile ? '/mobile-settings' : '/settings')}
+              className="p-1.5 sm:p-2 bg-white/20 rounded-full hover:bg-white/30 transition-colors"
+              data-testid="button-settings"
+            >
+              <Settings className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-white" />
+            </button>
             {/* Shopping Cart Icon */}
             <button
-              onClick={() => {
-                // Add a demo item to cart if empty, then navigate to checkout
-                if (getTotalItems() === 0) {
-                  const sampleItem = {
-                    id: 'demo-diamonds-100',
-                    type: 'diamonds' as const,
-                    name: '100 Diamonds Pack',
-                    description: 'Premium gaming currency for exclusive features',
-                    price: 999, // $9.99 in cents
-                    currency: 'USD'
-                  };
-                  addItem(sampleItem);
-                }
-                navigate('/checkout');
-              }}
+              onClick={() => navigate('/checkout')}
               className="p-1.5 sm:p-2 bg-white/20 rounded-full hover:bg-white/30 transition-colors relative"
               data-testid="button-shopping-cart"
             >
               <div className="relative">
                 <ShoppingCart className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-white" />
-                {/* Cart badge - you can add state for cart items count */}
                 {getTotalItems() > 0 && (
                   <div className="absolute -top-0.5 -right-0.5 sm:-top-1 sm:-right-1 bg-red-500 text-white rounded-full w-3 h-3 sm:w-4 sm:h-4 flex items-center justify-center text-xs font-bold">
                     {getTotalItems() > 9 ? '9+' : getTotalItems()}
@@ -331,6 +319,12 @@ export function MobileDashboard() {
                 )}
               </div>
             </button>
+          </div>
+        </div>
+
+        {/* Theme Controls - Top RIGHT corner */}
+        <div className="absolute top-3 right-3 sm:top-4 sm:right-4">
+          <div className="flex items-center space-x-1 sm:space-x-2">
             <button
               onClick={handleThemeToggle}
               className="p-1.5 sm:p-2 bg-white/20 rounded-full hover:bg-white/30 transition-colors"

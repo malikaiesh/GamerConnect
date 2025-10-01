@@ -110,4 +110,4 @@ cookies.txt
 migration-*.js
 migration-*.cjs
 seed-*.js
-update-*.js
+update-*.jstest-cookies.txt
