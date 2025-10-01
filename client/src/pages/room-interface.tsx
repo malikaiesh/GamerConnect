@@ -426,58 +426,20 @@ export default function RoomInterfacePage() {
     return 'member';
   };
 
-  // Define different colors for each seat position
-  const getSeatColors = (seatNumber: number, isActive: boolean, isMicOn: boolean) => {
-    const colors = [
-      { 
-        active: 'bg-gradient-to-br from-blue-500/30 to-cyan-600/30 border-blue-400/60 shadow-lg shadow-blue-500/50',
-        inactive: 'bg-gradient-to-br from-blue-500/20 to-cyan-600/20 border-blue-400/50 shadow-lg shadow-blue-500/25',
-        empty: 'border-blue-400/40 hover:shadow-blue-500/40'
-      },
-      { 
-        active: 'bg-gradient-to-br from-purple-500/30 to-pink-600/30 border-purple-400/60 shadow-lg shadow-purple-500/50',
-        inactive: 'bg-gradient-to-br from-purple-500/20 to-pink-600/20 border-purple-400/50 shadow-lg shadow-purple-500/25',
-        empty: 'border-purple-400/40 hover:shadow-purple-500/40'
-      },
-      { 
-        active: 'bg-gradient-to-br from-green-500/30 to-emerald-600/30 border-green-400/60 shadow-lg shadow-green-500/50',
-        inactive: 'bg-gradient-to-br from-green-500/20 to-emerald-600/20 border-green-400/50 shadow-lg shadow-green-500/25',
-        empty: 'border-green-400/40 hover:shadow-green-500/40'
-      },
-      { 
-        active: 'bg-gradient-to-br from-yellow-500/30 to-orange-600/30 border-yellow-400/60 shadow-lg shadow-yellow-500/50',
-        inactive: 'bg-gradient-to-br from-yellow-500/20 to-orange-600/20 border-yellow-400/50 shadow-lg shadow-yellow-500/25',
-        empty: 'border-yellow-400/40 hover:shadow-yellow-500/40'
-      },
-      { 
-        active: 'bg-gradient-to-br from-red-500/30 to-rose-600/30 border-red-400/60 shadow-lg shadow-red-500/50',
-        inactive: 'bg-gradient-to-br from-red-500/20 to-rose-600/20 border-red-400/50 shadow-lg shadow-red-500/25',
-        empty: 'border-red-400/40 hover:shadow-red-500/40'
-      },
-      { 
-        active: 'bg-gradient-to-br from-indigo-500/30 to-violet-600/30 border-indigo-400/60 shadow-lg shadow-indigo-500/50',
-        inactive: 'bg-gradient-to-br from-indigo-500/20 to-violet-600/20 border-indigo-400/50 shadow-lg shadow-indigo-500/25',
-        empty: 'border-indigo-400/40 hover:shadow-indigo-500/40'
-      },
-      { 
-        active: 'bg-gradient-to-br from-teal-500/30 to-cyan-600/30 border-teal-400/60 shadow-lg shadow-teal-500/50',
-        inactive: 'bg-gradient-to-br from-teal-500/20 to-cyan-600/20 border-teal-400/50 shadow-lg shadow-teal-500/25',
-        empty: 'border-teal-400/40 hover:shadow-teal-500/40'
-      },
-      { 
-        active: 'bg-gradient-to-br from-pink-500/30 to-fuchsia-600/30 border-pink-400/60 shadow-lg shadow-pink-500/50',
-        inactive: 'bg-gradient-to-br from-pink-500/20 to-fuchsia-600/20 border-pink-400/50 shadow-lg shadow-pink-500/25',
-        empty: 'border-pink-400/40 hover:shadow-pink-500/40'
-      }
+  // Define different gradient colors for each seat position
+  const getSeatGradient = (seatNumber: number) => {
+    const gradients = [
+      'conic-gradient(from 0deg, #3b82f6 0deg, #8b5cf6 120deg, #10b981 240deg, #3b82f6 360deg)', // blue-purple-green
+      'conic-gradient(from 0deg, #8b5cf6 0deg, #ec4899 120deg, #f59e0b 240deg, #8b5cf6 360deg)', // purple-pink-orange
+      'conic-gradient(from 0deg, #10b981 0deg, #eab308 120deg, #3b82f6 240deg, #10b981 360deg)', // green-yellow-blue
+      'conic-gradient(from 0deg, #eab308 0deg, #f59e0b 120deg, #ef4444 240deg, #eab308 360deg)', // yellow-orange-red
+      'conic-gradient(from 0deg, #ef4444 0deg, #ec4899 120deg, #8b5cf6 240deg, #ef4444 360deg)', // red-pink-purple
+      'conic-gradient(from 0deg, #6366f1 0deg, #8b5cf6 120deg, #ec4899 240deg, #6366f1 360deg)', // indigo-purple-pink
+      'conic-gradient(from 0deg, #14b8a6 0deg, #06b6d4 120deg, #3b82f6 240deg, #14b8a6 360deg)', // teal-cyan-blue
+      'conic-gradient(from 0deg, #ec4899 0deg, #d946ef 120deg, #a855f7 240deg, #ec4899 360deg)', // pink-fuchsia-purple
     ];
     
-    const colorIndex = (seatNumber - 1) % colors.length;
-    const colorSet = colors[colorIndex];
-    
-    if (isActive) {
-      return isMicOn ? `${colorSet.active} animate-pulse` : colorSet.inactive;
-    }
-    return `bg-gradient-to-br from-gray-600/20 to-gray-800/20 border-gray-500/30 ${colorSet.empty}`;
+    return gradients[(seatNumber - 1) % gradients.length];
   };
 
   // Create seat grid with circular mic design
@@ -490,55 +452,53 @@ export default function RoomInterfacePage() {
       
       return (
         <div key={seatNumber} className="flex flex-col items-center gap-2">
-          {/* Circular Mic Design */}
-          <div
-            className={`relative w-16 h-16 sm:w-20 sm:h-20 md:w-24 md:h-24 rounded-full flex items-center justify-center cursor-pointer transition-all duration-300 border-4 ${
-              getSeatColors(seatNumber, !!seatUser, seatUser?.isMicOn || false)
-            } ${!seatUser && currentUserInRoom ? 'hover:scale-110' : ''}`}
-            onClick={() => {
-              if (!seatUser && !currentUserInRoom) {
-                // Join empty seat
-                joinRoomMutation.mutate(seatNumber);
-              } else if (!seatUser && currentUserInRoom) {
-                // Switch to empty seat
-                switchSeatMutation.mutate(seatNumber);
-              } else if (seatUser && seatUser.user.id === user?.id) {
-                // Toggle mic for current user
-                handleMicToggle();
-              }
-            }}
-          >
+          {/* Animated Gradient Border Wrapper */}
+          <div className="relative p-2">
+            {/* Rotating gradient background with larger glow */}
+            <div 
+              className="absolute -inset-2 rounded-full animate-spin-slow pointer-events-none"
+              style={{
+                background: getSeatGradient(seatNumber),
+                filter: 'blur(16px)',
+                willChange: 'transform',
+              }}
+            />
+            
+            {/* Inner circle with mic */}
+            <div
+              className={`relative w-16 h-16 sm:w-20 sm:h-20 md:w-24 md:h-24 rounded-full flex items-center justify-center cursor-pointer transition-all duration-300 bg-black ${
+                !seatUser && currentUserInRoom ? 'hover:scale-110' : ''
+              }`}
+              onClick={() => {
+                if (!seatUser && !currentUserInRoom) {
+                  // Join empty seat
+                  joinRoomMutation.mutate(seatNumber);
+                } else if (!seatUser && currentUserInRoom) {
+                  // Switch to empty seat
+                  switchSeatMutation.mutate(seatNumber);
+                } else if (seatUser && seatUser.user.id === user?.id) {
+                  // Toggle mic for current user
+                  handleMicToggle();
+                }
+              }}
+            >
             {seatUser ? (
               <>
-                {/* User Avatar */}
-                <Avatar className="w-10 h-10 sm:w-12 sm:h-12 md:w-14 md:h-14">
-                  <AvatarImage src={seatUser.user.profilePicture || undefined} />
-                  <AvatarFallback className="text-sm font-bold">
-                    {seatUser.user.displayName?.[0] || seatUser.user.username[0]}
-                  </AvatarFallback>
-                </Avatar>
+                {/* Centered Mic Icon */}
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <Mic className={`w-6 h-6 sm:w-8 sm:h-8 md:w-10 md:h-10 ${
+                    seatUser.isMicOn ? 'text-green-400' : 'text-gray-400'
+                  }`} />
+                </div>
                 
                 {/* Owner Crown */}
                 {seatUser.role === 'owner' && (
-                  <div className="absolute -top-2 -right-2">
+                  <div className="absolute -top-2 -right-2 z-10">
                     <div className="w-6 h-6 bg-yellow-500 rounded-full flex items-center justify-center border-2 border-white">
                       <Crown className="w-3 h-3 text-white" />
                     </div>
                   </div>
                 )}
-                
-                {/* Mic Status Indicator */}
-                <div className="absolute -bottom-2 -right-2">
-                  {seatUser.isMicOn ? (
-                    <div className="w-6 h-6 bg-green-500 rounded-full flex items-center justify-center border-2 border-white animate-pulse">
-                      <Mic className="w-3 h-3 text-white" />
-                    </div>
-                  ) : (
-                    <div className="w-6 h-6 bg-red-500 rounded-full flex items-center justify-center border-2 border-white">
-                      <MicOff className="w-3 h-3 text-white" />
-                    </div>
-                  )}
-                </div>
                 
                 {/* Emoji Animation Overlay */}
                 {emojiAnimations[seatNumber] && (
@@ -553,6 +513,7 @@ export default function RoomInterfacePage() {
               /* Empty Mic Icon */
               <Mic className="w-6 h-6 sm:w-8 sm:h-8 md:w-10 md:h-10 text-gray-400" />
             )}
+            </div>
           </div>
           
           {/* User Name or Seat Number */}
