@@ -108,26 +108,22 @@ export function RoomModerationPanel({ roomId, userRole, isVisible, onClose }: Mo
   // Check if user has moderation permissions
   const hasPermissions = userRole === 'owner' || userRole === 'manager' || userRole === 'moderator';
 
-  if (!isVisible || !hasPermissions) {
-    return null;
-  }
-
   // Fetch mic control status
   const { data: micControls = [], isLoading: loadingMics } = useQuery({
-    queryKey: ['/api/room-moderation/rooms', roomId, 'moderation/mic-control'],
-    enabled: isVisible
+    queryKey: [`/api/room-moderation/rooms/${roomId}/moderation/mic-control`],
+    enabled: isVisible && hasPermissions
   });
 
   // Fetch room bans
   const { data: bansData, isLoading: loadingBans } = useQuery({
-    queryKey: ['/api/room-moderation/rooms', roomId, 'moderation/bans'],
-    enabled: isVisible
+    queryKey: [`/api/room-moderation/rooms/${roomId}/moderation/bans`],
+    enabled: isVisible && hasPermissions
   });
 
   // Fetch moderation events
   const { data: eventsData, isLoading: loadingEvents } = useQuery({
-    queryKey: ['/api/room-moderation/rooms', roomId, 'moderation/events'],
-    enabled: isVisible
+    queryKey: [`/api/room-moderation/rooms/${roomId}/moderation/events`],
+    enabled: isVisible && hasPermissions
   });
 
   // Moderation mutations
@@ -139,7 +135,7 @@ export function RoomModerationPanel({ roomId, userRole, isVisible, onClose }: Mo
       }),
     onSuccess: () => {
       toast({ title: "Success", description: "User invited to mic" });
-      queryClient.invalidateQueries({ queryKey: ['/api/room-moderation/rooms', roomId] });
+      queryClient.invalidateQueries({ queryKey: [`/api/room-moderation/rooms/${roomId}/moderation/mic-control`] });
     },
     onError: (error) => {
       toast({ title: "Error", description: error.message || "Failed to invite user to mic", variant: "destructive" });
@@ -154,7 +150,7 @@ export function RoomModerationPanel({ roomId, userRole, isVisible, onClose }: Mo
       }),
     onSuccess: () => {
       toast({ title: "Success", description: "User removed from mic" });
-      queryClient.invalidateQueries({ queryKey: ['/api/room-moderation/rooms', roomId] });
+      queryClient.invalidateQueries({ queryKey: [`/api/room-moderation/rooms/${roomId}/moderation/mic-control`] });
     },
     onError: (error) => {
       toast({ title: "Error", description: error.message || "Failed to remove user from mic", variant: "destructive" });
@@ -169,7 +165,7 @@ export function RoomModerationPanel({ roomId, userRole, isVisible, onClose }: Mo
       }),
     onSuccess: (_, variables) => {
       toast({ title: "Success", description: `Mic ${variables.lock ? 'locked' : 'unlocked'}` });
-      queryClient.invalidateQueries({ queryKey: ['/api/room-moderation/rooms', roomId] });
+      queryClient.invalidateQueries({ queryKey: [`/api/room-moderation/rooms/${roomId}/moderation/mic-control`] });
     },
     onError: (error) => {
       toast({ title: "Error", description: error.message || "Failed to lock/unlock mic", variant: "destructive" });
@@ -184,7 +180,7 @@ export function RoomModerationPanel({ roomId, userRole, isVisible, onClose }: Mo
       }),
     onSuccess: (_, variables) => {
       toast({ title: "Success", description: `Mic ${variables.mute ? 'muted' : 'unmuted'}` });
-      queryClient.invalidateQueries({ queryKey: ['/api/room-moderation/rooms', roomId] });
+      queryClient.invalidateQueries({ queryKey: [`/api/room-moderation/rooms/${roomId}/moderation/mic-control`] });
     },
     onError: (error) => {
       toast({ title: "Error", description: error.message || "Failed to mute/unmute mic", variant: "destructive" });
@@ -199,7 +195,7 @@ export function RoomModerationPanel({ roomId, userRole, isVisible, onClose }: Mo
       }),
     onSuccess: () => {
       toast({ title: "Success", description: "User kicked from room" });
-      queryClient.invalidateQueries({ queryKey: ['/api/room-moderation/rooms', roomId] });
+      queryClient.invalidateQueries({ queryKey: [`/api/room-moderation/rooms/${roomId}/moderation/events`] });
       setKickReason('');
       setSelectedUser(null);
     },
@@ -216,7 +212,8 @@ export function RoomModerationPanel({ roomId, userRole, isVisible, onClose }: Mo
       }),
     onSuccess: () => {
       toast({ title: "Success", description: "User banned from room" });
-      queryClient.invalidateQueries({ queryKey: ['/api/room-moderation/rooms', roomId] });
+      queryClient.invalidateQueries({ queryKey: [`/api/room-moderation/rooms/${roomId}/moderation/bans`] });
+      queryClient.invalidateQueries({ queryKey: [`/api/room-moderation/rooms/${roomId}/moderation/events`] });
       setBanReason('');
       setBanDuration('1_day');
       setSelectedUser(null);
@@ -234,12 +231,17 @@ export function RoomModerationPanel({ roomId, userRole, isVisible, onClose }: Mo
       }),
     onSuccess: () => {
       toast({ title: "Success", description: "Mic changed successfully" });
-      queryClient.invalidateQueries({ queryKey: ['/api/room-moderation/rooms', roomId] });
+      queryClient.invalidateQueries({ queryKey: [`/api/room-moderation/rooms/${roomId}/moderation/mic-control`] });
     },
     onError: (error) => {
       toast({ title: "Error", description: error.message || "Failed to change mic", variant: "destructive" });
     }
   });
+
+  // Return null if panel is not visible or user doesn't have permissions (after all hooks are called)
+  if (!isVisible || !hasPermissions) {
+    return null;
+  }
 
   const getMicStatusIcon = (mic: MicControl) => {
     if (mic.status === 'locked') return <Lock className="h-4 w-4 text-red-500" />;
