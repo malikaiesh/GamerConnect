@@ -19,6 +19,7 @@ import { voiceChatService } from "@/services/voiceChat";
 import { formatDistanceToNow } from "date-fns";
 import { isVerificationValid } from "@/lib/verification-utils";
 import { RoomModerationButton } from "@/components/room-moderation-button";
+import { AnimatedRoomBackground } from "@/components/animated-room-background";
 
 interface RoomUser {
   id: number;
@@ -425,6 +426,60 @@ export default function RoomInterfacePage() {
     return 'member';
   };
 
+  // Define different colors for each seat position
+  const getSeatColors = (seatNumber: number, isActive: boolean, isMicOn: boolean) => {
+    const colors = [
+      { 
+        active: 'bg-gradient-to-br from-blue-500/30 to-cyan-600/30 border-blue-400/60 shadow-lg shadow-blue-500/50',
+        inactive: 'bg-gradient-to-br from-blue-500/20 to-cyan-600/20 border-blue-400/50 shadow-lg shadow-blue-500/25',
+        empty: 'border-blue-400/40 hover:shadow-blue-500/40'
+      },
+      { 
+        active: 'bg-gradient-to-br from-purple-500/30 to-pink-600/30 border-purple-400/60 shadow-lg shadow-purple-500/50',
+        inactive: 'bg-gradient-to-br from-purple-500/20 to-pink-600/20 border-purple-400/50 shadow-lg shadow-purple-500/25',
+        empty: 'border-purple-400/40 hover:shadow-purple-500/40'
+      },
+      { 
+        active: 'bg-gradient-to-br from-green-500/30 to-emerald-600/30 border-green-400/60 shadow-lg shadow-green-500/50',
+        inactive: 'bg-gradient-to-br from-green-500/20 to-emerald-600/20 border-green-400/50 shadow-lg shadow-green-500/25',
+        empty: 'border-green-400/40 hover:shadow-green-500/40'
+      },
+      { 
+        active: 'bg-gradient-to-br from-yellow-500/30 to-orange-600/30 border-yellow-400/60 shadow-lg shadow-yellow-500/50',
+        inactive: 'bg-gradient-to-br from-yellow-500/20 to-orange-600/20 border-yellow-400/50 shadow-lg shadow-yellow-500/25',
+        empty: 'border-yellow-400/40 hover:shadow-yellow-500/40'
+      },
+      { 
+        active: 'bg-gradient-to-br from-red-500/30 to-rose-600/30 border-red-400/60 shadow-lg shadow-red-500/50',
+        inactive: 'bg-gradient-to-br from-red-500/20 to-rose-600/20 border-red-400/50 shadow-lg shadow-red-500/25',
+        empty: 'border-red-400/40 hover:shadow-red-500/40'
+      },
+      { 
+        active: 'bg-gradient-to-br from-indigo-500/30 to-violet-600/30 border-indigo-400/60 shadow-lg shadow-indigo-500/50',
+        inactive: 'bg-gradient-to-br from-indigo-500/20 to-violet-600/20 border-indigo-400/50 shadow-lg shadow-indigo-500/25',
+        empty: 'border-indigo-400/40 hover:shadow-indigo-500/40'
+      },
+      { 
+        active: 'bg-gradient-to-br from-teal-500/30 to-cyan-600/30 border-teal-400/60 shadow-lg shadow-teal-500/50',
+        inactive: 'bg-gradient-to-br from-teal-500/20 to-cyan-600/20 border-teal-400/50 shadow-lg shadow-teal-500/25',
+        empty: 'border-teal-400/40 hover:shadow-teal-500/40'
+      },
+      { 
+        active: 'bg-gradient-to-br from-pink-500/30 to-fuchsia-600/30 border-pink-400/60 shadow-lg shadow-pink-500/50',
+        inactive: 'bg-gradient-to-br from-pink-500/20 to-fuchsia-600/20 border-pink-400/50 shadow-lg shadow-pink-500/25',
+        empty: 'border-pink-400/40 hover:shadow-pink-500/40'
+      }
+    ];
+    
+    const colorIndex = (seatNumber - 1) % colors.length;
+    const colorSet = colors[colorIndex];
+    
+    if (isActive) {
+      return isMicOn ? `${colorSet.active} animate-pulse` : colorSet.inactive;
+    }
+    return `bg-gradient-to-br from-gray-600/20 to-gray-800/20 border-gray-500/30 ${colorSet.empty}`;
+  };
+
   // Create seat grid with circular mic design
   const renderSeats = () => {
     if (!roomData) return null;
@@ -438,14 +493,8 @@ export default function RoomInterfacePage() {
           {/* Circular Mic Design */}
           <div
             className={`relative w-16 h-16 sm:w-20 sm:h-20 md:w-24 md:h-24 rounded-full flex items-center justify-center cursor-pointer transition-all duration-300 border-4 ${
-              seatUser 
-                ? (seatUser.isMicOn 
-                    ? 'bg-gradient-to-br from-green-500/30 to-emerald-600/30 border-green-400/60 shadow-lg shadow-green-500/40 animate-pulse'
-                    : 'bg-gradient-to-br from-blue-500/20 to-purple-600/20 border-blue-400/50 shadow-lg shadow-blue-500/25')
-                : (currentUserInRoom 
-                    ? 'bg-gradient-to-br from-purple-600/20 to-indigo-600/20 border-purple-400/50 hover:border-purple-400/70 hover:shadow-lg hover:shadow-purple-500/40 hover:bg-gradient-to-br hover:from-purple-600/30 hover:to-indigo-600/30'
-                    : 'bg-gradient-to-br from-gray-600/20 to-gray-800/20 border-gray-500/30 hover:border-purple-400/50 hover:shadow-lg hover:shadow-purple-500/25 hover:bg-gradient-to-br hover:from-purple-600/20 hover:to-indigo-600/20')
-            }`}
+              getSeatColors(seatNumber, !!seatUser, seatUser?.isMicOn || false)
+            } ${!seatUser && currentUserInRoom ? 'hover:scale-110' : ''}`}
             onClick={() => {
               if (!seatUser && !currentUserInRoom) {
                 // Join empty seat
@@ -596,16 +645,8 @@ export default function RoomInterfacePage() {
   };
 
   return (
-    <div className={`min-h-screen bg-gradient-to-br ${getThemeGradient(roomData.room.backgroundTheme)} relative overflow-hidden`}>
-      {/* Lunexa-style animated background */}
-      <div className="absolute inset-0">
-        <div className="absolute top-20 left-20 w-72 h-72 bg-purple-500/20 rounded-full blur-3xl animate-pulse"></div>
-        <div className="absolute top-40 right-32 w-96 h-96 bg-blue-500/20 rounded-full blur-3xl animate-pulse delay-1000"></div>
-        <div className="absolute bottom-32 left-1/3 w-80 h-80 bg-indigo-500/20 rounded-full blur-3xl animate-pulse delay-2000"></div>
-        <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent"></div>
-      </div>
-      
-      <div className="relative z-10 container mx-auto px-4 py-6">
+    <AnimatedRoomBackground>
+      <div className="container mx-auto px-4 py-6">
         {/* Room Header */}
         <Card className="mb-4 sm:mb-6">
           <CardHeader className="p-3 sm:p-6">
@@ -1037,6 +1078,6 @@ export default function RoomInterfacePage() {
           </div>
         </div>
       </div>
-    </div>
+    </AnimatedRoomBackground>
   );
 }
