@@ -105,28 +105,23 @@ export function RoomModerationPanel({ roomId, userRole, isVisible, onClose }: Mo
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
-  // Check if user has moderation permissions
   const hasPermissions = userRole === 'owner' || userRole === 'manager' || userRole === 'moderator';
 
-  // Fetch mic control status
   const { data: micControls = [], isLoading: loadingMics } = useQuery({
     queryKey: [`/api/room-moderation/rooms/${roomId}/moderation/mic-control`],
     enabled: isVisible && hasPermissions
   });
 
-  // Fetch room bans
   const { data: bansData, isLoading: loadingBans } = useQuery({
     queryKey: [`/api/room-moderation/rooms/${roomId}/moderation/bans`],
     enabled: isVisible && hasPermissions
   });
 
-  // Fetch moderation events
   const { data: eventsData, isLoading: loadingEvents } = useQuery({
     queryKey: [`/api/room-moderation/rooms/${roomId}/moderation/events`],
     enabled: isVisible && hasPermissions
   });
 
-  // Moderation mutations
   const inviteToMicMutation = useMutation({
     mutationFn: (data: { targetUserId: number; seatNumber: number }) => 
       apiRequest(`/api/room-moderation/rooms/${roomId}/moderation/invite-to-mic`, {
@@ -238,25 +233,23 @@ export function RoomModerationPanel({ roomId, userRole, isVisible, onClose }: Mo
     }
   });
 
-  // Return null if panel is not visible or user doesn't have permissions (after all hooks are called)
   if (!isVisible || !hasPermissions) {
     return null;
   }
 
-  const getMicStatusIcon = (mic: MicControl) => {
-    if (mic.status === 'locked') return <Lock className="h-4 w-4 text-red-500" />;
-    if (mic.isMuted) return <VolumeX className="h-4 w-4 text-yellow-500" />;
-    if (mic.status === 'occupied') return <Mic className="h-4 w-4 text-green-500" />;
-    return <MicOff className="h-4 w-4 text-gray-500" />;
+  const getMicStatusColor = (mic: MicControl | undefined) => {
+    if (!mic || mic.status === 'available') return 'from-gray-500 to-gray-700';
+    if (mic.status === 'locked') return 'from-red-500 to-rose-700';
+    if (mic.isMuted) return 'from-yellow-500 to-orange-600';
+    if (mic.status === 'occupied') return 'from-emerald-500 to-green-600';
+    return 'from-blue-500 to-indigo-600';
   };
 
-  const getBadgeVariant = (status: string) => {
-    switch (status) {
-      case 'occupied': return 'default';
-      case 'locked': return 'destructive';
-      case 'invited_only': return 'secondary';
-      default: return 'outline';
-    }
+  const getMicStatusIcon = (mic: MicControl) => {
+    if (mic.status === 'locked') return <Lock className="h-5 w-5 text-white" />;
+    if (mic.isMuted) return <VolumeX className="h-5 w-5 text-white" />;
+    if (mic.status === 'occupied') return <Mic className="h-5 w-5 text-white" />;
+    return <MicOff className="h-5 w-5 text-white" />;
   };
 
   const formatDuration = (duration: string) => {
@@ -275,129 +268,176 @@ export function RoomModerationPanel({ roomId, userRole, isVisible, onClose }: Mo
   };
 
   return (
-    <div className="fixed inset-0 z-50 bg-black bg-opacity-50 flex items-center justify-center p-4" data-testid="moderation-panel-overlay">
-      <Card className="w-full max-w-6xl max-h-[90vh] bg-white dark:bg-gray-900" data-testid="moderation-panel-card">
-        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
-          <CardTitle className="flex items-center gap-2" data-testid="moderation-panel-title">
-            <Shield className="h-5 w-5" />
-            Room Moderation
+    <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-2 sm:p-4" data-testid="moderation-panel-overlay">
+      <Card className="w-full max-w-6xl max-h-[95vh] bg-gradient-to-br from-slate-900 via-purple-900/20 to-slate-900 border-purple-500/30 overflow-hidden" data-testid="moderation-panel-card">
+        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3 sm:pb-4 bg-gradient-to-r from-purple-600 to-pink-600 text-white">
+          <CardTitle className="flex items-center gap-2 text-lg sm:text-xl" data-testid="moderation-panel-title">
+            <Shield className="h-5 w-5 sm:h-6 sm:w-6" />
+            <span className="hidden sm:inline">Room Moderation</span>
+            <span className="sm:hidden">Moderation</span>
           </CardTitle>
-          <Button variant="ghost" size="sm" onClick={onClose} data-testid="close-moderation-panel">
-            ×
+          <Button variant="ghost" size="sm" onClick={onClose} className="text-white hover:bg-white/20" data-testid="close-moderation-panel">
+            <span className="text-2xl">×</span>
           </Button>
         </CardHeader>
-        <CardContent className="space-y-4">
+        
+        <CardContent className="space-y-4 overflow-y-auto max-h-[calc(95vh-80px)] p-3 sm:p-6">
           <Tabs defaultValue="mic-control" className="w-full">
-            <TabsList className="grid w-full grid-cols-4">
-              <TabsTrigger value="mic-control" data-testid="tab-mic-control">Mic Control</TabsTrigger>
-              <TabsTrigger value="user-management" data-testid="tab-user-management">Users</TabsTrigger>
-              <TabsTrigger value="bans" data-testid="tab-bans">Bans</TabsTrigger>
-              <TabsTrigger value="events" data-testid="tab-events">Events</TabsTrigger>
+            <TabsList className="grid w-full grid-cols-4 bg-slate-800 p-1 gap-1">
+              <TabsTrigger 
+                value="mic-control" 
+                className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-600 data-[state=active]:to-pink-600 text-xs sm:text-sm" 
+                data-testid="tab-mic-control"
+              >
+                <Mic className="h-3 w-3 sm:h-4 sm:w-4 sm:mr-1" />
+                <span className="hidden sm:inline">Mics</span>
+              </TabsTrigger>
+              <TabsTrigger 
+                value="user-management" 
+                className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-600 data-[state=active]:to-pink-600 text-xs sm:text-sm" 
+                data-testid="tab-user-management"
+              >
+                <Users className="h-3 w-3 sm:h-4 sm:w-4 sm:mr-1" />
+                <span className="hidden sm:inline">Users</span>
+              </TabsTrigger>
+              <TabsTrigger 
+                value="bans" 
+                className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-600 data-[state=active]:to-pink-600 text-xs sm:text-sm" 
+                data-testid="tab-bans"
+              >
+                <AlertTriangle className="h-3 w-3 sm:h-4 sm:w-4 sm:mr-1" />
+                <span className="hidden sm:inline">Bans</span>
+              </TabsTrigger>
+              <TabsTrigger 
+                value="events" 
+                className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-600 data-[state=active]:to-pink-600 text-xs sm:text-sm" 
+                data-testid="tab-events"
+              >
+                <Clock className="h-3 w-3 sm:h-4 sm:w-4 sm:mr-1" />
+                <span className="hidden sm:inline">Events</span>
+              </TabsTrigger>
             </TabsList>
 
-            <TabsContent value="mic-control" className="space-y-4">
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <TabsContent value="mic-control" className="space-y-4 mt-4">
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
                 {Array.from({ length: 8 }, (_, i) => {
                   const seatNumber = i + 1;
                   const mic = micControls.find((m: MicControl) => m.seatNumber === seatNumber);
+                  const gradientColor = getMicStatusColor(mic);
                   
                   return (
-                    <Card key={seatNumber} className="p-4" data-testid={`mic-seat-${seatNumber}`}>
-                      <div className="flex items-center justify-between mb-2">
-                        <span className="font-medium">Mic {seatNumber}</span>
-                        {getMicStatusIcon(mic || { seatNumber, status: 'available', isMuted: false })}
-                      </div>
-                      
-                      <Badge variant={getBadgeVariant(mic?.status || 'available')} className="mb-2">
-                        {mic?.status || 'available'}
-                      </Badge>
-                      
-                      {mic?.occupiedBy && (
-                        <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">
-                          {mic.occupiedBy.displayName}
-                        </p>
-                      )}
-                      
-                      <div className="flex gap-1">
-                        {mic?.occupiedBy && (
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            onClick={() => removeFromMicMutation.mutate({ 
-                              targetUserId: mic.occupiedBy!.id, 
-                              seatNumber 
-                            })}
-                            data-testid={`remove-from-mic-${seatNumber}`}
+                    <Card 
+                      key={seatNumber} 
+                      className={`relative overflow-hidden bg-gradient-to-br ${gradientColor} border-0 text-white shadow-lg hover:shadow-xl transition-all`}
+                      data-testid={`mic-seat-${seatNumber}`}
+                    >
+                      <div className="p-3 sm:p-4">
+                        <div className="flex items-center justify-between mb-3">
+                          <span className="font-bold text-sm sm:text-base">Mic {seatNumber}</span>
+                          {getMicStatusIcon(mic || { seatNumber, status: 'available', isMuted: false } as MicControl)}
+                        </div>
+                        
+                        <div className="mb-3">
+                          <Badge 
+                            variant="secondary" 
+                            className="bg-white/20 text-white border-white/30 text-xs backdrop-blur-sm"
                           >
-                            <UserX className="h-3 w-3" />
-                          </Button>
+                            {mic?.status || 'available'}
+                          </Badge>
+                        </div>
+                        
+                        {mic?.occupiedBy && (
+                          <p className="text-xs sm:text-sm font-medium mb-3 truncate bg-black/20 px-2 py-1 rounded">
+                            {mic.occupiedBy.displayName}
+                          </p>
                         )}
                         
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          onClick={() => lockMicMutation.mutate({ 
-                            seatNumber, 
-                            lock: mic?.status !== 'locked' 
-                          })}
-                          data-testid={`lock-mic-${seatNumber}`}
-                        >
-                          {mic?.status === 'locked' ? <Unlock className="h-3 w-3" /> : <Lock className="h-3 w-3" />}
-                        </Button>
-                        
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          onClick={() => muteMicMutation.mutate({ 
-                            seatNumber, 
-                            mute: !mic?.isMuted 
-                          })}
-                          data-testid={`mute-mic-${seatNumber}`}
-                        >
-                          {mic?.isMuted ? <Volume2 className="h-3 w-3" /> : <VolumeX className="h-3 w-3" />}
-                        </Button>
+                        <div className="flex gap-1 justify-center">
+                          {mic?.occupiedBy && (
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              className="h-8 w-8 p-0 bg-white/10 hover:bg-white/20 text-white"
+                              onClick={() => removeFromMicMutation.mutate({ 
+                                targetUserId: mic.occupiedBy!.id, 
+                                seatNumber 
+                              })}
+                              data-testid={`remove-from-mic-${seatNumber}`}
+                            >
+                              <UserX className="h-3 w-3" />
+                            </Button>
+                          )}
+                          
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            className="h-8 w-8 p-0 bg-white/10 hover:bg-white/20 text-white"
+                            onClick={() => lockMicMutation.mutate({ 
+                              seatNumber, 
+                              lock: mic?.status !== 'locked' 
+                            })}
+                            data-testid={`lock-mic-${seatNumber}`}
+                          >
+                            {mic?.status === 'locked' ? <Unlock className="h-3 w-3" /> : <Lock className="h-3 w-3" />}
+                          </Button>
+                          
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            className="h-8 w-8 p-0 bg-white/10 hover:bg-white/20 text-white"
+                            onClick={() => muteMicMutation.mutate({ 
+                              seatNumber, 
+                              mute: !mic?.isMuted 
+                            })}
+                            data-testid={`mute-mic-${seatNumber}`}
+                          >
+                            {mic?.isMuted ? <Volume2 className="h-3 w-3" /> : <VolumeX className="h-3 w-3" />}
+                          </Button>
+                        </div>
                       </div>
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent pointer-events-none" />
                     </Card>
                   );
                 })}
               </div>
             </TabsContent>
 
-            <TabsContent value="user-management" className="space-y-4">
-              <div className="flex gap-4">
+            <TabsContent value="user-management" className="space-y-4 mt-4">
+              <div className="flex flex-col sm:flex-row gap-3">
                 <Dialog>
                   <DialogTrigger asChild>
-                    <Button data-testid="kick-user-button">
+                    <Button className="bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700" data-testid="kick-user-button">
                       <UserX className="h-4 w-4 mr-2" />
                       Kick User
                     </Button>
                   </DialogTrigger>
-                  <DialogContent data-testid="kick-user-dialog">
+                  <DialogContent className="bg-slate-900 border-purple-500/30" data-testid="kick-user-dialog">
                     <DialogHeader>
-                      <DialogTitle>Kick User</DialogTitle>
-                      <DialogDescription>
+                      <DialogTitle className="text-white">Kick User</DialogTitle>
+                      <DialogDescription className="text-gray-400">
                         Select a user to kick from the room.
                       </DialogDescription>
                     </DialogHeader>
                     <div className="space-y-4">
                       <div>
-                        <Label htmlFor="kick-user-id">User ID</Label>
+                        <Label htmlFor="kick-user-id" className="text-white">User ID</Label>
                         <input
                           id="kick-user-id"
                           type="number"
-                          className="w-full p-2 border rounded"
+                          className="w-full p-2 border rounded bg-slate-800 text-white border-purple-500/30"
                           value={selectedUser || ''}
                           onChange={(e) => setSelectedUser(Number(e.target.value))}
                           data-testid="kick-user-id-input"
                         />
                       </div>
                       <div>
-                        <Label htmlFor="kick-reason">Reason (optional)</Label>
+                        <Label htmlFor="kick-reason" className="text-white">Reason (optional)</Label>
                         <Textarea
                           id="kick-reason"
                           value={kickReason}
                           onChange={(e) => setKickReason(e.target.value)}
                           placeholder="Enter reason for kicking..."
+                          className="bg-slate-800 text-white border-purple-500/30"
                           data-testid="kick-reason-input"
                         />
                       </div>
@@ -409,6 +449,7 @@ export function RoomModerationPanel({ roomId, userRole, isVisible, onClose }: Mo
                           reason: kickReason || undefined 
                         })}
                         disabled={!selectedUser || kickUserMutation.isPending}
+                        className="bg-gradient-to-r from-blue-600 to-cyan-600"
                         data-testid="confirm-kick-user"
                       >
                         Kick User
@@ -419,37 +460,37 @@ export function RoomModerationPanel({ roomId, userRole, isVisible, onClose }: Mo
 
                 <Dialog>
                   <DialogTrigger asChild>
-                    <Button variant="destructive" data-testid="ban-user-button">
+                    <Button className="bg-gradient-to-r from-red-600 to-rose-600 hover:from-red-700 hover:to-rose-700" data-testid="ban-user-button">
                       <AlertTriangle className="h-4 w-4 mr-2" />
                       Ban User
                     </Button>
                   </DialogTrigger>
-                  <DialogContent data-testid="ban-user-dialog">
+                  <DialogContent className="bg-slate-900 border-purple-500/30" data-testid="ban-user-dialog">
                     <DialogHeader>
-                      <DialogTitle>Ban User</DialogTitle>
-                      <DialogDescription>
+                      <DialogTitle className="text-white">Ban User</DialogTitle>
+                      <DialogDescription className="text-gray-400">
                         Select a user to ban from the room and choose the ban duration.
                       </DialogDescription>
                     </DialogHeader>
                     <div className="space-y-4">
                       <div>
-                        <Label htmlFor="ban-user-id">User ID</Label>
+                        <Label htmlFor="ban-user-id" className="text-white">User ID</Label>
                         <input
                           id="ban-user-id"
                           type="number"
-                          className="w-full p-2 border rounded"
+                          className="w-full p-2 border rounded bg-slate-800 text-white border-purple-500/30"
                           value={selectedUser || ''}
                           onChange={(e) => setSelectedUser(Number(e.target.value))}
                           data-testid="ban-user-id-input"
                         />
                       </div>
                       <div>
-                        <Label htmlFor="ban-duration">Duration</Label>
+                        <Label htmlFor="ban-duration" className="text-white">Duration</Label>
                         <Select value={banDuration} onValueChange={setBanDuration}>
-                          <SelectTrigger data-testid="ban-duration-select">
+                          <SelectTrigger className="bg-slate-800 text-white border-purple-500/30" data-testid="ban-duration-select">
                             <SelectValue placeholder="Select ban duration" />
                           </SelectTrigger>
-                          <SelectContent>
+                          <SelectContent className="bg-slate-800 border-purple-500/30">
                             <SelectItem value="1_day">1 Day</SelectItem>
                             <SelectItem value="7_days">7 Days</SelectItem>
                             <SelectItem value="30_days">30 Days</SelectItem>
@@ -459,12 +500,13 @@ export function RoomModerationPanel({ roomId, userRole, isVisible, onClose }: Mo
                         </Select>
                       </div>
                       <div>
-                        <Label htmlFor="ban-reason">Reason (optional)</Label>
+                        <Label htmlFor="ban-reason" className="text-white">Reason (optional)</Label>
                         <Textarea
                           id="ban-reason"
                           value={banReason}
                           onChange={(e) => setBanReason(e.target.value)}
                           placeholder="Enter reason for ban..."
+                          className="bg-slate-800 text-white border-purple-500/30"
                           data-testid="ban-reason-input"
                         />
                       </div>
@@ -477,7 +519,7 @@ export function RoomModerationPanel({ roomId, userRole, isVisible, onClose }: Mo
                           reason: banReason || undefined 
                         })}
                         disabled={!selectedUser || banUserMutation.isPending}
-                        variant="destructive"
+                        className="bg-gradient-to-r from-red-600 to-rose-600"
                         data-testid="confirm-ban-user"
                       >
                         Ban User
@@ -488,37 +530,37 @@ export function RoomModerationPanel({ roomId, userRole, isVisible, onClose }: Mo
               </div>
             </TabsContent>
 
-            <TabsContent value="bans" className="space-y-4">
+            <TabsContent value="bans" className="space-y-4 mt-4">
               <ScrollArea className="h-96">
                 {loadingBans ? (
                   <div className="flex items-center justify-center h-32">
-                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
+                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-500"></div>
                   </div>
                 ) : (
-                  <div className="space-y-4">
+                  <div className="space-y-3">
                     {bansData?.bans?.map((ban: RoomBan) => (
-                      <Card key={ban.id} className="p-4" data-testid={`ban-${ban.id}`}>
+                      <Card key={ban.id} className="p-4 bg-gradient-to-br from-red-900/30 to-rose-900/30 border-red-500/30 text-white" data-testid={`ban-${ban.id}`}>
                         <div className="flex items-center justify-between">
-                          <div>
-                            <p className="font-medium">{ban.user.displayName}</p>
-                            <p className="text-sm text-gray-600 dark:text-gray-400">
+                          <div className="flex-1">
+                            <p className="font-medium text-base">{ban.user.displayName}</p>
+                            <p className="text-sm text-gray-300">
                               Duration: {formatDuration(ban.duration)}
                             </p>
                             {ban.reason && (
-                              <p className="text-sm text-gray-600 dark:text-gray-400">
+                              <p className="text-sm text-gray-300">
                                 Reason: {ban.reason}
                               </p>
                             )}
-                            <p className="text-xs text-gray-500">
+                            <p className="text-xs text-gray-400 mt-1">
                               Banned: {formatDate(ban.createdAt)} by {ban.bannedBy.displayName}
                             </p>
                             {ban.expiresAt && (
-                              <p className="text-xs text-gray-500">
+                              <p className="text-xs text-gray-400">
                                 Expires: {formatDate(ban.expiresAt)}
                               </p>
                             )}
                           </div>
-                          <Badge variant={ban.isActive ? "destructive" : "secondary"}>
+                          <Badge variant={ban.isActive ? "destructive" : "secondary"} className="ml-2">
                             {ban.isActive ? "Active" : "Inactive"}
                           </Badge>
                         </div>
@@ -529,39 +571,39 @@ export function RoomModerationPanel({ roomId, userRole, isVisible, onClose }: Mo
               </ScrollArea>
             </TabsContent>
 
-            <TabsContent value="events" className="space-y-4">
+            <TabsContent value="events" className="space-y-4 mt-4">
               <ScrollArea className="h-96">
                 {loadingEvents ? (
                   <div className="flex items-center justify-center h-32">
-                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
+                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-500"></div>
                   </div>
                 ) : (
-                  <div className="space-y-4">
+                  <div className="space-y-3">
                     {eventsData?.events?.map((event: ModerationEvent) => (
-                      <Card key={event.id} className="p-4" data-testid={`event-${event.id}`}>
+                      <Card key={event.id} className="p-4 bg-gradient-to-br from-blue-900/30 to-indigo-900/30 border-blue-500/30 text-white" data-testid={`event-${event.id}`}>
                         <div className="flex items-center justify-between">
-                          <div>
-                            <p className="font-medium capitalize">
+                          <div className="flex-1">
+                            <p className="font-medium capitalize text-base">
                               {event.action.replace('_', ' ')}
                             </p>
-                            <p className="text-sm text-gray-600 dark:text-gray-400">
+                            <p className="text-sm text-gray-300">
                               Moderator: {event.moderator.displayName}
                             </p>
                             {event.targetUser && (
-                              <p className="text-sm text-gray-600 dark:text-gray-400">
+                              <p className="text-sm text-gray-300">
                                 Target: {event.targetUser.displayName}
                               </p>
                             )}
                             {event.reason && (
-                              <p className="text-sm text-gray-600 dark:text-gray-400">
+                              <p className="text-sm text-gray-300">
                                 Reason: {event.reason}
                               </p>
                             )}
-                            <p className="text-xs text-gray-500">
+                            <p className="text-xs text-gray-400 mt-1">
                               {formatDate(event.createdAt)}
                             </p>
                           </div>
-                          <Badge variant={event.isActive ? "default" : "secondary"}>
+                          <Badge variant={event.isActive ? "default" : "secondary"} className="ml-2">
                             {event.isActive ? "Active" : "Inactive"}
                           </Badge>
                         </div>
