@@ -442,6 +442,22 @@ export default function RoomInterfacePage() {
     return gradients[(seatNumber - 1) % gradients.length];
   };
 
+  // Define border colors for traveling animation
+  const getSeatBorderColors = (seatNumber: number) => {
+    const colors = [
+      { color1: '#3b82f6', color2: '#06b6d4' }, // blue-cyan
+      { color1: '#8b5cf6', color2: '#ec4899' }, // purple-pink
+      { color1: '#10b981', color2: '#eab308' }, // green-yellow
+      { color1: '#f59e0b', color2: '#ef4444' }, // orange-red
+      { color1: '#ef4444', color2: '#ec4899' }, // red-pink
+      { color1: '#6366f1', color2: '#a855f7' }, // indigo-purple
+      { color1: '#14b8a6', color2: '#06b6d4' }, // teal-cyan
+      { color1: '#ec4899', color2: '#d946ef' }, // pink-fuchsia
+    ];
+    
+    return colors[(seatNumber - 1) % colors.length];
+  };
+
   // Create seat grid with circular mic design
   const renderSeats = () => {
     if (!roomData) return null;
@@ -461,6 +477,17 @@ export default function RoomInterfacePage() {
                 background: getSeatGradient(seatNumber),
                 filter: 'blur(16px)',
                 willChange: 'transform',
+              }}
+            />
+            
+            {/* Traveling border animation overlay */}
+            <div 
+              className="absolute -inset-1 rounded-full animate-border-travel pointer-events-none"
+              style={{
+                ['--border-color-1' as string]: getSeatBorderColors(seatNumber).color1,
+                ['--border-color-2' as string]: getSeatBorderColors(seatNumber).color2,
+                filter: 'blur(4px)',
+                willChange: 'background',
               }}
             />
             
@@ -484,10 +511,12 @@ export default function RoomInterfacePage() {
             >
             {seatUser ? (
               <>
-                {/* Centered Mic Icon */}
+                {/* Centered Mic Icon with enhanced styling and animation */}
                 <div className="absolute inset-0 flex items-center justify-center">
                   <Mic className={`w-6 h-6 sm:w-8 sm:h-8 md:w-10 md:h-10 ${
-                    seatUser.isMicOn ? 'text-green-400' : 'text-gray-400'
+                    seatUser.isMicOn 
+                      ? 'text-green-400 animate-mic-glow' 
+                      : 'text-gray-500 drop-shadow-[0_0_4px_rgba(107,114,128,0.5)]'
                   }`} />
                 </div>
                 
@@ -510,8 +539,8 @@ export default function RoomInterfacePage() {
                 )}
               </>
             ) : (
-              /* Empty Mic Icon */
-              <Mic className="w-6 h-6 sm:w-8 sm:h-8 md:w-10 md:h-10 text-gray-400" />
+              /* Empty Mic Icon with enhanced styling */
+              <Mic className="w-6 h-6 sm:w-8 sm:h-8 md:w-10 md:h-10 text-gray-500 drop-shadow-[0_0_4px_rgba(107,114,128,0.5)]" />
             )}
             </div>
           </div>

@@ -883,12 +883,109 @@
   animation: spin-faster 10s linear infinite;
 }
 
+/* Traveling border animation - sweeps from bottom to top on both left and right sides */
+@keyframes border-travel {
+  0% {
+    /* Start at bottom (270deg) */
+    background: conic-gradient(
+      from 0deg at 50% 50%,
+      transparent 0deg,
+      transparent 235deg,
+      var(--border-color-1) 255deg,
+      var(--border-color-2) 270deg,
+      var(--border-color-1) 285deg,
+      transparent 305deg,
+      transparent 360deg
+    );
+  }
+  25% {
+    /* Moving up both sides - approaching sides */
+    background: conic-gradient(
+      from 0deg at 50% 50%,
+      transparent 0deg,
+      transparent 145deg,
+      var(--border-color-1) 165deg,
+      var(--border-color-2) 180deg,
+      var(--border-color-1) 195deg,
+      transparent 215deg,
+      transparent 325deg,
+      var(--border-color-1) 345deg,
+      var(--border-color-2) 360deg
+    );
+  }
+  50%, 52% {
+    /* At the sides (left=180deg, right=0/360deg) - hold briefly */
+    background: conic-gradient(
+      from 0deg at 50% 50%,
+      var(--border-color-2) 0deg,
+      var(--border-color-1) 15deg,
+      transparent 35deg,
+      transparent 165deg,
+      var(--border-color-1) 165deg,
+      var(--border-color-2) 180deg,
+      var(--border-color-1) 195deg,
+      transparent 215deg,
+      transparent 345deg,
+      var(--border-color-1) 345deg,
+      var(--border-color-2) 360deg
+    );
+  }
+  75% {
+    /* Moving to top - approaching top */
+    background: conic-gradient(
+      from 0deg at 50% 50%,
+      transparent 0deg,
+      transparent 55deg,
+      var(--border-color-1) 75deg,
+      var(--border-color-2) 90deg,
+      var(--border-color-1) 105deg,
+      transparent 125deg,
+      transparent 360deg
+    );
+  }
+  100% {
+    /* Reach top (90deg) then cycle back to bottom */
+    background: conic-gradient(
+      from 0deg at 50% 50%,
+      transparent 0deg,
+      transparent 235deg,
+      var(--border-color-1) 255deg,
+      var(--border-color-2) 270deg,
+      var(--border-color-1) 285deg,
+      transparent 305deg,
+      transparent 360deg
+    );
+  }
+}
+
+.animate-border-travel {
+  animation: border-travel 2.5s ease-in-out infinite;
+}
+
+/* Mic icon glow animation synced with border travel */
+@keyframes mic-glow {
+  0%, 100% {
+    filter: drop-shadow(0 0 4px currentColor);
+    transform: scale(1);
+  }
+  50% {
+    filter: drop-shadow(0 0 12px currentColor);
+    transform: scale(1.05);
+  }
+}
+
+.animate-mic-glow {
+  animation: mic-glow 2.5s ease-in-out infinite;
+}
+
 /* Respect user's motion preferences */
 @media (prefers-reduced-motion: reduce) {
   .animate-spin-slow,
   .animate-spin-reverse,
   .animate-spin-faster,
-  .animate-pulse {
+  .animate-pulse,
+  .animate-border-travel,
+  .animate-mic-glow {
     animation: none;
   }
 }
