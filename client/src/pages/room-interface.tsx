@@ -490,6 +490,27 @@ export default function RoomInterfacePage() {
               }}
             />
             
+            {/* Traveling circle dot on border */}
+            <div className="absolute inset-0 pointer-events-none">
+              <div 
+                className="absolute w-1 h-1 animate-border-circle z-20"
+                style={{
+                  top: '50%',
+                  left: '50%',
+                  transform: 'translate(-50%, -50%)',
+                  transformOrigin: 'center center',
+                }}
+              >
+                <div 
+                  className="w-full h-full rounded-full"
+                  style={{
+                    background: `radial-gradient(circle, ${getSeatBorderColors(seatNumber).color2}, ${getSeatBorderColors(seatNumber).color1})`,
+                    boxShadow: `0 0 6px ${getSeatBorderColors(seatNumber).color2}, 0 0 10px ${getSeatBorderColors(seatNumber).color1}`,
+                  }}
+                />
+              </div>
+            </div>
+            
             {/* Inner circle with mic */}
             <div
               className={`relative w-16 h-16 sm:w-20 sm:h-20 md:w-24 md:h-24 rounded-full flex items-center justify-center cursor-pointer transition-all duration-300 bg-black ${

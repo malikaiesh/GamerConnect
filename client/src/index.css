@@ -981,6 +981,74 @@
   animation: mic-glow 2.5s ease-in-out infinite;
 }
 
+/* Circle dot that travels around the border - synced with border animation */
+@keyframes border-circle-travel {
+  0% {
+    /* Start at bottom (180deg) */
+    transform: translate(-50%, -50%) rotate(180deg) translateY(-32px);
+  }
+  25% {
+    /* Moving to left side */
+    transform: translate(-50%, -50%) rotate(225deg) translateY(-32px);
+  }
+  50%, 52% {
+    /* At left side (270deg) */
+    transform: translate(-50%, -50%) rotate(270deg) translateY(-32px);
+  }
+  75% {
+    /* Moving through top */
+    transform: translate(-50%, -50%) rotate(315deg) translateY(-32px);
+  }
+  100% {
+    /* Complete full circle back to bottom (540deg = 180deg + 360deg) */
+    transform: translate(-50%, -50%) rotate(540deg) translateY(-32px);
+  }
+}
+
+@media (min-width: 640px) {
+  @keyframes border-circle-travel {
+    0% {
+      transform: translate(-50%, -50%) rotate(180deg) translateY(-40px);
+    }
+    25% {
+      transform: translate(-50%, -50%) rotate(225deg) translateY(-40px);
+    }
+    50%, 52% {
+      transform: translate(-50%, -50%) rotate(270deg) translateY(-40px);
+    }
+    75% {
+      transform: translate(-50%, -50%) rotate(315deg) translateY(-40px);
+    }
+    100% {
+      transform: translate(-50%, -50%) rotate(540deg) translateY(-40px);
+    }
+  }
+}
+
+@media (min-width: 768px) {
+  @keyframes border-circle-travel {
+    0% {
+      transform: translate(-50%, -50%) rotate(180deg) translateY(-48px);
+    }
+    25% {
+      transform: translate(-50%, -50%) rotate(225deg) translateY(-48px);
+    }
+    50%, 52% {
+      transform: translate(-50%, -50%) rotate(270deg) translateY(-48px);
+    }
+    75% {
+      transform: translate(-50%, -50%) rotate(315deg) translateY(-48px);
+    }
+    100% {
+      transform: translate(-50%, -50%) rotate(540deg) translateY(-48px);
+    }
+  }
+}
+
+.animate-border-circle {
+  animation: border-circle-travel 2.5s ease-in-out infinite;
+}
+
 /* Respect user's motion preferences */
 @media (prefers-reduced-motion: reduce) {
   .animate-spin-slow,
@@ -988,6 +1056,7 @@
   .animate-spin-faster,
   .animate-pulse,
   .animate-border-travel,
+  .animate-border-circle,
   .animate-mic-glow {
     animation: none;
   }
