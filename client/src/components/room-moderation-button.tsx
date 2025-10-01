@@ -19,17 +19,20 @@ export function RoomModerationButton({ roomId, userRole, className }: RoomModera
     return null;
   }
 
+  // Check if this is an icon-only button (used in room interface)
+  const isIconOnly = className && className.includes('rounded-full');
+
   return (
     <>
       <Button
         variant="outline"
-        size="sm"
+        size={isIconOnly ? "icon" : "sm"}
         onClick={() => setShowPanel(true)}
         className={className}
         data-testid="room-moderation-button"
       >
-        <Shield className="h-4 w-4 mr-2" />
-        Moderation
+        <Shield className={isIconOnly ? "w-5 h-5 sm:w-6 sm:h-6" : "h-4 w-4 mr-2"} />
+        {!isIconOnly && "Moderation"}
       </Button>
 
       <RoomModerationPanel
