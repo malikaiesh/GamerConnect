@@ -1029,10 +1029,24 @@
 }
 
 .animate-border-travel {
-  animation: border-travel 2.5s ease-in-out infinite;
+  animation: border-travel 2.5s ease-in-out infinite, border-pulse 2.5s ease-in-out infinite;
   /* Create a ring shape using radial gradient mask */
   -webkit-mask: radial-gradient(circle, transparent 0%, transparent 82%, black 82%, black 100%);
   mask: radial-gradient(circle, transparent 0%, transparent 82%, black 82%, black 100%);
+  transform-origin: center;
+  will-change: transform, opacity, background;
+}
+
+/* Pulsing scale animation for outer colored border ring */
+@keyframes border-pulse {
+  0%, 100% {
+    transform: scale(1);
+    opacity: 0.9;
+  }
+  50%, 52% {
+    transform: scale(1.05);
+    opacity: 1;
+  }
 }
 
 .animate-white-border {
