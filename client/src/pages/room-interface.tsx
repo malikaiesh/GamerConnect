@@ -480,13 +480,12 @@ export default function RoomInterfacePage() {
               }}
             />
             
-            {/* Traveling border animation overlay */}
+            {/* Solid traveling border ring */}
             <div 
-              className="absolute -inset-1 rounded-full animate-border-travel pointer-events-none"
+              className="absolute inset-0 rounded-full animate-border-travel pointer-events-none"
               style={{
                 ['--border-color-1' as string]: getSeatBorderColors(seatNumber).color1,
                 ['--border-color-2' as string]: getSeatBorderColors(seatNumber).color2,
-                filter: 'blur(4px)',
                 willChange: 'background',
               }}
             />

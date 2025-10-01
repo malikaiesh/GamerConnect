@@ -883,76 +883,76 @@
   animation: spin-faster 10s linear infinite;
 }
 
-/* Traveling border animation - sweeps from bottom to top on both left and right sides */
+/* Solid traveling border ring - moves around the inside edge of circle */
 @keyframes border-travel {
   0% {
     /* Start at bottom (270deg) */
     background: conic-gradient(
       from 0deg at 50% 50%,
       transparent 0deg,
-      transparent 235deg,
-      var(--border-color-1) 255deg,
+      transparent 240deg,
+      var(--border-color-1) 250deg,
       var(--border-color-2) 270deg,
-      var(--border-color-1) 285deg,
-      transparent 305deg,
+      var(--border-color-1) 290deg,
+      transparent 300deg,
       transparent 360deg
     );
   }
   25% {
-    /* Moving up both sides - approaching sides */
+    /* Moving up both sides */
     background: conic-gradient(
       from 0deg at 50% 50%,
+      var(--border-color-1) 350deg,
+      var(--border-color-2) 360deg,
       transparent 0deg,
-      transparent 145deg,
-      var(--border-color-1) 165deg,
+      transparent 150deg,
+      var(--border-color-1) 170deg,
       var(--border-color-2) 180deg,
-      var(--border-color-1) 195deg,
-      transparent 215deg,
-      transparent 325deg,
-      var(--border-color-1) 345deg,
-      var(--border-color-2) 360deg
+      var(--border-color-1) 190deg,
+      transparent 210deg,
+      transparent 340deg
     );
   }
   50%, 52% {
-    /* At the sides (left=180deg, right=0/360deg) - hold briefly */
+    /* At the sides (left=180deg, right=0/360deg) */
     background: conic-gradient(
       from 0deg at 50% 50%,
       var(--border-color-2) 0deg,
-      var(--border-color-1) 15deg,
-      transparent 35deg,
-      transparent 165deg,
-      var(--border-color-1) 165deg,
+      var(--border-color-1) 10deg,
+      transparent 30deg,
+      transparent 170deg,
+      var(--border-color-1) 170deg,
       var(--border-color-2) 180deg,
-      var(--border-color-1) 195deg,
-      transparent 215deg,
-      transparent 345deg,
-      var(--border-color-1) 345deg,
+      var(--border-color-1) 190deg,
+      transparent 210deg,
+      transparent 350deg,
+      var(--border-color-1) 350deg,
       var(--border-color-2) 360deg
     );
   }
   75% {
-    /* Moving to top - approaching top */
+    /* Moving to top */
     background: conic-gradient(
       from 0deg at 50% 50%,
       transparent 0deg,
-      transparent 55deg,
-      var(--border-color-1) 75deg,
+      transparent 60deg,
+      var(--border-color-1) 80deg,
       var(--border-color-2) 90deg,
-      var(--border-color-1) 105deg,
-      transparent 125deg,
+      var(--border-color-1) 100deg,
+      transparent 120deg,
       transparent 360deg
     );
   }
   100% {
-    /* Reach top (90deg) then cycle back to bottom */
+    /* Back to bottom */
     background: conic-gradient(
       from 0deg at 50% 50%,
       transparent 0deg,
-      transparent 235deg,
-      var(--border-color-1) 255deg,
+      transparent 240deg,
+      var(--border-color-1) 250deg,
       var(--border-color-2) 270deg,
-      var(--border-color-1) 285deg,
-      transparent 305deg,
+      var(--border-color-1) 290deg,
+      transparent 300deg,
       transparent 360deg
     );
   }
@@ -960,6 +960,9 @@
 
 .animate-border-travel {
   animation: border-travel 2.5s ease-in-out infinite;
+  /* Create a ring shape using radial gradient mask */
+  -webkit-mask: radial-gradient(circle, transparent 0%, transparent 82%, black 82%, black 100%);
+  mask: radial-gradient(circle, transparent 0%, transparent 82%, black 82%, black 100%);
 }
 
 /* Mic icon glow animation synced with border travel */
