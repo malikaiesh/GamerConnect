@@ -1140,6 +1140,50 @@
   animation: border-circle-travel 2.5s ease-in-out infinite;
 }
 
+/* Animated gradient border for team cards */
+@keyframes gradient-border-rotate {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+.animate-gradient-border {
+  position: relative;
+  border-radius: 0.75rem;
+  padding: 2px;
+  overflow: hidden;
+}
+
+.animate-gradient-border::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: conic-gradient(
+    from 0deg,
+    #667eea,
+    #764ba2,
+    #f093fb,
+    #4facfe,
+    #00f2fe,
+    #667eea
+  );
+  animation: gradient-border-rotate 3s linear infinite;
+  border-radius: inherit;
+  z-index: 0;
+}
+
+.animate-gradient-border-content {
+  position: relative;
+  background: hsl(var(--card));
+  border-radius: calc(0.75rem - 2px);
+  width: 100%;
+  height: 100%;
+  z-index: 1;
+}
+
 /* Respect user's motion preferences */
 @media (prefers-reduced-motion: reduce) {
   .animate-spin-slow,
@@ -1149,7 +1193,8 @@
   .animate-border-travel,
   .animate-white-border,
   .animate-border-circle,
-  .animate-mic-glow {
+  .animate-mic-glow,
+  .animate-gradient-border {
     animation: none;
   }
 }
