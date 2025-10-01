@@ -490,9 +490,9 @@ export default function RoomInterfacePage() {
               }}
             />
             
-            {/* Inner circle with mic - with white border */}
+            {/* Inner circle with mic */}
             <div
-              className={`relative w-16 h-16 sm:w-20 sm:h-20 md:w-24 md:h-24 rounded-full flex items-center justify-center cursor-pointer transition-all duration-300 bg-black border-2 border-white ${
+              className={`relative w-16 h-16 sm:w-20 sm:h-20 md:w-24 md:h-24 rounded-full flex items-center justify-center cursor-pointer transition-all duration-300 bg-black ${
                 !seatUser && currentUserInRoom ? 'hover:scale-110' : ''
               }`}
               onClick={() => {
@@ -508,6 +508,14 @@ export default function RoomInterfacePage() {
                 }
               }}
             >
+              {/* Animated white border */}
+              <div 
+                className="absolute inset-0 rounded-full animate-white-border pointer-events-none"
+                style={{
+                  willChange: 'background',
+                }}
+              />
+              
             {seatUser ? (
               <>
                 {/* Centered Mic Icon with enhanced styling and animation */}

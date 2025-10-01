@@ -958,11 +958,88 @@
   }
 }
 
+/* White traveling border animation for mic circle */
+@keyframes white-border-travel {
+  0% {
+    background: conic-gradient(
+      from 0deg at 50% 50%,
+      transparent 0deg,
+      transparent 240deg,
+      white 250deg,
+      white 270deg,
+      white 290deg,
+      transparent 300deg,
+      transparent 360deg
+    );
+  }
+  25% {
+    background: conic-gradient(
+      from 0deg at 50% 50%,
+      white 350deg,
+      white 360deg,
+      transparent 0deg,
+      transparent 150deg,
+      white 170deg,
+      white 180deg,
+      white 190deg,
+      transparent 210deg,
+      transparent 340deg
+    );
+  }
+  50%, 52% {
+    background: conic-gradient(
+      from 0deg at 50% 50%,
+      white 0deg,
+      white 10deg,
+      transparent 30deg,
+      transparent 170deg,
+      white 170deg,
+      white 180deg,
+      white 190deg,
+      transparent 210deg,
+      transparent 350deg,
+      white 350deg,
+      white 360deg
+    );
+  }
+  75% {
+    background: conic-gradient(
+      from 0deg at 50% 50%,
+      transparent 0deg,
+      transparent 60deg,
+      white 80deg,
+      white 90deg,
+      white 100deg,
+      transparent 120deg,
+      transparent 360deg
+    );
+  }
+  100% {
+    background: conic-gradient(
+      from 0deg at 50% 50%,
+      transparent 0deg,
+      transparent 240deg,
+      white 250deg,
+      white 270deg,
+      white 290deg,
+      transparent 300deg,
+      transparent 360deg
+    );
+  }
+}
+
 .animate-border-travel {
   animation: border-travel 2.5s ease-in-out infinite;
   /* Create a ring shape using radial gradient mask */
   -webkit-mask: radial-gradient(circle, transparent 0%, transparent 82%, black 82%, black 100%);
   mask: radial-gradient(circle, transparent 0%, transparent 82%, black 82%, black 100%);
+}
+
+.animate-white-border {
+  animation: white-border-travel 2.5s ease-in-out infinite;
+  /* Create a thin ring shape for white border on edge of mic circle */
+  -webkit-mask: radial-gradient(circle, transparent 0%, transparent 92%, black 92%, black 100%);
+  mask: radial-gradient(circle, transparent 0%, transparent 92%, black 92%, black 100%);
 }
 
 /* Mic icon glow animation synced with border travel */
@@ -1056,6 +1133,7 @@
   .animate-spin-faster,
   .animate-pulse,
   .animate-border-travel,
+  .animate-white-border,
   .animate-border-circle,
   .animate-mic-glow {
     animation: none;
